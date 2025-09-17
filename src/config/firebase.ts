@@ -1,14 +1,41 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { 
+  initializeFirestore,
+  memoryLocalCache
+} from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getAnalytics } from 'firebase/analytics';
+import type { Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyAnPd-oqi2Wxb9KAX8eg9hA231S82WCer8",
+  authDomain: "hotel-management-d5827.firebaseapp.com",
+  projectId: "hotel-management-d5827",
+  storageBucket: "hotel-management-d5827.firebasestorage.app",
+  messagingSenderId: "207200611187",
+  appId: "1:207200611187:web:72d4a57e3e4abcbc44b306",
+  measurementId: "G-KH6S7HLEK7"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize services
 export const auth = getAuth(app);
+export const db = initializeFirestore(app, {
+  localCache: memoryLocalCache()
+});
+export const storage = getStorage(app);
+
+// Initialize Analytics only in browser environment
+let analytics: Analytics | undefined;
+if (typeof window !== 'undefined') {
+  try {
+    analytics = getAnalytics(app);
+  } catch (error) {
+    console.warn('Analytics initialization failed:', error);
+  }
+}
+
+export { analytics };

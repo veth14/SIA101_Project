@@ -1,15 +1,34 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export const Footer = () => {
+  const location = useLocation();
+
+  const handleScrollTo = (sectionId: string) => {
+    if (location.pathname !== '/') {
+      window.location.href = `/#${sectionId}`;
+      return;
+    }
+    
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerHeight = 80; // Account for fixed header height
+      const elementPosition = element.offsetTop - headerHeight;
+      
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const navigation = {
     hotel: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Rooms', href: '/rooms' },
-      { name: 'Amenities', href: '/amenities' },
-      { name: 'Gallery', href: '/gallery' },
+      { name: 'About Us', href: '/about', scrollTo: 'about' },
+      { name: 'Rooms', href: '/rooms', scrollTo: 'rooms' },
+      { name: 'Amenities', href: '/amenities', scrollTo: 'amenities' },
+      { name: 'Contact', href: '/contact', scrollTo: 'contact' },
     ],
     support: [
-      { name: 'Contact', href: '/contact' },
       { name: 'FAQs', href: '/faqs' },
       { name: 'Terms & Conditions', href: '/terms' },
       { name: 'Privacy Policy', href: '/privacy' },
@@ -45,25 +64,30 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-white mt-auto" aria-labelledby="footer-heading">
+    <footer className="bg-gradient-to-br from-heritage-green/5 via-white to-heritage-light/10 mt-auto border-t border-heritage-light/20" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">
         Footer
       </h2>
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:py-20 lg:px-8">
+        <div className="xl:grid xl:grid-cols-3 xl:gap-12">
           <div className="space-y-8 xl:col-span-1">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-heritage-green">Balay Ginhawa</span>
+            <Link to="/" className="flex items-center space-x-4 group">
+              <img 
+                src="/BalayGinhawa/balaylogopng.png" 
+                alt="Balay Ginhawa Logo" 
+                className="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-110"
+              />
+              <span className="text-3xl font-bold text-heritage-green group-hover:text-heritage-green/80 transition-colors duration-300">Balay Ginhawa</span>
             </Link>
-            <p className="text-gray-500 text-base">
-              Experience authentic Filipino heritage in our luxurious accommodations.
+            <p className="text-gray-600 text-lg leading-relaxed">
+              Where <span className="text-heritage-green font-semibold">timeless Filipino traditions</span> embrace modern luxury, creating unforgettable experiences in the heart of paradise.
             </p>
             <div className="flex space-x-6">
               {navigation.social.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-400 hover:text-heritage-green"
+                  className="text-gray-400 hover:text-heritage-green transition-all duration-300 hover:scale-110 p-2 rounded-full hover:bg-heritage-light/20"
                 >
                   <span className="sr-only">{item.name}</span>
                   <item.icon className="h-6 w-6" aria-hidden="true" />
@@ -71,49 +95,70 @@ export const Footer = () => {
               ))}
             </div>
           </div>
-          <div className="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                  Hotel
-                </h3>
-                <ul role="list" className="mt-4 space-y-4">
-                  {navigation.hotel.map((item) => (
-                    <li key={item.name}>
+          <div className="mt-16 grid grid-cols-1 gap-12 xl:mt-0 xl:col-span-2 md:grid-cols-2">
+            <div>
+              <h3 className="text-lg font-bold text-heritage-green mb-6 tracking-wide">
+                Explore Hotel
+              </h3>
+              <ul role="list" className="space-y-4">
+                {navigation.hotel.map((item) => (
+                  <li key={item.name}>
+                    {item.scrollTo ? (
+                      <button
+                        onClick={() => handleScrollTo(item.scrollTo)}
+                        className="text-base text-gray-600 hover:text-heritage-green transition-all duration-300 hover:translate-x-2 block w-full text-left group"
+                      >
+                        <span className="flex items-center">
+                          <span className="w-0 h-0.5 bg-heritage-green transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
+                          {item.name}
+                        </span>
+                      </button>
+                    ) : (
                       <Link
                         to={item.href}
-                        className="text-base text-gray-500 hover:text-heritage-green"
+                        className="text-base text-gray-600 hover:text-heritage-green transition-all duration-300 hover:translate-x-2 block group"
                       >
-                        {item.name}
+                        <span className="flex items-center">
+                          <span className="w-0 h-0.5 bg-heritage-green transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
+                          {item.name}
+                        </span>
                       </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-12 md:mt-0">
-                <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                  Support
-                </h3>
-                <ul role="list" className="mt-4 space-y-4">
-                  {navigation.support.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        to={item.href}
-                        className="text-base text-gray-500 hover:text-heritage-green"
-                      >
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-heritage-green mb-6 tracking-wide">
+                Support & Info
+              </h3>
+              <ul role="list" className="space-y-4">
+                {navigation.support.map((item) => (
+                  <li key={item.name}>
+                    <Link
+                      to={item.href}
+                      className="text-base text-gray-600 hover:text-heritage-green transition-all duration-300 hover:translate-x-2 block group"
+                    >
+                      <span className="flex items-center">
+                        <span className="w-0 h-0.5 bg-heritage-green transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
                         {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
-        <div className="mt-12 border-t border-gray-200 pt-8">
-          <p className="text-base text-gray-400 xl:text-center">
-            &copy; {new Date().getFullYear()} Balay Ginhawa. All rights reserved.
-          </p>
+        <div className="mt-16 border-t border-heritage-light/30 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-base text-gray-500">
+              &copy; {new Date().getFullYear()} <span className="font-semibold text-heritage-green">Balay Ginhawa</span>. All rights reserved.
+            </p>
+            <p className="text-sm text-gray-400">
+              Made with ❤️ for Filipino Heritage
+            </p>
+          </div>
         </div>
       </div>
     </footer>

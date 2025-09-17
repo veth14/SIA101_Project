@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp, getApps } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
@@ -17,14 +17,27 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+} catch (error) {
+  // @ts-expect-error Firebase error code typing
+  if (error.code === 'app/duplicate-app') {
+    // If an app already exists, get that instead
+    app = getApps()[0];
+  } else {
+    throw error;
+  }
+}
 
 // Initialize Analytics (only works in browsers)
-let analytics: ReturnType<typeof getAnalytics> | undefined
-try {
-  analytics = getAnalytics(app)
-} catch {
-  // No-op if not in a browser environment
+let analytics: ReturnType<typeof getAnalytics> | undefined;
+if (typeof window !== 'undefined') {
+  try {
+    analytics = getAnalytics(app);
+  } catch {
+    // No-op if analytics initialization fails
+  }
 }
 
 // Initialize Firebase services

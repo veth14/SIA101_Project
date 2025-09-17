@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/shared/navigation/Header';
 import { Footer } from '../components/shared/navigation/Footer';
 
@@ -13,7 +13,7 @@ export const GuestLayout = ({ children }: GuestLayoutProps) => {
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-heritage-green"></div>
+      <div className="w-12 h-12 border-t-2 border-b-2 rounded-full animate-spin border-heritage-green"></div>
     </div>;
   }
 
@@ -23,13 +23,11 @@ export const GuestLayout = ({ children }: GuestLayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-heritage-light flex flex-col">
+    <div className="flex flex-col min-h-screen bg-heritage-light">
       <Header />
       
       <main className="flex-grow pt-20">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
+        {children}
       </main>
 
       <Footer />

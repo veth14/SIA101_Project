@@ -38,24 +38,31 @@ export const LandingPage: React.FC = () => {
   const rooms: Room[] = [
     {
       id: 1,
-      name: 'Deluxe Room',
-      description: 'Experience modern comfort with traditional Filipino design elements',
-      image: '/images/deluxe-room.jpg',
-      price: '₱4,500/night'
+      name: 'Silid Payapa – Standard Room',
+      description: 'Cozy and simple, perfect for solo travelers or couples.',
+      image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      price: '₱2,500/night'
     },
     {
       id: 2,
-      name: 'Heritage Suite',
-      description: 'Immerse yourself in Filipino luxury with panoramic views',
-      image: '/images/heritage-suite.jpg',
-      price: '₱8,500/night'
+      name: 'Silid Marahuyo – Deluxe Room',
+      description: 'Spacious with modern amenities, designed for comfort and relaxation.',
+      image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      price: '₱3,800/night'
     },
     {
       id: 3,
-      name: 'Family Room',
-      description: 'Spacious accommodation perfect for family gatherings',
-      image: '/images/family-room.jpg',
-      price: '₱6,500/night'
+      name: 'Silid Ginhawa – Suite Room',
+      description: 'Features a living area, elegant interiors, and added privacy.',
+      image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80',
+      price: '₱5,500/night'
+    },
+    {
+      id: 4,
+      name: 'Silid Haraya – Premium Family Suite',
+      description: 'Large room with multiple beds, ideal for families or groups seeking both luxury and togetherness.',
+      image: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      price: '₱8,000/night'
     }
   ];
 
@@ -65,21 +72,21 @@ export const LandingPage: React.FC = () => {
       name: 'Maria Santos',
       rating: 5,
       text: 'The perfect blend of Filipino hospitality and modern luxury. Will definitely come back!',
-      image: '/images/testimonial1.jpg'
+      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80'
     },
     {
       id: 2,
       name: 'John Cruz',
       rating: 5,
       text: 'Outstanding service and beautiful cultural touches throughout the hotel.',
-      image: '/images/testimonial2.jpg'
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
     },
     {
       id: 3,
       name: 'Sarah Lee',
       rating: 5,
       text: 'A truly unique experience that showcases the best of Filipino heritage.',
-      image: '/images/testimonial3.jpg'
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
     }
   ];
 
@@ -100,12 +107,24 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-heritage-light">
-      <HeroSection />
-      <WelcomeSection />
-      <AmenitiesSection amenities={amenities} />
-      <RoomCarousel rooms={rooms} currentRoom={currentRoom} />
-      <TestimonialsSection testimonials={testimonials} currentTestimonial={currentTestimonial} />
-      <CallToAction />
+      <section id="home">
+        <HeroSection />
+      </section>
+      <section id="about">
+        <WelcomeSection />
+      </section>
+      <section id="amenities">
+        <AmenitiesSection amenities={amenities} />
+      </section>
+      <section id="rooms">
+        <RoomCarousel rooms={rooms} currentRoom={currentRoom} />
+      </section>
+      <section id="testimonials">
+        <TestimonialsSection testimonials={testimonials} currentTestimonial={currentTestimonial} />
+      </section>
+      <section id="contact">
+        <CallToAction />
+      </section>
     </div>
   );
 };

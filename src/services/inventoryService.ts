@@ -8,7 +8,7 @@ import {
   query,
   where
 } from 'firebase/firestore';
-import { db } from './firebaseConfig';
+import { db } from '../config/firebase';
 
 export interface InventoryItem {
   id?: string;

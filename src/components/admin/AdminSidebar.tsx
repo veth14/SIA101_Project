@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks';
+import { useAuth } from '../../hooks/useAuth';
 import {
   ViewIcon,
   StarIcon,
@@ -19,7 +19,7 @@ interface NavItem {
 export const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
   const [isOpen, setIsOpen] = React.useState(true);
 
   const navItems: NavItem[] = [
@@ -32,7 +32,7 @@ export const AdminSidebar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);

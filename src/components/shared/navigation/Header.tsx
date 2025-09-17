@@ -1,80 +1,184 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { userData } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { userData, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Rooms', href: '/rooms' },
-    { name: 'Amenities', href: '/amenities' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'Home', href: '/', scrollTo: 'home' },
+    { name: 'About', href: '/', scrollTo: 'about' },
+    { name: 'Amenities', href: '/', scrollTo: 'amenities' },
+    { name: 'Rooms', href: '/', scrollTo: 'rooms' },
   ];
 
-  const isCurrentPath = (path: string) => {
-    return location.pathname === path;
+
+  const handleScrollTo = (sectionId: string) => {
+    if (location.pathname !== '/') {
+      // If not on home page, navigate to home first then scroll
+      navigate('/');
+      // Use setTimeout to allow navigation to complete before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const headerHeight = 80;
+          const elementPosition = element.offsetTop - headerHeight;
+          window.scrollTo({
+            top: elementPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+      return;
+    }
+    
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerHeight = 80; // Account for fixed header height
+      const elementPosition = element.offsetTop - headerHeight;
+      
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="bg-white shadow-md fixed w-full top-0 z-50">
+    <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/95 backdrop-blur-md shadow-lg' 
+        : 'bg-transparent'
+    }`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
-        <div className="w-full py-6 flex items-center justify-between border-b border-heritage-light lg:border-none">
+        <div className={`w-full py-4 flex items-center justify-between transition-all duration-300 ${
+          isScrolled ? 'border-b border-heritage-light/20' : ''
+        }`}>
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-heritage-green">Balay Ginhawa</span>
+            <Link to="/" className="flex items-center space-x-4">
+              <img 
+                src="/BalayGinhawa/balaylogopng.png" 
+                alt="Balay Ginhawa Logo" 
+                className="w-16 h-16 object-contain transition-all duration-300"
+              />
+              <span className={`text-2xl font-bold transition-colors duration-300 ${
+                isScrolled ? 'text-heritage-green' : 'text-white'
+              }`}>
+                Balay Ginhawa
+              </span>
             </Link>
             {/* Desktop Navigation */}
-            <div className="hidden ml-10 space-x-8 lg:flex">
+            <div className="hidden ml-12 space-x-8 lg:flex">
               {navigation.map((link) => (
-                <Link
+                <button
                   key={link.name}
-                  to={link.href}
-                  className={`text-base font-medium ${
-                    isCurrentPath(link.href)
-                      ? 'text-heritage-green'
-                      : 'text-gray-600 hover:text-heritage-green'
-                  } transition-colors duration-200`}
+                  onClick={() => handleScrollTo(link.scrollTo)}
+                  className={`relative text-base font-medium transition-all duration-300 group ${
+                    location.pathname === '/' && isScrolled
+                      ? 'text-gray-700 hover:text-heritage-green'
+                      : location.pathname === '/'
+                        ? 'text-white/90 hover:text-white'
+                        : isScrolled
+                          ? 'text-gray-700 hover:text-heritage-green'
+                          : 'text-white/90 hover:text-white'
+                  }`}
                 >
                   {link.name}
-                </Link>
+                  <span className={`absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
+                    isScrolled
+                      ? 'bg-heritage-green'
+                      : 'bg-white'
+                  }`}></span>
+                </button>
               ))}
             </div>
           </div>
-          <div className="ml-10 space-x-4">
+          <div className="flex items-center space-x-3">
             {userData ? (
-              <Link
-                to="/account"
-                className="inline-block bg-heritage-green py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-90 transition-colors duration-200"
-              >
-                My Account
-              </Link>
+              <>
+                {userData.role === 'guest' ? (
+                  <>
+                    <Link
+                      to="/booking"
+                      className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                        isScrolled
+                          ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30 border border-heritage-green/20'
+                          : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
+                      }`}
+                    >
+                      Book Now
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                        isScrolled
+                          ? 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                          : 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                      }`}
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/account"
+                    className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                      isScrolled
+                        ? 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                        : 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                    }`}
+                  >
+                    My Account
+                  </Link>
+                )}
+              </>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="inline-block bg-heritage-light py-2 px-4 border border-transparent rounded-md text-base font-medium text-heritage-green hover:bg-opacity-90 transition-colors duration-200"
+                  className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                    isScrolled
+                      ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30 border border-heritage-green/20'
+                      : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
+                  }`}
                 >
                   Sign in
                 </Link>
                 <Link
-                  to="/register"
-                  className="inline-block bg-heritage-green py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-90 transition-colors duration-200"
+                  to="/auth?mode=register"
+                  className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                    isScrolled
+                      ? 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                      : 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                  }`}
                 >
                   Register
                 </Link>
               </>
             )}
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="flex lg:hidden">
+            {/* Mobile menu button */}
             <button
               type="button"
-              className="text-gray-500 hover:text-heritage-green"
+              className={`lg:hidden p-2 rounded-full transition-all duration-300 ${
+                isScrolled
+                  ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
+                  : 'text-white hover:text-white/80 hover:bg-white/20'
+              }`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               <span className="sr-only">Open menu</span>
@@ -93,22 +197,89 @@ export const Header = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4">
-            <div className="flex flex-col space-y-4">
+          <div className={`lg:hidden transition-all duration-300 ${
+            isScrolled 
+              ? 'bg-white/95 backdrop-blur-md border-t border-heritage-light/20' 
+              : 'bg-black/20 backdrop-blur-md border-t border-white/20'
+          }`}>
+            <div className="px-4 py-6 space-y-4">
               {navigation.map((link) => (
-                <Link
+                <button
                   key={link.name}
-                  to={link.href}
-                  className={`text-base font-medium ${
-                    isCurrentPath(link.href)
-                      ? 'text-heritage-green'
-                      : 'text-gray-600 hover:text-heritage-green'
-                  } transition-colors duration-200`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    handleScrollTo(link.scrollTo);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                    isScrolled
+                      ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
+                      : 'text-white/90 hover:text-white hover:bg-white/20'
+                  }`}
                 >
                   {link.name}
-                </Link>
+                </button>
               ))}
+              
+              {/* Mobile Auth Buttons */}
+              <div className="pt-4 border-t border-current/20 space-y-3">
+                {userData ? (
+                  <>
+                    {userData.role === 'guest' ? (
+                      <>
+                        <Link
+                          to="/booking"
+                          className={`block w-full text-center px-4 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                            isScrolled
+                              ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30'
+                              : 'bg-white/20 text-white hover:bg-white/30'
+                          }`}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Book Now
+                        </Link>
+                        <button
+                          onClick={() => {
+                            logout();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="block w-full px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                        >
+                          Sign Out
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        to="/account"
+                        className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        My Account
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className={`block w-full text-center px-4 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                        isScrolled
+                          ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30'
+                          : 'bg-white/20 text-white hover:bg-white/30'
+                      }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      to="/auth?mode=register"
+                      className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}

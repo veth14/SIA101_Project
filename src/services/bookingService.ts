@@ -8,7 +8,7 @@ import {
   where,
   getDocs
 } from 'firebase/firestore';
-import { db } from './firebaseConfig';
+import { db } from '../config/firebase';
 
 export interface BookingData {
   id?: string;
