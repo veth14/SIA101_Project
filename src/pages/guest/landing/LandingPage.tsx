@@ -71,22 +71,22 @@ export const LandingPage: React.FC = () => {
       id: 1,
       name: 'Maria Santos',
       rating: 5,
-      text: 'The perfect blend of Filipino hospitality and modern luxury. Will definitely come back!',
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80'
+      text: 'Amazing Filipino hospitality and luxury. Will definitely return!',
+      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=688&q=80'
     },
     {
       id: 2,
       name: 'John Cruz',
       rating: 5,
       text: 'Outstanding service and beautiful cultural touches throughout the hotel.',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=687&q=80'
     },
     {
       id: 3,
       name: 'Sarah Lee',
       rating: 5,
       text: 'A truly unique experience that showcases the best of Filipino heritage.',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
+      image: 'https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=687&q=80'
     }
   ];
 

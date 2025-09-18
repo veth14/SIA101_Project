@@ -24,6 +24,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
+    // Check for admin session first
+    const checkAdminSession = () => {
+      const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated');
+      const adminUserData = localStorage.getItem('adminUser');
+      
+      if (isAdminAuthenticated === 'true' && adminUserData) {
+        console.log('Admin session found, restoring...');
+        try {
+          const adminUser = JSON.parse(adminUserData);
+          console.log('Admin user found:', adminUser);
+          setState({
+            user: {
+              ...adminUser,
+              createdAt: new Date(),
+              lastLogin: new Date(),
+              isEnabled: true
+            },
+            isLoading: false,
+            error: null
+          });
+          console.log('Admin session restored successfully');
+          return true;
+        } catch (error) {
+          console.error('Error parsing admin user data:', error);
+          localStorage.removeItem('isAdminAuthenticated');
+          localStorage.removeItem('adminUser');
+        }
+      }
+      return false;
+    };
+
+    // Check admin session first
+    if (checkAdminSession()) {
+      return;
+    }
+
     // Set session persistence globally - user will be logged out when tab is closed
     setPersistence(auth, browserSessionPersistence).catch((error) => {
       console.error('Failed to set session persistence:', error);
@@ -222,7 +258,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      // Check if this is an admin session
+      const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated');
+      
+      if (isAdminAuthenticated === 'true') {
+        // Admin logout - clear localStorage
+        localStorage.removeItem('isAdminAuthenticated');
+        localStorage.removeItem('adminUser');
+        setState({
+          user: null,
+          isLoading: false,
+          error: null
+        });
+      } else {
+        // Regular user logout
+        await signOut(auth);
+      }
+      
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);

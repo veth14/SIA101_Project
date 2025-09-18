@@ -19,11 +19,12 @@ export const BookingPage = () => {
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [availabilityMessage, setAvailabilityMessage] = useState('');
 
-  // Room type mapping for pre-selection
-  const roomTypeMapping: { [key: string]: string } = {
-    'deluxe-suite': 'deluxe',
-    'family-room': 'family',
-    'standard-room': 'standard'
+  // Room ID to room type mapping for pre-selection
+  const roomIdToTypeMapping: { [key: string]: string } = {
+    '1': 'standard',  // Silid Payapa - Standard Room
+    '2': 'deluxe',    // Silid Marahuyo - Deluxe Room  
+    '3': 'suite',     // Silid Ginhawa - Suite Room
+    '4': 'family'     // Silid Haraya - Premium Family Suite
   };
 
   // Scroll to top and handle room pre-selection when component mounts
@@ -34,10 +35,10 @@ export const BookingPage = () => {
     const urlParams = new URLSearchParams(location.search);
     const roomId = urlParams.get('roomId');
     
-    if (roomId && roomTypeMapping[roomId]) {
+    if (roomId && roomIdToTypeMapping[roomId]) {
       setFormData(prev => ({
         ...prev,
-        roomType: roomTypeMapping[roomId]
+        roomType: roomIdToTypeMapping[roomId]
       }));
     }
   }, [location.search]);
@@ -150,11 +151,17 @@ export const BookingPage = () => {
     }
 
     try {
-      const totalAmount = calculateTotal(formData.roomType, formData.checkIn, formData.checkOut);
+      const totalAmount = calculateTotal(formData.roomType, formData.guests, formData.checkIn, formData.checkOut);
       const nights = Math.ceil((new Date(formData.checkOut).getTime() - new Date(formData.checkIn).getTime()) / (1000 * 60 * 60 * 24));
       
       // Generate unique booking ID
       const bookingId = `BK${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+
+      // Calculate pricing breakdown for booking record
+      const selectedRoomData = roomDetails[formData.roomType as keyof typeof roomDetails];
+      const roomPricePerNightForBooking = calculateRoomPrice(formData.roomType, formData.guests);
+      const subtotalForBooking = calculateSubtotal(formData.roomType, formData.guests, formData.checkIn, formData.checkOut);
+      const taxForBooking = calculateTax(subtotalForBooking);
 
       // Create booking document
       const bookingData = {
@@ -165,9 +172,17 @@ export const BookingPage = () => {
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
         roomType: formData.roomType,
-        roomName: roomDetails[formData.roomType as keyof typeof roomDetails].name,
+        roomName: selectedRoomData.name,
         guests: formData.guests,
         nights,
+        // Pricing breakdown
+        basePrice: selectedRoomData.basePrice,
+        baseGuests: selectedRoomData.baseGuests,
+        additionalGuestPrice: selectedRoomData.additionalGuestPrice,
+        roomPricePerNight: roomPricePerNightForBooking,
+        subtotal: subtotalForBooking,
+        tax: taxForBooking,
+        taxRate: TAX_RATE,
         totalAmount,
         status: 'confirmed',
         paymentStatus: 'pending',
@@ -231,54 +246,106 @@ export const BookingPage = () => {
     }
   };
 
-  const calculateTotal = (roomType: string, checkIn: string, checkOut: string) => {
-    const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
-    const rates = {
-      standard: 2500,
-      deluxe: 3800,
-      suite: 5500,
-      family: 8000
-    };
+  // Tax rate (12% VAT in Philippines)
+  const TAX_RATE = 0.12;
 
-    return nights * (rates[roomType as keyof typeof rates] || rates.standard);
+  const calculateRoomPrice = (roomType: string, guests: number) => {
+    const room = roomDetails[roomType as keyof typeof roomDetails];
+    if (!room) return 0;
+
+    let totalPrice = room.basePrice;
+    
+    // Add additional guest charges if guests exceed base capacity
+    if (guests > room.baseGuests) {
+      const additionalGuests = guests - room.baseGuests;
+      totalPrice += additionalGuests * room.additionalGuestPrice;
+    }
+
+    return totalPrice;
+  };
+
+  const calculateSubtotal = (roomType: string, guests: number, checkIn: string, checkOut: string) => {
+    const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24));
+    const roomPricePerNight = calculateRoomPrice(roomType, guests);
+    return nights * roomPricePerNight;
+  };
+
+  const calculateTax = (subtotal: number) => {
+    return subtotal * TAX_RATE;
+  };
+
+  const calculateTotal = (roomType: string, guests: number, checkIn: string, checkOut: string) => {
+    const subtotal = calculateSubtotal(roomType, guests, checkIn, checkOut);
+    const tax = calculateTax(subtotal);
+    return subtotal + tax;
   };
 
   const roomDetails = {
     standard: {
-      name: 'Silid Payapa – Standard Room',
-      price: 2500,
-      description: 'Cozy and simple, perfect for solo travelers or couples.',
-      features: ['Free WiFi', 'Air Conditioning', 'Private Bathroom', 'Cable TV'],
+      name: 'Silid Payapa',
+      type: 'Standard Room',
+      basePrice: 2500,
+      baseGuests: 2,
+      maxGuests: 4,
+      additionalGuestPrice: 500,
+      description: 'A cozy sanctuary that embodies tranquility and comfort. Perfect for solo travelers or couples seeking an intimate retreat with authentic Filipino hospitality.',
+      features: ['Queen-size bed', 'City view', 'Air conditioning', 'Private bathroom', 'Work desk'],
+      amenities: ['Free Wi-Fi', 'Cable TV', 'Mini fridge', 'Coffee maker', 'Daily housekeeping'],
+      roomSize: '25 sqm',
       image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
     },
     deluxe: {
-      name: 'Silid Marahuyo – Deluxe Room',
-      price: 3800,
-      description: 'Spacious with modern amenities, designed for comfort and relaxation.',
-      features: ['Free WiFi', 'Air Conditioning', 'Mini Bar', 'City View', 'Work Desk'],
+      name: 'Silid Marahuyo',
+      type: 'Deluxe Room',
+      basePrice: 3800,
+      baseGuests: 2,
+      maxGuests: 4,
+      additionalGuestPrice: 750,
+      description: 'Spacious elegance meets modern comfort in this beautifully appointed room. Designed with premium amenities and Filipino-inspired décor for the discerning traveler.',
+      features: ['King-size bed', 'Ocean view', 'Premium amenities', 'Marble bathroom', 'Seating area'],
+      amenities: ['Free Wi-Fi', 'Smart TV', 'Mini bar', 'Coffee & tea station', 'Bathrobes', 'Room service'],
+      roomSize: '35 sqm',
       image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
     },
     suite: {
-      name: 'Silid Ginhawa – Suite Room',
-      price: 5500,
-      description: 'Features a living area, elegant interiors, and added privacy.',
-      features: ['Free WiFi', 'Living Area', 'Kitchenette', 'Balcony', 'Premium Amenities'],
+      name: 'Silid Ginhawa',
+      type: 'Suite Room',
+      basePrice: 5500,
+      baseGuests: 2,
+      maxGuests: 4,
+      additionalGuestPrice: 1000,
+      description: 'Experience ultimate comfort in this sophisticated suite featuring a separate living area, elegant interiors, and enhanced privacy for an unforgettable stay.',
+      features: ['Separate living area', 'Premium furnishing', 'City & ocean view', 'Luxury bathroom', 'Dining area'],
+      amenities: ['Free Wi-Fi', 'Smart TV', 'Full mini bar', 'Coffee machine', 'Premium toiletries', 'Concierge service'],
+      roomSize: '50 sqm',
       image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80'
     },
     family: {
-      name: 'Silid Haraya – Premium Family Suite',
-      price: 8000,
-      description: 'Large room with multiple beds, ideal for families or groups seeking both luxury and togetherness.',
-      features: ['Free WiFi', 'Multiple Beds', 'Living Area', 'Family Amenities', 'Premium Service'],
+      name: 'Silid Haraya',
+      type: 'Premium Family Suite',
+      basePrice: 8000,
+      baseGuests: 4,
+      maxGuests: 8,
+      additionalGuestPrice: 1200,
+      description: 'Our grandest accommodation designed for families and groups. Featuring multiple bedrooms, spacious living areas, and panoramic views in a heritage-inspired setting.',
+      features: ['Multiple bedrooms', 'Family-friendly layout', 'Panoramic views', 'Premium amenities', 'Private balcony'],
+      amenities: ['Free Wi-Fi', 'Multiple TVs', 'Full kitchen', 'Dining area', 'Premium toiletries', '24/7 room service'],
+      roomSize: '75 sqm',
       image: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
     }
   };
 
   const selectedRoom = roomDetails[formData.roomType as keyof typeof roomDetails];
-  const totalAmount = formData.checkIn && formData.checkOut ? 
-    calculateTotal(formData.roomType, formData.checkIn, formData.checkOut) : 0;
+  
+  // Calculate pricing breakdown
   const nights = formData.checkIn && formData.checkOut ? 
     Math.ceil((new Date(formData.checkOut).getTime() - new Date(formData.checkIn).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  
+  const roomPricePerNight = selectedRoom ? calculateRoomPrice(formData.roomType, formData.guests) : 0;
+  const subtotal = formData.checkIn && formData.checkOut ? 
+    calculateSubtotal(formData.roomType, formData.guests, formData.checkIn, formData.checkOut) : 0;
+  const tax = calculateTax(subtotal);
+  const totalAmount = subtotal + tax;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 relative overflow-hidden">
@@ -418,8 +485,15 @@ export const BookingPage = () => {
                             </div>
                             <div className="flex-1">
                               <h3 className="font-bold text-gray-900 leading-tight">{room.name}</h3>
+                              <p className="text-xs text-heritage-green font-medium uppercase tracking-wider">{room.type}</p>
                               <p className="text-sm text-gray-600 mt-1">{room.description}</p>
-                              <p className="text-xl font-bold text-heritage-green mt-2">₱{room.price.toLocaleString()}<span className="text-sm font-normal text-gray-500">/night</span></p>
+                              <div className="mt-2">
+                                <p className="text-xl font-bold text-heritage-green">₱{room.basePrice.toLocaleString()}<span className="text-sm font-normal text-gray-500">/night</span></p>
+                                <p className="text-xs text-gray-500">Base: {room.baseGuests} guests | Max: {room.maxGuests} guests</p>
+                                {room.additionalGuestPrice > 0 && (
+                                  <p className="text-xs text-gray-500">+₱{room.additionalGuestPrice}/extra guest</p>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <input
@@ -457,8 +531,13 @@ export const BookingPage = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, guests: Math.min(8, prev.guests + 1) }))}
-                        className="w-12 h-12 border-2 border-heritage-green/30 rounded-lg flex items-center justify-center hover:border-heritage-green hover:bg-heritage-green hover:text-white transition-all duration-300 text-heritage-green font-bold"
+                        onClick={() => setFormData(prev => ({ ...prev, guests: Math.min(selectedRoom?.maxGuests || 8, prev.guests + 1) }))}
+                        disabled={formData.guests >= (selectedRoom?.maxGuests || 8)}
+                        className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center transition-all duration-300 font-bold ${
+                          formData.guests >= (selectedRoom?.maxGuests || 8)
+                            ? 'border-gray-300 text-gray-300 cursor-not-allowed'
+                            : 'border-heritage-green/30 hover:border-heritage-green hover:bg-heritage-green hover:text-white text-heritage-green'
+                        }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -473,9 +552,16 @@ export const BookingPage = () => {
                   {selectedRoom ? (
                     <div className="space-y-6">
                       <div className="text-center">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedRoom.name}</h3>
-                        <p className="text-heritage-green text-2xl font-bold">₱{selectedRoom.price.toLocaleString()}</p>
-                        <p className="text-gray-600 text-sm">per night</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedRoom.name}</h3>
+                        <p className="text-heritage-green text-sm font-medium uppercase tracking-wider mb-2">{selectedRoom.type}</p>
+                        <div className="space-y-1">
+                          <p className="text-heritage-green text-2xl font-bold">₱{roomPricePerNight.toLocaleString()}</p>
+                          <p className="text-gray-600 text-sm">per night ({formData.guests} guests)</p>
+                          <p className="text-xs text-gray-500">Base: ₱{selectedRoom.basePrice.toLocaleString()} ({selectedRoom.baseGuests} guests)</p>
+                          {formData.guests > selectedRoom.baseGuests && (
+                            <p className="text-xs text-gray-500">Extra: +₱{((formData.guests - selectedRoom.baseGuests) * selectedRoom.additionalGuestPrice).toLocaleString()}</p>
+                          )}
+                        </div>
                       </div>
 
                       <div className="aspect-video rounded-xl overflow-hidden shadow-md">
@@ -486,15 +572,28 @@ export const BookingPage = () => {
                         />
                       </div>
 
-                      <div>
-                        <h4 className="font-bold text-gray-900 mb-3">Amenities</h4>
-                        <div className="space-y-2">
-                          {selectedRoom.features.map((feature: string, index: number) => (
-                            <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
-                              <div className="w-1.5 h-1.5 bg-heritage-green rounded-full"></div>
-                              <span>{feature}</span>
-                            </div>
-                          ))}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-bold text-gray-900 mb-3">Room Features</h4>
+                          <div className="space-y-2">
+                            {selectedRoom.features.map((feature: string, index: number) => (
+                              <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
+                                <div className="w-1.5 h-1.5 bg-heritage-green rounded-full"></div>
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 mb-3">Amenities</h4>
+                          <div className="space-y-2">
+                            {selectedRoom.amenities.map((amenity: string, index: number) => (
+                              <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
+                                <div className="w-1.5 h-1.5 bg-heritage-neutral rounded-full"></div>
+                                <span>{amenity}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
@@ -518,6 +617,18 @@ export const BookingPage = () => {
                               <span className="text-gray-600">Guests:</span>
                               <span className="font-medium">{formData.guests}</span>
                             </div>
+                            
+                            <div className="border-t border-gray-200 pt-2 mt-3 space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-600">Room ({nights} nights × ₱{roomPricePerNight.toLocaleString()}):</span>
+                                <span>₱{subtotal.toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-600">Tax (12% VAT):</span>
+                                <span>₱{tax.toLocaleString()}</span>
+                              </div>
+                            </div>
+                            
                             <div className="border-t border-heritage-green/20 pt-2 mt-3">
                               <div className="flex justify-between font-bold">
                                 <span>Total:</span>

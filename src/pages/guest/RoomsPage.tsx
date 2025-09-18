@@ -51,7 +51,7 @@ export const RoomsPage = () => {
       price: '₱2,500',
       features: ['Queen-size bed', 'City view', 'Air conditioning', 'Private bathroom', 'Work desk'],
       amenities: ['Free Wi-Fi', 'Cable TV', 'Mini fridge', 'Coffee maker', 'Daily housekeeping'],
-      maxGuests: 2,
+      maxGuests: 4,
       size: '25 sqm'
     },
     {
@@ -63,7 +63,7 @@ export const RoomsPage = () => {
       price: '₱3,800',
       features: ['King-size bed', 'Ocean view', 'Premium amenities', 'Marble bathroom', 'Seating area'],
       amenities: ['Free Wi-Fi', 'Smart TV', 'Mini bar', 'Coffee & tea station', 'Bathrobes', 'Room service'],
-      maxGuests: 2,
+      maxGuests: 4,
       size: '35 sqm'
     },
     {
@@ -75,7 +75,7 @@ export const RoomsPage = () => {
       price: '₱5,500',
       features: ['Separate living area', 'Premium furnishing', 'City & ocean view', 'Luxury bathroom', 'Dining area'],
       amenities: ['Free Wi-Fi', 'Smart TV', 'Full mini bar', 'Coffee machine', 'Premium toiletries', 'Concierge service'],
-      maxGuests: 3,
+      maxGuests: 4,
       size: '50 sqm'
     },
     {
@@ -87,7 +87,7 @@ export const RoomsPage = () => {
       price: '₱8,000',
       features: ['Multiple bedrooms', 'Family-friendly layout', 'Panoramic views', 'Premium amenities', 'Private balcony'],
       amenities: ['Free Wi-Fi', 'Multiple TVs', 'Full kitchen', 'Dining area', 'Premium toiletries', '24/7 room service'],
-      maxGuests: 6,
+      maxGuests: 8,
       size: '75 sqm'
     }
   ];

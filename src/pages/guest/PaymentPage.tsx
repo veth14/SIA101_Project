@@ -11,6 +11,10 @@ export const PaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('gcash');
   const [gcashNumber, setGcashNumber] = useState('');
   const [gcashName, setGcashName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardholderName, setCardholderName] = useState('');
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -101,8 +105,13 @@ export const PaymentPage = () => {
   const isFormValid = () => {
     if (paymentMethod === 'gcash') {
       return gcashNumber.trim() !== '' && gcashName.trim() !== '';
+    } else if (paymentMethod === 'card') {
+      return cardNumber.trim() !== '' && 
+             expiryDate.trim() !== '' && 
+             cvv.trim() !== '' && 
+             cardholderName.trim() !== '';
     }
-    return true; // For other payment methods, add validation as needed
+    return false;
   };
 
   const handlePayment = async () => {
@@ -130,6 +139,27 @@ export const PaymentPage = () => {
           setProcessing(false);
           return;
         }
+      } else if (paymentMethod === 'card') {
+        if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
+          setError('Please fill in all credit card details');
+          setProcessing(false);
+          return;
+        }
+        if (cardNumber.replace(/\s/g, '').length < 13) {
+          setError('Please enter a valid card number');
+          setProcessing(false);
+          return;
+        }
+        if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+          setError('Please enter expiry date in MM/YY format');
+          setProcessing(false);
+          return;
+        }
+        if (!/^\d{3,4}$/.test(cvv)) {
+          setError('Please enter a valid CVV');
+          setProcessing(false);
+          return;
+        }
       }
 
       // Update booking payment status
@@ -140,6 +170,8 @@ export const PaymentPage = () => {
         paymentDetails: {
           gcashNumber: paymentMethod === 'gcash' ? gcashNumber : null,
           gcashName: paymentMethod === 'gcash' ? gcashName : null,
+          cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : null,
+          cardholderName: paymentMethod === 'card' ? cardholderName : null,
           paidAt: serverTimestamp()
         },
         updatedAt: serverTimestamp()
@@ -231,11 +263,11 @@ export const PaymentPage = () => {
         {/* Payment Container */}
         <div className="max-w-4xl mx-auto">
           <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-heritage-green/20 overflow-hidden">
-            <div className="grid lg:grid-cols-5 gap-0">
+            <div className="grid lg:grid-cols-5 gap-0 min-h-[600px]">
               
               {/* Left: Payment Form */}
-              <div className="lg:col-span-3 p-8">
-                <div className="space-y-8">
+              <div className="lg:col-span-3 p-8 flex flex-col">
+                <div className="space-y-8 flex-grow">
                   
                   {/* Payment Method Selection */}
                   <div className="space-y-6">
@@ -368,6 +400,15 @@ export const PaymentPage = () => {
                           <label className="block text-sm font-semibold text-heritage-green mb-2">Card Number</label>
                           <input
                             type="text"
+                            value={cardNumber}
+                            onChange={(e) => {
+                              // Format card number with spaces
+                              const value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                              const formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                              if (formattedValue.length <= 19) { // Max length for formatted card number
+                                setCardNumber(formattedValue);
+                              }
+                            }}
                             placeholder="1234 5678 9012 3456"
                             className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
                             required
@@ -378,7 +419,18 @@ export const PaymentPage = () => {
                             <label className="block text-sm font-semibold text-heritage-green mb-2">Expiry Date</label>
                             <input
                               type="text"
+                              value={expiryDate}
+                              onChange={(e) => {
+                                // Format expiry date MM/YY
+                                const value = e.target.value.replace(/\D/g, '');
+                                if (value.length <= 4) {
+                                  const formattedValue = value.length >= 2 ? 
+                                    `${value.slice(0, 2)}/${value.slice(2)}` : value;
+                                  setExpiryDate(formattedValue);
+                                }
+                              }}
                               placeholder="MM/YY"
+                              maxLength={5}
                               className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
                               required
                             />
@@ -387,7 +439,16 @@ export const PaymentPage = () => {
                             <label className="block text-sm font-semibold text-heritage-green mb-2">CVV</label>
                             <input
                               type="text"
+                              value={cvv}
+                              onChange={(e) => {
+                                // Only allow numbers and limit to 4 digits
+                                const value = e.target.value.replace(/\D/g, '');
+                                if (value.length <= 4) {
+                                  setCvv(value);
+                                }
+                              }}
                               placeholder="123"
+                              maxLength={4}
                               className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
                               required
                             />
@@ -397,6 +458,8 @@ export const PaymentPage = () => {
                           <label className="block text-sm font-semibold text-heritage-green mb-2">Cardholder Name</label>
                           <input
                             type="text"
+                            value={cardholderName}
+                            onChange={(e) => setCardholderName(e.target.value)}
                             placeholder="Full Name on Card"
                             className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
                             required
@@ -409,8 +472,8 @@ export const PaymentPage = () => {
               </div>
 
               {/* Right: Booking Summary */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-heritage-green/5 to-heritage-light/10 p-8 border-l border-heritage-green/10">
-                <div className="space-y-6">
+              <div className="lg:col-span-2 bg-gradient-to-br from-heritage-green/5 to-heritage-light/10 p-8 border-l border-heritage-green/10 flex flex-col">
+                <div className="space-y-6 flex-grow">
                   <h3 className="text-xl font-bold text-gray-900">Booking Summary</h3>
                                     <div className="space-y-4">
                     <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
@@ -439,16 +502,51 @@ export const PaymentPage = () => {
                     </div>
                   </div>
 
+                  {/* Pricing Breakdown */}
+                  {booking.subtotal && booking.tax && (
+                    <div className="bg-white/80 rounded-xl p-4 border border-heritage-green/20">
+                      <h4 className="font-bold text-gray-900 mb-3">Payment Breakdown</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Room Rate ({booking.nights} nights × ₱{booking.roomPricePerNight?.toLocaleString() || '0'}):</span>
+                          <span>₱{booking.subtotal.toLocaleString()}</span>
+                        </div>
+                        {booking.guests > booking.baseGuests && (
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>• Base: ₱{booking.basePrice?.toLocaleString() || '0'} ({booking.baseGuests} guests)</span>
+                            <span></span>
+                          </div>
+                        )}
+                        {booking.guests > booking.baseGuests && (
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>• Extra guests: {booking.guests - booking.baseGuests} × ₱{booking.additionalGuestPrice?.toLocaleString() || '0'}</span>
+                            <span></span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tax (12% VAT):</span>
+                          <span>₱{booking.tax.toLocaleString()}</span>
+                        </div>
+                        <div className="border-t border-heritage-green/20 pt-2 mt-3">
+                          <div className="flex justify-between font-bold">
+                            <span>Total Amount:</span>
+                            <span className="text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                       <p className="text-red-700 text-sm">{error}</p>
                     </div>
                   )}
 
-                  <div className="pt-4 mt-6 bg-heritage-green/5 rounded-xl p-4 border border-heritage-green/20">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-xl font-bold text-gray-900">Total Amount:</span>
-                      <span className="text-3xl font-bold text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
+                  <div className="pt-4 mt-6">
+                    <div className="text-center mb-4">
+                      <span className="text-2xl font-bold text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
+                      <p className="text-sm text-gray-600">Total Amount to Pay</p>
                     </div>
                     
                     <button 

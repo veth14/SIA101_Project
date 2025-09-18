@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { IconType } from 'react-icons';
 
 interface AmenityProps {
@@ -17,6 +18,7 @@ interface IconBaseProps extends React.SVGAttributes<SVGElement> {
 export const AmenitiesSection: React.FC<{ amenities: AmenityProps[] }> = ({ amenities }) => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -96,7 +98,10 @@ export const AmenitiesSection: React.FC<{ amenities: AmenityProps[] }> = ({ amen
           <p className="text-lg text-gray-600 mb-6">
             Discover more about our exceptional facilities and services
           </p>
-          <button className="group relative px-10 py-5 bg-gradient-to-r from-heritage-green to-heritage-neutral hover:from-heritage-neutral hover:to-heritage-green text-white font-semibold rounded-full transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 hover:scale-110 overflow-hidden">
+          <button 
+            onClick={() => navigate('/amenities')}
+            className="group relative px-10 py-5 bg-gradient-to-r from-heritage-green to-heritage-neutral hover:from-heritage-neutral hover:to-heritage-green text-white font-semibold rounded-full transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 hover:scale-110 overflow-hidden"
+          >
             <span className="relative z-10">View All Amenities</span>
             <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"></div>
           </button>

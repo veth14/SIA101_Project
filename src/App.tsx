@@ -8,10 +8,12 @@ import { LandingPage } from './pages/guest/landing/LandingPage'
 import { BookingPage } from './pages/guest/BookingPage'
 import { PaymentPage } from './pages/guest/PaymentPage'
 import { RoomsPage } from './pages/guest/RoomsPage'
-import { LoginPage } from './pages/auth/LoginPage'
+import { AmenitiesPage } from './pages/guest/AmenitiesPage'
 import { AuthPage } from './pages/auth/AuthPage'
+import { NewProfilePage } from './pages/guest/NewProfilePage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminRoomsPage } from './pages/admin/AdminRoomsPage'
+import { AdminLayout } from './components/admin/AdminLayout'
 
 // Import shared components
 import { Header } from './components/shared/navigation/Header'
@@ -30,10 +32,19 @@ function LoadingSpinner() {
       <AuthProvider>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<Navigate to="/auth" replace />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={<><Header /><LandingPage /><Footer /></>} />
             <Route path="/rooms" element={<><Header /><RoomsPage /><Footer /></>} />
+            <Route path="/amenities" element={<><Header /><AmenitiesPage /><Footer /></>} />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute allowedRoles={['guest']}>
+                  <><Header /><NewProfilePage /><Footer /></>
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/booking" 
               element={
@@ -62,7 +73,9 @@ function LoadingSpinner() {
                   path="/admin/dashboard" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminDashboardPage />
+                      <AdminLayout>
+                        <AdminDashboardPage />
+                      </AdminLayout>
                     </ProtectedRoute>
                   } 
                 />
@@ -70,7 +83,9 @@ function LoadingSpinner() {
                   path="/admin/rooms" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminRoomsPage />
+                      <AdminLayout>
+                        <AdminRoomsPage />
+                      </AdminLayout>
                     </ProtectedRoute>
                   } 
                 />

@@ -71,11 +71,17 @@ export const AuthPage = () => {
   // Redirect if already logged in (but not during registration flow)
   useEffect(() => {
     if (userData && !showSuccessModal) {
+      // Check if this is an admin user
+      if (userData.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+        return;
+      }
+      
       const from = (location.state as { from: { pathname: string } })?.from?.pathname;
       if (from) {
         navigate(from, { replace: true });
       } else {
-        // All users redirect to landing page
+        // Regular users redirect to landing page
         navigate('/', { replace: true });
       }
     }
@@ -89,6 +95,7 @@ export const AuthPage = () => {
   }, [authError]);
 
   const validateLoginForm = (): boolean => {
+    console.log('Validating login form with data:', loginData);
     const newErrors: Partial<LoginFormData> = {};
     
     if (!loginData.email) {
@@ -102,6 +109,9 @@ export const AuthPage = () => {
     } else if (loginData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
+    
+    console.log('Validation errors:', newErrors);
+    console.log('Validation passed:', Object.keys(newErrors).length === 0);
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -163,6 +173,7 @@ export const AuthPage = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted! Mode:', isRegisterMode ? 'register' : 'login');
     
     if (isRegisterMode) {
       if (!validateRegisterForm()) return;
@@ -186,9 +197,52 @@ export const AuthPage = () => {
         console.error('Registration failed:', err);
       }
     } else {
-      if (!validateLoginForm()) return;
+      console.log('Login mode - about to validate form');
+      if (!validateLoginForm()) {
+        console.log('Validation failed, stopping form submission');
+        return;
+      }
+      console.log('Validation passed, proceeding with login');
       try {
         setError('');
+        
+        console.log('Login attempt with:', { email: loginData.email, password: loginData.password });
+        
+        // Check for admin credentials
+        console.log('Checking admin credentials...');
+        const isAdminEmail = loginData.email === 'balayginhawaAdmin123@gmail.com';
+        const isAdminPassword = loginData.password === 'Admin12345';
+        console.log('Admin email match:', isAdminEmail);
+        console.log('Admin password match:', isAdminPassword);
+        
+        if (isAdminEmail && isAdminPassword) {
+          // Create admin user session using the Firebase document data
+          const adminUser = {
+            uid: 'umHx9eeK065G2XoyONRB', // Use the actual Firebase document ID
+            email: 'balayginhawaAdmin123@gmail.com',
+            displayName: 'Admin',
+            role: 'admin',
+            firstName: 'Admin',
+            lastName: 'User',
+            createdAt: new Date('2025-09-18T20:31:21.000Z'), // From your Firebase document
+            lastLogin: new Date() // Update to current time
+          };
+          
+          console.log('Admin login successful, user object:', adminUser);
+          
+          // Store admin session in localStorage
+          localStorage.setItem('adminUser', JSON.stringify(adminUser));
+          localStorage.setItem('isAdminAuthenticated', 'true');
+          
+          console.log('Admin session stored, redirecting to admin dashboard...');
+          
+          // Use window.location for immediate redirect to bypass any other navigation logic
+          window.location.href = '/admin/dashboard';
+          return;
+        } else {
+          console.log('Not admin credentials, proceeding with regular login...');
+        }
+        
         await login(loginData);
         // Redirect to landing page after successful login
         navigate('/', { replace: true });

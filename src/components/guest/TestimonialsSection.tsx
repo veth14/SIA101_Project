@@ -15,8 +15,8 @@ interface TestimonialsSectionProps {
 
 export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testimonials, currentTestimonial }) => {
   return (
-    <section className="w-full py-12 bg-gradient-to-br from-heritage-green/5 via-white to-heritage-light/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="w-full py-16 bg-gradient-to-br from-heritage-green/5 via-white to-heritage-light/20">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
         {/* Section Header */}
         <div className="text-center mb-10">
           <div className="inline-block mb-6">
@@ -40,10 +40,10 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testim
           >
             {testimonials.map((testimonial) => (
               <div key={testimonial.id} className="w-full flex-none px-4">
-                <div className="max-w-4xl mx-auto">
-                  <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 border border-heritage-light/20">
+                <div className="max-w-3xl mx-auto">
+                  <div className="bg-white rounded-2xl shadow-lg p-8 border border-heritage-light/20">
                     {/* Rating Stars */}
-                    <div className="flex justify-center mb-8">
+                    <div className="flex justify-center mb-6">
                       <div className="flex space-x-1">
                         {[...Array(testimonial.rating)].map((_, i) => (
                           <div key={i} className="w-8 h-8 bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-full flex items-center justify-center">
@@ -63,7 +63,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testim
                     </div>
 
                     {/* Testimonial Text */}
-                    <blockquote className="text-lg md:text-xl lg:text-2xl text-gray-700 font-medium text-center leading-relaxed mb-6 italic">
+                    <blockquote className="text-xl text-gray-700 font-medium text-center leading-relaxed mb-8 italic px-4">
                       "{testimonial.text}"
                     </blockquote>
 
@@ -75,6 +75,10 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testim
                             src={testimonial.image}
                             alt={testimonial.name}
                             className="w-12 h-12 rounded-full object-cover border-4 border-heritage-light shadow-lg"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=4ade80&color=ffffff&size=128`;
+                            }}
                           />
                           <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-heritage-green rounded-full flex items-center justify-center border-2 border-white">
                             <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -96,7 +100,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ testim
         </div>
 
         {/* Navigation Dots */}
-        <div className="flex justify-center mt-8 space-x-3">
+        <div className="flex justify-center mt-6 space-x-3">
           {testimonials.map((_, index) => (
             <button
               key={index}
