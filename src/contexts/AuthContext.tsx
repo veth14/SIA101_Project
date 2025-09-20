@@ -26,8 +26,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Check for admin session first
     const checkAdminSession = () => {
-      const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated');
-      const adminUserData = localStorage.getItem('adminUser');
+      const isAdminAuthenticated = sessionStorage.getItem('isAdminAuthenticated');
+      const adminUserData = sessionStorage.getItem('adminUser');
       
       if (isAdminAuthenticated === 'true' && adminUserData) {
         console.log('Admin session found, restoring...');
@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return true;
         } catch (error) {
           console.error('Error parsing admin user data:', error);
-          localStorage.removeItem('isAdminAuthenticated');
-          localStorage.removeItem('adminUser');
+          sessionStorage.removeItem('isAdminAuthenticated');
+          sessionStorage.removeItem('adminUser');
         }
       }
       return false;
@@ -259,12 +259,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       // Check if this is an admin session
-      const isAdminAuthenticated = localStorage.getItem('isAdminAuthenticated');
+      const isAdminAuthenticated = sessionStorage.getItem('isAdminAuthenticated');
       
       if (isAdminAuthenticated === 'true') {
-        // Admin logout - clear localStorage
-        localStorage.removeItem('isAdminAuthenticated');
-        localStorage.removeItem('adminUser');
+        // Admin logout - clear sessionStorage
+        sessionStorage.removeItem('isAdminAuthenticated');
+        sessionStorage.removeItem('adminUser');
         setState({
           user: null,
           isLoading: false,

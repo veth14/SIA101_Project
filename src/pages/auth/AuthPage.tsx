@@ -230,9 +230,9 @@ export const AuthPage = () => {
           
           console.log('Admin login successful, user object:', adminUser);
           
-          // Store admin session in localStorage
-          localStorage.setItem('adminUser', JSON.stringify(adminUser));
-          localStorage.setItem('isAdminAuthenticated', 'true');
+          // Store admin session in sessionStorage (will be cleared when browser/tab closes)
+          sessionStorage.setItem('adminUser', JSON.stringify(adminUser));
+          sessionStorage.setItem('isAdminAuthenticated', 'true');
           
           console.log('Admin session stored, redirecting to admin dashboard...');
           

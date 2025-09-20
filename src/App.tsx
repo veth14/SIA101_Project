@@ -13,7 +13,12 @@ import { AuthPage } from './pages/auth/AuthPage'
 import { NewProfilePage } from './pages/guest/NewProfilePage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminRoomsPage } from './pages/admin/AdminRoomsPage'
-import { AdminLayout } from './components/admin/AdminLayout'
+import { AdminLayout } from './layouts/AdminLayout'
+import { ReservationsPage } from './components/frontdesk/ReservationsPage'
+import { ItemsPage } from './components/inventory/ItemsPage'
+import { TransactionsPage } from './components/inventory/TransactionsPage'
+import { AnalyticsPage } from './components/analytics/AnalyticsPage'
+import { StaffPage } from './components/staff/StaffPage'
 
 // Import shared components
 import { Header } from './components/shared/navigation/Header'
@@ -73,7 +78,7 @@ function LoadingSpinner() {
                   path="/admin/dashboard" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
+                      <AdminLayout title="Dashboard">
                         <AdminDashboardPage />
                       </AdminLayout>
                     </ProtectedRoute>
@@ -83,8 +88,58 @@ function LoadingSpinner() {
                   path="/admin/rooms" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
+                      <AdminLayout title="Room Management">
                         <AdminRoomsPage />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/frontdesk" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminLayout title="Front Desk">
+                        <ReservationsPage />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/inventory" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminLayout title="Inventory Management">
+                        <ItemsPage />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/transactions" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminLayout title="Stock Transactions">
+                        <TransactionsPage />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/analytics" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminLayout title="Analytics & Reports">
+                        <AnalyticsPage />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/staff" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminLayout title="Staff Management">
+                        <StaffPage />
                       </AdminLayout>
                     </ProtectedRoute>
                   } 
