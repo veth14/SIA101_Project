@@ -2,7 +2,7 @@ import React from 'react';
 
 const SystemHealthCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 h-full">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 h-full min-h-[400px]">
       <div className="flex items-center space-x-3 mb-6">
         <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
