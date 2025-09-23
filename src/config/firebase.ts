@@ -1,9 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { 
-  initializeFirestore,
-  memoryLocalCache
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
 import type { Analytics } from 'firebase/analytics';
@@ -23,9 +20,7 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize services
 export const auth = getAuth(app);
-export const db = initializeFirestore(app, {
-  localCache: memoryLocalCache()
-});
+export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Initialize Analytics only in browser environment

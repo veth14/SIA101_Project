@@ -88,7 +88,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   };
 
   const getActionButtons = (reservation: Reservation) => (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center justify-center space-x-2">
       {reservation.status === 'confirmed' && (
         <button
           onClick={(e) => {
@@ -164,10 +164,10 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Guest</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Room</th>
               <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Dates</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Payment</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Payment</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200/50">
@@ -210,31 +210,68 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                 <td className="px-6 py-4">
                   <div className="space-y-1">
                     <div className="text-sm font-semibold text-gray-900">
-                      {new Date(reservation.checkIn).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })} - {new Date(reservation.checkOut).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })}
+                      {(() => {
+                        try {
+                          if (!reservation.checkIn || !reservation.checkOut) return 'Invalid Date - Invalid Date';
+                          
+                          const checkInDate = new Date(reservation.checkIn);
+                          const checkOutDate = new Date(reservation.checkOut);
+                          
+                          if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+                            return 'Invalid Date - Invalid Date';
+                          }
+                          
+                          // Format dates with consistent padding
+                          const formatDate = (date: Date) => {
+                            const month = date.toLocaleDateString('en-US', { month: 'short' });
+                            const day = date.getDate().toString().padStart(2, '0');
+                            return `${month} ${day}`;
+                          };
+                          
+                          const checkInStr = formatDate(checkInDate);
+                          const checkOutStr = formatDate(checkOutDate);
+                          
+                          return `${checkInStr} - ${checkOutStr}`;
+                        } catch (error) {
+                          return 'Invalid Date - Invalid Date';
+                        }
+                      })()}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {Math.ceil((new Date(reservation.checkOut).getTime() - new Date(reservation.checkIn).getTime()) / (1000 * 3600 * 24))} nights
+                      {(() => {
+                        try {
+                          if (!reservation.checkIn || !reservation.checkOut) return 'N/A nights';
+                          
+                          const checkInDate = new Date(reservation.checkIn);
+                          const checkOutDate = new Date(reservation.checkOut);
+                          
+                          if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+                            return 'N/A nights';
+                          }
+                          
+                          const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                          const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                          
+                          return nights > 0 ? `${nights} nights` : '1 night';
+                        } catch (error) {
+                          return 'N/A nights';
+                        }
+                      })()}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   {getStatusBadge(reservation.status)}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   {getPaymentBadge(reservation.paymentStatus)}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-right">
                   <div className="font-bold text-gray-900 text-lg">
                     ₱{reservation.totalAmount.toLocaleString()}
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   {getActionButtons(reservation)}
                 </td>
               </tr>

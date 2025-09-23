@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { useAuth } from '../../contexts/AuthContext';
 import { CheckInModal } from './CheckInModal';
 import { WalkInModal } from './WalkInModal';
 import { ReservationDetailsModal } from './ReservationDetailsModal';
 import { EditReservationModal } from './EditReservationModal';
 import { ConfirmDialog } from '../admin/ConfirmDialog';
-import { sampleReservations } from '../../data/sampleReservations';
 import FrontDeskStatsCard from './FrontDeskStatsCard';
 import QuickActionsPanel from './QuickActionsPanel';
 import FiltersPanel from './FiltersPanel';
@@ -26,8 +28,9 @@ interface Reservation {
 }
 
 export const ReservationsPage = () => {
-  const [reservations, setReservations] = useState<Reservation[]>(sampleReservations);
-  const [filteredReservations, setFilteredReservations] = useState<Reservation[]>(sampleReservations);
+  const { user } = useAuth();
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
@@ -38,6 +41,167 @@ export const ReservationsPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [reservationToCancel, setReservationToCancel] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch reservations from Firebase
+  useEffect(() => {
+    if (user) {
+      fetchReservations();
+    } else {
+      console.log('No user authenticated, skipping fetch');
+      setLoading(false);
+    }
+  }, [user]);
+
+  const fetchReservations = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching bookings from Firebase...');
+      console.log('Current user:', user?.email, 'Role:', user?.role);
+      const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
+      console.log('✅ Bookings snapshot received:', bookingsSnapshot.size, 'documents');
+      
+      const bookingsData = bookingsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Processing booking document:', doc.id);
+        console.log('📋 All fields in this booking:', Object.keys(data));
+        console.log('📋 Full booking data:', data);
+        
+        // Helper function to parse dates properly
+        const parseDate = (dateField: any, fieldName: string) => {
+          console.log(`🔍 Parsing ${fieldName}:`, dateField, 'Type:', typeof dateField);
+          
+          try {
+            if (!dateField) {
+              console.log(`❌ ${fieldName} is empty/null`);
+              return '';
+            }
+            
+            // Handle Firestore Timestamp
+            if (dateField?.toDate) {
+              const result = dateField.toDate().toISOString().split('T')[0];
+              console.log(`✅ ${fieldName} parsed from Timestamp:`, result);
+              return result;
+            }
+            
+            // Handle string dates in various formats
+            if (typeof dateField === 'string') {
+              // Try different date formats
+              const formats = [
+                dateField, // Original format
+                dateField.replace(/\//g, '-'), // Replace / with -
+                dateField.replace(/\./g, '-'), // Replace . with -
+              ];
+              
+              for (const format of formats) {
+                const date = new Date(format);
+                if (!isNaN(date.getTime())) {
+                  const result = date.toISOString().split('T')[0];
+                  console.log(`✅ ${fieldName} parsed from string "${format}":`, result);
+                  return result;
+                }
+              }
+              
+              console.log(`❌ ${fieldName} string could not be parsed:`, dateField);
+            }
+            
+            // Handle Date objects
+            if (dateField instanceof Date && !isNaN(dateField.getTime())) {
+              const result = dateField.toISOString().split('T')[0];
+              console.log(`✅ ${fieldName} parsed from Date object:`, result);
+              return result;
+            }
+            
+            // Handle numbers (timestamps)
+            if (typeof dateField === 'number') {
+              const date = new Date(dateField);
+              if (!isNaN(date.getTime())) {
+                const result = date.toISOString().split('T')[0];
+                console.log(`✅ ${fieldName} parsed from timestamp:`, result);
+                return result;
+              }
+            }
+            
+            console.log(`❌ ${fieldName} could not be parsed, unknown format:`, dateField);
+            return '';
+          } catch (error) {
+            console.log(`❌ ${fieldName} parsing error:`, error);
+            return '';
+          }
+        };
+
+        // Helper function to format room type properly
+        const formatRoomType = (roomType: string) => {
+          if (!roomType) return 'Standard Room';
+          
+          // Convert room type to proper format
+          const roomTypeMap: { [key: string]: string } = {
+            'deluxe': 'Deluxe Room',
+            'standard': 'Standard Room', 
+            'family': 'Family Room',
+            'suite': 'Suite Room',
+            'presidential': 'Presidential Suite',
+            'executive': 'Executive Room'
+          };
+          
+          const lowerType = roomType.toLowerCase();
+          return roomTypeMap[lowerType] || roomType;
+        };
+
+        return {
+          id: doc.id,
+          guestName: data.guestName || data.userName || 'Unknown Guest',
+          email: data.email || data.userEmail || '',
+          phone: data.phone || data.userPhone || '',
+          roomType: formatRoomType(data.roomType || 'standard'),
+          roomNumber: data.roomNumber || `Room ${Math.floor(Math.random() * 300) + 101}`,
+          checkIn: parseDate(
+            data.checkInDate || data.checkIn || data.check_in || data.checkin || data.startDate || data.arrival,
+            'checkInDate'
+          ),
+          checkOut: parseDate(
+            data.checkOutDate || data.checkOut || data.check_out || data.checkout || data.endDate || data.departure,
+            'checkOutDate'
+          ),
+          guests: data.guests || 1,
+          status: data.status === 'confirmed' ? 'confirmed' : 
+                 data.status === 'checked-in' ? 'checked-in' :
+                 data.status === 'checked-out' ? 'checked-out' :
+                 data.status === 'cancelled' ? 'cancelled' : 'confirmed',
+          totalAmount: data.totalAmount || 0,
+          paymentStatus: data.paymentStatus === 'paid' ? 'paid' : 
+                        data.paymentStatus === 'refunded' ? 'refunded' : 'pending'
+        } as Reservation;
+      });
+      
+      console.log('Processed bookings data:', bookingsData);
+      setReservations(bookingsData);
+      setFilteredReservations(bookingsData);
+    } catch (error: any) {
+      console.error('Error fetching reservations:', error);
+      
+      // More detailed error logging
+      if (error?.code === 'permission-denied') {
+        console.error('Permission denied - check Firestore security rules');
+        console.error('Current user email:', user?.email);
+        console.error('Current user role:', user?.role);
+        console.error('Suggestion: Make sure you are logged in as: balayginhawaAdmin123@gmail.com');
+        alert(`Permission denied. Current user: ${user?.email || 'Not logged in'}\n\nPlease log in as: balayginhawaAdmin123@gmail.com`);
+      } else if (error?.code === 'unavailable') {
+        console.error('Firestore is unavailable');
+        alert('Database is currently unavailable. Please try again later.');
+      } else {
+        console.error('Unknown error:', error?.message || error);
+        alert('Failed to load reservations. Please try again.');
+      }
+      
+      // Keep empty arrays on error
+      setReservations([]);
+      setFilteredReservations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -86,21 +250,47 @@ export const ReservationsPage = () => {
     setShowCheckInModal(true);
   };
 
-  const handleCheckOut = (reservation: Reservation) => {
-    setReservations(prev =>
-      prev.map(r =>
-        r.id === reservation.id
-          ? { ...r, status: 'checked-out' as const }
-          : r
-      )
-    );
-    filterReservations(searchQuery, statusFilter, dateRange);
+  const handleCheckOut = async (reservation: Reservation) => {
+    try {
+      // Update in Firebase
+      await updateDoc(doc(db, 'bookings', reservation.id), {
+        status: 'checked-out',
+        updatedAt: serverTimestamp()
+      });
+
+      // Update local state
+      setReservations(prev =>
+        prev.map(r =>
+          r.id === reservation.id
+            ? { ...r, status: 'checked-out' as const }
+            : r
+        )
+      );
+      filterReservations(searchQuery, statusFilter, dateRange);
+    } catch (error) {
+      console.error('Error checking out reservation:', error);
+      alert('Failed to check out reservation. Please try again.');
+    }
   };
 
-  const handleWalkInBooking = (newBooking: any) => {
-    const updatedReservations = [...reservations, newBooking];
-    setReservations(updatedReservations);
-    filterReservations(searchQuery, statusFilter, dateRange);
+  const handleWalkInBooking = async (newBooking: any) => {
+    try {
+      // Add to Firebase
+      const docRef = await addDoc(collection(db, 'bookings'), {
+        ...newBooking,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      // Add to local state with the new ID
+      const bookingWithId = { ...newBooking, id: docRef.id };
+      const updatedReservations = [...reservations, bookingWithId];
+      setReservations(updatedReservations);
+      filterReservations(searchQuery, statusFilter, dateRange);
+    } catch (error) {
+      console.error('Error adding walk-in booking:', error);
+      alert('Failed to create walk-in booking. Please try again.');
+    }
   };
 
   const handleEditReservation = (reservation: Reservation) => {
@@ -108,15 +298,37 @@ export const ReservationsPage = () => {
     setShowEditModal(true);
   };
 
-  const handleSaveReservation = (updatedReservation: Reservation) => {
-    setReservations(prev =>
-      prev.map(r =>
-        r.id === updatedReservation.id ? updatedReservation : r
-      )
-    );
-    filterReservations(searchQuery, statusFilter, dateRange);
-    setShowEditModal(false);
-    setSelectedReservation(null);
+  const handleSaveReservation = async (updatedReservation: Reservation) => {
+    try {
+      // Update in Firebase
+      await updateDoc(doc(db, 'bookings', updatedReservation.id), {
+        guestName: updatedReservation.guestName,
+        email: updatedReservation.email,
+        phone: updatedReservation.phone,
+        roomType: updatedReservation.roomType,
+        roomNumber: updatedReservation.roomNumber,
+        checkInDate: updatedReservation.checkIn,
+        checkOutDate: updatedReservation.checkOut,
+        guests: updatedReservation.guests,
+        status: updatedReservation.status,
+        totalAmount: updatedReservation.totalAmount,
+        paymentStatus: updatedReservation.paymentStatus,
+        updatedAt: serverTimestamp()
+      });
+
+      // Update local state
+      setReservations(prev =>
+        prev.map(r =>
+          r.id === updatedReservation.id ? updatedReservation : r
+        )
+      );
+      filterReservations(searchQuery, statusFilter, dateRange);
+      setShowEditModal(false);
+      setSelectedReservation(null);
+    } catch (error) {
+      console.error('Error updating reservation:', error);
+      alert('Failed to update reservation. Please try again.');
+    }
   };
 
   const handleCancelReservation = (reservationId: string) => {
@@ -124,16 +336,28 @@ export const ReservationsPage = () => {
     setShowCancelDialog(true);
   };
 
-  const confirmCancelReservation = () => {
+  const confirmCancelReservation = async () => {
     if (reservationToCancel) {
-      setReservations(prev =>
-        prev.map(r =>
-          r.id === reservationToCancel
-            ? { ...r, status: 'cancelled' as const }
-            : r
-        )
-      );
-      filterReservations(searchQuery, statusFilter, dateRange);
+      try {
+        // Update in Firebase
+        await updateDoc(doc(db, 'bookings', reservationToCancel), {
+          status: 'cancelled',
+          updatedAt: serverTimestamp()
+        });
+
+        // Update local state
+        setReservations(prev =>
+          prev.map(r =>
+            r.id === reservationToCancel
+              ? { ...r, status: 'cancelled' as const }
+              : r
+          )
+        );
+        filterReservations(searchQuery, statusFilter, dateRange);
+      } catch (error) {
+        console.error('Error cancelling reservation:', error);
+        alert('Failed to cancel reservation. Please try again.');
+      }
     }
     setShowCancelDialog(false);
     setReservationToCancel(null);
@@ -265,18 +489,11 @@ export const ReservationsPage = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Quick Actions Panel */}
-          <div className="xl:col-span-1">
+          <div className="lg:col-span-4 xl:col-span-3">
             <QuickActionsPanel
               onWalkInBooking={() => setShowWalkInModal(true)}
-              onQuickCheckIn={() => {
-                // Find first confirmed reservation for quick check-in
-                const confirmedReservation = reservations.find(r => r.status === 'confirmed');
-                if (confirmedReservation) {
-                  handleCheckIn(confirmedReservation);
-                }
-              }}
               onRoomStatus={() => {
                 // TODO: Implement room status view
                 console.log('Room status view');
@@ -289,7 +506,7 @@ export const ReservationsPage = () => {
           </div>
 
           {/* Filters Panel */}
-          <div className="xl:col-span-3">
+          <div className="lg:col-span-8 xl:col-span-9">
             <FiltersPanel
               searchQuery={searchQuery}
               statusFilter={statusFilter}
@@ -309,17 +526,44 @@ export const ReservationsPage = () => {
         </div>
 
         {/* Modern Reservations Table */}
-        <ModernReservationsTable
-          reservations={filteredReservations}
-          onRowClick={(reservation: Reservation) => {
-            setSelectedReservation(reservation);
-            setShowDetailsModal(true);
-          }}
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
-          onEdit={handleEditReservation}
-          onCancel={(reservation: Reservation) => handleCancelReservation(reservation.id)}
-        />
+        {!user ? (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Authentication Required</h3>
+              <p className="text-gray-600 mb-4">Please log in as an admin to access reservations.</p>
+              <button 
+                onClick={() => window.location.href = '/login'} 
+                className="bg-heritage-green text-white px-6 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        ) : loading ? (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <div className="flex items-center justify-center space-x-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-heritage-green"></div>
+              <p className="text-gray-600 font-medium">Loading reservations...</p>
+            </div>
+          </div>
+        ) : (
+          <ModernReservationsTable
+            reservations={filteredReservations}
+            onRowClick={(reservation: Reservation) => {
+              setSelectedReservation(reservation);
+              setShowDetailsModal(true);
+            }}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+            onEdit={handleEditReservation}
+            onCancel={(reservation: Reservation) => handleCancelReservation(reservation.id)}
+          />
+        )}
 
         {/* Check-in Modal */}
       {showCheckInModal && selectedReservation && (
@@ -330,15 +574,28 @@ export const ReservationsPage = () => {
             setSelectedReservation(null);
           }}
           reservation={selectedReservation}
-          onCheckIn={(updatedReservation) => {
-            setReservations(prev =>
-              prev.map(r =>
-                r.id === updatedReservation.id ? updatedReservation : r
-              )
-            );
-            filterReservations(searchQuery, statusFilter, dateRange);
-            setShowCheckInModal(false);
-            setSelectedReservation(null);
+          onCheckIn={async (updatedReservation) => {
+            try {
+              // Update in Firebase
+              await updateDoc(doc(db, 'bookings', updatedReservation.id), {
+                status: 'checked-in',
+                roomNumber: updatedReservation.roomNumber,
+                updatedAt: serverTimestamp()
+              });
+
+              // Update local state
+              setReservations(prev =>
+                prev.map(r =>
+                  r.id === updatedReservation.id ? updatedReservation : r
+                )
+              );
+              filterReservations(searchQuery, statusFilter, dateRange);
+              setShowCheckInModal(false);
+              setSelectedReservation(null);
+            } catch (error) {
+              console.error('Error checking in reservation:', error);
+              alert('Failed to check in reservation. Please try again.');
+            }
           }}
         />
       )}

@@ -1,6 +1,18 @@
 import React from 'react';
 
-const SystemHealthCard: React.FC = () => {
+interface SystemHealthProps {
+  activeStaff?: number;
+  availableRooms?: number;
+  totalRooms?: number;
+  lowStockItems?: number;
+}
+
+const SystemHealthCard: React.FC<SystemHealthProps> = ({ 
+  activeStaff = 12, 
+  availableRooms = 47, 
+  totalRooms = 50, 
+  lowStockItems = 3 
+}) => {
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 h-full min-h-[400px]">
       <div className="flex items-center space-x-3 mb-6">
@@ -36,7 +48,7 @@ const SystemHealthCard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-blue-600">12</span>
+            <span className="text-lg font-bold text-blue-600">{activeStaff}</span>
             <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">online</span>
           </div>
         </div>
@@ -50,7 +62,7 @@ const SystemHealthCard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-purple-600">3/10</span>
+            <span className="text-lg font-bold text-purple-600">{availableRooms}/{totalRooms}</span>
           </div>
         </div>
 
@@ -63,7 +75,7 @@ const SystemHealthCard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">3 Items low</span>
+            <span className="text-sm font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-full">{lowStockItems} Items low</span>
           </div>
         </div>
 

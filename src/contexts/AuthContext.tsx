@@ -24,30 +24,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    // Check for admin session first
-    const checkAdminSession = () => {
+    // Check for admin session and authenticate with Firebase if needed
+    const checkAndAuthenticateAdmin = async () => {
       const isAdminAuthenticated = sessionStorage.getItem('isAdminAuthenticated');
       const adminUserData = sessionStorage.getItem('adminUser');
       
       if (isAdminAuthenticated === 'true' && adminUserData) {
-        console.log('Admin session found, restoring...');
+        console.log('Admin session found, authenticating with Firebase...');
         try {
           const adminUser = JSON.parse(adminUserData);
           console.log('Admin user found:', adminUser);
-          setState({
-            user: {
-              ...adminUser,
-              createdAt: new Date(),
-              lastLogin: new Date(),
-              isEnabled: true
-            },
-            isLoading: false,
-            error: null
-          });
-          console.log('Admin session restored successfully');
-          return true;
+          
+          // Authenticate with Firebase Auth using admin credentials
+          if (adminUser.email === 'balayginhawaAdmin123@gmail.com') {
+            try {
+              // Try to sign in with Firebase Auth
+              await signInWithEmailAndPassword(auth, adminUser.email, 'Admin12345');
+              console.log('Admin authenticated with Firebase Auth successfully');
+              // The onAuthStateChanged listener will handle setting the user state
+              return true;
+            } catch (firebaseError) {
+              console.log('Firebase Auth failed, using session data:', firebaseError);
+              // Fallback to session data if Firebase Auth fails
+              setState({
+                user: {
+                  ...adminUser,
+                  createdAt: new Date(),
+                  lastLogin: new Date(),
+                  isEnabled: true
+                },
+                isLoading: false,
+                error: null
+              });
+              console.log('Admin session restored from sessionStorage');
+              
+              // Redirect admin to dashboard
+              navigate('/admin/dashboard');
+              return true;
+            }
+          }
         } catch (error) {
-          console.error('Error parsing admin user data:', error);
+          console.error('Error processing admin session:', error);
           sessionStorage.removeItem('isAdminAuthenticated');
           sessionStorage.removeItem('adminUser');
         }
@@ -55,11 +72,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     };
 
-    // Check admin session first
-    if (checkAdminSession()) {
-      return;
-    }
+    // Always set up Firebase Auth listener
+    const unsubscribe = setupFirebaseAuthListener();
+    
+    // Check and authenticate admin session
+    checkAndAuthenticateAdmin();
+    
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
+  const setupFirebaseAuthListener = () => {
     // Set session persistence globally - user will be logged out when tab is closed
     setPersistence(auth, browserSessionPersistence).catch((error) => {
       console.error('Failed to set session persistence:', error);
@@ -73,7 +99,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const email = firebaseUser.email || '';
           
           // Admin emails (you can modify this list)
-          const adminEmails = ['admin@hotel.com', 'manager@hotel.com'];
+          const adminEmails = [
+            'admin@hotel.com', 
+            'manager@hotel.com',
+            'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
+          ];
           // Staff emails (you can modify this list)  
           const staffEmails = ['staff@hotel.com', 'reception@hotel.com'];
           
@@ -99,6 +129,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isLoading: false,
             error: null
           });
+
+          // Auto-redirect based on user role
+          if (userRole === 'admin') {
+            console.log('Admin user detected, redirecting to admin dashboard');
+            navigate('/admin/dashboard');
+          } else if (userRole === 'guest') {
+            console.log('Guest user detected, staying on current page or redirecting to guest area');
+            // Guests can stay on current page or be redirected to guest dashboard if needed
+          }
         } catch (error) {
           console.error('Error setting user data:', error);
           setState({
@@ -116,13 +155,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    return () => unsubscribe();
-  }, []);
+    return unsubscribe;
+  };
 
   const login = async ({ email, password }: LoginCredentials): Promise<void> => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Determine role and redirect
+      const email_lower = userCredential.user.email?.toLowerCase() || '';
+      const adminEmails = [
+        'admin@hotel.com', 
+        'manager@hotel.com',
+        'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
+      ];
+      
+      if (adminEmails.includes(email_lower)) {
+        console.log('Admin login detected, will redirect to admin dashboard');
+        // The onAuthStateChanged listener will handle the redirect
+      }
+      
       // Auth state listener will handle the rest
     } catch (error) {
       setState(prev => ({ 
@@ -148,7 +201,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Determine user role based on email
       let userRole: 'admin' | 'staff' | 'guest' = 'guest';
-      const adminEmails = ['admin@hotel.com', 'manager@hotel.com'];
+      const adminEmails = [
+        'admin@hotel.com', 
+        'manager@hotel.com',
+        'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
+      ];
       const staffEmails = ['staff@hotel.com', 'reception@hotel.com'];
       
       if (adminEmails.includes(email.toLowerCase())) {

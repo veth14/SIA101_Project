@@ -36,7 +36,7 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6 h-full">
       <div className="flex items-center space-x-3">
         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
