@@ -7,12 +7,11 @@ import { Topbar } from '../components/admin/Topbar';
 
 interface AdminLayoutProps {
   children: ReactNode;
-  title?: string;
 }
 
-export const AdminLayout = ({ children, title }: AdminLayoutProps) => {
+export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { userData, loading } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (loading) {
     return (
@@ -34,21 +33,15 @@ export const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     <div className="h-screen flex overflow-hidden bg-heritage-light">
       {/* Sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <Sidebar 
-          isCollapsed={sidebarCollapsed} 
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-        />
+        <Sidebar isMobile={false} />
       </div>
 
       {/* Mobile sidebar overlay */}
-      {sidebarCollapsed && (
+      {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarCollapsed(false)}></div>
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setMobileMenuOpen(false)}></div>
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-            <Sidebar 
-              isCollapsed={false} 
-              onToggle={() => setSidebarCollapsed(false)} 
-            />
+            <Sidebar isMobile={true} />
           </div>
         </div>
       )}
@@ -56,8 +49,7 @@ export const AdminLayout = ({ children, title }: AdminLayoutProps) => {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <Topbar 
-          onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-          title={title}
+          onSidebarToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
         />
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
           <div className="py-6">

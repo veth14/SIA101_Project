@@ -3,7 +3,7 @@ import { ReservationsPage } from '../../components/frontdesk/ReservationsPage';
 
 export default function FrontDeskPage() {
   return (
-    <AdminLayout title="Front Desk">
+    <AdminLayout>
       <ReservationsPage />
     </AdminLayout>
   );

@@ -3,7 +3,7 @@ import { TransactionsPage } from '../../components/inventory/TransactionsPage';
 
 export default function AdminTransactionsPage() {
   return (
-    <AdminLayout title="Stock Transactions">
+    <AdminLayout>
       <TransactionsPage />
     </AdminLayout>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
@@ -15,14 +15,65 @@ interface SearchResult {
   href: string;
 }
 
-export const Topbar = ({ onSidebarToggle, title = 'Dashboard' }: TopbarProps) => {
+// Page title and subtitle mapping
+const pageInfo: Record<string, { title: string; subtitle: string }> = {
+  '/admin/dashboard': {
+    title: 'Dashboard',
+    subtitle: 'Overview of hotel operations and quick stats'
+  },
+  '/admin/income': {
+    title: 'Income',
+    subtitle: 'Track hotel revenue and bookings'
+  },
+  '/admin/expenses': {
+    title: 'Expenses',
+    subtitle: 'Monitor hotel operating costs'
+  },
+  '/admin/payroll': {
+    title: 'Payroll',
+    subtitle: 'Manage staff salaries and compensation'
+  },
+  '/admin/reports': {
+    title: 'Reports',
+    subtitle: 'Generate and review financial documents'
+  },
+  '/admin/frontdesk': {
+    title: 'Front Desk',
+    subtitle: 'Manage reservations and guest check-ins'
+  },
+  '/admin/rooms': {
+    title: 'Room Management',
+    subtitle: 'Monitor room status and availability'
+  },
+  '/admin/inventory': {
+    title: 'Inventory',
+    subtitle: 'Manage hotel inventory and supplies'
+  },
+  '/admin/transactions': {
+    title: 'Transactions',
+    subtitle: 'View stock transactions and logs'
+  },
+  '/admin/staff': {
+    title: 'Staff Management',
+    subtitle: 'Manage hotel staff and schedules'
+  }
+};
+
+export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   const { userData, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Get current page info
+  const currentPageInfo = pageInfo[location.pathname] || {
+    title: 'Dashboard',
+    subtitle: 'Overview of hotel operations and quick stats'
+  };
 
   // Mock search data - in real app, this would come from your API
   const mockSearchData: SearchResult[] = [
@@ -123,8 +174,8 @@ export const Topbar = ({ onSidebarToggle, title = 'Dashboard' }: TopbarProps) =>
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800 font-serif tracking-wide">{title}</h1>
-              <p className="text-sm text-heritage-neutral font-medium">Hotel Management System</p>
+              <h1 className="text-2xl font-bold text-gray-800 font-serif tracking-wide">{currentPageInfo.title}</h1>
+              <p className="text-sm text-heritage-neutral font-medium">{currentPageInfo.subtitle}</p>
             </div>
           </div>
         </div>

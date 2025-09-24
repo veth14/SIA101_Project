@@ -3,7 +3,7 @@ import { StaffPage } from '../../components/staff/StaffPage';
 
 export default function AdminStaffPage() {
   return (
-    <AdminLayout title="Staff Management">
+    <AdminLayout>
       <StaffPage />
     </AdminLayout>
   );

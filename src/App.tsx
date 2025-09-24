@@ -17,8 +17,11 @@ import { AdminLayout } from './layouts/AdminLayout'
 import { ReservationsPage } from './components/frontdesk/ReservationsPage'
 import { ItemsPage } from './components/inventory/ItemsPage'
 import { TransactionsPage } from './components/inventory/TransactionsPage'
-import { AnalyticsPage } from './components/analytics/AnalyticsPage'
 import { StaffPage } from './components/staff/StaffPage'
+import AdminIncomePage from './pages/admin/incomepage'
+import AdminExpensePage from './pages/admin/expensepage'
+import AdminPayrollPage from './pages/admin/payrollpage'
+import AdminReportsPage from './pages/admin/reportspage'
 
 // Import shared components
 import { Header } from './components/shared/navigation/Header'
@@ -78,7 +81,7 @@ function LoadingSpinner() {
                   path="/admin/dashboard" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Dashboard">
+                      <AdminLayout>
                         <AdminDashboardPage />
                       </AdminLayout>
                     </ProtectedRoute>
@@ -88,7 +91,7 @@ function LoadingSpinner() {
                   path="/admin/rooms" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Room Management">
+                      <AdminLayout>
                         <AdminRoomsPage />
                       </AdminLayout>
                     </ProtectedRoute>
@@ -98,7 +101,7 @@ function LoadingSpinner() {
                   path="/admin/frontdesk" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Front Desk">
+                      <AdminLayout>
                         <ReservationsPage />
                       </AdminLayout>
                     </ProtectedRoute>
@@ -108,7 +111,7 @@ function LoadingSpinner() {
                   path="/admin/inventory" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Inventory Management">
+                      <AdminLayout>
                         <ItemsPage />
                       </AdminLayout>
                     </ProtectedRoute>
@@ -118,19 +121,41 @@ function LoadingSpinner() {
                   path="/admin/transactions" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Stock Transactions">
+                      <AdminLayout>
                         <TransactionsPage />
                       </AdminLayout>
                     </ProtectedRoute>
                   } 
                 />
                 <Route 
-                  path="/admin/analytics" 
+                  path="/admin/income" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Analytics & Reports">
-                        <AnalyticsPage />
-                      </AdminLayout>
+                      <AdminIncomePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/expenses" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminExpensePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/payroll" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminPayrollPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/reports" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminReportsPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -138,7 +163,7 @@ function LoadingSpinner() {
                   path="/admin/staff" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout title="Staff Management">
+                      <AdminLayout>
                         <StaffPage />
                       </AdminLayout>
                     </ProtectedRoute>
