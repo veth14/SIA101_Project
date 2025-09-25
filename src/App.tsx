@@ -6,22 +6,35 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 // Import pages
 import { LandingPage } from './pages/guest/landing/LandingPage'
 import { BookingPage } from './pages/guest/BookingPage'
-import { PaymentPage } from './pages/guest/PaymentPage'
 import { RoomsPage } from './pages/guest/RoomsPage'
 import { AmenitiesPage } from './pages/guest/AmenitiesPage'
 import { AuthPage } from './pages/auth/AuthPage'
 import { NewProfilePage } from './pages/guest/NewProfilePage'
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
-import { AdminRoomsPage } from './pages/admin/AdminRoomsPage'
+import { PaymentPage } from './pages/guest/PaymentPage'
+import { AdminDashboardPage } from './pages/admin/Dashboard/AdminDashboardPage'
+import AdminRoomsPage from './pages/admin/Front-Desk/AdminRoomsPage'
 import { AdminLayout } from './layouts/AdminLayout'
-import { ReservationsPage } from './components/frontdesk/ReservationsPage'
-import { ItemsPage } from './components/inventory/ItemsPage'
-import { TransactionsPage } from './components/inventory/TransactionsPage'
-import { StaffPage } from './components/staff/StaffPage'
-import AdminIncomePage from './pages/admin/incomepage'
-import AdminExpensePage from './pages/admin/expensepage'
-import AdminPayrollPage from './pages/admin/payrollpage'
-import AdminReportsPage from './pages/admin/reportspage'
+import FrontDeskPage from './pages/admin/Front-Desk/frontdesk'
+import AdminLostFoundPage from './pages/admin/Front-Desk/lostfoundpage'
+import AdminInventoryItemsPage from './pages/admin/Inventory/invitems'
+import AdminInventoryAnalyticsPage from './pages/admin/Inventory/invanalytics'
+import AdminInventoryDashboardPage from './pages/admin/Inventory/invdashboard'
+import AdminDepartmentsPage from './pages/admin/Inventory/invdepartments'
+import AdminProcurementPage from './pages/admin/Inventory/procurement'
+import AdminRequisitionsPage from './pages/admin/Inventory/requisitions'
+import AdminSuppliersPage from './pages/admin/Inventory/suppliers'
+import AdminIncomePage from './pages/admin/Finances/incomepage'
+import AdminExpensePage from './pages/admin/Finances/expensepage'
+import AdminPayrollPage from './pages/admin/Finances/payrollpage'
+import AdminReportsPage from './pages/admin/Finances/reportspage'
+
+// Import maintenance pages
+import AdminMaintenanceOverviewPage from './pages/admin/Maintenance/maintenance-overview'
+import AdminManageStaffPage from './pages/admin/Maintenance/manage-staff'
+import AdminStaffSchedulesPage from './pages/admin/Maintenance/staff-schedules'
+import AdminOnDutyStaffPage from './pages/admin/Maintenance/on-duty-staff'
+import AdminTicketsTasksPage from './pages/admin/Maintenance/tickets-tasks'
+import AdminArchivePage from './pages/admin/Maintenance/archive'
 
 // Import shared components
 import { Header } from './components/shared/navigation/Header'
@@ -91,9 +104,7 @@ function LoadingSpinner() {
                   path="/admin/rooms" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
-                        <AdminRoomsPage />
-                      </AdminLayout>
+                      <AdminRoomsPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -101,9 +112,15 @@ function LoadingSpinner() {
                   path="/admin/frontdesk" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
-                        <ReservationsPage />
-                      </AdminLayout>
+                      <FrontDeskPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/lostfound" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminLostFoundPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -111,19 +128,55 @@ function LoadingSpinner() {
                   path="/admin/inventory" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
-                        <ItemsPage />
-                      </AdminLayout>
+                      <AdminInventoryItemsPage />
                     </ProtectedRoute>
                   } 
                 />
                 <Route 
-                  path="/admin/transactions" 
+                  path="/admin/inventory/analytics" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
-                        <TransactionsPage />
-                      </AdminLayout>
+                      <AdminInventoryAnalyticsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/inventory/dashboard" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminInventoryDashboardPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/inventory/procurement" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminProcurementPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/inventory/requisitions" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminRequisitionsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/inventory/suppliers" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminSuppliersPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/inventory/departments" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminDepartmentsPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -159,16 +212,57 @@ function LoadingSpinner() {
                     </ProtectedRoute>
                   } 
                 />
+                
+                {/* Maintenance Routes */}
                 <Route 
-                  path="/admin/staff" 
+                  path="/admin/maintenance" 
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminLayout>
-                        <StaffPage />
-                      </AdminLayout>
+                      <AdminMaintenanceOverviewPage />
                     </ProtectedRoute>
                   } 
                 />
+                <Route 
+                  path="/admin/manage-staff" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminManageStaffPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/staff-schedules" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminStaffSchedulesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/on-duty-staff" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminOnDutyStaffPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/tickets-tasks" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminTicketsTasksPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/archive" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminArchivePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
                 <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

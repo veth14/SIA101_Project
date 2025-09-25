@@ -41,8 +41,25 @@ export const ExpensePage = () => {
 
   const maxValue = Math.max(...chartData.flatMap(item => [item.income, item.expenses]));
   return (
-    <div className="min-h-screen bg-[#FBF0E4] p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-heritage-light">
+      {/* Light Floating Background Elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Subtle Light Orbs */}
+        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-heritage-green/5 to-emerald-100/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
+        <div className="absolute top-32 right-16 w-80 h-80 bg-gradient-to-r from-blue-100/20 to-indigo-100/20 rounded-full blur-3xl animate-pulse delay-1000 opacity-25"></div>
+        <div className="absolute bottom-16 left-1/4 w-72 h-72 bg-gradient-to-r from-heritage-light/10 to-heritage-neutral/10 rounded-full blur-3xl animate-pulse delay-2000 opacity-20"></div>
+        
+        {/* Light Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(134, 134, 134, 0.1) 1px, transparent 0)',
+            backgroundSize: '50px 50px'
+          }}></div>
+        </div>
+      </div>
+
+      {/* Main Content Container */}
+      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         {/* Header */}
         <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>

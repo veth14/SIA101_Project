@@ -30,7 +30,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-heritage-light">
+    <div className="h-screen flex overflow-hidden">
       {/* Sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
         <Sidebar isMobile={false} />
@@ -52,11 +52,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           onSidebarToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
         />
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {children}
-            </div>
-          </div>
+          {children}
         </main>
       </div>
     </div>
