@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ProcurementHeader from './ProcurementHeader';
 
 interface PurchaseOrder {
   id: string;
@@ -195,48 +196,7 @@ const ProcurementPage: React.FC = () => {
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
-          
-          <div className="relative p-10">
-            <div className="flex items-center justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="relative group">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
-                      <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                      </svg>
-                    </div>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                      Procurement
-                    </h1>
-                    <p className="text-xl text-gray-700 font-medium tracking-wide">
-                      Manage purchase orders and procurement
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="relative group">
-                  <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 shadow-xl group-hover:scale-105 transition-all duration-500">
-                    <div className="relative">
-                      <p className="text-4xl font-black bg-gradient-to-r from-[#82A33D] to-green-600 bg-clip-text text-transparent drop-shadow-sm">
-                        {filteredOrders.length}
-                      </p>
-                      <p className="text-gray-700 mt-2 font-semibold tracking-wide">Purchase Orders</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProcurementHeader />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import InventoryAnalyticsHeader from './InventoryAnalyticsHeader';
 
 interface AnalyticsData {
   totalValue: number;
@@ -151,60 +152,7 @@ export default function InventoryAnalyticsPage() {
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
-          
-          <div className="relative p-10">
-            <div className="flex items-center justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="relative group">
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
-                      <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                      Inventory Analytics
-                    </h1>
-                    <p className="text-xl text-gray-700 font-medium tracking-wide">
-                      Comprehensive inventory reports and performance insights
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="relative group">
-                  <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 shadow-xl group-hover:scale-105 transition-all duration-500">
-                    <div className="relative flex flex-col items-end space-y-4">
-                      <div className="flex space-x-3">
-                        <select
-                          value={selectedPeriod}
-                          onChange={(e) => setSelectedPeriod(e.target.value)}
-                          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-heritage-green focus:border-transparent bg-white/80"
-                        >
-                          <option value="weekly">Weekly</option>
-                          <option value="monthly">Monthly</option>
-                          <option value="quarterly">Quarterly</option>
-                          <option value="yearly">Yearly</option>
-                        </select>
-                        <button className="px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors">
-                          Export Report
-                        </button>
-                      </div>
-                      <p className="text-gray-700 font-semibold tracking-wide">Analytics Controls</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <InventoryAnalyticsHeader />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
