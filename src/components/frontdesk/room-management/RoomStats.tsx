@@ -1,77 +1,119 @@
+/**
+ * RoomStats Component
+ * 
+ * Premium modern statistics cards with beautiful gradients and animations.
+ * Provides an engaging overview of room management statistics.
+ */
+
 import React from 'react';
 
+/**
+ * Statistics component for Room Management dashboard
+ */
 const RoomStats: React.FC = () => {
-  const stats = [
+  const statsData = [
     {
-      title: "Total Rooms",
-      value: "50",
-      change: "+2 this month",
-      color: "bg-gradient-to-r from-blue-500 to-blue-600",
-      icon: (
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      )
+      title: 'Total Rooms',
+      value: 50,
+      icon: '🏨',
+      color: 'blue' as const,
+      trend: { value: 2, isPositive: true }
     },
     {
-      title: "Available",
-      value: "32",
-      change: "64% occupancy",
-      color: "bg-gradient-to-r from-emerald-500 to-emerald-600",
-      icon: (
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
+      title: 'Available',
+      value: 32,
+      icon: '✅',
+      color: 'green' as const,
+      trend: { value: 64, isPositive: true }
     },
     {
-      title: "Occupied",
-      value: "18",
-      change: "36% capacity",
-      color: "bg-gradient-to-r from-orange-500 to-orange-600",
-      icon: (
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-        </svg>
-      )
+      title: 'Occupied',
+      value: 18,
+      icon: '👥',
+      color: 'orange' as const,
+      trend: { value: 36, isPositive: true }
     },
     {
-      title: "Maintenance",
-      value: "0",
-      change: "All operational",
-      color: "bg-gradient-to-r from-purple-500 to-purple-600",
-      icon: (
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      )
+      title: 'Maintenance',
+      value: 0,
+      icon: '🔧',
+      color: 'purple' as const,
+      trend: { value: 0, isPositive: true }
     }
   ];
 
+  const colorClasses = {
+    blue: {
+      bg: 'from-blue-500 to-blue-600',
+      icon: 'bg-blue-100 text-blue-600',
+      accent: 'bg-blue-50 border-blue-200'
+    },
+    green: {
+      bg: 'from-heritage-green to-emerald-600',
+      icon: 'bg-green-100 text-green-600',
+      accent: 'bg-green-50 border-green-200'
+    },
+    orange: {
+      bg: 'from-orange-500 to-orange-600',
+      icon: 'bg-orange-100 text-orange-600',
+      accent: 'bg-orange-50 border-orange-200'
+    },
+    purple: {
+      bg: 'from-purple-500 to-purple-600',
+      icon: 'bg-purple-100 text-purple-600',
+      accent: 'bg-purple-50 border-purple-200'
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats.map((stat, index) => (
-        <div key={index} className="relative group">
-          <div className={`absolute -inset-1 ${stat.color} rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-500`}></div>
-          <div className="relative bg-gradient-to-br from-white/95 to-gray-50/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 ${stat.color} rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                {stat.icon}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      {statsData.map((stat) => {
+        const currentColor = colorClasses[stat.color];
+        
+        return (
+          <div 
+            key={stat.title}
+            className="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 p-6 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+          >
+            {/* Background Gradient */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${currentColor.bg} opacity-5 rounded-2xl`}></div>
+            
+            {/* Floating Elements */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/20 to-transparent rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-white/10 to-transparent rounded-full translate-y-8 -translate-x-8 group-hover:scale-110 transition-transform duration-300"></div>
+            
+            <div className="relative">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 ${currentColor.icon} rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  <span className="text-2xl">{stat.icon}</span>
+                </div>
+                {stat.trend && (
+                  <div className={`flex items-center space-x-1 ${stat.trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d={stat.trend.isPositive 
+                        ? "M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z"
+                        : "M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 112 0v11.586l2.293-2.293a1 1 0 011.414 0z"
+                      } clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm font-semibold">{Math.abs(stat.trend.value)}%</span>
+                  </div>
+                )}
               </div>
+              
               <div>
-                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{stat.title}</p>
-                <div className="flex items-baseline space-x-2">
-                  <p className="text-3xl font-black text-gray-900">{stat.value}</p>
-                  <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    {stat.change}
-                  </span>
+                <p className="text-sm font-semibold text-gray-600 mb-2">{stat.title}</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</p>
+                <div className={`w-full ${currentColor.accent} rounded-full h-2 mt-3`}>
+                  <div 
+                    className={`bg-gradient-to-r ${currentColor.bg} h-2 rounded-full transition-all duration-1000 shadow-sm`}
+                    style={{ width: `${Math.min((stat.value / 50) * 100, 100)}%` }}
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

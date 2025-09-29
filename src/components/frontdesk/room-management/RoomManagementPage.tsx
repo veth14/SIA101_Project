@@ -1,10 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import RoomHeader from './RoomHeader';
 import RoomStats from './RoomStats';
 import RoomFilters from './RoomFilters';
 import RoomGrid from './RoomGrid';
 
 const RoomManagementPage: React.FC = () => {
+  // State for filtering
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [roomTypeFilter, setRoomTypeFilter] = useState('all');
+
+  // Handler functions for filters
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  const handleStatusChange = (status: string) => {
+    setStatusFilter(status);
+  };
+
+  const handleRoomTypeChange = (type: string) => {
+    setRoomTypeFilter(type);
+  };
+
+  const handleAddNew = () => {
+    console.log('Add new room clicked');
+    // TODO: Implement add new room functionality
+  };
+
   return (
     <div className="min-h-screen bg-heritage-light">
       {/* Light Floating Background Elements */}
@@ -27,8 +50,20 @@ const RoomManagementPage: React.FC = () => {
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         <RoomHeader />
         <RoomStats />
-        <RoomFilters />
-        <RoomGrid />
+        <RoomFilters
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          statusFilter={statusFilter}
+          onStatusChange={handleStatusChange}
+          roomTypeFilter={roomTypeFilter}
+          onRoomTypeChange={handleRoomTypeChange}
+          onAddNew={handleAddNew}
+        />
+        <RoomGrid
+          searchTerm={searchTerm}
+          statusFilter={statusFilter}
+          roomTypeFilter={roomTypeFilter}
+        />
       </div>
     </div>
   );
