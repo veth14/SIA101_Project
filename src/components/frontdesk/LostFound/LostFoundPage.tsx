@@ -5,32 +5,16 @@
  * Orchestrates all the modular components and manages the overall state.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import LostFoundHeader from './LostFoundHeader';
 import LostFoundStats from './LostFoundStats';
-import LostFoundFilters from './LostFoundFilters';
 import LostFoundGrid from './LostFoundGrid';
-import type { LostFoundItem, StatusFilter, CategoryFilter, LostFoundStats as StatsType } from './types';
+import type { LostFoundItem, LostFoundStats as StatsType } from './types';
 import { sampleLostFoundItems } from './sampleData';
 
 const LostFoundPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-
   // Use sample data from external file
   const lostFoundItems: LostFoundItem[] = sampleLostFoundItems;
-
-  // Filter items based on search term and filters
-  const filteredItems = lostFoundItems.filter(item => {
-    const matchesSearch = item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-    
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
 
   // Calculate statistics
   const statusCounts: StatsType = {
@@ -51,10 +35,6 @@ const LostFoundPage: React.FC = () => {
     // TODO: Implement mark as claimed functionality
   };
 
-  const handleAddNew = () => {
-    console.log('Add new item');
-    // TODO: Implement add new item modal
-  };
 
   return (
     <div className="min-h-screen bg-heritage-light">
@@ -82,20 +62,9 @@ const LostFoundPage: React.FC = () => {
         {/* Stats Cards Grid */}
         <LostFoundStats stats={statusCounts} />
 
-        {/* Filters and Search */}
-        <LostFoundFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          categoryFilter={categoryFilter}
-          onCategoryChange={setCategoryFilter}
-          onAddNew={handleAddNew}
-        />
-
         {/* Items Grid */}
         <LostFoundGrid
-          items={filteredItems}
+          items={lostFoundItems}
           onViewDetails={handleViewDetails}
           onMarkClaimed={handleMarkClaimed}
         />

@@ -8,8 +8,6 @@ import { ReservationDetailsModal } from './ReservationDetailsModal';
 import { EditReservationModal } from './EditReservationModal';
 import { ConfirmDialog } from '../../admin/ConfirmDialog';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
-import QuickActionsPanel from '../shared/QuickActionsPanel';
-import FiltersPanel from '../shared/FiltersPanel';
 import ModernReservationsTable from './ModernReservationsTable';
 
 interface Reservation {
@@ -31,9 +29,6 @@ export const ReservationsPage = () => {
   const { user } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showWalkInModal, setShowWalkInModal] = useState(false);
@@ -203,47 +198,10 @@ export const ReservationsPage = () => {
     }
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    filterReservations(query, statusFilter, dateRange);
-  };
-
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status);
-    filterReservations(searchQuery, status, dateRange);
-  };
-
-  const filterReservations = (query: string, status: string, range: any) => {
-    let filtered = reservations;
-
-    // Search filter
-    if (query) {
-      filtered = filtered.filter(
-        (reservation) =>
-          reservation.guestName.toLowerCase().includes(query.toLowerCase()) ||
-          reservation.email.toLowerCase().includes(query.toLowerCase()) ||
-          reservation.roomType.toLowerCase().includes(query.toLowerCase()) ||
-          reservation.id.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (status !== 'all') {
-      filtered = filtered.filter((reservation) => reservation.status === status);
-    }
-
-    // Date range filter
-    if (range.startDate && range.endDate) {
-      filtered = filtered.filter((reservation) => {
-        const checkIn = new Date(reservation.checkIn);
-        const start = new Date(range.startDate);
-        const end = new Date(range.endDate);
-        return checkIn >= start && checkIn <= end;
-      });
-    }
-
-    setFilteredReservations(filtered);
-  };
+  // Since we removed filters, we'll use all reservations
+  useEffect(() => {
+    setFilteredReservations(reservations);
+  }, [reservations]);
 
   const handleCheckIn = (reservation: Reservation) => {
     setSelectedReservation(reservation);
@@ -266,7 +224,6 @@ export const ReservationsPage = () => {
             : r
         )
       );
-      filterReservations(searchQuery, statusFilter, dateRange);
     } catch (error) {
       console.error('Error checking out reservation:', error);
       alert('Failed to check out reservation. Please try again.');
@@ -286,7 +243,6 @@ export const ReservationsPage = () => {
       const bookingWithId = { ...newBooking, id: docRef.id };
       const updatedReservations = [...reservations, bookingWithId];
       setReservations(updatedReservations);
-      filterReservations(searchQuery, statusFilter, dateRange);
     } catch (error) {
       console.error('Error adding walk-in booking:', error);
       alert('Failed to create walk-in booking. Please try again.');
@@ -322,7 +278,6 @@ export const ReservationsPage = () => {
           r.id === updatedReservation.id ? updatedReservation : r
         )
       );
-      filterReservations(searchQuery, statusFilter, dateRange);
       setShowEditModal(false);
       setSelectedReservation(null);
     } catch (error) {
@@ -353,8 +308,7 @@ export const ReservationsPage = () => {
               : r
           )
         );
-        filterReservations(searchQuery, statusFilter, dateRange);
-      } catch (error) {
+        } catch (error) {
         console.error('Error cancelling reservation:', error);
         alert('Failed to cancel reservation. Please try again.');
       }
@@ -487,42 +441,6 @@ export const ReservationsPage = () => {
           />
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Quick Actions Panel */}
-          <div className="lg:col-span-4 xl:col-span-3">
-            <QuickActionsPanel
-              onWalkInBooking={() => setShowWalkInModal(true)}
-              onRoomStatus={() => {
-                // TODO: Implement room status view
-                console.log('Room status view');
-              }}
-              onGuestServices={() => {
-                // TODO: Implement guest services
-                console.log('Guest services');
-              }}
-            />
-          </div>
-
-          {/* Filters Panel */}
-          <div className="lg:col-span-8 xl:col-span-9">
-            <FiltersPanel
-              searchQuery={searchQuery}
-              statusFilter={statusFilter}
-              dateRange={dateRange}
-              onSearch={handleSearch}
-              onStatusFilter={handleStatusFilter}
-              onDateRangeChange={(range) => {
-                setDateRange(range);
-                filterReservations(searchQuery, statusFilter, range);
-              }}
-              statusCounts={{
-                ...statusCounts,
-                cancelled: reservations.filter(r => r.status === 'cancelled').length
-              }}
-            />
-          </div>
-        </div>
 
         {/* Modern Reservations Table */}
         {!user ? (
@@ -588,8 +506,7 @@ export const ReservationsPage = () => {
                   r.id === updatedReservation.id ? updatedReservation : r
                 )
               );
-              filterReservations(searchQuery, statusFilter, dateRange);
-              setShowCheckInModal(false);
+                      setShowCheckInModal(false);
               setSelectedReservation(null);
             } catch (error) {
               console.error('Error checking in reservation:', error);

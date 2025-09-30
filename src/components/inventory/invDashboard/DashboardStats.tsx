@@ -1,12 +1,4 @@
-/**
- * LostFoundStats Component
- * 
- * Premium modern statistics cards with beautiful gradients and animations.
- * Provides an engaging overview of lost and found item statistics.
- */
-
 import React from 'react';
-import type { StatsProps } from './types';
 
 interface StatCard {
   title: string;
@@ -17,66 +9,61 @@ interface StatCard {
   iconBg: string;
 }
 
-/**
- * Statistics component for Lost & Found dashboard
- * 
- * @param stats - Statistics data containing counts for different item statuses
- */
-const LostFoundStats: React.FC<StatsProps> = ({ stats }) => {
-  const statsCards: StatCard[] = [
-    {
-      title: 'Total Lost & Found Items',
-      value: stats.all.toString(),
-      change: '+12% from last month',
-      changeType: 'positive',
-      iconBg: 'bg-blue-100',
-      icon: (
-        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      )
-    },
-    {
-      title: 'Unclaimed Items',
-      value: stats.unclaimed.toString(),
-      change: '+3% from last month',
-      changeType: 'positive',
-      iconBg: 'bg-yellow-100',
-      icon: (
-        <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    {
-      title: 'Successfully Claimed',
-      value: stats.claimed.toString(),
-      change: '+8% from last month',
-      changeType: 'positive',
-      iconBg: 'bg-green-100',
-      icon: (
-        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    {
-      title: 'Disposed Items',
-      value: stats.disposed.toString(),
-      change: '2% from last month',
-      changeType: 'negative',
-      iconBg: 'bg-red-100',
-      icon: (
-        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-      )
-    }
-  ];
+const stats: StatCard[] = [
+  {
+    title: 'Total Inventory Items',
+    value: '1,248',
+    change: '+23% from last month',
+    changeType: 'positive',
+    iconBg: 'bg-green-100',
+    icon: (
+      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+    )
+  },
+  {
+    title: 'Low Stock Alerts',
+    value: '23',
+    change: '5% from last month',
+    changeType: 'positive',
+    iconBg: 'bg-yellow-100',
+    icon: (
+      <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+      </svg>
+    )
+  },
+  {
+    title: 'Pending Purchase Orders',
+    value: '18',
+    change: '8% from last month',
+    changeType: 'positive',
+    iconBg: 'bg-blue-100',
+    icon: (
+      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+    )
+  },
+  {
+    title: 'Total Inventory Value',
+    value: '$248,320',
+    change: '23% from last month',
+    changeType: 'positive',
+    iconBg: 'bg-green-100',
+    icon: (
+      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+      </svg>
+    )
+  }
+];
 
+export const DashboardStats: React.FC = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {statsCards.map((stat, index) => (
+      {stats.map((stat, index) => (
         <div 
           key={index} 
           className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 hover:shadow-3xl hover:-translate-y-3 hover:scale-105 transition-all duration-700 group overflow-hidden"
@@ -123,5 +110,3 @@ const LostFoundStats: React.FC<StatsProps> = ({ stats }) => {
     </div>
   );
 };
-
-export default LostFoundStats;

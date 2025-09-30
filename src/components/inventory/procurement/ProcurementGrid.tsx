@@ -1,19 +1,5 @@
-/**
- * 
- * Displays a paginated grid of lost and found items using LostFoundCard components.
- * Shows maximum 6 items per page with pagination controls.
- */
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import type { LostFoundItem } from './types';
-interface LostFoundGridProps {
-  /** Array of lost and found items to display */
-  items: LostFoundItem[];
-  /** Function to handle viewing item details */
-  onViewDetails: (item: LostFoundItem) => void;
-  /** Function to handle marking item as claimed */
-  onMarkClaimed: (item: LostFoundItem) => void;
-}
+import { ProcurementCard } from './ProcurementCard';
 
 // Status Dropdown Component
 const StatusDropdown: React.FC<{
@@ -25,9 +11,10 @@ const StatusDropdown: React.FC<{
 
   const statuses = [
     'All Status',
-    'Unclaimed',
-    'Claimed', 
-    'Disposed'
+    'Pending',
+    'Approved', 
+    'Received',
+    'Cancelled'
   ];
 
   useEffect(() => {
@@ -109,58 +96,75 @@ const StatusDropdown: React.FC<{
   );
 };
 
-/**
- * Grid component for displaying lost and found items with pagination
- * 
- * @param items - Array of lost and found items
- * @param onViewDetails - Function to handle viewing item details
- * @param onMarkClaimed - Function to handle marking item as claimed
- */
-const LostFoundGrid: React.FC<LostFoundGridProps> = ({ 
-  items, 
-  onViewDetails, 
-  onMarkClaimed 
+interface PurchaseOrderItem {
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+interface PurchaseOrder {
+  id: string;
+  orderNumber: string;
+  supplier: string;
+  items: PurchaseOrderItem[];
+  totalAmount: number;
+  status: 'pending' | 'approved' | 'received' | 'cancelled';
+  orderDate: string;
+  expectedDelivery: string;
+  approvedBy?: string;
+  notes?: string;
+}
+
+interface ProcurementGridProps {
+  orders: PurchaseOrder[];
+  formatCurrency: (amount: number) => string;
+  getStatusBadge: (status: string) => React.ReactNode;
+}
+
+export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
+  orders,
+  formatCurrency,
+  getStatusBadge,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
-  const itemsPerPage = 6;
+  const itemsPerPage = 3;
 
-  // Reset to page 1 when items change (e.g., after filtering)
+  // Reset to page 1 when orders change (e.g., after filtering)
   useEffect(() => {
     setCurrentPage(1);
-  }, [items]);
+  }, [orders]);
 
-  // Filter items based on search term and selected status
-  const filteredItems = useMemo(() => {
-    if (!items || items.length === 0) {
+  // Filter orders based on search term and selected status
+  const filteredOrders = useMemo(() => {
+    if (!orders || orders.length === 0) {
       return [];
     }
 
-    return items.filter(item => {
+    return orders.filter(order => {
       // Search filter - check if search term is empty or matches any field
       const searchLower = (searchTerm || '').toLowerCase().trim();
       const matchesSearch = searchLower === '' || 
-        (item.id && item.id.toLowerCase().includes(searchLower)) ||
-        (item.itemName && item.itemName.toLowerCase().includes(searchLower)) ||
-        (item.category && item.category.toLowerCase().includes(searchLower)) ||
-        (item.location && item.location.toLowerCase().includes(searchLower)) ||
-        (item.foundBy && item.foundBy.toLowerCase().includes(searchLower));
+        (order.orderNumber && order.orderNumber.toLowerCase().includes(searchLower)) ||
+        (order.supplier && order.supplier.toLowerCase().includes(searchLower)) ||
+        (order.status && order.status.toLowerCase().includes(searchLower));
       
       // Status filter
       const matchesStatus = !selectedStatus || 
         selectedStatus === 'All Status' || 
-        item.status.toLowerCase() === selectedStatus.toLowerCase();
+        order.status.toLowerCase() === selectedStatus.toLowerCase();
       
       return matchesSearch && matchesStatus;
     });
-  }, [items, searchTerm, selectedStatus]);
+  }, [orders, searchTerm, selectedStatus]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredItems.slice(startIndex, endIndex);
+  const currentOrders = filteredOrders.slice(startIndex, endIndex);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -200,13 +204,13 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
     return pages;
   };
 
-  // Show empty state if no items
-  if (items.length === 0) {
+  // Show empty state if no orders
+  if (orders.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
+          <div className="text-6xl mb-4">📋</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No purchase orders found</h3>
           <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
         </div>
       </div>
@@ -222,15 +226,15 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
               <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
             </div>
             <div>
-              <h3 className="text-xl font-black text-gray-900">Lost & Found Items</h3>
+              <h3 className="text-xl font-black text-gray-900">Purchase Orders</h3>
               <p className="text-sm text-gray-500 font-medium">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length} items • Page {currentPage} of {totalPages}
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders • Page {currentPage} of {totalPages}
                 {searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{searchTerm}"</span>}
                 {selectedStatus !== 'All Status' && <span className="ml-2 text-blue-600">• Status: {selectedStatus}</span>}
               </p>
@@ -245,7 +249,7 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search items, categories, or locations..."
+                  placeholder="Search orders, suppliers, or status..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-6 py-3 w-80 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/70 backdrop-blur-sm shadow-lg placeholder-gray-500 transition-all duration-300"
@@ -260,132 +264,51 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add Item
+              New Order
             </button>
           </div>
         </div>
       </div>
 
-      {/* Items Table */}
-      <div style={{ height: '480px' }}>
-        <table className="w-full h-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Item ID</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Item Name</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Location Found</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Date Found</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {/* Always render exactly 6 rows */}
-            {Array.from({ length: 6 }).map((_, index) => {
-              const item = currentItems[index];
-              if (item) {
-                return (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-200 h-16">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900 font-mono">{item.id}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">{item.itemName}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-heritage-green/10 text-heritage-green border border-heritage-green/20">
-                        📂 {item.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">{item.location}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border ${
-                        item.status === 'claimed' 
-                          ? 'bg-green-100 text-green-800 border-green-200'
-                          : item.status === 'disposed'
-                          ? 'bg-red-100 text-red-800 border-red-200'
-                          : 'bg-blue-100 text-blue-800 border-blue-200'
-                      }`}>
-                        <div className="w-2 h-2 rounded-full mr-2 bg-current opacity-60"></div>
-                        {item.status === 'claimed' ? 'Claimed' : item.status === 'disposed' ? 'Disposed' : 'Unclaimed'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">{new Date(item.dateFound).toLocaleDateString()}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => onViewDetails(item)}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-heritage-green bg-heritage-green/10 border border-heritage-green/30 rounded-lg hover:bg-heritage-green hover:text-white transition-all duration-200"
-                        >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          View
-                        </button>
-                        {item.status !== 'claimed' && (
-                          <button 
-                            onClick={() => onMarkClaimed(item)}
-                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-all duration-200"
-                          >
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            Claim
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              } else {
-                return (
-                  <tr key={`empty-${index}`} className="h-16">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                  </tr>
-                );
+      {/* Orders Grid */}
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          {currentOrders.map((order, index) => (
+            <div
+              key={order.id}
+              className="opacity-0 animate-pulse"
+              style={{ 
+                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`
+              }}
+            >
+              <ProcurementCard
+                order={order}
+                formatCurrency={formatCurrency}
+                getStatusBadge={getStatusBadge}
+              />
+            </div>
+          ))}
+        </div>
+        
+        {/* Inline styles for animation */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes fadeInUp {
+              from {
+                opacity: 0;
+                transform: translateY(30px);
               }
-            })}
-          </tbody>
-        </table>
-      </div>
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          `
+        }} />
 
-      {/* Pagination inside the container */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center pt-6 pb-4 bg-white border-t border-gray-100">
-          <div className="flex items-center space-x-2">
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center space-x-2 pt-6 border-t border-gray-100">
             {/* Previous Button */}
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -435,10 +358,8 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
               </svg>
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
-
-export default LostFoundGrid;
