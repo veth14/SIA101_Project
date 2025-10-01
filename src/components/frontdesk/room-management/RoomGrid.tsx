@@ -7,150 +7,32 @@
 
 import React, { useState, useEffect } from 'react';
 import RoomCard from './RoomCard';
+import type { Room } from './Room-backendLogic/roomService';
 
 interface RoomGridProps {
-  searchTerm?: string;
-  statusFilter?: string;
-  roomTypeFilter?: string;
+  rooms: Room[];
+  loading: boolean;
+  error: string | null;
 }
 
 const RoomGrid: React.FC<RoomGridProps> = ({
-  searchTerm = '',
-  statusFilter = 'all',
-  roomTypeFilter = 'all'
+  rooms,
+  loading,
+  error
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when rooms change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, roomTypeFilter]);
-
-  const roomsData = [
-    {
-      roomNumber: "101",
-      roomType: "Standard Room",
-      status: 'available' as const,
-      price: 3500,
-      features: ["WiFi", "AC", "TV", "Private Bath"]
-    },
-    {
-      roomNumber: "102",
-      roomType: "Deluxe Room",
-      status: 'occupied' as const,
-      price: 4500,
-      guest: "John Smith",
-      checkIn: "Dec 20, 2024",
-      checkOut: "Dec 22, 2024",
-      features: ["WiFi", "AC", "TV", "Mini Bar", "Balcony"]
-    },
-    {
-      roomNumber: "103",
-      roomType: "Suite",
-      status: 'available' as const,
-      price: 7500,
-      features: ["WiFi", "AC", "TV", "Mini Bar", "Balcony", "Living Room", "Kitchenette"]
-    },
-    {
-      roomNumber: "104",
-      roomType: "Family Room",
-      status: 'maintenance' as const,
-      price: 5500,
-      features: ["WiFi", "AC", "TV", "Bunk Beds", "Extra Space"]
-    },
-    {
-      roomNumber: "201",
-      roomType: "Standard Room",
-      status: 'cleaning' as const,
-      price: 3500,
-      features: ["WiFi", "AC", "TV", "Private Bath"]
-    },
-    {
-      roomNumber: "202",
-      roomType: "Deluxe Room",
-      status: 'occupied' as const,
-      price: 4500,
-      guest: "Maria Garcia",
-      checkIn: "Dec 19, 2024",
-      checkOut: "Dec 21, 2024",
-      features: ["WiFi", "AC", "TV", "Mini Bar", "Balcony"]
-    },
-    {
-      roomNumber: "203",
-      roomType: "Suite",
-      status: 'available' as const,
-      price: 7500,
-      features: ["WiFi", "AC", "TV", "Mini Bar", "Balcony", "Living Room", "Jacuzzi"]
-    },
-    {
-      roomNumber: "204",
-      roomType: "Standard Room",
-      status: 'available' as const,
-      price: 3500,
-      features: ["WiFi", "AC", "TV", "Private Bath"]
-    },
-    {
-      roomNumber: "301",
-      roomType: "Family Room",
-      status: 'occupied' as const,
-      price: 5500,
-      guest: "The Johnson Family",
-      checkIn: "Dec 18, 2024",
-      checkOut: "Dec 23, 2024",
-      features: ["WiFi", "AC", "TV", "Bunk Beds", "Extra Space", "Connecting Rooms"]
-    },
-    {
-      roomNumber: "302",
-      roomType: "Deluxe Room",
-      status: 'available' as const,
-      price: 4500,
-      features: ["WiFi", "AC", "TV", "Mini Bar", "Balcony", "Ocean View"]
-    },
-    {
-      roomNumber: "303",
-      roomType: "Standard Room",
-      status: 'maintenance' as const,
-      price: 3500,
-      features: ["WiFi", "AC", "TV", "Private Bath"]
-    },
-    {
-      roomNumber: "304",
-      roomType: "Suite",
-      status: 'occupied' as const,
-      price: 7500,
-      guest: "Robert Wilson",
-      checkIn: "Dec 21, 2024",
-      checkOut: "Dec 25, 2024",
-      features: ["WiFi", "AC", "TV", "Mini Bar", "Balcony", "Living Room", "Kitchen"]
-    }
-  ];
-
-  // Filter rooms based on search and filters
-  const filteredRooms = roomsData.filter(room => {
-    const matchesSearch = searchTerm === '' || 
-      room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      room.roomType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      room.guest?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || room.status === statusFilter;
-    
-    // Improved room type matching
-    const matchesType = roomTypeFilter === 'all' || 
-      room.roomType.toLowerCase().includes(roomTypeFilter.toLowerCase()) ||
-      (roomTypeFilter === 'standard' && room.roomType.toLowerCase().includes('standard')) ||
-      (roomTypeFilter === 'deluxe' && room.roomType.toLowerCase().includes('deluxe')) ||
-      (roomTypeFilter === 'suite' && room.roomType.toLowerCase().includes('suite')) ||
-      (roomTypeFilter === 'family' && room.roomType.toLowerCase().includes('family'));
-    
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  }, [rooms]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
+  const totalPages = Math.ceil(rooms.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentRooms = filteredRooms.slice(startIndex, endIndex);
+  const currentRooms = rooms.slice(startIndex, endIndex);
 
   // Generate page numbers for pagination
   const getPageNumbers = () => {
@@ -182,10 +64,42 @@ const RoomGrid: React.FC<RoomGridProps> = ({
     return pages;
   };
 
-  // Show empty state if no rooms
-  if (filteredRooms.length === 0) {
+  // Show loading state
+  if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green mx-auto mb-4"></div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading rooms...</h3>
+          <p className="text-gray-600">Fetching room data from database</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-red-600 mb-2">Error Loading Rooms</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no rooms
+  if (rooms.length === 0 && !loading) {
+    return (
+      <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🏨</div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No rooms found</h3>
@@ -211,7 +125,7 @@ const RoomGrid: React.FC<RoomGridProps> = ({
           <div>
             <h3 className="text-xl font-black text-gray-900">Hotel Rooms</h3>
             <p className="text-sm text-gray-500 font-medium">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredRooms.length)} of {filteredRooms.length} rooms • Page {currentPage} of {totalPages}
+              Showing {startIndex + 1}-{Math.min(endIndex, rooms.length)} of {rooms.length} rooms • Page {currentPage} of {totalPages}
             </p>
           </div>
         </div>
@@ -232,7 +146,7 @@ const RoomGrid: React.FC<RoomGridProps> = ({
                 roomNumber={room.roomNumber}
                 roomType={room.roomType}
                 status={room.status}
-                price={room.price}
+                price={room.basePrice}
                 guest={room.guest}
                 checkIn={room.checkIn}
                 checkOut={room.checkOut}
@@ -240,7 +154,6 @@ const RoomGrid: React.FC<RoomGridProps> = ({
                 maxFeatures={3}
                 onViewDetails={() => console.log('View details:', room.roomNumber)}
                 onEdit={() => console.log('Edit room:', room.roomNumber)}
-                onDelete={() => console.log('Delete room:', room.roomNumber)}
                 onBook={() => console.log('Book room:', room.roomNumber)}
               />
             </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { InventoryItem } from '../../../data/sampleInventory';
+import type { InventoryItem } from './items-backendLogic/inventoryService';
 
 interface ItemsStatsProps {
   items: InventoryItem[];

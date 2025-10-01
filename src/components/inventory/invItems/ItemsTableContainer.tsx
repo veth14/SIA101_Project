@@ -1,5 +1,203 @@
-import React, { useMemo } from 'react';
-import type { InventoryItem } from '../../../data/sampleInventory';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import type { InventoryItem } from './items-backendLogic/inventoryService';
+
+// Category Dropdown Component
+export const CategoryDropdown: React.FC<{
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
+  categoryOptions: Array<{ value: string; label: string; count: number }>;
+}> = ({ selectedCategory, onCategoryChange, categoryOptions }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleCategorySelect = (category: string) => {
+    onCategoryChange(category);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative z-[100000]" ref={dropdownRef}>
+      <div className="relative group">
+        <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative flex items-center justify-between px-6 py-3 w-48 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 cursor-pointer hover:bg-white/90"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-2 h-2 bg-gradient-to-r from-heritage-green to-emerald-500 rounded-full"></div>
+            <span className="text-gray-800">
+              {categoryOptions.find(option => option.value === selectedCategory)?.label || selectedCategory}
+            </span>
+          </div>
+          <svg 
+            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}` } 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-[99999]">
+          {categoryOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleCategorySelect(option.value)}
+              className={`w-full flex items-center justify-between px-6 py-3 text-left text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-heritage-green/10 hover:to-emerald-500/10 ${
+                selectedCategory === option.value 
+                  ? 'bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green' 
+                  : 'text-gray-700 hover:text-heritage-green'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  selectedCategory === option.value 
+                    ? 'bg-gradient-to-r from-heritage-green to-emerald-500' 
+                    : 'bg-gray-300'
+                }`}></div>
+                <span className="flex-1">{option.label}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {option.value !== 'All Categories' && (
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                    {option.count}
+                  </span>
+                )}
+                {selectedCategory === option.value && (
+                  <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-[99998]" 
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
+    </div>
+  );
+};
+
+// Stock Status Dropdown Component
+export const StockStatusDropdown: React.FC<{
+  selectedStockStatus: string;
+  onStockStatusChange: (status: string) => void;
+  stockStatusOptions: Array<{ value: string; label: string; count: number }>;
+}> = ({ selectedStockStatus, onStockStatusChange, stockStatusOptions }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleStatusSelect = (status: string) => {
+    onStockStatusChange(status);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative z-[100000]" ref={dropdownRef}>
+      <div className="relative group">
+        <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative flex items-center justify-between px-6 py-3 w-44 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 cursor-pointer hover:bg-white/90"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-2 h-2 bg-gradient-to-r from-heritage-green to-emerald-500 rounded-full"></div>
+            <span className="text-gray-800">
+              {stockStatusOptions.find(option => option.value === selectedStockStatus)?.label || selectedStockStatus}
+            </span>
+          </div>
+          <svg 
+            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}` } 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-[99999]">
+          {stockStatusOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleStatusSelect(option.value)}
+              className={`w-full flex items-center justify-between px-6 py-3 text-left text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-heritage-green/10 hover:to-emerald-500/10 ${
+                selectedStockStatus === option.value 
+                  ? 'bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green' 
+                  : 'text-gray-700 hover:text-heritage-green'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  selectedStockStatus === option.value 
+                    ? 'bg-gradient-to-r from-heritage-green to-emerald-500' 
+                    : 'bg-gray-300'
+                }`}></div>
+                <span className="flex-1">{option.label}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {option.value !== 'all' && (
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                    {option.count}
+                  </span>
+                )}
+                {selectedStockStatus === option.value && (
+                  <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-[99998]" 
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
+    </div>
+  );
+};
 
 interface ItemsTableProps {
   searchTerm: string;
@@ -9,6 +207,11 @@ interface ItemsTableProps {
   items: InventoryItem[];
   currentPage: number;
   onPageChange: (page: number) => void;
+  categoryOptions?: Array<{ value: string; label: string; count: number }>;
+  stockStatusOptions?: Array<{ value: string; label: string; count: number }>;
+  selectedStockStatus?: string;
+  onStockStatusChange?: (status: string) => void;
+  onViewDetails?: (item: InventoryItem) => void;
 }
 
 export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
@@ -19,6 +222,11 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
   items,
   currentPage,
   onPageChange,
+  categoryOptions = [],
+  stockStatusOptions = [],
+  selectedStockStatus = 'all',
+  onStockStatusChange = () => {},
+  onViewDetails = () => {}
 }) => {
   const itemsPerPage = 6;
 
@@ -77,66 +285,7 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
 
 
   return (
-    <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
-      {/* Header */}
-      <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-gray-900">Inventory Items</h3>
-              <p className="text-sm text-gray-500 font-medium">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length} items • Page {currentPage} of {totalPages}
-                {searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{searchTerm}"</span>}
-                {selectedCategory !== 'All Categories' && <span className="ml-2 text-blue-600">• Category: {selectedCategory}</span>}
-              </p>
-            </div>
-          </div>
-          <div className="flex space-x-4">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center">
-                <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search items, categories, or suppliers..."
-                  value={searchTerm}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  className="pl-12 pr-6 py-3 w-80 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/70 backdrop-blur-sm shadow-lg placeholder-gray-500 transition-all duration-300"
-                />
-              </div>
-            </div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => onCategoryChange(e.target.value)}
-              className="px-4 py-3 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/70 backdrop-blur-sm shadow-lg transition-all duration-300"
-            >
-              <option value="All Categories">All Categories</option>
-              <option value="Housekeeping Supplies">Housekeeping Supplies</option>
-              <option value="Food & Beverage">Food & Beverage</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Technology">Technology</option>
-              <option value="Furniture">Furniture</option>
-            </select>
-            <button className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add Item
-            </button>
-          </div>
-        </div>
-      </div>
-      
+    <>
       {/* Items Table */}
       <div style={{ height: '480px' }}>
         <table className="w-full h-full">
@@ -192,8 +341,11 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
                       <span className="text-sm font-medium text-gray-900">{item.supplier}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-heritage-green bg-heritage-green/10 border border-heritage-green/30 rounded-lg hover:bg-heritage-green hover:text-white transition-all duration-200">
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <button 
+                        onClick={() => onViewDetails(item)}
+                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-heritage-green bg-heritage-green/10 border border-heritage-green/30 rounded-lg hover:bg-heritage-green hover:text-white transition-all duration-200 group"
+                      >
+                        <svg className="w-4 h-4 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
@@ -292,6 +444,6 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };

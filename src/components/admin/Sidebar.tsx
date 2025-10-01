@@ -238,7 +238,7 @@ const navigation: NavItem[] = [
           </svg>
         ),
         description: 'Manage maintenance staff and personnel'
-      },
+      },  
       {
         name: 'Staff Schedules',
         href: '/admin/staff-schedules',

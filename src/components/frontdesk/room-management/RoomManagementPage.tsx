@@ -1,32 +1,34 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RoomHeader from './RoomHeader';
 import RoomStats from './RoomStats';
 import RoomFilters from './RoomFilters';
 import RoomGrid from './RoomGrid';
+import { useRoomManagement } from './Room-backendLogic/useRoomManagement';
 
 const RoomManagementPage: React.FC = () => {
-  // State for filtering
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [roomTypeFilter, setRoomTypeFilter] = useState('all');
+  const {
+    filteredRooms,
+    roomStats,
+    filterOptions,
+    loading,
+    error,
+    filters,
+    setFilters
+  } = useRoomManagement();
 
   // Handler functions for filters
   const handleSearchChange = (term: string) => {
-    setSearchTerm(term);
+    setFilters({ searchTerm: term });
   };
 
   const handleStatusChange = (status: string) => {
-    setStatusFilter(status);
+    setFilters({ statusFilter: status });
   };
 
   const handleRoomTypeChange = (type: string) => {
-    setRoomTypeFilter(type);
+    setFilters({ roomTypeFilter: type });
   };
 
-  const handleAddNew = () => {
-    console.log('Add new room clicked');
-    // TODO: Implement add new room functionality
-  };
 
   return (
     <div className="min-h-screen bg-heritage-light">
@@ -49,20 +51,21 @@ const RoomManagementPage: React.FC = () => {
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         <RoomHeader />
-        <RoomStats />
+        <RoomStats roomStats={roomStats} loading={loading} />
         <RoomFilters
-          searchTerm={searchTerm}
+          searchTerm={filters.searchTerm}
           onSearchChange={handleSearchChange}
-          statusFilter={statusFilter}
+          statusFilter={filters.statusFilter}
           onStatusChange={handleStatusChange}
-          roomTypeFilter={roomTypeFilter}
+          roomTypeFilter={filters.roomTypeFilter}
           onRoomTypeChange={handleRoomTypeChange}
-          onAddNew={handleAddNew}
+          statusOptions={filterOptions.statusOptions}
+          roomTypeOptions={filterOptions.roomTypeOptions}
         />
         <RoomGrid
-          searchTerm={searchTerm}
-          statusFilter={statusFilter}
-          roomTypeFilter={roomTypeFilter}
+          rooms={filteredRooms}
+          loading={loading}
+          error={error}
         />
       </div>
     </div>

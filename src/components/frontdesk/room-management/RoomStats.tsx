@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import type { RoomStats as RoomStatsType } from './Room-backendLogic/roomService';
 
 interface StatCard {
   title: string;
@@ -16,27 +17,36 @@ interface StatCard {
   iconBg: string;
 }
 
+interface RoomStatsProps {
+  roomStats: RoomStatsType;
+  loading?: boolean;
+}
+
 /**
  * Statistics component for Room Management dashboard
  */
-const RoomStats: React.FC = () => {
+const RoomStats: React.FC<RoomStatsProps> = ({ roomStats, loading = false }) => {
+
   const stats: StatCard[] = [
     {
       title: 'Total Rooms',
-      value: '50',
-      change: '+2% from last month',
-      changeType: 'positive',
+      value: loading ? '...' : roomStats.totalRooms.toString(),
+      change: 'Hotel capacity',
+      changeType: 'neutral',
       iconBg: 'bg-blue-100',
       icon: (
         <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11h8" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 15h8" />
         </svg>
       )
     },
     {
       title: 'Available Rooms',
-      value: '32',
-      change: '+64% occupancy rate',
+      value: loading ? '...' : roomStats.availableRooms.toString(),
+      change: `${100 - roomStats.occupancyRate}% available`,
       changeType: 'positive',
       iconBg: 'bg-green-100',
       icon: (
@@ -47,9 +57,9 @@ const RoomStats: React.FC = () => {
     },
     {
       title: 'Occupied Rooms',
-      value: '18',
-      change: '+36% from last week',
-      changeType: 'positive',
+      value: loading ? '...' : roomStats.occupiedRooms.toString(),
+      change: `${roomStats.occupancyRate}% occupancy rate`,
+      changeType: roomStats.occupancyRate > 70 ? 'positive' : 'neutral',
       iconBg: 'bg-orange-100',
       icon: (
         <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,9 +69,9 @@ const RoomStats: React.FC = () => {
     },
     {
       title: 'Under Maintenance',
-      value: '0',
-      change: 'All rooms operational',
-      changeType: 'positive',
+      value: loading ? '...' : roomStats.maintenanceRooms.toString(),
+      change: roomStats.maintenanceRooms === 0 ? 'All rooms operational' : 'Needs attention',
+      changeType: roomStats.maintenanceRooms === 0 ? 'positive' : 'negative',
       iconBg: 'bg-purple-100',
       icon: (
         <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

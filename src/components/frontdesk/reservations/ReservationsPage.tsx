@@ -8,6 +8,7 @@ import { ReservationDetailsModal } from './ReservationDetailsModal';
 import { EditReservationModal } from './EditReservationModal';
 import { ConfirmDialog } from '../../admin/ConfirmDialog';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
+import ReservationQuickActions from './ReservationQuickActions';
 import ModernReservationsTable from './ModernReservationsTable';
 
 interface Reservation {
@@ -441,6 +442,22 @@ export const ReservationsPage = () => {
           />
         </div>
 
+        {/* Reservation Quick Actions */}
+        <ReservationQuickActions
+          onWalkInBooking={() => setShowWalkInModal(true)}
+          onNewReservation={() => {
+            // TODO: Implement new reservation modal
+            console.log('New reservation clicked');
+          }}
+          onBulkCheckIn={() => {
+            // TODO: Implement bulk check-in functionality
+            console.log('Bulk check-in clicked');
+          }}
+          onRoomAssignment={() => {
+            // TODO: Implement room assignment functionality
+            console.log('Room assignment clicked');
+          }}
+        />
 
         {/* Modern Reservations Table */}
         {!user ? (
