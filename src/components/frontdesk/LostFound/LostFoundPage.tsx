@@ -1,10 +1,3 @@
-/**
- * LostFoundPage Component
- * 
- * Main page component for the Lost & Found management system.
- * Orchestrates all the modular components and manages the overall state.
- */
-
 import React from 'react';
 import LostFoundHeader from './LostFoundHeader';
 import LostFoundStats from './LostFoundStats';

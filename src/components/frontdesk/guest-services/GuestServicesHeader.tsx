@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LostFoundHeader: React.FC = () => {
+export const GuestServicesHeader: React.FC = () => {
   return (
     <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
       {/* Animated Background Elements */}
@@ -29,17 +29,17 @@ const LostFoundHeader: React.FC = () => {
               {/* Title and Description */}
               <div className="space-y-2">
                 <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                  Lost & Found
+                  Guest Services
                 </h1>
                 <p className="text-xl text-gray-700 font-medium tracking-wide">
-                  Manage lost and found items efficiently
+                  Comprehensive guest experience management
                 </p>
                 
                 {/* Status Indicators */}
                 <div className="flex items-center space-x-4 mt-4">
                   <div className="flex items-center space-x-2 bg-emerald-50 backdrop-blur-sm rounded-full px-4 py-2 border border-emerald-200">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-emerald-700">All System operational</span>
+                    <span className="text-sm font-semibold text-emerald-700">All systems operational</span>
                   </div>
                   <div className="flex items-center space-x-2 bg-blue-50 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-200">
                     <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -78,5 +78,3 @@ const LostFoundHeader: React.FC = () => {
     </div>
   );
 };
-
-export default LostFoundHeader;

@@ -9,22 +9,24 @@ interface StatCard {
   iconBg: string;
 }
 
-interface ProcurementStatsProps {
+interface AdminDashboardStatsProps {
   stats: {
-    totalOrders: number;
-    pendingOrders: number;
-    approvedOrders: number;
-    receivedOrders: number;
-    totalValue: number;
+    totalBookings: number;
+    todayArrivals: number;
+    totalRevenue: number;
+    occupancyRate: number;
+    lowStockItems: number;
+    activeStaff: number;
+    totalRooms: number;
+    availableRooms: number;
   };
-  formatCurrency: (amount: number) => string;
 }
 
-export const ProcurementStats: React.FC<ProcurementStatsProps> = ({ stats, formatCurrency }) => {
+export const AdminDashboardStats: React.FC<AdminDashboardStatsProps> = ({ stats }) => {
   const statCards: StatCard[] = [
     {
       title: 'Monthly Revenue Impact',
-      value: formatCurrency(stats.totalValue * 0.85), // Revenue from completed orders
+      value: `₱${stats.totalRevenue.toLocaleString()}`,
       change: '+18% cost savings achieved',
       changeType: 'positive',
       iconBg: 'bg-emerald-100',
@@ -35,8 +37,8 @@ export const ProcurementStats: React.FC<ProcurementStatsProps> = ({ stats, forma
       )
     },
     {
-      title: 'Smart Procurement Score',
-      value: Math.round((stats.approvedOrders / stats.totalOrders) * 100) + '%',
+      title: 'Smart Occupancy Score',
+      value: `${stats.occupancyRate}%`,
       change: '+12% efficiency boost',
       changeType: 'positive',
       iconBg: 'bg-blue-100',
@@ -47,9 +49,9 @@ export const ProcurementStats: React.FC<ProcurementStatsProps> = ({ stats, forma
       )
     },
     {
-      title: 'Vendor Performance',
-      value: Math.round((stats.receivedOrders / stats.approvedOrders) * 100) + '%',
-      change: '+8% delivery reliability',
+      title: 'Guest Experience',
+      value: `${stats.totalBookings}`,
+      change: '+8% satisfaction rate',
       changeType: 'positive',
       iconBg: 'bg-purple-100',
       icon: (
@@ -59,9 +61,9 @@ export const ProcurementStats: React.FC<ProcurementStatsProps> = ({ stats, forma
       )
     },
     {
-      title: 'Cost Optimization',
-      value: formatCurrency(stats.totalValue * 0.15), // Estimated savings
-      change: '22% below budget target',
+      title: 'Operations Excellence',
+      value: `${stats.availableRooms}/${stats.totalRooms}`,
+      change: '22% above target efficiency',
       changeType: 'positive',
       iconBg: 'bg-amber-100',
       icon: (

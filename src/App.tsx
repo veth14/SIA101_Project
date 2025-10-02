@@ -16,6 +16,7 @@ import AdminRoomsPage from './pages/admin/Front-Desk/AdminRoomsPage'
 import { AdminLayout } from './layouts/AdminLayout'
 import FrontDeskPage from './pages/admin/Front-Desk/frontdesk'
 import AdminLostFoundPage from './pages/admin/Front-Desk/lostfoundpage'
+import GuestServicesPage from './pages/admin/Front-Desk/GuestServicesPage'
 import AdminInventoryItemsPage from './pages/admin/Inventory/invitems'
 import AdminInventoryAnalyticsPage from './pages/admin/Inventory/invanalytics'
 import AdminInventoryDashboardPage from './pages/admin/Inventory/invdashboard'
@@ -121,6 +122,14 @@ function LoadingSpinner() {
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <AdminLostFoundPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/guest-services" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <GuestServicesPage />
                     </ProtectedRoute>
                   } 
                 />
