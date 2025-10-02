@@ -1,15 +1,5 @@
-/**
- * SuppliersHeader Component
- * 
- * A beautiful glassmorphism header component for the Suppliers page.
- * Features animated background elements, real-time clock, and professional branding.
- */
-
 import React from 'react';
 
-/**
- * Header component for Suppliers page with glassmorphism design
- */
 const SuppliersHeader: React.FC = () => {
   return (
     <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">

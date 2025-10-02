@@ -1,10 +1,3 @@
-/**
- * LostFoundStats Component
- * 
- * Premium modern statistics cards with beautiful gradients and animations.
- * Provides an engaging overview of lost and found item statistics.
- */
-
 import React from 'react';
 import type { StatsProps } from './types';
 
