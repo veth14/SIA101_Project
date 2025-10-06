@@ -1,15 +1,13 @@
-"use client"
-
-import React from "react"
+import React, { useState } from "react"
 import { TrendingUp, Package, Utensils, Sparkles } from "lucide-react"
-import { 
-  CartesianGrid, 
-  XAxis,
-  YAxis,
+import {
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Area,
-  AreaChart
+  AreaChart,
+  XAxis,
+  YAxis
 } from "recharts"
 
 // Sample data for inventory analytics
@@ -64,13 +62,25 @@ const summaryStats = [
   }
 ]
 
-// Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: any) => {
+// Custom tooltip component with proper typing
+interface TooltipPayload {
+  color: string;
+  dataKey: string;
+  value: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg p-4 min-w-[200px]">
-        <p className="font-medium text-gray-900 mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        <p className="mb-2 font-medium text-gray-900">{label}</p>
+        {payload.map((entry: TooltipPayload, index: number) => (
           <div key={index} className="flex items-center justify-between gap-4 mb-1">
             <div className="flex items-center gap-2">
               <div 
@@ -91,34 +101,35 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export function AnalyticsChart(): React.ReactElement {
+  const [selectedPeriod, setSelectedPeriod] = useState('Last 30 Days');
+
   return (
     <div className="w-full space-y-8">
-
       {/* Simple Metrics Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {summaryStats.map((stat, index) => {
           const Icon = stat.icon
           return (
             <div 
               key={index} 
-              className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 hover:shadow-3xl hover:-translate-y-3 hover:scale-105 transition-all duration-700 group overflow-hidden"
+              className="relative p-8 overflow-hidden transition-all duration-700 border shadow-2xl bg-white/90 backdrop-blur-xl rounded-3xl border-white/30 hover:shadow-3xl hover:-translate-y-3 hover:scale-105 group"
             >
               {/* Enhanced Background Effects */}
-              <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/10 via-emerald-50/40 to-heritage-green/5 rounded-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-heritage-green/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/30 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
+              <div className="absolute inset-0 transition-opacity duration-700 opacity-50 bg-gradient-to-br from-heritage-green/10 via-emerald-50/40 to-heritage-green/5 rounded-3xl group-hover:opacity-100"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-bl from-heritage-green/20 to-transparent animate-pulse"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 delay-1000 -translate-x-1/2 translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-100/30 to-transparent animate-pulse"></div>
               
               {/* Floating Decorative Elements */}
-              <div className="absolute top-4 left-4 w-2 h-2 bg-heritage-green/30 rounded-full animate-ping"></div>
-              <div className="absolute bottom-4 right-4 w-1 h-1 bg-emerald-400/40 rounded-full animate-ping delay-500"></div>
+              <div className="absolute w-2 h-2 rounded-full top-4 left-4 bg-heritage-green/30 animate-ping"></div>
+              <div className="absolute w-1 h-1 delay-500 rounded-full bottom-4 right-4 bg-emerald-400/40 animate-ping"></div>
               
               <div className="relative flex items-start justify-between">
                 <div className="flex-1 mr-4">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-1 h-6 bg-gradient-to-b from-heritage-green to-emerald-600 rounded-full"></div>
-                    <p className="text-sm font-bold text-gray-700 uppercase tracking-wider">{stat.title}</p>
+                  <div className="flex items-center mb-3 space-x-2">
+                    <div className="w-1 h-6 rounded-full bg-gradient-to-b from-heritage-green to-emerald-600"></div>
+                    <p className="text-sm font-bold tracking-wider text-gray-700 uppercase">{stat.title}</p>
                   </div>
-                  <p className="text-4xl font-black text-heritage-green drop-shadow-sm mb-3 group-hover:scale-105 transition-transform duration-500">{stat.value}</p>
+                  <p className="mb-3 text-4xl font-black transition-transform duration-500 text-heritage-green drop-shadow-sm group-hover:scale-105">{stat.value}</p>
                   <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
                     stat.changeType === 'positive' 
                       ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
@@ -134,8 +145,8 @@ export function AnalyticsChart(): React.ReactElement {
                   <div className={`w-20 h-20 ${stat.iconBg} rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/50 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
                     <Icon className="w-6 h-6 text-gray-600" />
                   </div>
-                  <div className="absolute -inset-2 bg-gradient-to-r from-heritage-green/30 to-emerald-400/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500"></div>
-                  <div className="absolute top-0 right-0 w-3 h-3 bg-heritage-green rounded-full animate-pulse"></div>
+                  <div className="absolute transition-opacity duration-500 opacity-0 -inset-2 bg-gradient-to-r from-heritage-green/30 to-emerald-400/30 rounded-2xl blur-lg group-hover:opacity-60"></div>
+                  <div className="absolute top-0 right-0 w-3 h-3 rounded-full bg-heritage-green animate-pulse"></div>
                 </div>
               </div>
             </div>
@@ -143,161 +154,172 @@ export function AnalyticsChart(): React.ReactElement {
         })}
       </div>
 
-      {/* Chart Section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div className="space-y-1 mb-4 sm:mb-0">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Inventory Usage Trends
-            </h2>
-            <p className="text-sm text-gray-600">
-              Monthly consumption patterns across categories
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <TrendingUp className="w-4 h-4" />
-            <span>Last 12 months</span>
+      {/* Beautiful Header Section for Chart - Similar to ProcurementGrid */}
+      <div className="overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
+        {/* Header */}
+        <div className="px-8 py-6 border-b bg-gradient-to-r from-slate-50 to-white border-gray-200/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="flex items-center justify-center w-10 h-10 shadow-xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl">
+                  <TrendingUp className="w-5 h-5 text-white" strokeWidth={2.5} />
+                </div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-gray-900">Inventory Usage Trends</h3>
+                <p className="text-sm font-medium text-gray-500">
+                  Monthly consumption patterns across categories
+                  {selectedPeriod !== 'All Time' && <span className="ml-2 text-heritage-green">• Period: {selectedPeriod}</span>}
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-4">
+              <div className="relative">
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="px-6 py-3 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 cursor-pointer hover:bg-white/90 min-w-[160px]"
+                >
+                  <option value="Last 7 Days">Last 7 Days</option>
+                  <option value="Last 30 Days">Last 30 Days</option>
+                  <option value="Last 3 Months">Last 3 Months</option>
+                  <option value="Last 6 Months">Last 6 Months</option>
+                  <option value="Last Year">Last Year</option>
+                  <option value="All Time">All Time</option>
+                </select>
+              </div>
+              <button className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Chart Container */}
-        <div className="h-80 w-full">
-          {/* @ts-ignore */}
-          <ResponsiveContainer width="100%" height="100%">
-            {/* @ts-ignore */}
-            <AreaChart
-              data={chartData}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 20,
-              }}
-            >
-              <defs>
-                <linearGradient id="linensGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
-                </linearGradient>
-                <linearGradient id="cleaningGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
-                </linearGradient>
-                <linearGradient id="foodGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.05}/>
-                </linearGradient>
-                <linearGradient id="maintenanceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
-                </linearGradient>
-              </defs>
-              {/* @ts-ignore */}
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              {/* @ts-ignore */}
-              <XAxis 
-                dataKey="month" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                dy={10}
-              />
-              {/* @ts-ignore */}
-              <YAxis 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                dx={-10}
-              />
-              {/* @ts-ignore */}
-              <Tooltip content={<CustomTooltip />} />
-              {/* @ts-ignore */}
-              <Area
-                type="monotone"
-                dataKey="linens"
-                stroke="#10B981"
-                strokeWidth={3}
-                fill="url(#linensGradient)"
-                dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
-              />
-              {/* @ts-ignore */}
-              <Area
-                type="monotone"
-                dataKey="cleaning"
-                stroke="#3B82F6"
-                strokeWidth={3}
-                fill="url(#cleaningGradient)"
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: '#ffffff' }}
-              />
-              {/* @ts-ignore */}
-              <Area
-                type="monotone"
-                dataKey="food"
-                stroke="#F59E0B"
-                strokeWidth={3}
-                fill="url(#foodGradient)"
-                dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2, fill: '#ffffff' }}
-              />
-              {/* @ts-ignore */}
-              <Area
-                type="monotone"
-                dataKey="maintenance"
-                stroke="#8B5CF6"
-                strokeWidth={3}
-                fill="url(#maintenanceGradient)"
-                dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#ffffff' }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        {/* Chart Content Section */}
+        <div className="p-8">
+          {/* Chart Container */}
+          <div className="w-full h-80">
+            {/* @ts-expect-error - Recharts typing issue */}
+            <ResponsiveContainer width="100%" height="100%">
+              {/* @ts-expect-error - Recharts typing issue */}
+              <AreaChart
+                data={chartData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 20,
+                }}
+              >
+                <defs>
+                  <linearGradient id="linensGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.05}/>
+                  </linearGradient>
+                  <linearGradient id="cleaningGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
+                  </linearGradient>
+                  <linearGradient id="foodGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.05}/>
+                  </linearGradient>
+                  <linearGradient id="maintenanceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                
+                {/* @ts-expect-error - Recharts typing issue */}
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6B7280' }}
+                  dy={10}
+                />
+                
+                {/* @ts-expect-error - Recharts typing issue */}
+                <YAxis 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6B7280' }}
+                  dx={-10}
+                />
+                
+                {/* @ts-expect-error - Recharts typing issue */}
+                <Tooltip content={CustomTooltip} />
+                
+                {/* @ts-expect-error - Recharts typing issue */}
+                <Area
+                  type="monotone"
+                  dataKey="linens"
+                  stroke="#10B981"
+                  strokeWidth={3}
+                  fill="url(#linensGradient)"
+                  dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
+                />
+                
+                {/* @ts-expect-error - Recharts typing issue */}
+                <Area
+                  type="monotone"
+                  dataKey="cleaning"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  fill="url(#cleaningGradient)"
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: '#ffffff' }}
+                />
+               
+                {/* @ts-expect-error - Recharts typing issue */}
+                <Area
+                  type="monotone"
+                  dataKey="food"
+                  stroke="#F59E0B"
+                  strokeWidth={3}
+                  fill="url(#foodGradient)"
+                  dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2, fill: '#ffffff' }}
+                />
+                
+                {/* @ts-expect-error - Recharts typing issue */}
+                <Area
+                  type="monotone"
+                  dataKey="maintenance"
+                  stroke="#8B5CF6"
+                  strokeWidth={3}
+                  fill="url(#maintenanceGradient)"
+                  dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#ffffff' }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
 
-        {/* Chart Legend */}
-        <div className="flex flex-wrap justify-center gap-6 mt-6 pt-6 border-t border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            <span className="text-sm font-medium text-gray-700">Linens & Textiles</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span className="text-sm font-medium text-gray-700">Cleaning Supplies</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-            <span className="text-sm font-medium text-gray-700">Food & Beverage</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-violet-500"></div>
-            <span className="text-sm font-medium text-gray-700">Maintenance</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Key Insights */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-6">
-        <div className="flex items-start gap-4">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 mb-2">Key Insights</h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                Peak usage in May with 4.8K units (Linens & Textiles)
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                Cleaning supplies show consistent demand throughout the year
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-violet-500"></div>
-                Maintenance items have lowest but stable consumption pattern
-              </li>
-            </ul>
+          {/* Chart Legend */}
+          <div className="flex flex-wrap justify-center gap-6 pt-6 mt-6 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <span className="text-sm font-medium text-gray-700">Linens & Textiles</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-700">Cleaning Supplies</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+              <span className="text-sm font-medium text-gray-700">Food & Beverage</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-violet-500"></div>
+              <span className="text-sm font-medium text-gray-700">Maintenance</span>
+            </div>
           </div>
         </div>
       </div>
