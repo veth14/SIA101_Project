@@ -2,8 +2,7 @@
 import InventoryAnalyticsHeader from './InventoryAnalyticsHeader';
 import AnalyticsTabs from './AnalyticsTabs';
 import { AnalyticsFilters } from './AnalyticsFilters';
-import AnalyticsMetrics from './AnalyticsMetrics';
-import AnalyticsChart from './AnalyticsChart';
+import AnalyticsChart from './AnalyticsChartWorking';
 import AnalyticsBottomSections from './AnalyticsBottomSections';
 import ProcurementAnalyticsPage from './procurementAnalytics/ProcurementAnalyticsPage';
 import RequisitionAnalyticsPage from './requisitionAnalytics/RequisitionAnalyticsPage';
@@ -37,9 +36,6 @@ const InventoryAnalyticsPage: React.FC = () => {
         return (
           <div className="space-y-6">
             
-
-            {/* Metrics */}
-            <AnalyticsMetrics />
 
             {/* Filters */}
             <AnalyticsFilters

@@ -77,7 +77,7 @@ const ProcurementCharts: React.FC = () => {
                       className="w-6 bg-blue-500 rounded-t hover:bg-blue-600 transition-colors cursor-pointer relative group"
                       style={{ height: `${(data.orders / maxOrders) * 100}%` }}
                     >
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         {data.orders} orders
                       </div>
                     </div>
@@ -116,7 +116,7 @@ const ProcurementCharts: React.FC = () => {
                       className="w-6 bg-green-500 rounded-t hover:bg-green-600 transition-colors cursor-pointer relative group"
                       style={{ height: `${(data.value / maxValue) * 100}%` }}
                     >
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                         ₱{data.value}K
                       </div>
                     </div>
