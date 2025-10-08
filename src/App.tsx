@@ -24,10 +24,14 @@ import AdminDepartmentsPage from './pages/admin/Inventory/invdepartments'
 import AdminProcurementPage from './pages/admin/Inventory/procurement'
 import AdminRequisitionsPage from './pages/admin/Inventory/requisitions'
 import AdminSuppliersPage from './pages/admin/Inventory/suppliers'
-import AdminIncomePage from './pages/admin/Finances/incomepage'
-import AdminExpensePage from './pages/admin/Finances/expensepage'
-import AdminPayrollPage from './pages/admin/Finances/payrollpage'
-import AdminReportsPage from './pages/admin/Finances/reportspage'
+import AdminIncomePage from './pages/admin/Finances/RevenuePage'
+import AdminExpensePage from './pages/admin/Finances/ExpensesPage'
+import AdminPayrollPage from './pages/admin/Finances/PayrollPage'
+import AdminReportsPage from './pages/admin/Finances/ReportsPage'
+import AdminFinanceDashboardPage from './pages/admin/Finances/dashboardpage'
+import AdminFinanceTransactionsPage from './pages/admin/Finances/transactionspage'
+import AdminInvoicesPage from './pages/admin/Finances/InvoicesPage'
+import AdminPaymentsPage from './pages/admin/Finances/PaymentsPage'
 
 // Import maintenance pages
 import AdminMaintenanceOverviewPage from './pages/admin/Maintenance/maintenance-overview'
@@ -186,6 +190,38 @@ function LoadingSpinner() {
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <AdminDepartmentsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/finances/dashboard" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminFinanceDashboardPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/finances/transactions" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminFinanceTransactionsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/finances/invoices" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminInvoicesPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/finances/payments" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminPaymentsPage />
                     </ProtectedRoute>
                   } 
                 />

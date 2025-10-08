@@ -22,20 +22,20 @@ const pageInfo: Record<string, { title: string; subtitle: string }> = {
     subtitle: 'Overview of hotel operations and quick stats'
   },
   '/admin/income': {
-    title: 'Income',
-    subtitle: 'Track hotel revenue and bookings'
+    title: 'Revenue Tracking',
+    subtitle: 'Breakdown of revenues by source with trend visualization'
   },
   '/admin/expenses': {
-    title: 'Expenses',
-    subtitle: 'Monitor hotel operating costs'
+    title: 'Expense Management',
+    subtitle: 'Add and categorize operational expenses by department'
   },
   '/admin/payroll': {
     title: 'Payroll',
     subtitle: 'Manage staff salaries and compensation'
   },
   '/admin/reports': {
-    title: 'Reports',
-    subtitle: 'Generate and review financial documents'
+    title: 'Financial Reports',
+    subtitle: 'Income statement, balance sheet, cash flow reports'
   },
   '/admin/frontdesk': {
     title: 'Front Desk',
@@ -56,6 +56,22 @@ const pageInfo: Record<string, { title: string; subtitle: string }> = {
   '/admin/staff': {
     title: 'Staff Management',
     subtitle: 'Manage hotel staff and schedules'
+  },
+  '/admin/finances/dashboard': {
+    title: 'Financial Dashboard',
+    subtitle: 'Overview of revenue, expenses, profit/loss, occupancy rate'
+  },
+  '/admin/finances/transactions': {
+    title: 'Transactions',
+    subtitle: 'Record all income and expenses, filter by date and type'
+  },
+  '/admin/finances/invoices': {
+    title: 'Invoices',
+    subtitle: 'Generate and manage guest invoices and billing'
+  },
+  '/admin/finances/payments': {
+    title: 'Payments',
+    subtitle: 'Track received and pending payments by mode'
   }
 };
 

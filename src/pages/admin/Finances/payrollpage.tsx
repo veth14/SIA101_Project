@@ -1,10 +1,13 @@
+import React from 'react';
 import { AdminLayout } from '../../../layouts/AdminLayout';
-import { PayrollPage } from '../../../components/finances/payroll/PayrollPage';
+import PayrollPageWrapper from '../../../components/finances/payroll/PayrollPageWrapper';
 
-export default function AdminPayrollPage() {
+const AdminPayrollPage: React.FC = () => {
   return (
     <AdminLayout>
-      <PayrollPage />
+      <PayrollPageWrapper />
     </AdminLayout>
   );
-}
+};
+
+export default AdminPayrollPage;

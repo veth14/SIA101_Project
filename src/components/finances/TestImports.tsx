@@ -1,6 +1,6 @@
 // Test file to verify imports work
 import { ReportsPage } from './reports/ReportsPage';
-import { IncomePage } from './income/IncomePage';
+// import { IncomePage } from './income/IncomePage';
 
 export const TestImports = () => {
   return (
