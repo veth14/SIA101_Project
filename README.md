@@ -103,14 +103,17 @@
 </tr>
 </table>
 
-- **Frontend**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **Authentication**: Firebase Auth
+- **Frontend**: React 18 with TypeScript 5.8
+- **Build Tool**: Vite 7
+- **Authentication**: Firebase Auth 10.14
 - **Database**: Cloud Firestore
-- **Styling**: Tailwind CSS
-- **Icons**: Tabler Icons
-- **Form Handling**: React Hook Form with Zod validation
-- **Routing**: React Router DOM
+- **Styling**: Tailwind CSS 3.4 + Chakra UI 3.27
+- **Icons**: Tabler Icons, Lucide React, React Icons
+- **Form Handling**: React Hook Form 7.62 with Zod 4.1 validation
+- **Routing**: React Router DOM 6.30
+- **Charts**: Chart.js 4.5, Recharts 3.2
+- **Animations**: Framer Motion 12.23
+- **Deployment**: Netlify (configured)
 
 ---
 
@@ -185,22 +188,72 @@ Create your first admin user using the provided utility function. Refer to the u
 ```
 src/
 ├── 📂 components/
-│   ├── 👨‍💼 admin/           # Admin-specific components
-│   ├── 🔐 auth/            # Authentication components
-│   ├── 🔄 common/          # Shared components
-│   └── 🎨 ui/              # UI components
+│   ├── 👨‍💼 admin/                    # Admin dashboard components
+│   │   ├── AdminDashboardStats.tsx
+│   │   ├── RevenueTrendsCard.tsx
+│   │   ├── SmartInsightsCard.tsx
+│   │   └── SystemStatusSection.tsx
+│   ├── 🔐 auth/                     # Authentication components
+│   │   └── ProtectedRoute.tsx
+│   ├── 💰 finances/                 # Financial management modules
+│   │   ├── dashboard/              # Finance dashboard
+│   │   ├── expenses/               # Expense tracking
+│   │   ├── invoices/               # Invoice management
+│   │   ├── payments/               # Payment processing
+│   │   ├── payroll/                # Payroll system
+│   │   ├── profitAnalytics/        # Profit analysis
+│   │   ├── reports/                # Financial reports
+│   │   ├── revenue/                # Revenue tracking
+│   │   └── transactions/           # Transaction history
+│   ├── 🏨 frontdesk/                # Front desk operations
+│   │   ├── reservations/           # Reservation management
+│   │   ├── room-management/        # Room status & availability
+│   │   ├── lost-found/             # Lost & found tracking
+│   │   └── shared/                 # Shared front desk components
+│   ├── 📦 inventory/                # Inventory management
+│   │   ├── invItems/               # Item management
+│   │   └── invTransactions/        # Transaction tracking
+│   ├── 🔧 maintenance/              # Maintenance operations
+│   │   ├── overview/               # Maintenance dashboard
+│   │   ├── staff/                  # Staff management
+│   │   ├── schedule/               # Scheduling system
+│   │   ├── onduty/                 # On-duty monitoring
+│   │   ├── tickets/                # Ticket system
+│   │   └── archive/                # Archive records
+│   ├── 🎨 shared/                   # Shared components
+│   │   └── navigation/             # Navigation components
+│   └── 📊 inventoryCommon/          # Common inventory components
 ├── 🌐 contexts/
-│   └── 🔑 AuthContext/     # Authentication context
-├── 🪝 hooks/               # Custom React hooks
+│   └── 🔑 AuthContext.tsx          # Authentication context
+├── 🪝 hooks/                        # Custom React hooks
+│   └── useAuth.ts
 ├── 📄 pages/
-│   ├── 👨‍💼 admin/           # Admin pages
-│   ├── 🔐 auth/            # Authentication pages
-│   └── 👤 guest/           # Guest-facing pages
-├── ⚙️ services/            # API and service functions
-├── 📝 types/               # TypeScript type definitions
-├── 🛠️ utils/               # Utility functions
+│   ├── 👨‍💼 admin/                    # Admin pages
+│   │   ├── Dashboard/              # Admin dashboard
+│   │   ├── Front-Desk/             # Front desk pages
+│   │   ├── Finances/               # Financial pages
+│   │   ├── Inventory/              # Inventory pages
+│   │   └── Maintenance/            # Maintenance pages
+│   ├── 🔐 auth/                     # Authentication pages
+│   │   └── AuthPage.tsx
+│   └── 👤 guest/                    # Guest-facing pages
+│       ├── landing/                # Landing page
+│       ├── BookingPage.tsx         # Booking system
+│       ├── RoomsPage.tsx           # Room browsing
+│       ├── AmenitiesPage.tsx       # Amenities showcase
+│       ├── NewProfilePage.tsx      # Guest profile
+│       └── PaymentPage.tsx         # Payment processing
+├── 🎨 layouts/
+│   └── AdminLayout.tsx             # Admin layout wrapper
+├── ⚙️ services/                     # Firebase services
+│   ├── analyticsService.ts
+│   └── inventoryService.ts
+├── 📊 data/                         # Sample data
+│   ├── sampleInventory.ts
+│   └── LostFound/
+│       └── sampleData.ts
 └── ⚙️ config/
-    └── 🔥 firebase.ts      # Firebase configuration
+    └── 🔥 firebase.ts              # Firebase configuration
 ```
 
 ---
@@ -227,7 +280,6 @@ src/
 | `npm run build` | 🏗️ Build for production | Creates optimized production build |
 | `npm run preview` | 👀 Preview production build | Test production build locally |
 | `npm run lint` | 🧹 Run linting | Check code quality and standards |
-| `npm run type-check` | 🔍 Type checking | Verify TypeScript types |
 
 ### Quick Start Commands
 ```bash
@@ -240,6 +292,35 @@ npm run dev
 # Build for production
 npm run build
 ```
+
+---
+
+## 🌐 Deployment
+
+### Netlify Deployment
+
+This project is configured for easy deployment on Netlify with the included `netlify.toml` configuration.
+
+#### Automatic Deployment:
+1. 🔗 Connect your GitHub repository to Netlify
+2. 🚀 Netlify will automatically detect the build settings
+3. ✅ Deploy with one click!
+
+#### Build Configuration:
+- **Build Command**: `npm run build`
+- **Publish Directory**: `dist`
+- **Node Version**: 18
+
+#### Manual Deployment:
+```bash
+# Build the project
+npm run build
+
+# Deploy the dist folder to Netlify
+netlify deploy --prod
+```
+
+> **Note**: The `netlify.toml` file includes SPA redirect rules for React Router compatibility.
 
 ---
 
