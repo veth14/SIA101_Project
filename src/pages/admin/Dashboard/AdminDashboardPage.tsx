@@ -348,7 +348,6 @@ export const AdminDashboardPage = () => {
         {/* Main Dashboard Grid - 2x2 Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           <RevenueTrendsCard 
-            totalRevenue={stats.totalRevenue}
             bookings={bookingsData}
           />
           <SmartInsightsCard />
