@@ -7,7 +7,6 @@ import {
   formatCurrency, 
   formatShortCurrency
 } from './chartsLogic/revenueAnalyticsLogic';
-import type { DataPoint } from './chartsLogic/revenueAnalyticsLogic';
 import { SkeletonChart } from '../../universalLoader/SkeletonLoader';
 
 

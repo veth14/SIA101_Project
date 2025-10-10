@@ -129,14 +129,13 @@ export const generateChartCoordinates = (
   const chartHeight = viewBoxHeight - 60; // Account for padding
   const startX = 40;
   const baseY = viewBoxHeight - 40;
-  
   return data.map((item, index) => {
     const x = startX + (index * (chartWidth / (data.length - 1)));
     const revenueY = baseY - (item.revenue / maxValue) * chartHeight;
     const expenseY = baseY - (item.expenses / maxValue) * chartHeight;
     
     return {
-      week: item.week,
+      day: item.day,
       x,
       revenueY,
       expenseY,
@@ -146,7 +145,6 @@ export const generateChartCoordinates = (
     };
   });
 };
-
 export const generateSVGPath = (coordinates: Array<{x: number; y: number}>, closePath: boolean = false): string => {
   if (coordinates.length === 0) return '';
   

@@ -1,12 +1,12 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '../ui/select';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface PaginationControlsProps {
@@ -38,13 +38,12 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
           Showing {startItem} to {endItem} of {totalItems} entries
         </span>
       </div>
-      
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">Rows per page:</span>
           <Select
             value={pageSize.toString()}
-            onValueChange={(value) => onPageSizeChange(Number(value))}
+            onValueChange={(value: string) => onPageSizeChange(Number(value))}
           >
             <SelectTrigger className="w-16">
               <SelectValue />

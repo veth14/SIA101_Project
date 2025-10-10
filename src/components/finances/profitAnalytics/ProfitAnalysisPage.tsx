@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   getRevenueData, 
-  calculateChartMetrics, 
-  formatCurrency 
+  calculateChartMetrics
 } from '../dashboard/chartsLogic/revenueAnalyticsLogic';
 import { ProfitAnalysisHeader } from './ProfitAnalysisHeader';
 import { ProfitAnalysisTabs } from './ProfitAnalysisTabs';

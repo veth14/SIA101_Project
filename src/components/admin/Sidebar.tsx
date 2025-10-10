@@ -333,7 +333,7 @@ const navigation: NavItem[] = [
   },
 ];
 
-export const Sidebar = ({ isMobile = false }: SidebarProps) => {
+export const Sidebar = ({ }: SidebarProps) => {
   console.log('Sidebar component rendering...');
   
   const location = useLocation();

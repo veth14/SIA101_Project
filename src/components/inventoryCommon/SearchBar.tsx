@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input } from '@/components/ui/input';
+import { Input } from '../ui/input';
 import { Search } from 'lucide-react';
 
 interface SearchBarProps {
@@ -22,7 +22,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         type="text"
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
         className="pl-10"
       />
     </div>
