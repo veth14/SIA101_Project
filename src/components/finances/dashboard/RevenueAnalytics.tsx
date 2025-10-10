@@ -45,14 +45,13 @@ const RevenueAnalytics: React.FC = () => {
   const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
   const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
 
-  // Simulate loading
+  // Initial loading only
   useEffect(() => {
-    setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
     return () => clearTimeout(timer);
-  }, [activeTimeframe]);
+  }, []);
   
   // Transform data for recharts
   const chartData = revenueData.map((item) => ({
@@ -131,14 +130,14 @@ const RevenueAnalytics: React.FC = () => {
         </div>
         
         {/* Chart Area */}
-        <div className="px-8 py-6">
-          <div className="h-[300px] w-full">
+        <div className="px-4 py-6">
+          <div className="h-[320px] w-full">
             {/* @ts-ignore */}
             <ResponsiveContainer width="100%" height="100%">
               {/* @ts-ignore */}
               <AreaChart
                 data={chartData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
               >
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -152,6 +151,8 @@ const RevenueAnalytics: React.FC = () => {
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
                   tickLine={false}
+                  interval={0}
+                  padding={{ left: 0, right: 0 }}
                 />
                 {/* @ts-ignore */}
                 <YAxis 
@@ -170,12 +171,14 @@ const RevenueAnalytics: React.FC = () => {
                 <Tooltip content={<CustomTooltip />} />
                 {/* @ts-ignore */}
                 <Area 
-                  type="monotone" 
+                  type="linear" 
                   dataKey="revenue" 
                   stroke="#82A33D" 
                   fillOpacity={1}
                   fill="url(#colorRevenue)" 
                   strokeWidth={3}
+                  connectNulls={true}
+                  dot={false}
                   activeDot={{ 
                     r: 6, 
                     stroke: '#ABAD8A',
