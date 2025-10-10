@@ -255,7 +255,7 @@ const navigation: NavItem[] = [
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         ),
-        description: 'Manage staff salaries and compensation (Optional)'
+        description: 'Manage staff salaries and compensation'
       }
     ]
   },
@@ -360,7 +360,8 @@ export const Sidebar = ({ isMobile = false }: SidebarProps) => {
                             location.pathname === '/admin/finances/dashboard' ||
                             location.pathname === '/admin/finances/transactions' ||
                             location.pathname === '/admin/finances/invoices' ||
-                            location.pathname === '/admin/finances/payments';
+                            location.pathname === '/admin/finances/payments' ||
+                            location.pathname.includes('/admin/finances/profit-analysis');
 
   // Check if we're on inventory or front desk pages
   const isOnInventoryPage = location.pathname === '/admin/inventory' || 
@@ -465,9 +466,9 @@ export const Sidebar = ({ isMobile = false }: SidebarProps) => {
   const isSubItemActive = (href: string) => location.pathname === href;
 
   return (
-    <div className="relative z-10 flex flex-col h-full border-r-4 shadow-2xl bg-gradient-to-b from-white via-heritage-light/50 to-heritage-light border-heritage-green/20 w-72 shadow-heritage-green/10">
+    <div className="flex relative z-10 flex-col w-72 h-full bg-gradient-to-b from-white border-r-4 shadow-2xl via-heritage-light/50 to-heritage-light border-heritage-green/20 shadow-heritage-green/10">
       {/* Header */}
-      <div className="flex items-center px-5 py-4 border-b-2 shadow-sm bg-gradient-to-r from-white to-heritage-light/30 border-heritage-green/15">
+      <div className="flex items-center px-5 py-4 bg-gradient-to-r from-white border-b-2 shadow-sm to-heritage-light/30 border-heritage-green/15">
         <div className="flex items-center">
           <div className="flex items-center justify-center w-12 h-12 p-1.5 bg-gradient-to-br from-heritage-green to-heritage-green/80 rounded-xl shadow-lg border border-heritage-green/20">
             <img 
@@ -509,8 +510,8 @@ export const Sidebar = ({ isMobile = false }: SidebarProps) => {
                   to={item.href!}
                   className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 border-l-4 backdrop-blur-sm ${
                     isActive
-                      ? 'bg-heritage-green text-white border-heritage-green shadow-lg shadow-heritage-green/25'
-                      : 'text-heritage-neutral hover:bg-white/80 hover:text-heritage-green border-transparent hover:border-heritage-green/40 hover:shadow-md backdrop-blur-sm'
+                      ? 'text-white shadow-lg bg-heritage-green border-heritage-green shadow-heritage-green/25'
+                      : 'border-transparent backdrop-blur-sm text-heritage-neutral hover:bg-white/80 hover:text-heritage-green hover:border-heritage-green/40 hover:shadow-md'
                   }`}
                 >
                   <div className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-heritage-neutral group-hover:text-heritage-green'}`}>
@@ -535,8 +536,8 @@ export const Sidebar = ({ isMobile = false }: SidebarProps) => {
                   style={{ pointerEvents: 'auto' }}
                   className={`group w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 border-l-4 backdrop-blur-sm ${
                     isActive
-                      ? 'bg-heritage-green text-white border-heritage-green shadow-lg shadow-heritage-green/25'
-                      : 'text-heritage-neutral hover:bg-white/80 hover:text-heritage-green border-transparent hover:border-heritage-green/40 hover:shadow-md backdrop-blur-sm'
+                      ? 'text-white shadow-lg bg-heritage-green border-heritage-green shadow-heritage-green/25'
+                      : 'border-transparent backdrop-blur-sm text-heritage-neutral hover:bg-white/80 hover:text-heritage-green hover:border-heritage-green/40 hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-center">
@@ -561,7 +562,7 @@ export const Sidebar = ({ isMobile = false }: SidebarProps) => {
               {/* Sub Navigation Items - Only show when expanded */}
               {hasSubItems && (
                 <div className={`ml-6 space-y-1 overflow-hidden transition-all duration-500 ease-in-out ${
-                  isExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+                  isExpanded ? 'opacity-100 max-h-[800px]' : 'max-h-0 opacity-0'
                 }`}>
                   {item.subItems!.map((subItem) => {
                     const isSubActive = isSubItemActive(subItem.href);
@@ -574,8 +575,8 @@ export const Sidebar = ({ isMobile = false }: SidebarProps) => {
                         }}
                         className={`group flex items-start px-4 py-2 text-xs rounded-lg transition-all duration-300 border-l-3 backdrop-blur-sm ${
                           isSubActive
-                            ? 'bg-white/90 text-heritage-green border-heritage-green shadow-md'
-                            : 'text-heritage-neutral/80 hover:text-heritage-green hover:bg-white/70 border-heritage-neutral/30 hover:border-heritage-green/50 backdrop-blur-sm'
+                            ? 'shadow-md bg-white/90 text-heritage-green border-heritage-green'
+                            : 'backdrop-blur-sm text-heritage-neutral/80 hover:text-heritage-green hover:bg-white/70 border-heritage-neutral/30 hover:border-heritage-green/50'
                         }`}
                       >
                         <div className={`flex-shrink-0 mt-0.5 ${isSubActive ? 'text-heritage-green' : 'text-heritage-neutral/60 group-hover:text-heritage-green'}`}>

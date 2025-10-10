@@ -2,7 +2,6 @@ import React from 'react';
 import { DashboardHeader } from './DashboardHeader';
 import DashboardStats from './DashboardStats';
 import DashboardCharts from './DashboardCharts';
-import RecentActivity from './RecentActivity';
 
 export const DashboardPage: React.FC = () => {
   return (
@@ -33,9 +32,6 @@ export const DashboardPage: React.FC = () => {
 
         {/* Charts Section */}
         <DashboardCharts />
-
-        {/* Recent Activity */}
-        <RecentActivity />
       </div>
     </div>
   );

@@ -1,53 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import { BarChart3 } from 'lucide-react';
 
-const DashboardHeader: React.FC = () => {
+export const ProfitAnalysisHeader: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate loading - same timing as other components
+  // Simulate loading - synchronized with all components
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500); // Same as longest component (Revenue Analytics)
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
     return (
-      <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden animate-fade-in">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
-        
-        {/* Header Skeleton Content */}
-        <div className="relative p-10">
+      <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
+        <div className="relative z-10 px-8 py-8">
           <div className="flex items-center justify-between">
-            {/* Left Side Skeleton */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Skeleton className="w-16 h-16 rounded-2xl" />
-                <div className="space-y-2">
-                  <Skeleton className="h-12 w-80" />
-                  <Skeleton className="h-6 w-96" />
-                  <div className="flex items-center space-x-4 mt-4">
-                    <Skeleton className="h-8 w-40 rounded-full" />
-                    <Skeleton className="h-8 w-32 rounded-full" />
-                  </div>
-                </div>
+            <div className="flex items-center space-x-6">
+              <Skeleton className="w-16 h-16 rounded-2xl" />
+              <div>
+                <Skeleton className="h-10 w-64 mb-3" />
+                <Skeleton className="h-5 w-96" />
               </div>
             </div>
-            
-            {/* Right Side Skeleton */}
-            <div className="text-right">
-              <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 shadow-xl">
-                <Skeleton className="h-12 w-24 mb-2" />
-                <Skeleton className="h-4 w-20 mb-3" />
-                <div className="flex items-center justify-center space-x-2">
-                  <Skeleton className="w-1 h-1 rounded-full" />
-                  <Skeleton className="w-1 h-1 rounded-full" />
-                  <Skeleton className="w-1 h-1 rounded-full" />
-                </div>
+            <div className="flex items-center space-x-4">
+              <Skeleton className="w-32 h-12 rounded-2xl" />
+              <div className="text-right">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-6 w-32" />
               </div>
             </div>
           </div>
@@ -63,19 +45,18 @@ const DashboardHeader: React.FC = () => {
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
       <div className="absolute top-1/3 right-1/3 w-40 h-40 bg-green-500/5 rounded-full animate-spin opacity-30" style={{animationDuration: '25s'}}></div>
+      <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-green-500/10 rounded-full animate-bounce opacity-40" style={{animationDuration: '3s'}}></div>
       
       {/* Header Content */}
       <div className="relative p-10">
         <div className="flex items-center justify-between">
-          {/* Left Side - Title and Info */}
+          {/* Left Side - Title and Icon */}
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               {/* Icon with Glow Effect */}
               <div className="relative group">
                 <div className="w-16 h-16 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
-                  <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
+                  <BarChart3 className="w-8 h-8 text-white drop-shadow-lg" strokeWidth={2.5} />
                 </div>
                 <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
               </div>
@@ -83,17 +64,17 @@ const DashboardHeader: React.FC = () => {
               {/* Title and Description */}
               <div className="space-y-2">
                 <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                  Financial Dashboard
+                  Profit Analysis
                 </h1>
                 <p className="text-xl text-gray-700 font-medium tracking-wide">
-                  Overview of your hotel's financial performance
+                  Detailed expense breakdown and profitability insights
                 </p>
                 
                 {/* Status Indicators */}
                 <div className="flex items-center space-x-4 mt-4">
                   <div className="flex items-center space-x-2 bg-emerald-50 backdrop-blur-sm rounded-full px-4 py-2 border border-emerald-200">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-emerald-700">All systems operational</span>
+                    <span className="text-sm font-semibold text-emerald-700">Analysis Ready</span>
                   </div>
                   <div className="flex items-center space-x-2 bg-blue-50 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-200">
                     <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -128,10 +109,8 @@ const DashboardHeader: React.FC = () => {
             </div>
           </div>
         </div>
+        
       </div>
     </div>
   );
 };
-
-export { DashboardHeader };
-export default DashboardHeader;

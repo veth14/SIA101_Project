@@ -32,6 +32,7 @@ import AdminFinanceDashboardPage from './pages/admin/Finances/dashboardpage'
 import AdminFinanceTransactionsPage from './pages/admin/Finances/transactionspage'
 import AdminInvoicesPage from './pages/admin/Finances/InvoicesPage'
 import AdminPaymentsPage from './pages/admin/Finances/PaymentsPage'
+import AdminProfitAnalysisPage from './pages/admin/Finances/ProfitAnalysisPage'
 
 // Import maintenance pages
 import AdminMaintenanceOverviewPage from './pages/admin/Maintenance/maintenance-overview'
@@ -222,6 +223,14 @@ function LoadingSpinner() {
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <AdminPaymentsPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/finances/profit-analysis" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminProfitAnalysisPage />
                     </ProtectedRoute>
                   } 
                 />

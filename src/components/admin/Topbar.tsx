@@ -7,124 +7,60 @@ interface TopbarProps {
   title?: string;
 }
 
-interface SearchResult {
-  id: string;
-  title: string;
-  subtitle: string;
-  type: 'reservation' | 'guest' | 'inventory' | 'room';
-  href: string;
-}
-
-// Page title and subtitle mapping
-const pageInfo: Record<string, { title: string; subtitle: string }> = {
-  '/admin/dashboard': {
-    title: 'Dashboard',
-    subtitle: 'Overview of hotel operations and quick stats'
-  },
-  '/admin/income': {
-    title: 'Revenue Tracking',
-    subtitle: 'Breakdown of revenues by source with trend visualization'
-  },
-  '/admin/expenses': {
-    title: 'Expense Management',
-    subtitle: 'Add and categorize operational expenses by department'
-  },
-  '/admin/payroll': {
-    title: 'Payroll',
-    subtitle: 'Manage staff salaries and compensation'
-  },
-  '/admin/reports': {
-    title: 'Financial Reports',
-    subtitle: 'Income statement, balance sheet, cash flow reports'
-  },
-  '/admin/frontdesk': {
-    title: 'Front Desk',
-    subtitle: 'Manage reservations and guest check-ins'
-  },
-  '/admin/rooms': {
-    title: 'Room Management',
-    subtitle: 'Monitor room status and availability'
-  },
-  '/admin/inventory': {
-    title: 'Inventory',
-    subtitle: 'Manage hotel inventory and supplies'
-  },
-  '/admin/transactions': {
-    title: 'Transactions',
-    subtitle: 'View stock transactions and logs'
-  },
-  '/admin/staff': {
-    title: 'Staff Management',
-    subtitle: 'Manage hotel staff and schedules'
-  },
-  '/admin/finances/dashboard': {
-    title: 'Financial Dashboard',
-    subtitle: 'Overview of revenue, expenses, profit/loss, occupancy rate'
-  },
-  '/admin/finances/transactions': {
-    title: 'Transactions',
-    subtitle: 'Record all income and expenses, filter by date and type'
-  },
-  '/admin/finances/invoices': {
-    title: 'Invoices',
-    subtitle: 'Generate and manage guest invoices and billing'
-  },
-  '/admin/finances/payments': {
-    title: 'Payments',
-    subtitle: 'Track received and pending payments by mode'
-  }
-};
-
 export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   const { userData, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
 
-  // Get current page info
-  const currentPageInfo = pageInfo[location.pathname] || {
-    title: 'Dashboard',
-    subtitle: 'Overview of hotel operations and quick stats'
+  // Get page title from path
+  const getPageTitle = () => {
+    // Finances pages
+    if (location.pathname.includes('/profit-analysis')) return 'Profit Analysis';
+    if (location.pathname.includes('/finances/dashboard')) return 'Financial Dashboard';
+    if (location.pathname.includes('/finances/invoices')) return 'Invoices';
+    if (location.pathname.includes('/finances/payments')) return 'Payments';
+    if (location.pathname.includes('/finances/transactions')) return 'Transactions';
+    if (location.pathname === '/admin/reports') return 'Financial Reports';
+    if (location.pathname === '/admin/expenses') return 'Expense Management';
+    if (location.pathname === '/admin/income') return 'Revenue Tracking';
+    if (location.pathname === '/admin/payroll') return 'Payroll';
+    if (location.pathname === '/admin/finances') return 'Finances';
+    
+    // Inventory pages
+    if (location.pathname === '/admin/inventory') return 'Inventory';
+    if (location.pathname.includes('/inventory/dashboard')) return 'Inventory Dashboard';
+    if (location.pathname.includes('/inventory/departments')) return 'Departments';
+    if (location.pathname.includes('/inventory/suppliers')) return 'Suppliers';
+    if (location.pathname.includes('/inventory/requisitions')) return 'Requisitions';
+    if (location.pathname.includes('/inventory/procurement')) return 'Procurement';
+    if (location.pathname.includes('/inventory/analytics')) return 'Inventory Analytics';
+    
+    // Front Desk pages
+    if (location.pathname === '/admin/frontdesk') return 'Reservations';
+    if (location.pathname === '/admin/rooms') return 'Room Management';
+    if (location.pathname === '/admin/lostfound') return 'Lost & Found';
+    if (location.pathname === '/admin/guest-services') return 'Guest Services';
+    
+    // Maintenance pages
+    if (location.pathname.includes('/maintenance')) return 'Maintenance Overview';
+    if (location.pathname.includes('/manage-staff')) return 'Manage Staff';
+    if (location.pathname.includes('/staff-schedules')) return 'Staff Schedules';
+    if (location.pathname.includes('/on-duty-staff')) return 'On-Duty Staff';
+    if (location.pathname.includes('/tickets-tasks')) return 'Tickets & Tasks';
+    if (location.pathname.includes('/archive')) return 'Archive';
+    
+    // General pages
+    if (location.pathname.includes('/analytics')) return 'Analytics';
+    return 'Dashboard';
   };
 
-  // Mock search data - in real app, this would come from your API
-  const mockSearchData: SearchResult[] = [
-    { id: '1', title: 'John Doe', subtitle: 'Room 101 - Check-in Today', type: 'reservation', href: '/admin/frontdesk' },
-    { id: '2', title: 'Jane Smith', subtitle: 'Room 205 - VIP Guest', type: 'guest', href: '/admin/frontdesk' },
-    { id: '3', title: 'Towels', subtitle: '5 remaining - Low Stock', type: 'inventory', href: '/admin/inventory' },
-    { id: '4', title: 'Suite Room', subtitle: 'Room 301 - Available', type: 'room', href: '/admin/rooms' },
-    { id: '5', title: 'Mike Johnson', subtitle: 'Checked out - Room 102', type: 'reservation', href: '/admin/frontdesk' },
-    { id: '6', title: 'Bed Sheets', subtitle: '12 available', type: 'inventory', href: '/admin/inventory' },
-  ];
-
-  // Search functionality
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
-
-    const filtered = mockSearchData.filter(item =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    setSearchResults(filtered);
-    setShowSearchResults(true);
-  }, [searchQuery]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.search-container')) {
-        setShowSearchResults(false);
-      }
       if (!target.closest('.notifications-container')) {
         setShowNotifications(false);
       }
@@ -137,12 +73,6 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearchResultClick = (result: SearchResult) => {
-    navigate(result.href);
-    setSearchQuery('');
-    setShowSearchResults(false);
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -152,26 +82,12 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     }
   };
 
-  const getSearchResultIcon = (type: SearchResult['type']) => {
-    switch (type) {
-      case 'reservation':
-        return '📅';
-      case 'guest':
-        return '👤';
-      case 'inventory':
-        return '📦';
-      case 'room':
-        return '🏨';
-      default:
-        return '🔍';
-    }
-  };
 
   return (
     <header className="bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-xl border-b border-gray-200/40 sticky top-0 z-50 shadow-sm">
       <div className="flex items-center justify-between h-[79px] px-8">
-        {/* Left side */}
-        <div className="flex items-center space-x-6">
+        {/* Left side - Mobile menu button and Breadcrumbs */}
+        <div className="flex items-center space-x-4">
           <button
             onClick={onSidebarToggle}
             className="p-2.5 rounded-xl text-gray-500 hover:text-heritage-green hover:bg-heritage-green/5 focus:outline-none focus:ring-2 focus:ring-heritage-green/20 transition-all duration-300 md:hidden group"
@@ -181,93 +97,97 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
             </svg>
           </button>
           
-          {/* Enhanced Page Title */}
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl flex items-center justify-center shadow-lg shadow-heritage-green/25 hover:shadow-xl transition-all duration-300">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5v4" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v4" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 5v4" />
-                </svg>
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-heritage-green rounded-full animate-pulse border-2 border-white shadow-sm"></div>
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-heritage-green to-heritage-neutral bg-clip-text text-transparent">
-                {currentPageInfo.title}
-              </h1>
-              <p className="text-sm text-heritage-neutral/80 font-medium hidden sm:block">{currentPageInfo.subtitle}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Center - Search */}
-        <div className="flex-1 max-w-xl mx-8 hidden lg:block">
-          <div className="relative search-container group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <div className="w-5 h-5 rounded-full bg-heritage-light/50 flex items-center justify-center group-focus-within:bg-heritage-light/70 transition-all duration-300">
-                <svg className="h-3 w-3 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search anything..."
-              className="block w-full pl-12 pr-6 py-3 border border-heritage-light/60 rounded-2xl bg-heritage-light/20 backdrop-blur-sm placeholder-heritage-neutral/60 focus:outline-none focus:ring-2 focus:ring-heritage-green/40 focus:border-heritage-green focus:bg-white focus:shadow-lg transition-all duration-300 text-sm font-medium hover:shadow-md hover:bg-heritage-light/30"
-            />
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center space-x-2 text-sm">
+            <button 
+              onClick={() => navigate('/admin/dashboard')}
+              className="flex items-center space-x-1 text-heritage-neutral/70 hover:text-heritage-green transition-colors duration-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Admin</span>
+            </button>
             
-            {/* Enhanced Search Results Dropdown */}
-            {showSearchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-heritage-light/40 z-[9999] max-h-80 overflow-y-auto">
-                <div className="p-3">
-                  <div className="text-xs font-semibold text-heritage-green px-4 py-2 bg-heritage-light/30 rounded-xl border border-heritage-green/20">
-                    {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} found
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    {searchResults.map((result) => (
-                      <button
-                        key={result.id}
-                        onClick={() => handleSearchResultClick(result)}
-                        className="w-full flex items-center space-x-4 px-4 py-3 hover:bg-heritage-light/40 rounded-xl transition-all duration-200 text-left group"
-                      >
-                        <div className="w-10 h-10 bg-heritage-light/50 rounded-xl flex items-center justify-center group-hover:bg-heritage-green/20 transition-all duration-200">
-                          <span className="text-lg">{getSearchResultIcon(result.type)}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-heritage-green transition-colors">{result.title}</p>
-                          <p className="text-xs text-heritage-neutral/70 truncate mt-0.5">{result.subtitle}</p>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-heritage-green/10 text-heritage-green capitalize border border-heritage-green/30">
-                            {result.type}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {/* Finances Section */}
+            {(location.pathname.includes('/finances') || 
+              location.pathname === '/admin/reports' || 
+              location.pathname === '/admin/expenses' || 
+              location.pathname === '/admin/income' || 
+              location.pathname === '/admin/payroll') && (
+              <>
+                <span className="text-heritage-neutral/40">/</span>
+                <button 
+                  onClick={() => navigate('/admin/finances/dashboard')}
+                  className="flex items-center space-x-1 text-heritage-neutral/70 hover:text-heritage-green transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span>Finances</span>
+                </button>
+              </>
             )}
-
-            {/* Enhanced No Results */}
-            {showSearchResults && searchResults.length === 0 && searchQuery.trim() !== '' && (
-              <div className="absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-heritage-light/40 z-[9999]">
-                <div className="p-6 text-center">
-                  <div className="w-12 h-12 bg-heritage-light/50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <svg className="h-6 w-6 text-heritage-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm font-medium text-heritage-green">No results found for "{searchQuery}"</p>
-                  <p className="text-xs text-heritage-neutral/70 mt-1">Try searching for reservations, guests, or inventory items</p>
-                </div>
-              </div>
+            
+            {/* Front Desk Section */}
+            {(location.pathname === '/admin/frontdesk' || 
+              location.pathname === '/admin/rooms' || 
+              location.pathname === '/admin/lostfound' || 
+              location.pathname === '/admin/guest-services') && (
+              <>
+                <span className="text-heritage-neutral/40">/</span>
+                <button 
+                  onClick={() => navigate('/admin/frontdesk')}
+                  className="flex items-center space-x-1 text-heritage-neutral/70 hover:text-heritage-green transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <span>Front Desk</span>
+                </button>
+              </>
             )}
+            
+            {/* Inventory Section */}
+            {location.pathname.includes('/inventory') && (
+              <>
+                <span className="text-heritage-neutral/40">/</span>
+                <button 
+                  onClick={() => navigate('/admin/inventory')}
+                  className="flex items-center space-x-1 text-heritage-neutral/70 hover:text-heritage-green transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <span>Inventory</span>
+                </button>
+              </>
+            )}
+            
+            {/* Maintenance Section */}
+            {(location.pathname.includes('/maintenance') || 
+              location.pathname.includes('/manage-staff') || 
+              location.pathname.includes('/staff-schedules') || 
+              location.pathname.includes('/on-duty-staff') || 
+              location.pathname.includes('/tickets-tasks') || 
+              location.pathname.includes('/archive')) && (
+              <>
+                <span className="text-heritage-neutral/40">/</span>
+                <button 
+                  onClick={() => navigate('/admin/maintenance')}
+                  className="flex items-center space-x-1 text-heritage-neutral/70 hover:text-heritage-green transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Maintenance</span>
+                </button>
+              </>
+            )}
+            
+            <span className="text-heritage-neutral/40">/</span>
+            <span className="text-heritage-green font-medium">{getPageTitle()}</span>
           </div>
         </div>
 

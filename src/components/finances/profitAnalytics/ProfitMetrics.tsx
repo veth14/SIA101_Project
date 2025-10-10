@@ -1,68 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, DollarSign, Percent } from 'lucide-react';
+import { formatCurrency } from '../dashboard/chartsLogic/revenueAnalyticsLogic';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
-interface StatCard {
-  title: string;
-  value: string;
-  change: string;
-  changeType: 'positive' | 'negative' | 'neutral';
-  icon: React.ReactNode;
-  iconBg: string;
+interface Metrics {
+  totalRevenue: number;
+  totalExpenses: number;
+  totalProfit: number;
+  profitMargin: number;
 }
 
-const stats: StatCard[] = [
-  {
-    title: 'Total Revenue',
-    value: '$245,800',
-    change: '+12.5% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-green-100',
-    icon: (
-      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-      </svg>
-    )
-  },
-  {
-    title: 'Net Profit',
-    value: '$89,240',
-    change: '+8.3% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-blue-100',
-    icon: (
-      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    )
-  },
-  {
-    title: 'Total Expenses',
-    value: '$156,560',
-    change: '+2.1% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-orange-100',
-    icon: (
-      <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
-      </svg>
-    )
-  },
-  {
-    title: 'Cash Flow',
-    value: '$45,320',
-    change: '-3.2% from last month',
-    changeType: 'negative',
-    iconBg: 'bg-purple-100',
-    icon: (
-      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-      </svg>
-    )
-  }
-];
+interface ProfitMetricsProps {
+  metrics: Metrics;
+}
 
-const DashboardStats: React.FC = () => {
+export const ProfitMetrics: React.FC<ProfitMetricsProps> = ({ metrics }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const profitMarginPercentage = ((metrics.totalProfit / metrics.totalRevenue) * 100).toFixed(1);
 
   // Simulate loading - synchronized with all components
   useEffect(() => {
@@ -71,6 +25,45 @@ const DashboardStats: React.FC = () => {
     }, 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  const statsData = [
+    {
+      title: 'Total Revenue',
+      value: formatCurrency(metrics.totalRevenue),
+      change: '+12.5% from last period',
+      changeType: 'positive' as const,
+      iconBg: 'bg-green-100',
+      icon: <DollarSign className="w-6 h-6 text-green-600" strokeWidth={2.5} />,
+      progressColor: 'bg-gradient-to-r from-[#82A33D] to-emerald-400'
+    },
+    {
+      title: 'Total Expenses',
+      value: formatCurrency(metrics.totalExpenses),
+      change: '+8.3% from last period',
+      changeType: 'positive' as const,
+      iconBg: 'bg-orange-100',
+      icon: <TrendingDown className="w-6 h-6 text-orange-600" strokeWidth={2.5} />,
+      progressColor: 'bg-gradient-to-r from-orange-400 to-orange-600'
+    },
+    {
+      title: 'Net Profit',
+      value: formatCurrency(metrics.totalProfit),
+      change: '+15.2% from last period',
+      changeType: 'positive' as const,
+      iconBg: 'bg-blue-100',
+      icon: <TrendingUp className="w-6 h-6 text-blue-600" strokeWidth={2.5} />,
+      progressColor: 'bg-gradient-to-r from-blue-400 to-blue-600'
+    },
+    {
+      title: 'Profit Margin',
+      value: `${profitMarginPercentage}%`,
+      change: '+2.1% from last period',
+      changeType: 'positive' as const,
+      iconBg: 'bg-purple-100',
+      icon: <Percent className="w-6 h-6 text-purple-600" strokeWidth={2.5} />,
+      progressColor: 'bg-gradient-to-r from-purple-400 to-purple-600'
+    }
+  ];
 
   if (isLoading) {
     return (
@@ -98,12 +91,12 @@ const DashboardStats: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
+    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
+      {statsData.map((stat, index) => (
         <div 
           key={index} 
           className="overflow-hidden relative p-8 rounded-2xl border shadow-lg backdrop-blur-xl transition-all duration-500 bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
-          style={{ animationDelay: `${index * 100}ms` }}
+          style={{ animationDelay: `${(index + 2) * 100}ms` }}
         >
           {/* Glass morphism effect */}
           <div className="absolute inset-0 transition-opacity duration-500 opacity-40 bg-gradient-to-br from-[#82A33D]/5 via-white/80 to-[#82A33D]/10 rounded-2xl group-hover:opacity-70"></div>
@@ -163,12 +156,7 @@ const DashboardStats: React.FC = () => {
           {/* Bottom progress indicator - different for each card */}
           <div className="overflow-hidden absolute right-0 bottom-0 left-0 h-1">
             <div 
-              className={`h-full ${
-                index === 0 ? 'bg-gradient-to-r from-[#82A33D] to-emerald-400' :
-                index === 1 ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
-                index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
-                'bg-gradient-to-r from-purple-400 to-purple-600'
-              }`}
+              className={`h-full ${stat.progressColor}`}
               style={{ width: `${(index + 1) * 25}%` }}
             ></div>
           </div>
@@ -177,6 +165,3 @@ const DashboardStats: React.FC = () => {
     </div>
   );
 };
-
-export default DashboardStats;
-export { DashboardStats };
