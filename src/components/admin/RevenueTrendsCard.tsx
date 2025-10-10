@@ -1,12 +1,10 @@
 import React from 'react';
 
 interface RevenueTrendsProps {
-  totalRevenue?: number;
   bookings?: any[];
 }
 
 const RevenueTrendsCard: React.FC<RevenueTrendsProps> = ({ 
-  totalRevenue = 355000, 
   bookings = [] 
 }) => {
   // Calculate weekly revenue from actual bookings

@@ -201,31 +201,19 @@ export const StockStatusDropdown: React.FC<{
 
 interface ItemsTableProps {
   searchTerm: string;
-  onSearchChange: (value: string) => void;
   selectedCategory: string;
-  onCategoryChange: (category: string) => void;
   items: InventoryItem[];
   currentPage: number;
   onPageChange: (page: number) => void;
-  categoryOptions?: Array<{ value: string; label: string; count: number }>;
-  stockStatusOptions?: Array<{ value: string; label: string; count: number }>;
-  selectedStockStatus?: string;
-  onStockStatusChange?: (status: string) => void;
   onViewDetails?: (item: InventoryItem) => void;
 }
 
 export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
   searchTerm,
-  onSearchChange,
   selectedCategory,
-  onCategoryChange,
   items,
   currentPage,
   onPageChange,
-  categoryOptions = [],
-  stockStatusOptions = [],
-  selectedStockStatus = 'all',
-  onStockStatusChange = () => {},
   onViewDetails = () => {}
 }) => {
   const itemsPerPage = 6;

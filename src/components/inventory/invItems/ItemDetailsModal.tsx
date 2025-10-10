@@ -635,7 +635,7 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
                   </div>
                   
                   <div className="space-y-3">
-                    {recentActivity.slice(0, 4).map((activity, index) => (
+                    {recentActivity.slice(0, 4).map((activity) => (
                       <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg hover:shadow-sm transition-all duration-200">
                         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 flex-shrink-0">
                           {getActivityIcon(activity.type)}

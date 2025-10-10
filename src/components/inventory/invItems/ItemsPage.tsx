@@ -20,7 +20,6 @@ const ItemsPage: React.FC = () => {
   
   const {
     filteredItems,
-    inventoryStats,
     filterOptions,
     loading,
     error,
@@ -169,16 +168,10 @@ const ItemsPage: React.FC = () => {
               {hasResults ? (
                 <ItemsTableContainer
                   searchTerm={filters.searchTerm}
-                  onSearchChange={handleSearchChange}
                   selectedCategory={filters.selectedCategory}
-                  onCategoryChange={handleCategoryChange}
                   items={filteredItems}
                   currentPage={currentPage}
                   onPageChange={setCurrentPage}
-                  categoryOptions={filterOptions.categoryOptions}
-                  stockStatusOptions={filterOptions.stockStatusOptions}
-                  selectedStockStatus={filters.stockStatus}
-                  onStockStatusChange={handleStockStatusChange}
                   onViewDetails={handleViewDetails}
                 />
               ) : (
