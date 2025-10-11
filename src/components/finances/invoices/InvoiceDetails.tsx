@@ -9,205 +9,185 @@ interface InvoiceDetailsProps {
 const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => {
   if (!invoice) return null;
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'room':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-          </svg>
-        );
-      case 'food':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v8m0 0l3-3m-3 3l-3-3" />
-          </svg>
-        );
-      case 'services':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-        );
-      case 'taxes':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
-        );
-      default:
-        return null;
-    }
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 0,
+    }).format(amount);
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'room':
-        return 'text-blue-600 bg-blue-50';
-      case 'food':
-        return 'text-orange-600 bg-orange-50';
-      case 'services':
-        return 'text-purple-600 bg-purple-50';
-      case 'taxes':
-        return 'text-gray-600 bg-gray-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
-    }
-  };
-
-  const handlePrintInvoice = () => {
-    window.print();
-  };
-
-  const handleDownloadPDF = () => {
-    // In a real application, this would generate and download a PDF
-    alert('PDF download functionality would be implemented here');
-  };
-
-  const handleSendEmail = () => {
-    // In a real application, this would open email with invoice attached
-    alert('Email functionality would be implemented here');
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      paid: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '✓' },
+      pending: { color: 'bg-amber-100 text-amber-800 border-amber-200', icon: '⏳' },
+      overdue: { color: 'bg-red-100 text-red-800 border-red-200', icon: '!' },
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    
+    return (
+      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${config.color}`}>
+        <span className="mr-1">{config.icon}</span>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-[#82A33D] to-[#6d8735]">
-          <div className="text-white">
-            <h2 className="text-2xl font-bold">Invoice Details</h2>
-            <p className="text-green-100">{invoice.id}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-white hover:text-green-200 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {/* Invoice Header Info */}
-          <div className="grid grid-cols-2 gap-8 mb-8">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="relative overflow-hidden bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/60 shadow-2xl max-w-4xl w-full max-h-[90vh]">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/5 via-heritage-light/20 to-heritage-green/3 rounded-3xl opacity-60"></div>
+        <div className="absolute top-0 right-0 w-40 h-40 translate-x-1/3 -translate-y-1/3 rounded-full bg-gradient-to-bl from-heritage-green/10 to-transparent"></div>
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-tr from-heritage-light/30 to-transparent"></div>
+        
+        <div className="relative z-10">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b border-heritage-neutral/10">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Guest Information</h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Name:</span> {invoice.guestName}</p>
-                <p><span className="font-medium">Room:</span> {invoice.roomNumber}</p>
-                <p><span className="font-medium">Check-in:</span> {invoice.checkIn}</p>
-                <p><span className="font-medium">Check-out:</span> {invoice.checkOut}</p>
-              </div>
+              <h2 className="text-2xl font-bold text-heritage-green">Invoice Details</h2>
+              <p className="text-sm text-heritage-neutral/70">View and manage invoice information</p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Invoice ID:</span> {invoice.id}</p>
-                <p><span className="font-medium">Status:</span> 
-                  <span className={`ml-2 px-2 py-1 text-xs font-bold rounded-full ${
-                    invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                    invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                  </span>
-                </p>
-                <p><span className="font-medium">Issue Date:</span> {invoice.checkOut}</p>
-                <p><span className="font-medium">Total Amount:</span> 
-                  <span className="text-xl font-bold text-[#82A33D] ml-2">
-                    ${invoice.totalAmount.toFixed(2)}
-                  </span>
-                </p>
-              </div>
-            </div>
+            <button
+              onClick={onClose}
+              className="p-3 text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/10 rounded-2xl transition-all duration-300"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
-          {/* Invoice Items */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Invoice Items</h3>
-            <div className="bg-gray-50 rounded-xl overflow-hidden">
-              <div className="grid grid-cols-12 gap-4 p-4 bg-gray-100 font-semibold text-gray-700 text-sm">
-                <div className="col-span-1">Category</div>
-                <div className="col-span-5">Description</div>
-                <div className="col-span-2 text-center">Quantity</div>
-                <div className="col-span-2 text-right">Unit Price</div>
-                <div className="col-span-2 text-right">Total</div>
-              </div>
-              {invoice.items.map((item) => (
-                <div key={item.id} className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 last:border-b-0 hover:bg-white transition-colors">
-                  <div className="col-span-1">
-                    <div className={`p-2 rounded-lg ${getCategoryColor(item.category)}`}>
-                      {getCategoryIcon(item.category)}
-                    </div>
-                  </div>
-                  <div className="col-span-5">
-                    <p className="font-medium text-gray-900">{item.description}</p>
-                    <p className="text-sm text-gray-500 capitalize">{item.category}</p>
-                  </div>
-                  <div className="col-span-2 text-center">
-                    <span className="px-3 py-1 bg-gray-200 rounded-full text-sm font-medium">
-                      {item.quantity}
-                    </span>
-                  </div>
-                  <div className="col-span-2 text-right font-medium">
-                    ${item.unitPrice.toFixed(2)}
-                  </div>
-                  <div className="col-span-2 text-right font-bold text-gray-900">
-                    ${item.total.toFixed(2)}
-                  </div>
+          {/* Invoice Content */}
+          <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)]">
+            {/* Invoice Header */}
+            <div className="flex items-start justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-heritage-green to-heritage-neutral shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Summary */}
-          <div className="bg-gradient-to-r from-[#82A33D]/10 to-[#6d8735]/10 rounded-xl p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Total Amount</h3>
-                <p className="text-sm text-gray-600">{invoice.items.length} items</p>
+                <div>
+                  <h3 className="text-2xl font-bold text-heritage-green">Invoice #{invoice.id}</h3>
+                  <p className="text-sm text-heritage-neutral/70 mt-1">Generated for {invoice.guestName}</p>
+                </div>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-[#82A33D]">
-                  ${invoice.totalAmount.toFixed(2)}
-                </p>
+                {getStatusBadge(invoice.status)}
+                <p className="text-sm text-heritage-neutral/70 mt-2">Total: {formatCurrency(invoice.totalAmount)}</p>
+              </div>
+            </div>
+
+            {/* Guest Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-heritage-light/30 backdrop-blur-sm rounded-2xl p-6 border border-heritage-neutral/10">
+                <h4 className="text-lg font-semibold text-heritage-green mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Guest Information
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-heritage-neutral/70">Guest Name</p>
+                    <p className="font-semibold text-heritage-green">{invoice.guestName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-heritage-neutral/70">Room Number</p>
+                    <p className="font-semibold text-heritage-green">Room {invoice.roomNumber}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-heritage-light/30 backdrop-blur-sm rounded-2xl p-6 border border-heritage-neutral/10">
+                <h4 className="text-lg font-semibold text-heritage-green mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Stay Information
+                </h4>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-heritage-neutral/70">Check-in Date</p>
+                    <p className="font-semibold text-heritage-green">{invoice.checkIn}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-heritage-neutral/70">Check-out Date</p>
+                    <p className="font-semibold text-heritage-green">{invoice.checkOut}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Invoice Items */}
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold text-heritage-green mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Invoice Items
+              </h4>
+              <div className="bg-heritage-light/20 backdrop-blur-sm rounded-2xl border border-heritage-neutral/10 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-heritage-green/10 border-b border-heritage-neutral/10">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-heritage-green">Description</th>
+                        <th className="px-6 py-4 text-center text-sm font-semibold text-heritage-green">Quantity</th>
+                        <th className="px-6 py-4 text-right text-sm font-semibold text-heritage-green">Unit Price</th>
+                        <th className="px-6 py-4 text-right text-sm font-semibold text-heritage-green">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-heritage-neutral/10">
+                      {invoice.items.map((item) => (
+                        <tr key={item.id} className="hover:bg-heritage-green/5 transition-colors">
+                          <td className="px-6 py-4">
+                            <div>
+                              <p className="font-medium text-heritage-green">{item.description}</p>
+                              <p className="text-sm text-heritage-neutral/70 capitalize">{item.category}</p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center font-medium text-heritage-green">{item.quantity}</td>
+                          <td className="px-6 py-4 text-right font-medium text-heritage-green">{formatCurrency(item.unitPrice)}</td>
+                          <td className="px-6 py-4 text-right font-semibold text-heritage-green">{formatCurrency(item.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Invoice Summary */}
+            <div className="bg-heritage-light/30 backdrop-blur-sm rounded-2xl p-6 border border-heritage-neutral/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg font-semibold text-heritage-green mb-2">Invoice Summary</h4>
+                  <p className="text-sm text-heritage-neutral/70">{invoice.items.length} items • {invoice.status} payment</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-heritage-neutral/70">Total Amount</p>
+                  <p className="text-3xl font-bold text-heritage-green">{formatCurrency(invoice.totalAmount)}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50">
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={handlePrintInvoice}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Print
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Download PDF
-            </button>
-            <button
-              onClick={handleSendEmail}
-              className="px-4 py-2 text-sm font-medium text-white bg-[#82A33D] hover:bg-[#6d8735] rounded-lg transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Send Email
-            </button>
+          {/* Action Buttons */}
+          <div className="p-6 border-t border-heritage-neutral/10 bg-heritage-light/20 backdrop-blur-sm">
+            <div className="flex gap-3 justify-end">
+              <button className="px-6 py-3 text-sm font-medium text-heritage-neutral border border-heritage-neutral/30 rounded-2xl hover:bg-heritage-neutral/5 hover:border-heritage-neutral/50 transition-all duration-300">
+                Print Invoice
+              </button>
+              <button className="px-6 py-3 text-sm font-medium text-heritage-neutral border border-heritage-neutral/30 rounded-2xl hover:bg-heritage-neutral/5 hover:border-heritage-neutral/50 transition-all duration-300">
+                Download PDF
+              </button>
+              <button className="px-6 py-3 text-sm font-medium text-white bg-heritage-green hover:bg-heritage-green/90 rounded-2xl transition-all duration-300 shadow-lg">
+                Send Email
+              </button>
+            </div>
           </div>
         </div>
       </div>

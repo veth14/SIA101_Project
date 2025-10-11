@@ -49,11 +49,13 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
 
   // Loading simulation
   useEffect(() => {
+    console.log('RecentTransactions received transactions:', transactions);
+    console.log('Number of transactions:', transactions.length);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000); // Slightly longer for table
     return () => clearTimeout(timer);
-  }, []);
+  }, [transactions]);
 
   if (isLoading) {
     return (
@@ -91,7 +93,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-heritage-neutral/20">
-                {Array.from({ length: 6 }, (_, index) => (
+                {Array.from({ length: 5 }, (_, index) => (
                   <tr key={index} className="h-14">
                     <td className="px-6 py-3"><Skeleton className="w-32 h-4" /></td>
                     <td className="px-6 py-3"><Skeleton className="w-20 h-4" /></td>
@@ -181,24 +183,24 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                       <span>Description</span>
                     </div>
                   </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-left text-heritage-green">
-                    <div className="flex items-center space-x-2">
+                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-right text-heritage-green">
+                    <div className="flex items-center justify-end space-x-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                       </svg>
                       <span>Amount</span>
                     </div>
                   </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-left text-heritage-green">
-                    <div className="flex items-center space-x-2">
+                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-center text-heritage-green">
+                    <div className="flex items-center justify-center space-x-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span>Status</span>
                     </div>
                   </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-left text-heritage-green">
-                    <div className="flex items-center space-x-2">
+                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-center text-heritage-green">
+                    <div className="flex items-center justify-center space-x-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
@@ -208,15 +210,18 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-heritage-neutral/10 bg-white/30">
-                {Array.from({ length: 6 }, (_, index) => {
+                {Array.from({ length: 5 }, (_, index) => {
                   const transaction = transactions[index];
                   return transaction ? (
                     <tr 
                       key={transaction.id} 
-                      className="transition-all duration-300 border-l-4 border-transparent cursor-pointer h-14 hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-heritage-light/20 group hover:border-heritage-green"
-                      onClick={() => onTransactionSelect(transaction)}
+                      className="h-16 transition-all duration-300 border-l-4 border-transparent cursor-pointer hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-heritage-light/20 group hover:border-heritage-green"
+                      onClick={() => {
+                        console.log('Transaction clicked:', transaction);
+                        onTransactionSelect(transaction);
+                      }}
                     >
-                      <td className="px-8 py-3">
+                      <td className="px-8 py-4">
                         <div className="flex items-center space-x-3">
                           <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-heritage-green/20 to-heritage-neutral/20 rounded-xl">
                             <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,13 +234,13 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-3">
-                        <div className="text-right">
+                      <td className="px-8 py-4 text-right">
+                        <div>
                           <p className="text-base font-bold text-heritage-green">{formatCurrency(transaction.amount)}</p>
                           <p className="text-xs capitalize text-heritage-neutral/70">{transaction.method}</p>
                         </div>
                       </td>
-                      <td className="px-8 py-3">
+                      <td className="px-8 py-4 text-center">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
                           transaction.status === 'completed' 
                             ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
@@ -250,16 +255,16 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                           {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-8 py-3">
-                        <div className="text-left">
+                      <td className="px-8 py-4 text-center">
+                        <div>
                           <p className="text-sm font-medium text-heritage-green">{transaction.date}</p>
                           <p className="text-xs text-heritage-neutral/70">{transaction.time}</p>
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    <tr key={`empty-${index}`} className="border-b h-14 bg-heritage-neutral/3 border-heritage-neutral/5">
-                      <td className="px-8 py-3" colSpan={4}>
+                    <tr key={`empty-${index}`} className="h-16 border-b bg-heritage-neutral/3 border-heritage-neutral/5">
+                      <td className="px-8 py-4" colSpan={4}>
                         <div className="flex items-center justify-center text-heritage-neutral/20">
                           <div className="flex items-center space-x-2">
                             <div className="w-1 h-1 rounded-full bg-heritage-neutral/30"></div>

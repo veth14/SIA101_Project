@@ -44,6 +44,156 @@ export const TransactionsPage: React.FC = () => {
   });
 
   const itemsPerPage = 6;
+
+  // Handler functions for transaction actions
+  const handleViewFullDetails = (transaction: Transaction) => {
+    // Create a detailed modal or window
+    const detailsContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Transaction Full Details</title>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: linear-gradient(135deg, #82A33D 0%, #6d8735 100%);
+            color: white;
+          }
+          .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            color: #333; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          }
+          .header { 
+            text-align: center; 
+            border-bottom: 3px solid #82A33D; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+          }
+          .details-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin: 20px 0; 
+          }
+          .detail-item { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border-left: 4px solid #82A33D; 
+          }
+          .detail-label { 
+            font-weight: bold; 
+            color: #82A33D; 
+            margin-bottom: 5px; 
+          }
+          .detail-value { 
+            font-size: 16px; 
+            color: #333; 
+          }
+          .amount { 
+            font-size: 36px; 
+            font-weight: bold; 
+            color: #82A33D; 
+            text-align: center; 
+            margin: 20px 0; 
+          }
+          .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+          }
+          .completed { background: #d4edda; color: #155724; }
+          .pending { background: #fff3cd; color: #856404; }
+          .failed { background: #f8d7da; color: #721c24; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Balay Ginhawa Hotel</h1>
+            <h2>Complete Transaction Details</h2>
+            <p style="color: #666;">Transaction Reference: ${transaction.reference}</p>
+          </div>
+          
+          <div class="amount">₱${transaction.amount.toLocaleString()}</div>
+          
+          <div class="details-grid">
+            <div class="detail-item">
+              <div class="detail-label">Transaction ID</div>
+              <div class="detail-value">${transaction.id}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Reference Number</div>
+              <div class="detail-value">${transaction.reference}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Description</div>
+              <div class="detail-value">${transaction.description}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Transaction Type</div>
+              <div class="detail-value">${transaction.type.toUpperCase()}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Category</div>
+              <div class="detail-value">${transaction.category}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Payment Method</div>
+              <div class="detail-value">${transaction.method.toUpperCase()}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Date</div>
+              <div class="detail-value">${transaction.date}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Time</div>
+              <div class="detail-value">${transaction.time}</div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px;">
+            <span class="status-badge ${transaction.status}">${transaction.status.toUpperCase()}</span>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const detailsWindow = window.open('', '_blank', 'width=900,height=700');
+    if (detailsWindow) {
+      detailsWindow.document.write(detailsContent);
+      detailsWindow.document.close();
+      detailsWindow.focus();
+    }
+  };
+
+  const handleCreateInvoice = (transaction: Transaction) => {
+    // Navigate to invoice creation or show invoice creation modal
+    const confirmCreate = window.confirm(
+      `Create an invoice for this transaction?\n\n` +
+      `Description: ${transaction.description}\n` +
+      `Amount: ₱${transaction.amount.toLocaleString()}\n` +
+      `Reference: ${transaction.reference}`
+    );
+    
+    if (confirmCreate) {
+      // In a real app, this would navigate to invoice creation page
+      // For now, we'll show a success message
+      alert(`Invoice creation initiated for transaction ${transaction.reference}!\n\nYou would be redirected to the invoice creation page where this transaction data would be pre-filled.`);
+      
+      // You could also redirect to invoice page:
+      // window.location.href = '/finances/invoices/create?transactionId=' + transaction.id;
+    }
+  };
   const totalTransactions = sampleTransactions.reduce((sum, t) => sum + t.amount, 0);
   const completedTransactions = sampleTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
   const pendingTransactions = sampleTransactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
@@ -63,13 +213,10 @@ export const TransactionsPage: React.FC = () => {
     currentPage * itemsPerPage
   );
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  // Debug logging
+  console.log('TransactionsPage - filteredTransactions:', filteredTransactions);
+  console.log('TransactionsPage - paginatedTransactions:', paginatedTransactions);
+  console.log('TransactionsPage - selectedTransaction:', selectedTransaction);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-heritage-light via-white to-heritage-green/10 relative overflow-hidden">
@@ -119,6 +266,8 @@ export const TransactionsPage: React.FC = () => {
             <TransactionDetails
               transaction={selectedTransaction}
               onClose={() => setSelectedTransaction(null)}
+              onViewFullDetails={handleViewFullDetails}
+              onCreateInvoice={handleCreateInvoice}
             />
           </div>
         </div>
