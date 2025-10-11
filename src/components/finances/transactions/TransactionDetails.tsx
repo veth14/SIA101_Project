@@ -39,24 +39,18 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
 
   // Handler functions
   const handleViewFullDetails = (transaction: Transaction) => {
-    console.log('handleViewFullDetails called with:', transaction);
     if (onViewFullDetails) {
-      console.log('Calling onViewFullDetails...');
       onViewFullDetails(transaction);
     } else {
-      console.log('No onViewFullDetails handler, showing default alert');
       // Default behavior - show alert or modal
       alert(`Viewing full details for transaction: ${transaction.description}\nAmount: ${formatCurrency(transaction.amount)}\nReference: ${transaction.reference}`);
     }
   };
 
   const handleCreateInvoice = (transaction: Transaction) => {
-    console.log('handleCreateInvoice called with:', transaction);
     if (onCreateInvoice) {
-      console.log('Calling onCreateInvoice...');
       onCreateInvoice(transaction);
     } else {
-      console.log('No onCreateInvoice handler, showing default alert');
       // Default behavior - show alert or navigate to invoice creation
       alert(`Creating invoice for transaction: ${transaction.description}\nAmount: ${formatCurrency(transaction.amount)}`);
     }
@@ -131,12 +125,11 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
 
   // Loading simulation
   useEffect(() => {
-    console.log('TransactionDetails received transaction:', transaction);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2200); // Slightly longer delay
     return () => clearTimeout(timer);
-  }, [transaction]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -242,10 +235,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
             <div className="pt-6 border-t border-heritage-neutral/20">
               <div className="space-y-3">
                 <button 
-                  onClick={() => {
-                    console.log('View Full Details button clicked');
-                    handleViewFullDetails(transaction);
-                  }}
+                  onClick={() => handleViewFullDetails(transaction)}
                   className="w-full flex items-center justify-center space-x-3 px-6 py-4 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-2xl hover:from-heritage-green/90 hover:to-heritage-neutral/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] group"
                 >
                   <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,10 +246,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
                 </button>
                 
                 <button 
-                  onClick={() => {
-                    console.log('Create Invoice button clicked');
-                    handleCreateInvoice(transaction);
-                  }}
+                  onClick={() => handleCreateInvoice(transaction)}
                   className="w-full flex items-center justify-center space-x-3 px-6 py-4 bg-gradient-to-r from-heritage-light/80 to-heritage-green/20 border-2 border-heritage-green text-heritage-green rounded-2xl hover:bg-gradient-to-r hover:from-heritage-green/10 hover:to-heritage-light/30 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] group"
                 >
                   <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

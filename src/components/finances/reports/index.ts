@@ -6,3 +6,6 @@ export { ReportsSummary } from './ReportsSummary';
 export { ReportsCharts } from './ReportsCharts';
 export { ReportsTable } from './ReportsTable';
 export { ReportsExport } from './ReportsExport';
+export { ReportFilters } from './ReportFilters';
+export { ReportGenerator } from './ReportGenerator';
+export { ReportHistory } from './ReportHistory';

@@ -213,21 +213,16 @@ export const TransactionsPage: React.FC = () => {
     currentPage * itemsPerPage
   );
 
-  // Debug logging
-  console.log('TransactionsPage - filteredTransactions:', filteredTransactions);
-  console.log('TransactionsPage - paginatedTransactions:', paginatedTransactions);
-  console.log('TransactionsPage - selectedTransaction:', selectedTransaction);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light via-white to-heritage-green/10 relative overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-heritage-light via-white to-heritage-green/10">
       {/* Heritage Floating Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-heritage-green/15 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-32 w-80 h-80 bg-heritage-neutral/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1000ms'}}></div>
-        <div className="absolute bottom-32 left-1/3 w-72 h-72 bg-heritage-light/30 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2000ms'}}></div>
+        <div className="absolute rounded-full top-20 left-20 w-96 h-96 bg-heritage-green/15 blur-3xl animate-pulse"></div>
+        <div className="absolute rounded-full top-40 right-32 w-80 h-80 bg-heritage-neutral/20 blur-3xl animate-pulse" style={{animationDelay: '1000ms'}}></div>
+        <div className="absolute rounded-full bottom-32 left-1/3 w-72 h-72 bg-heritage-light/30 blur-3xl animate-pulse" style={{animationDelay: '2000ms'}}></div>
       </div>
 
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
+      <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
         {/* Header */}
         <TransactionsHeader />
 
@@ -241,11 +236,11 @@ export const TransactionsPage: React.FC = () => {
         {/* Transaction Analytics Component */}
         <TransactionAnalytics 
           filters={{ status: filters.status, category: filters.category }}
-          onFiltersChange={setFilters}
+          onFiltersChange={(newFilters) => setFilters({...filters, ...newFilters})}
         />
 
         {/* Transaction Table and Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
           {/* Recent Transactions Component */}
           <div className="lg:col-span-3">
             <RecentTransactions

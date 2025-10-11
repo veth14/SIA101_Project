@@ -49,13 +49,11 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
 
   // Loading simulation
   useEffect(() => {
-    console.log('RecentTransactions received transactions:', transactions);
-    console.log('Number of transactions:', transactions.length);
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000); // Slightly longer for table
     return () => clearTimeout(timer);
-  }, [transactions]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -216,10 +214,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                     <tr 
                       key={transaction.id} 
                       className="h-16 transition-all duration-300 border-l-4 border-transparent cursor-pointer hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-heritage-light/20 group hover:border-heritage-green"
-                      onClick={() => {
-                        console.log('Transaction clicked:', transaction);
-                        onTransactionSelect(transaction);
-                      }}
+                      onClick={() => onTransactionSelect(transaction)}
                     >
                       <td className="px-8 py-4">
                         <div className="flex items-center space-x-3">
