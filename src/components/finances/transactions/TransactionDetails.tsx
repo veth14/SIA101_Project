@@ -1,5 +1,18 @@
-import React from 'react';
-import type { Transaction } from './TransactionsPage';
+import React, { useState, useEffect } from 'react';
+import { Skeleton } from '../../universalLoader/SkeletonLoader';
+
+export interface Transaction {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'credit' | 'debit';
+  date: string;
+  time: string;
+  category: string;
+  status: 'completed' | 'pending' | 'failed';
+  reference: string;
+  method: 'cash' | 'card' | 'transfer' | 'check';
+}
 
 interface TransactionDetailsProps {
   transaction: Transaction | null;
@@ -7,178 +20,155 @@ interface TransactionDetailsProps {
 }
 
 const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, onClose }) => {
-  if (!transaction) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // Loading simulation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2200); // Slightly longer delay
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-6">
-        <div className="text-center py-8">
-          <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <p className="text-gray-500 font-medium mb-1">No Transaction Selected</p>
-          <p className="text-sm text-gray-400">Select a transaction to view details</p>
+      <>
+        <style>{`
+          @keyframes slide-in-right {
+            0% {
+              opacity: 0;
+              transform: translateX(30px) scale(0.98);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0) scale(1);
+            }
+          }
+          
+          .animate-slide-in-right {
+            animation: slide-in-right 0.7s ease-out;
+          }
+        `}</style>
+        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 h-full">
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <Skeleton className="w-16 h-16 rounded-full mb-4" />
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-40" />
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-600 bg-green-100';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'failed':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getMethodIcon = (method: string) => {
-    switch (method) {
-      case 'card':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-          </svg>
-        );
-      case 'cash':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        );
-      case 'transfer':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-        );
-      case 'check':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 sticky top-6">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">Transaction Details</h3>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Amount and Status */}
-        <div className="text-center mb-4">
-          <p className={`text-3xl font-bold mb-2 ${
-            transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {transaction.type === 'credit' ? '+' : '-'}${transaction.amount.toLocaleString()}
-          </p>
-          <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(transaction.status)}`}>
-            {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-          </span>
-        </div>
-      </div>
-
-      {/* Transaction Info */}
-      <div className="p-6 space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
-          <p className="text-sm font-medium text-gray-900">{transaction.description}</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Transaction ID</label>
-            <p className="text-sm text-gray-900 font-mono">{transaction.id}</p>
+    <>
+      <style>{`
+        @keyframes slide-in-right {
+          0% {
+            opacity: 0;
+            transform: translateX(30px) scale(0.98);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+        
+        .animate-slide-in-right {
+          animation: slide-in-right 0.7s ease-out;
+        }
+      `}</style>
+      <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 h-full animate-slide-in-right">
+      {transaction ? (
+        <div className="h-full flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-heritage-green">Transaction Details</h3>
+            <button
+              onClick={onClose}
+              className="text-heritage-neutral hover:text-heritage-green transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Reference</label>
-            <p className="text-sm text-gray-900 font-mono">{transaction.reference}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Date</label>
-            <p className="text-sm text-gray-900">{transaction.date}</p>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Time</label>
-            <p className="text-sm text-gray-900">{transaction.time}</p>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Payment Method</label>
-          <div className="flex items-center gap-2">
-            <div className="text-gray-600">
-              {getMethodIcon(transaction.method)}
+          <div className="space-y-4 flex-1">
+            <div>
+              <label className="text-sm font-medium text-heritage-neutral">Description</label>
+              <p className="text-heritage-green font-semibold">{transaction.description}</p>
             </div>
-            <p className="text-sm text-gray-900">
-              {transaction.method.charAt(0).toUpperCase() + transaction.method.slice(1)}
-            </p>
+            <div>
+              <label className="text-sm font-medium text-heritage-neutral">Amount</label>
+              <p className="text-2xl font-bold text-heritage-green">{formatCurrency(transaction.amount)}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-heritage-neutral">Status</label>
+              <p className={`font-semibold ${
+                transaction.status === 'completed' ? 'text-green-600' :
+                transaction.status === 'pending' ? 'text-yellow-600' : 'text-red-600'
+              }`}>{transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-heritage-neutral">Reference</label>
+              <p className="text-heritage-green font-mono">{transaction.reference}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-heritage-neutral">Payment Method</label>
+              <p className="text-heritage-green capitalize">{transaction.method}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-heritage-neutral">Date & Time</label>
+              <p className="text-heritage-green">{transaction.date} at {transaction.time}</p>
+            </div>
           </div>
         </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
-          <p className="text-sm text-gray-900 capitalize">{transaction.category}</p>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Type</label>
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${
-              transaction.type === 'credit' ? 'bg-green-500' : 'bg-red-500'
-            }`}></div>
-            <p className="text-sm text-gray-900 capitalize">
-              {transaction.type === 'credit' ? 'Income' : 'Expense'}
-            </p>
+      ) : (
+        <div className="h-full flex flex-col items-center justify-center text-center relative overflow-hidden">
+          {/* Background Elements */}
+          <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-neutral/5 rounded-3xl"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 translate-x-1/4 -translate-y-1/4 rounded-full bg-gradient-to-bl from-heritage-green/10 to-transparent"></div>
+          <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full bg-gradient-to-tr from-heritage-light/20 to-transparent"></div>
+          
+          <div className="relative z-10">
+            {/* Animated Icon */}
+            <div className="relative mb-8">
+              <div className="w-24 h-24 bg-gradient-to-br from-heritage-green/20 to-heritage-neutral/20 rounded-3xl flex items-center justify-center mx-auto shadow-lg border border-heritage-green/10 group-hover:scale-105 transition-all duration-500">
+                <svg className="w-12 h-12 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="absolute -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-3xl blur opacity-30"></div>
+            </div>
+            
+            {/* Content */}
+            <div className="space-y-4 max-w-sm">
+              <h3 className="text-2xl font-bold text-heritage-green">No Transaction Selected</h3>
+              <p className="text-heritage-neutral/70 leading-relaxed">Click on any transaction from the list to view detailed information including payment method, reference number, and transaction history.</p>
+              
+              {/* Action Hint */}
+              <div className="mt-8 p-4 bg-heritage-light/30 rounded-2xl border border-heritage-green/10">
+                <div className="flex items-center justify-center space-x-2 text-heritage-green/80">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                  </svg>
+                  <span className="text-sm font-medium">Select a transaction to get started</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      )}
       </div>
-
-      {/* Actions */}
-      <div className="p-6 border-t border-gray-100">
-        <div className="space-y-3">
-          <button className="w-full py-2 px-4 text-sm font-medium text-[#82A33D] hover:text-[#6d8735] border border-[#82A33D] hover:border-[#6d8735] rounded-lg hover:bg-[#82A33D]/5 transition-colors">
-            View Receipt
-          </button>
-          
-          {transaction.status === 'pending' && (
-            <>
-              <button className="w-full py-2 px-4 text-sm font-medium text-white bg-[#82A33D] hover:bg-[#6d8735] rounded-lg transition-colors">
-                Approve Transaction
-              </button>
-              <button className="w-full py-2 px-4 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg hover:bg-red-50 transition-colors">
-                Reject Transaction
-              </button>
-            </>
-          )}
-          
-          <button className="w-full py-2 px-4 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            Edit Transaction
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 
 export default TransactionDetails;
-export { TransactionDetails };

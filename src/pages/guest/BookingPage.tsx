@@ -18,6 +18,7 @@ export const BookingPage = () => {
   const [error, setError] = useState('');
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [availabilityMessage, setAvailabilityMessage] = useState('');
+  const [pendingBooking, setPendingBooking] = useState<any>(null);
 
   // Room ID to room type mapping for pre-selection
   const roomIdToTypeMapping: { [key: string]: string } = {
@@ -41,7 +42,51 @@ export const BookingPage = () => {
         roomType: roomIdToTypeMapping[roomId]
       }));
     }
+
+    // Check for pending booking in sessionStorage
+    checkForPendingBooking();
   }, [location.search]);
+
+  // Check for pending booking
+  const checkForPendingBooking = () => {
+    const pendingBookingData = sessionStorage.getItem('pendingBooking');
+    if (pendingBookingData) {
+      try {
+        const parsedData = JSON.parse(pendingBookingData);
+        const timestamp = parsedData.timestamp;
+        const currentTime = Date.now();
+        
+        // Check if the pending booking is less than 30 minutes old
+        if (currentTime - timestamp < 30 * 60 * 1000) { // 30 minutes
+          setPendingBooking(parsedData);
+        } else {
+          // Remove expired booking data
+          sessionStorage.removeItem('pendingBooking');
+        }
+      } catch (err) {
+        console.error('Error parsing pending booking data:', err);
+        sessionStorage.removeItem('pendingBooking');
+      }
+    }
+  };
+
+  // Continue with pending booking
+  const continuePendingBooking = () => {
+    if (pendingBooking) {
+      navigate('/payment', { 
+        state: { 
+          bookingData: pendingBooking.bookingData,
+          fromBooking: true 
+        } 
+      });
+    }
+  };
+
+  // Dismiss pending booking notification
+  const dismissPendingBooking = () => {
+    sessionStorage.removeItem('pendingBooking');
+    setPendingBooking(null);
+  };
 
   // Get today's date in YYYY-MM-DD format for min date validation
   const getTodayDate = () => {
@@ -163,7 +208,7 @@ export const BookingPage = () => {
       const subtotalForBooking = calculateSubtotal(formData.roomType, formData.guests, formData.checkIn, formData.checkOut);
       const taxForBooking = calculateTax(subtotalForBooking);
 
-      // Create booking document
+      // Prepare booking data but DON'T save to Firebase yet
       const bookingData = {
         bookingId,
         userId: userData.uid,
@@ -184,63 +229,31 @@ export const BookingPage = () => {
         tax: taxForBooking,
         taxRate: TAX_RATE,
         totalAmount,
-        status: 'confirmed',
-        paymentStatus: 'pending',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        status: 'pending_payment', // Changed status to indicate payment is required
+        paymentStatus: 'pending'
       };
 
-      // Add to bookings collection
-      await addDoc(collection(db, 'bookings'), bookingData);
+      // Store booking data in sessionStorage as backup
+      sessionStorage.setItem('pendingBooking', JSON.stringify({
+        bookingData: bookingData,
+        timestamp: Date.now(),
+        fromBooking: true
+      }));
 
-      // Create transaction record
-      const transactionData = {
-        transactionId: `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
-        bookingId,
-        userId: userData.uid,
-        amount: totalAmount,
-        type: 'booking',
-        status: 'pending',
-        paymentMethod: 'pending',
-        description: `Booking for ${roomDetails[formData.roomType as keyof typeof roomDetails].name}`,
-        createdAt: serverTimestamp()
-      };
-
-      await addDoc(collection(db, 'transactions'), transactionData);
-
-      // Update room availability (optional - if you track room availability)
-      try {
-        const roomRef = doc(db, 'rooms', formData.roomType);
-        const roomDoc = await getDoc(roomRef);
-        
-        if (roomDoc.exists()) {
-          const currentBookings = roomDoc.data().bookings || [];
-          currentBookings.push({
-            bookingId,
-            checkIn: formData.checkIn,
-            checkOut: formData.checkOut,
-            guests: formData.guests
-          });
-          
-          await updateDoc(roomRef, {
-            bookings: currentBookings,
-            lastBooked: serverTimestamp()
-          });
-        }
-      } catch (roomError) {
-        console.warn('Room update failed:', roomError);
-        // Don't fail the entire booking if room update fails
-      }
-
-      // Success - scroll to top and redirect to payment page
+      // Pass booking data to payment page via state instead of saving to Firebase
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => {
-        navigate(`/payment/${bookingId}`);
+        navigate('/payment', { 
+          state: { 
+            bookingData: bookingData,
+            fromBooking: true 
+          } 
+        });
       }, 300);
       
     } catch (err) {
-      console.error('Booking failed:', err);
-      setError('Booking failed. Please try again.');
+      console.error('Booking preparation failed:', err);
+      setError('Booking preparation failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -348,7 +361,7 @@ export const BookingPage = () => {
   const totalAmount = subtotal + tax;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 relative overflow-hidden pt-24">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-heritage-green/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-heritage-light/10 rounded-full blur-2xl"></div>
@@ -369,6 +382,55 @@ export const BookingPage = () => {
             Where <span className="text-heritage-green font-semibold">timeless Filipino traditions</span> embrace <span className="text-gray-900 font-semibold">modern luxury</span>
           </p>
         </div>
+
+        {/* Pending Booking Notification */}
+        {pendingBooking && (
+          <div className="max-w-4xl mx-auto mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-blue-800 mb-2">Incomplete Booking Found</h3>
+                  <p className="text-blue-700 mb-4">
+                    You have an incomplete booking for <span className="font-semibold">{pendingBooking.bookingData?.roomName}</span> 
+                    {pendingBooking.bookingData?.checkIn && (
+                      <span> from {new Date(pendingBooking.bookingData.checkIn).toLocaleDateString()}</span>
+                    )}
+                    . Would you like to continue with payment?
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={continuePendingBooking}
+                      className="px-6 py-2 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                    >
+                      Continue Payment (₱{pendingBooking.bookingData?.totalAmount?.toLocaleString()})
+                    </button>
+                    <button
+                      onClick={dismissPendingBooking}
+                      className="px-6 py-2 bg-white text-gray-600 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                    >
+                      Start New Booking
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={dismissPendingBooking}
+                  className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8 max-w-4xl mx-auto">

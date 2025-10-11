@@ -15,14 +15,15 @@ export const HeroSection: React.FC = () => {
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center transform scale-110 transition-transform duration-[20s] ease-out"
           style={{ 
-            backgroundImage: `url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`
+            backgroundImage: `url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3840&q=95')`
           }}
         />
       </div>
       
-      {/* Dynamic Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-transparent to-heritage-green/30"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+      {/* Dynamic Gradient Overlays - Much Darker for Text Readability */}
+      <div className="absolute inset-0 bg-black/50"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-heritage-green/30"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-black/20"></div>
       
       {/* Floating Decorative Elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-heritage-light/10 rounded-full blur-xl animate-pulse"></div>

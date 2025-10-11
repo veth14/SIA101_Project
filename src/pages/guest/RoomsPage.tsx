@@ -93,7 +93,7 @@ export const RoomsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-20">
       {/* Page Header */}
       <div className="relative py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-heritage-green/95 via-heritage-neutral/90 to-heritage-green/95 text-white overflow-hidden">
         {/* Background Pattern */}

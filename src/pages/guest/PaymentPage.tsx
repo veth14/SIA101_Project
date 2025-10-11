@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { db } from '../../config/firebase';
-import { doc, updateDoc, serverTimestamp, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, query, collection, where, getDocs, addDoc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const PaymentPage = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
   const { userData } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [paymentMethod, setPaymentMethod] = useState('gcash');
   const [gcashNumber, setGcashNumber] = useState('');
   const [gcashName, setGcashName] = useState('');
@@ -26,11 +27,51 @@ export const PaymentPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Fetch booking data from Firebase
+  // Handle booking data from navigation state or fetch from Firebase
   useEffect(() => {
-    const fetchBooking = async () => {
-      if (!bookingId || !userData?.uid) {
-        setError('Invalid booking or user not authenticated');
+    const initializeBooking = async () => {
+      if (!userData?.uid) {
+        setError('User not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      // Check if booking data was passed from BookingPage
+      const navigationState = location.state as any;
+      if (navigationState?.fromBooking && navigationState?.bookingData) {
+        // Use booking data from navigation state (new flow - payment required first)
+        setBooking(navigationState.bookingData);
+        setLoading(false);
+        return;
+      }
+
+      // Check for pending booking in sessionStorage (if user navigated away and came back)
+      const pendingBookingData = sessionStorage.getItem('pendingBooking');
+      if (pendingBookingData) {
+        try {
+          const parsedData = JSON.parse(pendingBookingData);
+          const timestamp = parsedData.timestamp;
+          const currentTime = Date.now();
+          
+          // Check if the pending booking is less than 30 minutes old
+          if (currentTime - timestamp < 30 * 60 * 1000) { // 30 minutes
+            setBooking(parsedData.bookingData);
+            setLoading(false);
+            setError('We found your incomplete booking. Please complete your payment to confirm your reservation.');
+            return;
+          } else {
+            // Remove expired booking data
+            sessionStorage.removeItem('pendingBooking');
+          }
+        } catch (err) {
+          console.error('Error parsing pending booking data:', err);
+          sessionStorage.removeItem('pendingBooking');
+        }
+      }
+
+      // Fallback: Fetch existing booking from Firebase (old flow - for existing bookings)
+      if (!bookingId) {
+        setError('No booking data provided');
         setLoading(false);
         return;
       }
@@ -62,8 +103,8 @@ export const PaymentPage = () => {
       }
     };
 
-    fetchBooking();
-  }, [bookingId, userData?.uid]);
+    initializeBooking();
+  }, [bookingId, userData?.uid, location.state]);
 
   // Email receipt function
   const sendEmailReceipt = async (bookingData: any, user: any) => {
@@ -162,39 +203,111 @@ export const PaymentPage = () => {
         }
       }
 
-      // Update booking payment status
-      const bookingRef = doc(db, 'bookings', booking.id);
-      await updateDoc(bookingRef, {
-        paymentStatus: 'paid',
-        paymentMethod: paymentMethod,
-        paymentDetails: {
-          gcashNumber: paymentMethod === 'gcash' ? gcashNumber : null,
-          gcashName: paymentMethod === 'gcash' ? gcashName : null,
-          cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : null,
-          cardholderName: paymentMethod === 'card' ? cardholderName : null,
-          paidAt: serverTimestamp()
-        },
-        updatedAt: serverTimestamp()
-      });
+      // Check if this is a new booking (from BookingPage) or existing booking
+      const isNewBooking = !booking.id && booking.status === 'pending_payment';
 
-      // Update transaction status
-      const transactionsQuery = query(
-        collection(db, 'transactions'),
-        where('bookingId', '==', bookingId),
-        where('userId', '==', userData.uid)
-      );
-      
-      const transactionSnapshot = await getDocs(transactionsQuery);
-      
-      if (!transactionSnapshot.empty) {
-        const transactionDoc = transactionSnapshot.docs[0];
-        const transactionRef = doc(db, 'transactions', transactionDoc.id);
-        await updateDoc(transactionRef, {
+      if (isNewBooking) {
+        // NEW FLOW: Create booking in Firebase only after successful payment
+        const bookingDataWithPayment = {
+          ...booking,
+          status: 'confirmed', // Change from pending_payment to confirmed
+          paymentStatus: 'paid',
+          paymentMethod: paymentMethod,
+          paymentDetails: {
+            gcashNumber: paymentMethod === 'gcash' ? gcashNumber : null,
+            gcashName: paymentMethod === 'gcash' ? gcashName : null,
+            cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : null,
+            cardholderName: paymentMethod === 'card' ? cardholderName : null,
+            paidAt: serverTimestamp()
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+
+        // Create booking document in Firebase
+        const bookingDocRef = await addDoc(collection(db, 'bookings'), bookingDataWithPayment);
+
+        // Create transaction record
+        const transactionData = {
+          transactionId: `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
+          bookingId: booking.bookingId,
+          userId: userData.uid,
+          amount: booking.totalAmount,
+          type: 'booking',
           status: 'completed',
           paymentMethod: paymentMethod,
+          description: `Booking for ${booking.roomName}`,
+          createdAt: serverTimestamp(),
           completedAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, 'transactions'), transactionData);
+
+        // Update room availability (optional - if you track room availability)
+        try {
+          const roomRef = doc(db, 'rooms', booking.roomType);
+          const roomDoc = await getDoc(roomRef);
+          
+          if (roomDoc.exists()) {
+            const currentBookings = roomDoc.data().bookings || [];
+            currentBookings.push({
+              bookingId: booking.bookingId,
+              checkIn: booking.checkIn,
+              checkOut: booking.checkOut,
+              guests: booking.guests
+            });
+            
+            await updateDoc(roomRef, {
+              bookings: currentBookings,
+              lastBooked: serverTimestamp()
+            });
+          }
+        } catch (roomError) {
+          console.warn('Room update failed:', roomError);
+          // Don't fail the entire booking if room update fails
+        }
+
+        // Update booking state with the new document ID
+        setBooking({ ...bookingDataWithPayment, id: bookingDocRef.id });
+
+      } else {
+        // OLD FLOW: Update existing booking payment status
+        const bookingRef = doc(db, 'bookings', booking.id);
+        await updateDoc(bookingRef, {
+          paymentStatus: 'paid',
+          paymentMethod: paymentMethod,
+          paymentDetails: {
+            gcashNumber: paymentMethod === 'gcash' ? gcashNumber : null,
+            gcashName: paymentMethod === 'gcash' ? gcashName : null,
+            cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : null,
+            cardholderName: paymentMethod === 'card' ? cardholderName : null,
+            paidAt: serverTimestamp()
+          },
+          updatedAt: serverTimestamp()
         });
+
+        // Update transaction status
+        const transactionsQuery = query(
+          collection(db, 'transactions'),
+          where('bookingId', '==', booking.bookingId),
+          where('userId', '==', userData.uid)
+        );
+        
+        const transactionSnapshot = await getDocs(transactionsQuery);
+        
+        if (!transactionSnapshot.empty) {
+          const transactionDoc = transactionSnapshot.docs[0];
+          const transactionRef = doc(db, 'transactions', transactionDoc.id);
+          await updateDoc(transactionRef, {
+            status: 'completed',
+            paymentMethod: paymentMethod,
+            completedAt: serverTimestamp()
+          });
+        }
       }
+
+      // Clear pending booking data from sessionStorage after successful payment
+      sessionStorage.removeItem('pendingBooking');
 
       // Send email receipt
       await sendEmailReceipt(booking, userData);
@@ -238,27 +351,82 @@ export const PaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-heritage-green/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-heritage-light/10 rounded-full blur-2xl"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
       
-      <div className="max-w-6xl mx-auto p-8 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-block mb-6">
-            <span className="px-6 py-3 bg-heritage-green/10 text-heritage-green text-lg font-medium rounded-full border border-heritage-green/20 shadow-lg backdrop-blur-sm">
-              Secure Payment
-            </span>
+      <div className="relative z-10 pt-32 pb-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Hero Header Section */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl shadow-2xl mb-8 transform hover:scale-110 transition-transform duration-300">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text text-transparent leading-tight">
+                Complete Your Payment
+              </h1>
+              <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                Secure your luxury stay at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
+              </p>
+            </div>
+
+            {/* Status Indicators */}
+            <div className="flex items-center justify-center space-x-8 mt-8">
+              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-semibold text-slate-700">Secure Payment</span>
+              </div>
+              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
+                <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span className="text-sm font-semibold text-slate-700">SSL Encrypted</span>
+              </div>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-            Complete Your
-            <span className="bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text text-transparent block mt-2"> Payment</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
-            Secure your reservation at <span className="text-heritage-green font-semibold">Balay Ginhawa</span>
-          </p>
-        </div>
+
+          {/* Pending Booking Notification */}
+          {error && error.includes('incomplete booking') && (
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 shadow-lg">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-amber-800 mb-2">Booking Recovery</h3>
+                    <p className="text-amber-700 mb-3">{error}</p>
+                    <div className="flex items-center space-x-2 text-sm text-amber-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>This booking will expire in 30 minutes from creation</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setError('')}
+                    className="flex-shrink-0 text-amber-400 hover:text-amber-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         {/* Payment Container */}
         <div className="max-w-4xl mx-auto">
@@ -624,6 +792,7 @@ export const PaymentPage = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

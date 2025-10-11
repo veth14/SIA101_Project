@@ -17,6 +17,10 @@ export const Header = () => {
     { name: 'Rooms', href: '/rooms', scrollTo: 'rooms', type: 'link' },
   ];
 
+  // Pages where header should always be solid (not transparent)
+  const solidHeaderPages = ['/booking', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities'];
+  const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
+
 
   const handleScrollTo = (sectionId: string) => {
     if (location.pathname !== '/') {
@@ -61,13 +65,13 @@ export const Header = () => {
 
   return (
     <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-      isScrolled 
+      isScrolled || shouldUseSolidHeader
         ? 'bg-white/95 backdrop-blur-md shadow-lg' 
         : 'bg-transparent'
     }`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className={`w-full py-4 flex items-center justify-between transition-all duration-300 ${
-          isScrolled ? 'border-b border-heritage-light/20' : ''
+          isScrolled || shouldUseSolidHeader ? 'border-b border-heritage-light/20' : ''
         }`}>
           <div className="flex items-center">
             <Link 
@@ -81,7 +85,7 @@ export const Header = () => {
                 className="w-16 h-16 object-contain transition-all duration-300"
               />
               <span className={`text-2xl font-bold transition-colors duration-300 ${
-                isScrolled ? 'text-heritage-green' : 'text-white'
+                isScrolled || shouldUseSolidHeader ? 'text-heritage-green' : 'text-white'
               }`}>
                 Balay Ginhawa
               </span>
@@ -96,14 +100,14 @@ export const Header = () => {
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     className={`relative text-base font-medium transition-all duration-300 group ${
                       location.pathname === link.href
-                        ? isScrolled
+                        ? isScrolled || shouldUseSolidHeader
                           ? 'text-heritage-green'
                           : 'text-white font-semibold'
-                        : location.pathname === '/' && isScrolled
+                        : location.pathname === '/' && (isScrolled || shouldUseSolidHeader)
                           ? 'text-gray-700 hover:text-heritage-green'
                           : location.pathname === '/'
                             ? 'text-white/90 hover:text-white'
-                            : isScrolled
+                            : isScrolled || shouldUseSolidHeader
                               ? 'text-gray-700 hover:text-heritage-green'
                               : 'text-white/90 hover:text-white'
                     }`}
@@ -114,7 +118,7 @@ export const Header = () => {
                         ? 'w-full'
                         : 'w-0'
                     } ${
-                      isScrolled
+                      isScrolled || shouldUseSolidHeader
                         ? 'bg-heritage-green'
                         : 'bg-white'
                     }`}></span>
@@ -124,18 +128,18 @@ export const Header = () => {
                     key={link.name}
                     onClick={() => handleScrollTo(link.scrollTo)}
                     className={`relative text-base font-medium transition-all duration-300 group ${
-                      location.pathname === '/' && isScrolled
+                      location.pathname === '/' && (isScrolled || shouldUseSolidHeader)
                         ? 'text-gray-700 hover:text-heritage-green'
                         : location.pathname === '/'
                           ? 'text-white/90 hover:text-white'
-                          : isScrolled
+                          : isScrolled || shouldUseSolidHeader
                             ? 'text-gray-700 hover:text-heritage-green'
                             : 'text-white/90 hover:text-white'
                     }`}
                   >
                     {link.name}
                     <span className={`absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                      isScrolled
+                      isScrolled || shouldUseSolidHeader
                         ? 'bg-heritage-green'
                         : 'bg-white'
                     }`}></span>
@@ -152,8 +156,8 @@ export const Header = () => {
                     <Link
                       to="/booking"
                       className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
-                        isScrolled
-                          ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30 border border-heritage-green/20'
+                        isScrolled || shouldUseSolidHeader
+                          ? 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-md'
                           : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
                       }`}
                     >
@@ -165,8 +169,8 @@ export const Header = () => {
                       <button
                         onClick={() => setShowUserDropdown(!showUserDropdown)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 ${
-                          isScrolled
-                            ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30 border border-heritage-green/20'
+                          isScrolled || shouldUseSolidHeader
+                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                             : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
                         }`}
                       >
@@ -229,7 +233,7 @@ export const Header = () => {
                             <button
                               onClick={() => {
                                 setShowUserDropdown(false);
-                                navigate('/bookings');
+                                navigate('/my-bookings');
                               }}
                               className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
@@ -276,8 +280,8 @@ export const Header = () => {
                   <Link
                     to="/account"
                     className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
-                      isScrolled
-                        ? 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                      isScrolled || shouldUseSolidHeader
+                        ? 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-md'
                         : 'bg-heritage-green text-white hover:bg-heritage-green/90'
                     }`}
                   >
@@ -288,10 +292,10 @@ export const Header = () => {
             ) : (
               <>
                 <Link
-                  to="/login"
+                  to="/auth"
                   className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
-                    isScrolled
-                      ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30 border border-heritage-green/20'
+                    isScrolled || shouldUseSolidHeader
+                      ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                       : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
                   }`}
                 >
@@ -300,8 +304,8 @@ export const Header = () => {
                 <Link
                   to="/auth?mode=register"
                   className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
-                    isScrolled
-                      ? 'bg-heritage-green text-white hover:bg-heritage-green/90'
+                    isScrolled || shouldUseSolidHeader
+                      ? 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-md'
                       : 'bg-heritage-green text-white hover:bg-heritage-green/90'
                   }`}
                 >

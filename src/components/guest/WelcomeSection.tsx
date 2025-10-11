@@ -92,11 +92,11 @@ export const WelcomeSection: React.FC = () => {
               {/* Main large image */}
               <div className="col-span-2 relative overflow-hidden rounded-2xl shadow-2xl group">
                 <img
-                  src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                  alt="Luxury Hotel Lobby"
+                  src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2400&q=95"
+                  alt="Filipino Heritage Hotel Lobby"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-heritage-green/40 via-transparent to-transparent group-hover:from-heritage-green/60 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-heritage-green/25 via-transparent to-transparent group-hover:from-heritage-green/40 transition-all duration-500"></div>
                 <div className="absolute bottom-4 left-4 text-white">
                   <div className="text-lg font-semibold">Grand Lobby</div>
                   <div className="text-sm text-white/80">Filipino Heritage Design</div>

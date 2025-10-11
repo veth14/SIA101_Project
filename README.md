@@ -41,10 +41,15 @@
 - **Department Management** - Multi-department inventory allocation
 
 ### 💰 Financial Management
-- **Income Tracking** - Revenue monitoring and booking income
+- **Dashboard** - Real-time financial analytics and reporting
+- **Financial Reports** - Comprehensive financial analytics and reporting
+- **Profit Analysis** - Detailed profit and loss analysis
+- **Invoice Management** - Invoice generation and management
+- **Transaction History** - Comprehensive transaction history
+- **Revenue Tracking** - Real-time revenue tracking and analytics
 - **Expense Management** - Operating costs and budget tracking
 - **Payroll System** - Staff compensation and salary management
-- **Financial Reports** - Comprehensive financial analytics and reporting
+- **Payment Processing** - Secure payment processing and management
 
 ### 🔧 Maintenance Operations
 - **Maintenance Overview** - Complete facility management dashboard

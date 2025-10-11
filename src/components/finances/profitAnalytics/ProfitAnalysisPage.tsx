@@ -120,7 +120,6 @@ const ProfitAnalysisPage: React.FC = () => {
         {/* Header */}
         <ProfitAnalysisHeader />
 
-
         {/* Enhanced Dashboard Content */}
         <ProfitAnalysisCharts 
           costAnalysis={costAnalysis} 

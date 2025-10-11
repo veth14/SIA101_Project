@@ -162,7 +162,7 @@ export const AmenitiesPage = () => {
     : amenities.filter(amenity => amenity.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
+    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 pt-20">
       {/* Header Section */}
       <div className="relative py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-heritage-green/95 via-heritage-neutral/90 to-heritage-green/95 text-white overflow-hidden">
         {/* Background Pattern */}

@@ -11,6 +11,7 @@ import { AmenitiesPage } from './pages/guest/AmenitiesPage'
 import { AuthPage } from './pages/auth/AuthPage'
 import { NewProfilePage } from './pages/guest/NewProfilePage'
 import { PaymentPage } from './pages/guest/PaymentPage'
+import { MyBookingsPage } from './pages/guest/MyBookingsPage'
 import { AdminDashboardPage } from './pages/admin/Dashboard/AdminDashboardPage'
 import AdminRoomsPage from './pages/admin/Front-Desk/AdminRoomsPage'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -85,6 +86,22 @@ function LoadingSpinner() {
               element={
                 <ProtectedRoute allowedRoles={['guest']}>
                   <><Header /><PaymentPage /><Footer /></>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/payment" 
+              element={
+                <ProtectedRoute allowedRoles={['guest']}>
+                  <><Header /><PaymentPage /><Footer /></>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/my-bookings" 
+              element={
+                <ProtectedRoute allowedRoles={['guest']}>
+                  <><Header /><MyBookingsPage /><Footer /></>
                 </ProtectedRoute>
               } 
             />
