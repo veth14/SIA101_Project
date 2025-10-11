@@ -78,7 +78,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
             animation: table-slide-in 0.7s ease-out;
           }
         `}</style>
-        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 h-[700px] flex flex-col">
+        <div className="flex flex-col h-full p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20">
           <div className="flex items-center justify-between mb-6">
             <Skeleton className="w-40 h-6" />
             <Skeleton className="w-64 h-10 rounded-xl" />
@@ -95,7 +95,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-heritage-neutral/20">
-                {Array.from({ length: 5 }, (_, index) => (
+                {Array.from({ length: 8 }, (_, index) => (
                   <tr key={index} className="h-14">
                     <td className="px-6 py-3"><Skeleton className="w-32 h-4" /></td>
                     <td className="px-6 py-3"><Skeleton className="w-20 h-4" /></td>
@@ -144,7 +144,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
         <div className="absolute top-0 right-0 w-40 h-40 rounded-full translate-x-1/3 -translate-y-1/3 bg-gradient-to-bl from-heritage-green/10 to-transparent"></div>
         <div className="absolute w-32 h-32 rounded-full -bottom-10 -left-10 bg-gradient-to-tr from-heritage-light/30 to-transparent"></div>
         
-        <div className="relative z-10 p-8 h-[700px] flex flex-col">
+        <div className="relative z-10 flex flex-col h-[900px] p-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="flex items-center justify-center w-12 h-12 shadow-lg bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl">
@@ -296,7 +296,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 <button
                   onClick={() => onPageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -336,7 +336,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 <button
                   onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

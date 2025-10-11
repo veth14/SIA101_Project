@@ -616,34 +616,38 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
           </div>
         </div>
       ) : (
-        <div className="h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div className="relative flex flex-col items-center justify-center h-full overflow-hidden text-center">
           {/* Background Elements */}
           <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-neutral/5 rounded-3xl"></div>
-          <div className="absolute top-0 right-0 w-16 h-16 rounded-full translate-x-1/4 -translate-y-1/4 bg-gradient-to-bl from-heritage-green/10 to-transparent"></div>
-          <div className="absolute w-12 h-12 rounded-full -bottom-4 -left-4 bg-gradient-to-tr from-heritage-light/20 to-transparent"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/3 -translate-y-1/3 bg-gradient-to-bl from-heritage-green/8 to-transparent"></div>
+          <div className="absolute w-24 h-24 rounded-full -bottom-8 -left-8 bg-gradient-to-tr from-heritage-light/20 to-transparent"></div>
           
-          <div className="relative z-10">
-            {/* Compact Icon */}
-            <div className="relative mb-4">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto border shadow-md bg-gradient-to-br from-heritage-green/20 to-heritage-neutral/20 rounded-2xl border-heritage-green/10">
-                <svg className="w-8 h-8 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative z-10 max-w-md mx-auto space-y-6">
+            {/* Large Icon */}
+            <div className="relative mb-8">
+              <div className="flex items-center justify-center w-24 h-24 mx-auto border shadow-2xl bg-gradient-to-br from-heritage-green/10 to-heritage-neutral/10 rounded-3xl border-heritage-green/20">
+                <svg className="w-12 h-12 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-3xl blur-xl opacity-60"></div>
             </div>
             
-            {/* Compact Content */}
-            <div className="max-w-xs space-y-3">
-              <h3 className="text-lg font-bold text-heritage-green">No Transaction Selected</h3>
-              <p className="text-sm leading-relaxed text-heritage-neutral/70">Click on any transaction to view details</p>
+            {/* Content */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-heritage-green">No Transaction Selected</h3>
+              <p className="max-w-sm mx-auto text-base leading-relaxed text-heritage-neutral/70">
+                Click on any transaction to view details
+              </p>
               
-              {/* Compact Action Hint */}
-              <div className="p-3 mt-4 border bg-heritage-light/30 rounded-xl border-heritage-green/10">
-                <div className="flex items-center justify-center space-x-2 text-heritage-green/80">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Action Hint */}
+              <div className="p-4 mt-8 border bg-heritage-light/20 rounded-2xl border-heritage-green/20 backdrop-blur-sm">
+                <div className="flex items-center justify-center space-x-3 text-heritage-green/80">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                   </svg>
-                  <span className="text-xs font-medium">Select to get started</span>
+                  <span className="text-sm font-medium">Select to get started</span>
                 </div>
               </div>
             </div>
@@ -663,9 +667,9 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
         >
           <div className="space-y-6">
             {/* Transaction Header */}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-heritage-green/10 to-heritage-light/20 rounded-xl border border-heritage-green/20">
+            <div className="flex items-center justify-between p-4 border bg-gradient-to-r from-heritage-green/10 to-heritage-light/20 rounded-xl border-heritage-green/20">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-heritage-green rounded-full flex items-center justify-center">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-heritage-green">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
@@ -691,23 +695,23 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
 
             {/* Primary Details Grid */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 p-4 bg-heritage-light/10 rounded-lg border border-heritage-neutral/10">
-                <label className="text-xs font-semibold text-heritage-neutral uppercase tracking-wide">Transaction Type</label>
+              <div className="p-4 space-y-2 border rounded-lg bg-heritage-light/10 border-heritage-neutral/10">
+                <label className="text-xs font-semibold tracking-wide uppercase text-heritage-neutral">Transaction Type</label>
                 <div className="flex items-center space-x-2">
                   <span className={`w-3 h-3 rounded-full ${
                     transaction.type === 'credit' ? 'bg-green-500' : 'bg-red-500'
                   }`}></span>
-                  <span className="text-base font-bold text-heritage-green capitalize">{transaction.type}</span>
+                  <span className="text-base font-bold capitalize text-heritage-green">{transaction.type}</span>
                 </div>
               </div>
               
-              <div className="space-y-2 p-4 bg-heritage-light/10 rounded-lg border border-heritage-neutral/10">
-                <label className="text-xs font-semibold text-heritage-neutral uppercase tracking-wide">Category</label>
+              <div className="p-4 space-y-2 border rounded-lg bg-heritage-light/10 border-heritage-neutral/10">
+                <label className="text-xs font-semibold tracking-wide uppercase text-heritage-neutral">Category</label>
                 <p className="text-base font-bold text-heritage-green">{transaction.category || 'General'}</p>
               </div>
               
-              <div className="space-y-2 p-4 bg-heritage-light/10 rounded-lg border border-heritage-neutral/10">
-                <label className="text-xs font-semibold text-heritage-neutral uppercase tracking-wide">Payment Method</label>
+              <div className="p-4 space-y-2 border rounded-lg bg-heritage-light/10 border-heritage-neutral/10">
+                <label className="text-xs font-semibold tracking-wide uppercase text-heritage-neutral">Payment Method</label>
                 <div className="flex items-center space-x-2">
                   <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {transaction.method === 'card' ? (
@@ -718,54 +722,54 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     )}
                   </svg>
-                  <span className="text-base font-bold text-heritage-green capitalize">{transaction.method}</span>
+                  <span className="text-base font-bold capitalize text-heritage-green">{transaction.method}</span>
                 </div>
               </div>
               
-              <div className="space-y-2 p-4 bg-heritage-light/10 rounded-lg border border-heritage-neutral/10">
-                <label className="text-xs font-semibold text-heritage-neutral uppercase tracking-wide">Processing Time</label>
+              <div className="p-4 space-y-2 border rounded-lg bg-heritage-light/10 border-heritage-neutral/10">
+                <label className="text-xs font-semibold tracking-wide uppercase text-heritage-neutral">Processing Time</label>
                 <p className="text-base font-bold text-heritage-green">{transaction.time || 'Instant'}</p>
               </div>
             </div>
 
             {/* Timeline Information */}
-            <div className="space-y-3 p-4 bg-gradient-to-r from-heritage-neutral/5 to-heritage-light/10 rounded-xl border border-heritage-neutral/10">
-              <h4 className="text-sm font-bold text-heritage-green uppercase tracking-wide flex items-center">
+            <div className="p-4 space-y-3 border bg-gradient-to-r from-heritage-neutral/5 to-heritage-light/10 rounded-xl border-heritage-neutral/10">
+              <h4 className="flex items-center text-sm font-bold tracking-wide uppercase text-heritage-green">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Transaction Timeline
               </h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-heritage-neutral">Date Processed</span>
-                  <span className="text-sm font-bold text-heritage-green bg-white px-2 py-1 rounded">{transaction.date}</span>
+                  <span className="px-2 py-1 text-sm font-bold bg-white rounded text-heritage-green">{transaction.date}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-heritage-neutral">Time Stamp</span>
-                  <span className="text-sm font-bold text-heritage-green bg-white px-2 py-1 rounded">{transaction.time || '10:30 AM'}</span>
+                  <span className="px-2 py-1 text-sm font-bold bg-white rounded text-heritage-green">{transaction.time || '10:30 AM'}</span>
                 </div>
               </div>
             </div>
 
             {/* Reference and Security */}
-            <div className="space-y-3 p-4 bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 rounded-xl border border-heritage-green/20">
-              <h4 className="text-sm font-bold text-heritage-green uppercase tracking-wide flex items-center">
+            <div className="p-4 space-y-3 border bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 rounded-xl border-heritage-green/20">
+              <h4 className="flex items-center text-sm font-bold tracking-wide uppercase text-heritage-green">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 Security & Reference
               </h4>
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-heritage-neutral">Reference Number</span>
-                  <span className="text-sm font-mono font-bold text-heritage-green bg-white px-3 py-1 rounded border border-heritage-green/20">
+                  <span className="px-3 py-1 font-mono text-sm font-bold bg-white border rounded text-heritage-green border-heritage-green/20">
                     {transaction.reference}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-heritage-neutral">Transaction Hash</span>
-                  <span className="text-xs font-mono text-heritage-green bg-white px-2 py-1 rounded border border-heritage-green/20">
+                  <span className="px-2 py-1 font-mono text-xs bg-white border rounded text-heritage-green border-heritage-green/20">
                     {`TXN${transaction.id}${transaction.date.replace(/-/g, '')}${transaction.reference}`}
                   </span>
                 </div>
@@ -773,8 +777,8 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
             </div>
 
             {/* Additional Information */}
-            <div className="grid grid-cols-1 gap-3 p-4 bg-heritage-light/5 rounded-xl border border-heritage-neutral/10">
-              <h4 className="text-sm font-bold text-heritage-green uppercase tracking-wide flex items-center">
+            <div className="grid grid-cols-1 gap-3 p-4 border bg-heritage-light/5 rounded-xl border-heritage-neutral/10">
+              <h4 className="flex items-center text-sm font-bold tracking-wide uppercase text-heritage-green">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -783,19 +787,19 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-heritage-neutral">Fees Applied</span>
-                  <span className="text-heritage-green font-semibold">₱0.00</span>
+                  <span className="font-semibold text-heritage-green">₱0.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-heritage-neutral">Exchange Rate</span>
-                  <span className="text-heritage-green font-semibold">1.00 PHP</span>
+                  <span className="font-semibold text-heritage-green">1.00 PHP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-heritage-neutral">Location</span>
-                  <span className="text-heritage-green font-semibold">Front Desk</span>
+                  <span className="font-semibold text-heritage-green">Front Desk</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-heritage-neutral">Authorized By</span>
-                  <span className="text-heritage-green font-semibold">System</span>
+                  <span className="font-semibold text-heritage-green">System</span>
                 </div>
               </div>
             </div>
@@ -812,7 +816,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
                 <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span className="font-semibold text-sm">Create Invoice</span>
+                <span className="text-sm font-semibold">Create Invoice</span>
               </button>
               
               <button 
@@ -825,7 +829,7 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
                 <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
-                <span className="font-semibold text-sm">Print Receipt</span>
+                <span className="text-sm font-semibold">Print Receipt</span>
               </button>
             </div>
           </div>

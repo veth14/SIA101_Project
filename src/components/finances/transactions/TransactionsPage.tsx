@@ -44,7 +44,7 @@ export const TransactionsPage: React.FC = () => {
     searchTerm: ''
   });
 
-  const itemsPerPage = 5; // Items per page when not showing all
+  const itemsPerPage = 8; // Items per page when not showing all
 
   const totalTransactions = sampleTransactions.reduce((sum, t) => sum + t.amount, 0);
   const completedTransactions = sampleTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
@@ -95,9 +95,9 @@ export const TransactionsPage: React.FC = () => {
         />
 
         {/* Transaction Table and Details */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Recent Transactions Component */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <RecentTransactions
               transactions={paginatedTransactions}
               currentPage={currentPage}
