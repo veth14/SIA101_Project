@@ -89,44 +89,53 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({ transaction, on
       <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 h-full animate-slide-in-right">
       {transaction ? (
         <div className="h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-heritage-green">Transaction Details</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-heritage-green">Transaction Details</h3>
             <button
               onClick={onClose}
-              className="text-heritage-neutral hover:text-heritage-green transition-colors"
+              className="text-heritage-neutral hover:text-heritage-green transition-colors p-2 hover:bg-heritage-green/10 rounded-lg"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div className="space-y-4 flex-1">
+          <div className="space-y-6 flex-1">
             <div>
-              <label className="text-sm font-medium text-heritage-neutral">Description</label>
-              <p className="text-heritage-green font-semibold">{transaction.description}</p>
+              <label className="text-base font-semibold text-heritage-neutral mb-2 block">Description</label>
+              <p className="text-lg text-heritage-green font-semibold">{transaction.description}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-heritage-neutral">Amount</label>
-              <p className="text-2xl font-bold text-heritage-green">{formatCurrency(transaction.amount)}</p>
+              <label className="text-base font-semibold text-heritage-neutral mb-2 block">Amount</label>
+              <p className="text-3xl font-bold text-heritage-green">{formatCurrency(transaction.amount)}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-heritage-neutral">Status</label>
-              <p className={`font-semibold ${
-                transaction.status === 'completed' ? 'text-green-600' :
-                transaction.status === 'pending' ? 'text-yellow-600' : 'text-red-600'
-              }`}>{transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}</p>
+              <label className="text-base font-semibold text-heritage-neutral mb-2 block">Status</label>
+              <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-sm ${
+                transaction.status === 'completed' 
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                  : transaction.status === 'pending'
+                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                  : 'bg-red-100 text-red-800 border border-red-200'
+              }`}>
+                <div className={`w-2 h-2 rounded-full mr-2 ${
+                  transaction.status === 'completed' ? 'bg-emerald-500' :
+                  transaction.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
+                }`}></div>
+                {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+              </span>
             </div>
             <div>
-              <label className="text-sm font-medium text-heritage-neutral">Reference</label>
-              <p className="text-heritage-green font-mono">{transaction.reference}</p>
+              <label className="text-base font-semibold text-heritage-neutral mb-2 block">Reference Number</label>
+              <p className="text-lg text-heritage-green font-mono bg-heritage-light/20 px-3 py-2 rounded-lg">{transaction.reference}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-heritage-neutral">Payment Method</label>
-              <p className="text-heritage-green capitalize">{transaction.method}</p>
+              <label className="text-base font-semibold text-heritage-neutral mb-2 block">Payment Method</label>
+              <p className="text-lg text-heritage-green capitalize font-medium">{transaction.method}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-heritage-neutral">Date & Time</label>
-              <p className="text-heritage-green">{transaction.date} at {transaction.time}</p>
+              <label className="text-base font-semibold text-heritage-neutral mb-2 block">Date & Time</label>
+              <p className="text-lg text-heritage-green font-medium">{transaction.date} at {transaction.time}</p>
             </div>
           </div>
         </div>
