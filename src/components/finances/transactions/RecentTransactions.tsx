@@ -24,6 +24,8 @@ interface RecentTransactionsProps {
   onSearchChange: (term: string) => void;
   totalItems: number;
   itemsPerPage: number;
+  showAll: boolean;
+  onToggleShowAll: () => void;
 }
 
 const RecentTransactions: React.FC<RecentTransactionsProps> = ({
@@ -35,7 +37,9 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   searchTerm,
   onSearchChange,
   totalItems,
-  itemsPerPage
+  itemsPerPage,
+  showAll,
+  onToggleShowAll
 }) => {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -150,22 +154,46 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-heritage-green">Recent Transactions</h2>
-                <p className="text-sm text-heritage-neutral/70">Track and manage your financial activities</p>
+                <p className="text-sm text-heritage-neutral/70">
+                  {showAll 
+                    ? `Showing all ${totalItems} transactions`
+                    : `Showing ${((currentPage - 1) * itemsPerPage) + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} transactions`
+                  }
+                </p>
               </div>
             </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg className="w-5 h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            
+            <div className="flex items-center space-x-4">
+              {/* Display All Toggle Button */}
+              <button
+                onClick={onToggleShowAll}
+                className="flex items-center px-4 py-2 space-x-2 transition-all duration-300 border shadow-sm rounded-xl border-heritage-green/30 bg-white/90 text-heritage-green hover:bg-heritage-green hover:text-white hover:shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {showAll ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  )}
                 </svg>
+                <span className="font-medium">{showAll ? 'Paginate' : 'Display All'}</span>
+              </button>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg className="w-5 h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search transactions..."
+                  value={searchTerm}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="py-3 pl-10 pr-4 transition-all duration-300 border shadow-sm w-80 border-heritage-neutral/30 rounded-2xl bg-white/90 backdrop-blur-sm text-heritage-green placeholder-heritage-neutral/50 focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 focus:bg-white hover:shadow-md"
+                />
               </div>
-              <input
-                type="text"
-                placeholder="Search transactions..."
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="py-3 pl-10 pr-4 transition-all duration-300 border shadow-sm w-80 border-heritage-neutral/30 rounded-2xl bg-white/90 backdrop-blur-sm text-heritage-green placeholder-heritage-neutral/50 focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 focus:bg-white hover:shadow-md"
-              />
             </div>
           </div>
 
@@ -208,9 +236,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-heritage-neutral/10 bg-white/30">
-                {Array.from({ length: 5 }, (_, index) => {
-                  const transaction = transactions[index];
-                  return transaction ? (
+                {transactions.map((transaction) => (
                     <tr 
                       key={transaction.id} 
                       className="h-16 transition-all duration-300 border-l-4 border-transparent cursor-pointer hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-heritage-light/20 group hover:border-heritage-green"
@@ -257,62 +283,69 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                         </div>
                       </td>
                     </tr>
-                  ) : (
-                    <tr key={`empty-${index}`} className="h-16 border-b bg-heritage-neutral/3 border-heritage-neutral/5">
-                      <td className="px-8 py-4" colSpan={4}>
-                        <div className="flex items-center justify-center text-heritage-neutral/20">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-1 h-1 rounded-full bg-heritage-neutral/30"></div>
-                            <div className="w-1 h-1 rounded-full bg-heritage-neutral/30"></div>
-                            <div className="w-1 h-1 rounded-full bg-heritage-neutral/30"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                ))}
           </tbody>
             </table>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between pt-4 mt-6 border-t border-heritage-neutral/10">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-heritage-green"></div>
-              <span className="text-sm font-medium text-heritage-neutral">
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} transactions
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="flex items-center px-4 py-2 space-x-2 transition-all duration-300 border shadow-sm rounded-xl border-heritage-neutral/30 bg-white/90 text-heritage-green disabled:opacity-50 hover:bg-heritage-green/10 hover:border-heritage-green/50 hover:shadow-md"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                <span className="font-medium">Previous</span>
-              </button>
-              <div className="flex items-center space-x-1">
-                <span className="px-4 py-2 font-semibold text-white shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-xl">
-                  {currentPage}
-                </span>
-                <span className="mx-2 text-heritage-neutral/50">of</span>
-                <span className="font-semibold text-heritage-green">{totalPages}</span>
+          {!showAll && totalPages > 1 && (
+            <div className="flex items-center justify-center pt-4 mt-6 border-t border-heritage-neutral/10">
+              <div className="flex items-center gap-3">
+                {/* Previous Button */}
+                <button
+                  onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else {
+                      // Show pages around current page
+                      const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                      pageNum = start + i;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => onPageChange(pageNum)}
+                        className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                          pageNum === currentPage
+                            ? 'bg-heritage-green text-white'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-              <button
-                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="flex items-center px-4 py-2 space-x-2 transition-all duration-300 border shadow-sm rounded-xl border-heritage-neutral/30 bg-white/90 text-heritage-green disabled:opacity-50 hover:bg-heritage-green/10 hover:border-heritage-green/50 hover:shadow-md"
-              >
-                <span className="font-medium">Next</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>
