@@ -1,10 +1,158 @@
 import React, { useState } from 'react';
 import InvoicesHeader from './InvoicesHeader';
 import InvoiceList from './InvoiceList';
+import InvoiceStats from './InvoiceStats';
 import type { Invoice } from './InvoiceList';
 
 export const InvoicesPage: React.FC = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+
+  // Sample invoice data moved from InvoiceList to share with InvoiceStats
+  const invoices: Invoice[] = [
+    {
+      id: 'INV-2024-001',
+      guestName: 'John Smith',
+      roomNumber: '204',
+      checkIn: '2024-10-05',
+      checkOut: '2024-10-07',
+      status: 'paid',
+      totalAmount: 580.50,
+      items: [
+        { id: '1', description: 'Deluxe Room (2 nights)', category: 'room', quantity: 2, unitPrice: 200, total: 400 },
+        { id: '2', description: 'Room Service', category: 'food', quantity: 3, unitPrice: 35, total: 105 },
+        { id: '3', description: 'Laundry Service', category: 'services', quantity: 1, unitPrice: 45, total: 45 },
+        { id: '4', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 30.50, total: 30.50 }
+      ]
+    },
+    {
+      id: 'INV-2024-002',
+      guestName: 'Sarah Johnson',
+      roomNumber: '301',
+      checkIn: '2024-10-06',
+      checkOut: '2024-10-08',
+      status: 'pending',
+      totalAmount: 420.75,
+      items: [
+        { id: '1', description: 'Standard Room (2 nights)', category: 'room', quantity: 2, unitPrice: 150, total: 300 },
+        { id: '2', description: 'Breakfast', category: 'food', quantity: 4, unitPrice: 25, total: 100 },
+        { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 20.75, total: 20.75 }
+      ]
+    },
+    {
+      id: 'INV-2024-003',
+      guestName: 'Michael Brown',
+      roomNumber: '105',
+      checkIn: '2024-10-04',
+      checkOut: '2024-10-06',
+      status: 'overdue',
+      totalAmount: 890.25,
+      items: [
+        { id: '1', description: 'Suite Room (2 nights)', category: 'room', quantity: 2, unitPrice: 350, total: 700 },
+        { id: '2', description: 'Fine Dining', category: 'food', quantity: 2, unitPrice: 65, total: 130 },
+        { id: '3', description: 'Spa Services', category: 'services', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '4', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 40.25, total: 40.25 }
+      ]
+    },
+    {
+      id: 'INV-2024-004',
+      guestName: 'Emily Davis',
+      roomNumber: '102',
+      checkIn: '2024-10-08',
+      checkOut: '2024-10-10',
+      status: 'paid',
+      totalAmount: 350.00,
+      items: [
+        { id: '1', description: 'Standard Room (2 nights)', category: 'room', quantity: 2, unitPrice: 150, total: 300 },
+        { id: '2', description: 'Mini Bar', category: 'food', quantity: 1, unitPrice: 50, total: 50 }
+      ]
+    },
+    {
+      id: 'INV-2024-005',
+      guestName: 'Robert Wilson',
+      roomNumber: '205',
+      checkIn: '2024-10-09',
+      checkOut: '2024-10-11',
+      status: 'pending',
+      totalAmount: 720.80,
+      items: [
+        { id: '1', description: 'Deluxe Room (2 nights)', category: 'room', quantity: 2, unitPrice: 200, total: 400 },
+        { id: '2', description: 'Dinner', category: 'food', quantity: 2, unitPrice: 75, total: 150 },
+        { id: '3', description: 'Spa Package', category: 'services', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '4', description: 'Service Tax (7%)', category: 'taxes', quantity: 1, unitPrice: 50.80, total: 50.80 }
+      ]
+    },
+    {
+      id: 'INV-2024-006',
+      guestName: 'Lisa Anderson',
+      roomNumber: '308',
+      checkIn: '2024-10-10',
+      checkOut: '2024-10-12',
+      status: 'overdue',
+      totalAmount: 1250.00,
+      items: [
+        { id: '1', description: 'Presidential Suite (2 nights)', category: 'room', quantity: 2, unitPrice: 500, total: 1000 },
+        { id: '2', description: 'Room Service', category: 'food', quantity: 5, unitPrice: 40, total: 200 },
+        { id: '3', description: 'Service Tax (4%)', category: 'taxes', quantity: 1, unitPrice: 50, total: 50 }
+      ]
+    },
+    {
+      id: 'INV-2024-007',
+      guestName: 'David Thompson',
+      roomNumber: '109',
+      checkIn: '2024-10-11',
+      checkOut: '2024-10-13',
+      status: 'paid',
+      totalAmount: 480.25,
+      items: [
+        { id: '1', description: 'Standard Room (2 nights)', category: 'room', quantity: 2, unitPrice: 150, total: 300 },
+        { id: '2', description: 'Breakfast', category: 'food', quantity: 4, unitPrice: 25, total: 100 },
+        { id: '3', description: 'Laundry', category: 'services', quantity: 1, unitPrice: 60, total: 60 },
+        { id: '4', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 20.25, total: 20.25 }
+      ]
+    },
+    {
+      id: 'INV-2024-008',
+      guestName: 'Jennifer Garcia',
+      roomNumber: '203',
+      checkIn: '2024-10-12',
+      checkOut: '2024-10-14',
+      status: 'pending',
+      totalAmount: 650.40,
+      items: [
+        { id: '1', description: 'Deluxe Room (2 nights)', category: 'room', quantity: 2, unitPrice: 200, total: 400 },
+        { id: '2', description: 'Fine Dining', category: 'food', quantity: 2, unitPrice: 80, total: 160 },
+        { id: '3', description: 'Massage Service', category: 'services', quantity: 1, unitPrice: 90, total: 90 }
+      ]
+    },
+    {
+      id: 'INV-2024-009',
+      guestName: 'Christopher Lee',
+      roomNumber: '107',
+      checkIn: '2024-10-13',
+      checkOut: '2024-10-15',
+      status: 'paid',
+      totalAmount: 920.75,
+      items: [
+        { id: '1', description: 'Suite Room (2 nights)', category: 'room', quantity: 2, unitPrice: 350, total: 700 },
+        { id: '2', description: 'Room Service', category: 'food', quantity: 3, unitPrice: 45, total: 135 },
+        { id: '3', description: 'Business Center', category: 'services', quantity: 1, unitPrice: 85, total: 85 }
+      ]
+    },
+    {
+      id: 'INV-2024-010',
+      guestName: 'Amanda Martinez',
+      roomNumber: '306',
+      checkIn: '2024-10-14',
+      checkOut: '2024-10-16',
+      status: 'overdue',
+      totalAmount: 1180.60,
+      items: [
+        { id: '1', description: 'Presidential Suite (2 nights)', category: 'room', quantity: 2, unitPrice: 500, total: 1000 },
+        { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
+      ]
+    }
+  ];
 
   const handleInvoiceSelect = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -33,6 +181,9 @@ export const InvoicesPage: React.FC = () => {
         {/* Header */}
         <InvoicesHeader />
         
+        {/* Invoice Stats */}
+        <InvoiceStats invoices={invoices} />
+        
         {/* Full Width Layout */}
         <div className="w-full">
           {/* Split Layout Grid */}
@@ -40,6 +191,7 @@ export const InvoicesPage: React.FC = () => {
             {/* Left Side - Invoice List */}
             <div className="col-span-8">
               <InvoiceList 
+                invoices={invoices}
                 onInvoiceSelect={handleInvoiceSelect}
                 selectedInvoice={selectedInvoice}
               />
