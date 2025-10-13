@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { Invoice } from './InvoiceList';
 
 interface InvoiceStatsProps {
   invoices: Invoice[];
+  isLoading: boolean;
 }
 
 interface StatCard {
@@ -15,15 +16,7 @@ interface StatCard {
   count: number;
 }
 
-const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices, isLoading }) => {
 
   // Calculate stats
   const paidInvoices = invoices.filter(inv => inv.status === 'paid');
