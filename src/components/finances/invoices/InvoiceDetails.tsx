@@ -4,9 +4,10 @@ import type { Invoice } from './InvoiceList';
 interface InvoiceDetailsProps {
   invoice: Invoice | null;
   onClose: () => void;
+  onPrint?: (invoice: Invoice) => void;
 }
 
-const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => {
+const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPrint }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -24,6 +25,74 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
       currency: 'PHP',
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handlePrint = () => {
+    if (onPrint) {
+      onPrint(invoice);
+    } else {
+      // Default print functionality
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Invoice ${invoice.id}</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .details { margin-bottom: 20px; }
+                .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                .items-table th { background-color: #f2f2f2; }
+                .total { margin-top: 20px; text-align: right; font-size: 18px; font-weight: bold; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>BALAY GINHAWA</h1>
+                <p>Heritage Hotel & Suites</p>
+                <h2>INVOICE ${invoice.id}</h2>
+              </div>
+              <div class="details">
+                <p><strong>Guest:</strong> ${invoice.guestName}</p>
+                <p><strong>Room:</strong> ${invoice.roomNumber}</p>
+                <p><strong>Check-in:</strong> ${invoice.checkIn}</p>
+                <p><strong>Check-out:</strong> ${invoice.checkOut}</p>
+                <p><strong>Status:</strong> ${invoice.status.toUpperCase()}</p>
+              </div>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${invoice.items.map(item => `
+                    <tr>
+                      <td>${item.description}</td>
+                      <td>${item.category}</td>
+                      <td>${item.quantity}</td>
+                      <td>$${item.unitPrice.toFixed(2)}</td>
+                      <td>$${item.total.toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div class="total">
+                <p>Total Amount: $${invoice.totalAmount.toFixed(2)}</p>
+              </div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -44,32 +113,54 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end p-4 bg-black/50 backdrop-blur-sm pt-64">
-      <div className="relative overflow-hidden bg-white/95 backdrop-blur-2xl rounded-3xl border border-white/60 shadow-2xl w-96 max-h-[calc(100vh-16rem)]">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/5 via-heritage-light/20 to-heritage-green/3 rounded-3xl opacity-60"></div>
-        <div className="absolute top-0 right-0 w-40 h-40 rounded-full translate-x-1/3 -translate-y-1/3 bg-gradient-to-bl from-heritage-green/10 to-transparent"></div>
-        <div className="absolute w-32 h-32 rounded-full -bottom-10 -left-10 bg-gradient-to-tr from-heritage-light/30 to-transparent"></div>
+    <>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(130, 163, 61, 0.1);
+          border-radius: 12px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(130, 163, 61, 0.3);
+          border-radius: 12px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(130, 163, 61, 0.5);
+        }
+      `}</style>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="relative overflow-hidden bg-white rounded-3xl border-2 border-heritage-green/20 shadow-2xl w-full max-w-4xl max-h-[90vh]">
+        {/* Clean Background Elements */}
+        <div className="absolute inset-0 bg-white rounded-3xl"></div>
         
         <div className="relative z-10">
-          {/* Modal Header */}
-          <div className="flex items-center justify-between p-6 border-b border-heritage-neutral/10">
-            <div>
-              <h2 className="text-2xl font-bold text-heritage-green">Invoice Details</h2>
-              <p className="text-sm text-heritage-neutral/70">View and manage invoice information</p>
+          {/* Enhanced Modal Header */}
+          <div className="flex items-center justify-between p-8 border-b-2 bg-white border-heritage-green/15">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-16 h-16 border-2 shadow-xl bg-gradient-to-br from-heritage-green via-heritage-green/90 to-heritage-neutral rounded-3xl border-heritage-green/20">
+                <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-3xl font-black text-heritage-green">Invoice Details</h2>
+                <p className="text-base font-semibold text-heritage-neutral/80">Complete invoice information and management</p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="p-3 transition-all duration-300 text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/10 rounded-2xl"
+              className="p-4 transition-all duration-300 border-2 border-transparent text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/15 rounded-2xl hover:border-heritage-green/20"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Invoice Content */}
-          <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)]">
+          {/* Enhanced Invoice Content */}
+          <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar bg-white">
             {/* Invoice Header */}
             <div className="flex items-start justify-between mb-8">
               <div className="flex items-center gap-4">
@@ -91,7 +182,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
 
             {/* Guest Information */}
             <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
-              <div className="p-6 border bg-heritage-light/30 backdrop-blur-sm rounded-2xl border-heritage-neutral/10">
+              <div className="p-6 bg-white border shadow-sm rounded-2xl border-heritage-neutral/20">
                 <h4 className="flex items-center gap-2 mb-4 text-lg font-semibold text-heritage-green">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -110,7 +201,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
                 </div>
               </div>
 
-              <div className="p-6 border bg-heritage-light/30 backdrop-blur-sm rounded-2xl border-heritage-neutral/10">
+              <div className="p-6 bg-white border shadow-sm rounded-2xl border-heritage-neutral/20">
                 <h4 className="flex items-center gap-2 mb-4 text-lg font-semibold text-heritage-green">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -165,7 +256,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
               {/* Compact Grid Layout */}
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {currentItems.map((item, index) => (
-                  <div key={item.id} className="relative p-4 transition-all duration-300 border shadow-md group bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-xl rounded-xl border-heritage-neutral/20 hover:shadow-lg hover:-translate-y-1">
+                  <div key={item.id} className="relative p-4 transition-all duration-300 bg-white border shadow-md group rounded-xl border-heritage-neutral/20 hover:shadow-lg hover:-translate-y-1">
                     {/* Compact Header */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -223,7 +314,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
             </div>
 
             {/* Invoice Summary */}
-            <div className="p-6 border bg-heritage-light/30 backdrop-blur-sm rounded-2xl border-heritage-neutral/10">
+            <div className="p-6 bg-white border shadow-sm rounded-2xl border-heritage-neutral/20">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="mb-2 text-lg font-semibold text-heritage-green">Invoice Summary</h4>
@@ -237,16 +328,28 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="p-6 border-t border-heritage-neutral/10 bg-heritage-light/20 backdrop-blur-sm">
-            <div className="flex justify-end gap-3">
-              <button className="px-6 py-3 text-sm font-medium transition-all duration-300 border text-heritage-neutral border-heritage-neutral/30 rounded-2xl hover:bg-heritage-neutral/5 hover:border-heritage-neutral/50">
+          {/* Enhanced Action Buttons */}
+          <div className="p-8 border-t-2 bg-white border-heritage-green/15">
+            <div className="flex justify-end gap-4">
+              <button 
+                onClick={handlePrint}
+                className="flex items-center gap-2 px-6 py-3 text-sm font-bold transition-all duration-300 transform border-2 shadow-lg bg-white text-heritage-green border-heritage-green/30 rounded-2xl hover:bg-heritage-green/5 hover:border-heritage-green/50 hover:shadow-xl hover:-translate-y-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
                 Print Invoice
               </button>
-              <button className="px-6 py-3 text-sm font-medium transition-all duration-300 border text-heritage-neutral border-heritage-neutral/30 rounded-2xl hover:bg-heritage-neutral/5 hover:border-heritage-neutral/50">
+              <button className="flex items-center gap-2 px-6 py-3 text-sm font-bold transition-all duration-300 transform border-2 shadow-lg bg-white text-heritage-green border-heritage-green/30 rounded-2xl hover:bg-heritage-green/5 hover:border-heritage-green/50 hover:shadow-xl hover:-translate-y-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
                 Download PDF
               </button>
-              <button className="px-6 py-3 text-sm font-medium text-white transition-all duration-300 shadow-lg bg-heritage-green hover:bg-heritage-green/90 rounded-2xl">
+              <button className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral hover:from-heritage-green/90 hover:to-heritage-neutral/90 rounded-2xl hover:shadow-xl hover:-translate-y-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
                 Send Email
               </button>
             </div>
@@ -254,6 +357,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose }) => 
         </div>
       </div>
     </div>
+    </>
   );
 };
 
