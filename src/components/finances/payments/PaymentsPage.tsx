@@ -118,8 +118,10 @@ export const PaymentsPage: React.FC = () => {
                   selectedPayment={selectedPayment}
                 />
               </div>
-              <div className="col-span-1">
-                <PaymentsActivity payments={payments} />
+              <div className="flex col-span-1">
+                <div className="flex flex-col w-full">
+                  <PaymentsActivity payments={payments} />
+                </div>
               </div>
             </div>
       </div>

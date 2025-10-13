@@ -28,7 +28,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
   });
 
   // Local pagination state (header + pagination from transactions design)
-  const [showAll, setShowAll] = useState(false);
+  // Display All/Paginate removed; always paginate with itemsPerPage.
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -56,7 +56,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
   }, [totalPages, currentPage]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const visiblePayments = showAll ? filteredPayments : filteredPayments.slice(startIndex, startIndex + itemsPerPage);
+  const visiblePayments = filteredPayments.slice(startIndex, startIndex + itemsPerPage);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -128,28 +128,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
             <div>
               <h3 className="text-2xl font-bold text-heritage-green">Payment Transactions</h3>
               <p className="text-sm text-heritage-neutral/70">
-                {showAll
-                  ? `Showing all ${totalItems} transactions`
-                  : `Showing ${Math.min(totalItems, startIndex + 1)} to ${Math.min(totalItems, startIndex + itemsPerPage)} of ${totalItems} transactions`}
+                {`Showing ${Math.min(totalItems, startIndex + 1)} to ${Math.min(totalItems, startIndex + itemsPerPage)} of ${totalItems} transactions`}
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setShowAll((v) => !v)}
-              className="flex items-center px-4 py-2 space-x-2 transition-all duration-300 border shadow-sm rounded-xl border-heritage-green/30 bg-white/90 text-heritage-green hover:bg-heritage-green hover:text-white hover:shadow-md"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {showAll ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                )}
-              </svg>
-              <span className="font-medium">{showAll ? 'Paginate' : 'Display All'}</span>
-            </button>
-
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <svg className="w-5 h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,7 +153,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
       </div>
 
       {/* Payment List */}
-  <div className="space-y-2 px-2 py-2">
+  <div className="px-2 py-2 space-y-2">
         {visiblePayments.map((payment) => (
           <div
             key={payment.id}
@@ -180,11 +164,11 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-[100px]">
-                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 border border-gray-200">
+                <div className="flex items-center justify-center border border-gray-200 rounded-lg w-9 h-9 bg-gray-50">
                   {getMethodIcon(payment.paymentMethod)}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-base text-gray-900 tracking-tight">{payment.id}</h4>
+                  <h4 className="text-base font-semibold tracking-tight text-gray-900">{payment.id}</h4>
                   {getStatusBadge(payment.status)}
                 </div>
               </div>
@@ -213,7 +197,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
       </div>
 
       {/* Pagination */}
-      {!showAll && (
+      {(
         <div className="p-6 border-t border-gray-100 bg-gray-50/50">
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-3">
