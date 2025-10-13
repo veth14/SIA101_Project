@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TransactionsHeader } from './TransactionsHeader';
 import TransactionAnalytics from './TransactionAnalytics';
 import RecentTransactions from './RecentTransactions';
@@ -36,6 +36,7 @@ export const TransactionsPage: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     dateRange: 'all',
     type: 'all',
@@ -43,6 +44,14 @@ export const TransactionsPage: React.FC = () => {
     status: 'all',
     searchTerm: ''
   });
+
+  // Centralized loading state - synchronized for all components
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Unified 2-second loading time
+    return () => clearTimeout(timer);
+  }, []);
 
   const itemsPerPage = 8; // Items per page when not showing all
 
@@ -79,19 +88,21 @@ export const TransactionsPage: React.FC = () => {
 
       <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
         {/* Header */}
-        <TransactionsHeader />
+  <TransactionsHeader isLoading={isLoading} />
 
         {/* Transaction Stats Component */}
         <TransactionStats
           totalTransactions={totalTransactions}
           completedTransactions={completedTransactions}
           pendingTransactions={pendingTransactions}
+          isLoading={isLoading}
         />
 
         {/* Transaction Analytics Component */}
         <TransactionAnalytics 
           filters={{ status: filters.status, category: filters.category }}
           onFiltersChange={(newFilters) => setFilters({...filters, ...newFilters})}
+          isLoading={isLoading}
         />
 
         {/* Transaction Table and Details */}
@@ -113,6 +124,7 @@ export const TransactionsPage: React.FC = () => {
                 setShowAll(!showAll);
                 setCurrentPage(1); // Reset to first page when toggling
               }}
+              isLoading={isLoading}
             />
           </div>
 

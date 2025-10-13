@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
@@ -123,23 +123,17 @@ interface TransactionAnalyticsProps {
     category: string;
   };
   onFiltersChange: (filters: TransactionFilters) => void;
+  isLoading: boolean;
 }
 
-const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, onFiltersChange }) => {
+const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, onFiltersChange, isLoading }) => {
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [isLoading, setIsLoading] = useState(true);
   
   // Get data and metrics
   const transactionData = useMemo(() => getTransactionData(activeTimeframe), [activeTimeframe]);
   const metrics = useMemo(() => calculateChartMetrics(transactionData), [transactionData]);
 
-  // Initial loading only
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  // Loading state is now managed by parent component
   
   // Transform data for recharts
   const chartData = transactionData.map((item) => ({

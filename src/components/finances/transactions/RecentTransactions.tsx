@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 export interface Transaction {
@@ -26,6 +26,7 @@ interface RecentTransactionsProps {
   itemsPerPage: number;
   showAll: boolean;
   onToggleShowAll: () => void;
+  isLoading: boolean;
 }
 
 const RecentTransactions: React.FC<RecentTransactionsProps> = ({
@@ -39,9 +40,9 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   totalItems,
   itemsPerPage,
   showAll,
-  onToggleShowAll
+  onToggleShowAll,
+  isLoading
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -51,13 +52,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
     }).format(amount);
   };
 
-  // Loading simulation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Slightly longer for table
-    return () => clearTimeout(timer);
-  }, []);
+  // Loading state is now managed by parent component
 
   if (isLoading) {
     return (

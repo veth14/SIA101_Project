@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
-const TransactionsHeader: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
+interface TransactionsHeaderProps {
+  isLoading: boolean;
+}
 
-  // Loading simulation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000); // Fastest loading for header
-    return () => clearTimeout(timer);
-  }, []);
+const TransactionsHeader: React.FC<TransactionsHeaderProps> = ({ isLoading }) => {
 
   if (isLoading) {
     return (
@@ -46,10 +41,10 @@ const TransactionsHeader: React.FC = () => {
                   <Skeleton className="w-16 h-16 rounded-2xl" />
                   <div className="space-y-2">
                     <Skeleton className="h-12 w-80" />
-                    <Skeleton className="h-6 w-64" />
+                    <Skeleton className="w-64 h-6" />
                     <div className="flex items-center mt-4 space-x-4">
-                      <Skeleton className="h-8 w-40 rounded-full" />
-                      <Skeleton className="h-8 w-32 rounded-full" />
+                      <Skeleton className="w-40 h-8 rounded-full" />
+                      <Skeleton className="w-32 h-8 rounded-full" />
                     </div>
                   </div>
                 </div>
@@ -58,8 +53,8 @@ const TransactionsHeader: React.FC = () => {
               {/* Right Side Skeleton */}
               <div className="text-right">
                 <div className="p-8 border shadow-xl bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl border-green-500/20">
-                  <Skeleton className="h-10 w-24 mb-2" />
-                  <Skeleton className="h-4 w-20 mb-3" />
+                  <Skeleton className="w-24 h-10 mb-2" />
+                  <Skeleton className="w-20 h-4 mb-3" />
                   <div className="flex items-center justify-center space-x-2">
                     <Skeleton className="w-1 h-1 rounded-full" />
                     <Skeleton className="w-1 h-1 rounded-full" />

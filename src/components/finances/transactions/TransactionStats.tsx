@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 interface TransactionStatsProps {
   totalTransactions: number;
   completedTransactions: number;
   pendingTransactions: number;
+  isLoading: boolean;
 }
 
 interface StatCard {
@@ -19,9 +20,9 @@ interface StatCard {
 const TransactionStats: React.FC<TransactionStatsProps> = ({
   totalTransactions,
   completedTransactions,
-  pendingTransactions
+  pendingTransactions,
+  isLoading
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -70,13 +71,7 @@ const TransactionStats: React.FC<TransactionStatsProps> = ({
     }
   ];
 
-  // Simulate loading - synchronized with all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  // Loading state is now managed by parent component
 
   if (isLoading) {
     return (
