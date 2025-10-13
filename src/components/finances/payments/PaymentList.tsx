@@ -14,81 +14,18 @@ export interface Payment {
 }
 
 interface PaymentListProps {
+  payments: Payment[];
   onPaymentSelect: (payment: Payment) => void;
   selectedPayment: Payment | null;
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ onPaymentSelect, selectedPayment }) => {
+const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, selectedPayment }) => {
   const [filters, setFilters] = useState({
     status: 'all',
     method: 'all',
     dateRange: 'all',
     searchTerm: ''
   });
-
-  // Sample payment data
-  const payments: Payment[] = [
-    {
-      id: 'PAY-2024-001',
-      guestName: 'John Smith',
-      roomNumber: '204',
-      amount: 580.50,
-      paymentMethod: 'card',
-      status: 'completed',
-      transactionDate: '2024-10-07',
-      transactionTime: '14:30:00',
-      reference: 'TXN-4567890123',
-      description: 'Room booking payment for 2 nights'
-    },
-    {
-      id: 'PAY-2024-002',
-      guestName: 'Sarah Johnson',
-      roomNumber: '301',
-      amount: 420.75,
-      paymentMethod: 'digital',
-      status: 'pending',
-      transactionDate: '2024-10-08',
-      transactionTime: '09:15:00',
-      reference: 'TXN-4567890124',
-      description: 'Room service and accommodation charges'
-    },
-    {
-      id: 'PAY-2024-003',
-      guestName: 'Michael Brown',
-      roomNumber: '105',
-      amount: 890.25,
-      paymentMethod: 'cash',
-      status: 'completed',
-      transactionDate: '2024-10-06',
-      transactionTime: '16:45:00',
-      reference: 'TXN-4567890125',
-      description: 'Full payment including spa services'
-    },
-    {
-      id: 'PAY-2024-004',
-      guestName: 'Emily Davis',
-      roomNumber: '208',
-      amount: 125.00,
-      paymentMethod: 'card',
-      status: 'failed',
-      transactionDate: '2024-10-08',
-      transactionTime: '11:20:00',
-      reference: 'TXN-4567890126',
-      description: 'Room service payment - card declined'
-    },
-    {
-      id: 'PAY-2024-005',
-      guestName: 'Robert Wilson',
-      roomNumber: '402',
-      amount: 320.00,
-      paymentMethod: 'bank_transfer',
-      status: 'refunded',
-      transactionDate: '2024-10-05',
-      transactionTime: '13:10:00',
-      reference: 'TXN-4567890127',
-      description: 'Cancelled booking refund'
-    }
-  ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
