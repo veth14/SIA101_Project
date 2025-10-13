@@ -1,67 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
-interface StatCard {
-  title: string;
-  value: string;
-  change: string;
-  changeType: 'positive' | 'negative' | 'neutral';
-  icon: React.ReactNode;
-  iconBg: string;
+interface PaymentsStatsProps {
+  payments: Array<{
+    status: string;
+    amount: number;
+  }>;
 }
 
-const stats: StatCard[] = [
+const statsConfig = [
   {
-    title: 'Total Revenue',
-    value: '$245,800',
-    change: '+12.5% from last month',
-    changeType: 'positive',
+    title: 'Completed',
+    status: 'completed',
     iconBg: 'bg-green-100',
     icon: (
       <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
       </svg>
     )
   },
   {
-    title: 'Net Profit',
-    value: '$89,240',
-    change: '+8.3% from last month',
-    changeType: 'positive',
+    title: 'Pending',
+    status: 'pending',
+    iconBg: 'bg-yellow-100',
+    icon: (
+      <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" />
+      </svg>
+    )
+  },
+  {
+    title: 'Failed',
+    status: 'failed',
+    iconBg: 'bg-red-100',
+    icon: (
+      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    )
+  },
+  {
+    title: 'Refunded',
+    status: 'refunded',
     iconBg: 'bg-blue-100',
     icon: (
       <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    )
-  },
-  {
-    title: 'Total Expenses',
-    value: '$156,560',
-    change: '+2.1% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-orange-100',
-    icon: (
-      <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
-      </svg>
-    )
-  },
-  {
-    title: 'Cash Flow',
-    value: '$45,320',
-    change: '-3.2% from last month',
-    changeType: 'negative',
-    iconBg: 'bg-purple-100',
-    icon: (
-      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
     )
   }
 ];
 
-const PaymentsStats: React.FC = () => {
+const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -71,24 +61,41 @@ const PaymentsStats: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const totalCount = payments.length || 1;
+  const stats = statsConfig.map((cfg) => {
+    const subset = payments.filter(p => p.status === cfg.status);
+    const valueAmount = subset.reduce((sum, p) => sum + p.amount, 0);
+    const percent = Math.round((subset.length / totalCount) * 100);
+    let changeType: 'positive' | 'negative' | 'neutral' = 'neutral';
+    if (cfg.status === 'completed') changeType = 'positive';
+    if (cfg.status === 'failed') changeType = 'negative';
+    // Pending and refunded are neutral
+    return {
+      ...cfg,
+      value: `$${valueAmount.toFixed(2)}`,
+      change: `${percent}% of payments`,
+      changeType,
+    };
+  });
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, index) => (
-          <div key={index} className="overflow-hidden relative p-8 rounded-2xl border shadow-lg backdrop-blur-xl bg-white/95 border-white/50">
-            <div className="flex justify-between items-start">
+          <div key={index} className="relative p-8 overflow-hidden border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50">
+            <div className="flex items-start justify-between">
               <div className="flex-1 mr-5">
                 <div className="flex items-center mb-3">
                   <Skeleton className="w-1 h-5 mr-2 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="w-24 h-4" />
                 </div>
-                <Skeleton className="h-10 w-28 mb-3" />
-                <Skeleton className="h-6 w-32 rounded-full" />
+                <Skeleton className="h-10 mb-3 w-28" />
+                <Skeleton className="w-32 h-6 rounded-full" />
               </div>
               <Skeleton className="w-16 h-16 rounded-xl" />
             </div>
-            <div className="absolute right-0 bottom-0 left-0 h-1">
-              <Skeleton className="h-full w-full" />
+            <div className="absolute bottom-0 left-0 right-0 h-1">
+              <Skeleton className="w-full h-full" />
             </div>
           </div>
         ))}
@@ -101,7 +108,7 @@ const PaymentsStats: React.FC = () => {
       {stats.map((stat, index) => (
         <div 
           key={index} 
-          className="overflow-hidden relative p-8 rounded-2xl border shadow-lg backdrop-blur-xl transition-all duration-500 bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
+          className="relative p-8 overflow-hidden transition-all duration-500 border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
           style={{ animationDelay: `${index * 100}ms` }}
         >
           <div className="absolute inset-0 transition-opacity duration-500 opacity-40 bg-gradient-to-br from-[#82A33D]/5 via-white/80 to-[#82A33D]/10 rounded-2xl group-hover:opacity-70"></div>
@@ -112,7 +119,7 @@ const PaymentsStats: React.FC = () => {
             backgroundSize: '30px 30px'
           }}></div>
 
-          <div className="flex relative justify-between items-start">
+          <div className="relative flex items-start justify-between">
             <div className="flex-1 mr-5">
               <div className="flex items-center mb-3">
                 <div className="w-1 h-5 mr-2 rounded-full bg-gradient-to-b from-[#82A33D] to-emerald-600"></div>
@@ -122,19 +129,21 @@ const PaymentsStats: React.FC = () => {
                 <p className="mb-3 text-4xl font-extrabold text-[#82A33D] group-hover:scale-105 transition-transform duration-300">{stat.value}</p>
                 <div className="absolute -right-1 -top-1 w-8 h-8 bg-[#82A33D]/5 rounded-full blur-md -z-10 group-hover:bg-[#82A33D]/10 transition-colors duration-300"></div>
               </div>
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                stat.changeType === 'positive' 
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50' 
-                  : stat.changeType === 'negative' 
-                  ? 'bg-red-50 text-red-700 border border-red-200/50' 
-                  : 'bg-gray-50 text-gray-700 border border-gray-200/50'
-              }`}>
-                <svg className="mr-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={
-                    stat.changeType === 'positive' ? "M7 11l5-5m0 0l5 5m-5-5v12" : "M17 13l-5 5m0 0l-5-5m5 5V8"
-                  } />
-                </svg>
-                {stat.change}
+              <div className="mt-2">
+                <span className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold shadow-sm border transition-all duration-300 ${
+                  stat.changeType === 'positive'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70'
+                    : stat.changeType === 'negative'
+                    ? 'bg-red-50 text-red-700 border-red-200/70'
+                    : 'bg-gray-50 text-gray-700 border-gray-200/70'
+                }`}>
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={
+                      stat.changeType === 'positive' ? "M7 11l5-5m0 0l5 5m-5-5v12" : "M17 13l-5 5m0 0l-5-5m5 5V8"
+                    } />
+                  </svg>
+                  {stat.change}
+                </span>
               </div>
             </div>
             <div className="relative">
@@ -146,13 +155,13 @@ const PaymentsStats: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-hidden absolute right-0 bottom-0 left-0 h-1">
+          <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden">
             <div 
               className={`h-full ${
                 index === 0 ? 'bg-gradient-to-r from-[#82A33D] to-emerald-400' :
-                index === 1 ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
-                index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
-                'bg-gradient-to-r from-purple-400 to-purple-600'
+                index === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                index === 2 ? 'bg-gradient-to-r from-red-400 to-red-600' :
+                'bg-gradient-to-r from-blue-400 to-blue-600'
               }`}
               style={{ width: `${(index + 1) * 25}%` }}
             ></div>

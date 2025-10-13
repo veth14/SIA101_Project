@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export interface Payment {
   id: string;
@@ -26,6 +26,37 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
     dateRange: 'all',
     searchTerm: ''
   });
+
+  // Local pagination state (header + pagination from transactions design)
+  const [showAll, setShowAll] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Derived filtered payments based on existing filters
+  const filteredPayments = payments.filter((p) => {
+    const matchesStatus = filters.status === 'all' || p.status === filters.status;
+    const matchesMethod = filters.method === 'all' || p.paymentMethod === filters.method;
+    const term = filters.searchTerm.trim().toLowerCase();
+    const matchesSearch = term === ''
+      || p.id.toLowerCase().includes(term)
+      || p.guestName.toLowerCase().includes(term)
+      || p.reference.toLowerCase().includes(term)
+      || `${p.roomNumber}`.toLowerCase().includes(term);
+    return matchesStatus && matchesMethod && matchesSearch;
+  });
+
+  const totalItems = filteredPayments.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+  useEffect(() => {
+    // Clamp current page if filters/search changed
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const visiblePayments = showAll ? filteredPayments : filteredPayments.slice(startIndex, startIndex + itemsPerPage);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -81,153 +112,160 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'border-l-green-500 bg-green-50/30';
-      case 'pending':
-        return 'border-l-yellow-500 bg-yellow-50/30';
-      case 'failed':
-        return 'border-l-red-500 bg-red-50/30';
-      case 'refunded':
-        return 'border-l-blue-500 bg-blue-50/30';
-      default:
-        return 'border-l-gray-500 bg-gray-50/30';
-    }
-  };
+  // Removed unused getStatusColor after redesign to card-style rows.
 
   return (
     <div className="bg-white border border-gray-100 shadow-lg rounded-2xl">
-      {/* Header with Filters */}
+      {/* Header (Transactions-style) */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Payment Transactions</h3>
-            <p className="text-sm text-gray-600">{payments.length} transactions found</p>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-center w-12 h-12 shadow-lg bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-heritage-green">Payment Transactions</h3>
+              <p className="text-sm text-heritage-neutral/70">
+                {showAll
+                  ? `Showing all ${totalItems} transactions`
+                  : `Showing ${Math.min(totalItems, startIndex + 1)} to ${Math.min(totalItems, startIndex + itemsPerPage)} of ${totalItems} transactions`}
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 text-sm font-medium text-white bg-[#82A33D] hover:bg-[#6d8735] rounded-lg transition-colors">
-              Process Payment
-            </button>
-            <button className="px-4 py-2 text-sm font-medium text-gray-600 transition-colors border border-gray-200 rounded-lg hover:text-gray-800 hover:bg-gray-50">
-              Export Report
-            </button>
-          </div>
-        </div>
 
-        {/* Quick Filters */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <input
-            type="text"
-            placeholder="Search payments..."
-            value={filters.searchTerm}
-            onChange={(e) => setFilters({...filters, searchTerm: e.target.value})}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#82A33D] focus:border-transparent text-sm"
-          />
-          <select
-            value={filters.status}
-            onChange={(e) => setFilters({...filters, status: e.target.value})}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#82A33D] focus:border-transparent text-sm"
-          >
-            <option value="all">All Status</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-            <option value="refunded">Refunded</option>
-          </select>
-          <select
-            value={filters.method}
-            onChange={(e) => setFilters({...filters, method: e.target.value})}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#82A33D] focus:border-transparent text-sm"
-          >
-            <option value="all">All Methods</option>
-            <option value="card">Card</option>
-            <option value="cash">Cash</option>
-            <option value="digital">Digital Wallet</option>
-            <option value="bank_transfer">Bank Transfer</option>
-          </select>
-          <select
-            value={filters.dateRange}
-            onChange={(e) => setFilters({...filters, dateRange: e.target.value})}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#82A33D] focus:border-transparent text-sm"
-          >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-          </select>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              className="flex items-center px-4 py-2 space-x-2 transition-all duration-300 border shadow-sm rounded-xl border-heritage-green/30 bg-white/90 text-heritage-green hover:bg-heritage-green hover:text-white hover:shadow-md"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {showAll ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                )}
+              </svg>
+              <span className="font-medium">{showAll ? 'Paginate' : 'Display All'}</span>
+            </button>
+
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg className="w-5 h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search payments..."
+                value={filters.searchTerm}
+                onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                className="py-3 pl-10 pr-4 transition-all duration-300 border shadow-sm w-80 border-heritage-neutral/30 rounded-2xl bg-white/90 backdrop-blur-sm text-heritage-green placeholder-heritage-neutral/50 focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 focus:bg-white hover:shadow-md"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Payment List */}
-      <div className="max-h-[600px] overflow-y-auto">
-        {payments.map((payment) => (
+  <div className="space-y-2 px-2 py-2">
+        {visiblePayments.map((payment) => (
           <div
             key={payment.id}
             onClick={() => onPaymentSelect(payment)}
-            className={`p-4 border-l-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-              selectedPayment?.id === payment.id ? 'bg-[#82A33D]/5 border-l-[#82A33D]' : getStatusColor(payment.status)
+            className={`group bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col gap-1 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-[#82A33D]/40 ${
+              selectedPayment?.id === payment.id ? 'ring-2 ring-[#82A33D]/40 border-[#82A33D]' : ''
             }`}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {getMethodIcon(payment.paymentMethod)}
-                <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-2">
-                    <h4 className="font-semibold text-gray-900">{payment.id}</h4>
-                    {getStatusBadge(payment.status)}
-                  </div>
-                  <p className="mb-1 font-medium text-gray-700">{payment.guestName}</p>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>Room {payment.roomNumber}</span>
-                    <span>{payment.transactionDate} at {payment.transactionTime}</span>
-                    <span className="capitalize">{payment.paymentMethod.replace('_', ' ')}</span>
-                  </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-[100px]">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 border border-gray-200">
+                  {getMethodIcon(payment.paymentMethod)}
+                </div>
+                <div>
+                  <h4 className="font-semibold text-base text-gray-900 tracking-tight">{payment.id}</h4>
+                  {getStatusBadge(payment.status)}
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`text-xl font-bold ${
+              <div className="flex flex-col items-end min-w-[100px]">
+                <p className={`text-xl font-bold tracking-wide ${
                   payment.status === 'refunded' ? 'text-blue-600' : 
-                  payment.status === 'failed' ? 'text-red-600' : 'text-gray-900'
+                  payment.status === 'failed' ? 'text-red-600' : 'text-heritage-green'
                 }`}>
                   {payment.status === 'refunded' ? '-' : ''}${payment.amount.toFixed(2)}
                 </p>
-                <p className="text-sm text-gray-500">{payment.reference}</p>
+                <p className="text-[11px] text-gray-400">{payment.reference}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-1 text-xs text-gray-600">
+              <div className="flex flex-col">
+                <span className="font-medium">{payment.guestName}</span>
+                <span className="text-[11px] text-gray-400">Room {payment.roomNumber}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span>{payment.transactionDate} at {payment.transactionTime}</span>
+                <span className="capitalize text-[11px] text-gray-400">{payment.paymentMethod.replace('_', ' ')}</span>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Summary Footer */}
-      <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-        <div className="grid grid-cols-4 gap-4 text-center">
-          <div>
-            <p className="text-sm text-gray-600">Completed</p>
-            <p className="text-lg font-bold text-green-600">
-              ${payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Pending</p>
-            <p className="text-lg font-bold text-yellow-600">
-              ${payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Failed</p>
-            <p className="text-lg font-bold text-red-600">
-              ${payments.filter(p => p.status === 'failed').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Refunded</p>
-            <p className="text-lg font-bold text-blue-600">
-              ${payments.filter(p => p.status === 'refunded').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
-            </p>
+      {/* Pagination */}
+      {!showAll && (
+        <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Previous
+              </button>
+
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else {
+                    const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                    pageNum = start + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        pageNum === currentPage ? 'bg-heritage-green text-white' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 };

@@ -106,7 +106,7 @@ export const PaymentsPage: React.FC = () => {
 
         {/* Stats */}
         <div className="w-full">
-          <PaymentsStats />
+          <PaymentsStats payments={payments} />
         </div>
 
         {/* Main Grid */}
