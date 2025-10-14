@@ -312,7 +312,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
 
       {/* Summary Footer */}
       <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-        <div className="grid grid-cols-4 gap-4 text-center">
+        <div className="grid grid-cols-5 gap-4 text-center">
           <div>
             <p className="text-sm text-gray-600">Pending</p>
             <p className="text-lg font-bold text-yellow-600">
@@ -332,7 +332,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total</p>
+            <p className="text-sm text-gray-600">Rejected</p>
+            <p className="text-lg font-bold text-red-600">
+              ${expenses.filter(e => e.status === 'rejected').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Overall Total</p>
             <p className="text-lg font-bold text-gray-900">
               ${expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
             </p>
