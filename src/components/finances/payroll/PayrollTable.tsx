@@ -1,28 +1,426 @@
-export const PayrollTable = () => {
+import React, { useState } from 'react';
+import { calculatePayroll } from '../../../utils/philippineTaxCalculations';
+
+export interface EmployeePayroll {
+  id: string;
+  employeeId: string;
+  name: string;
+  position: string;
+  department: 'front_desk' | 'housekeeping' | 'food_beverage' | 'management' | 'maintenance' | 'security';
+  basicPay: number;
+  allowance: number;
+  overtime: number;
+  overtimeRate: number;
+  status: 'paid' | 'pending' | 'delayed';
+  payPeriod: string;
+}
+
+interface PayrollTableProps {
+  employees: EmployeePayroll[];
+  onEmployeeSelect: (employee: EmployeePayroll) => void;
+  selectedEmployee: EmployeePayroll | null;
+}
+
+export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmployeeSelect, selectedEmployee }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [monthFilter, setMonthFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Filter and sort employees (prioritize: pending > delayed > paid)
+  const filteredEmployees = employees
+    .filter(emp => {
+      const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           emp.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDepartment = departmentFilter === 'all' || emp.department === departmentFilter;
+      const matchesStatus = statusFilter === 'all' || emp.status === statusFilter;
+      
+      return matchesSearch && matchesDepartment && matchesStatus;
+    })
+    .sort((a, b) => {
+      // Status priority: pending (1) > delayed (2) > paid (3)
+      const statusPriority: Record<string, number> = { pending: 1, delayed: 2, paid: 3 };
+      return statusPriority[a.status] - statusPriority[b.status];
+    });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, departmentFilter, statusFilter, monthFilter]);
+
+  const getDepartmentName = (department: string) => {
+    const names: Record<string, string> = {
+      front_desk: 'Front Desk',
+      housekeeping: 'Housekeeping',
+      food_beverage: 'Food & Beverage',
+      management: 'Management',
+      maintenance: 'Maintenance',
+      security: 'Security'
+    };
+    return names[department] || department;
+  };
+
+  const handleExportToExcel = () => {
+    // Create CSV content
+    const headers = ['Employee ID', 'Name', 'Position', 'Department', 'Basic Pay', 'Allowance', 'Overtime', 'Gross Pay', 'SSS', 'PhilHealth', 'Pag-IBIG', 'Tax', 'Total Deductions', 'Net Pay', 'Status'];
+    
+    const rows = filteredEmployees.map(emp => {
+      const payroll = calculatePayroll(emp.basicPay, emp.allowance, emp.overtime, emp.overtimeRate);
+      return [
+        emp.employeeId,
+        emp.name,
+        emp.position,
+        getDepartmentName(emp.department),
+        payroll.basicPay,
+        payroll.allowance,
+        payroll.overtimePay,
+        payroll.grossPay,
+        payroll.sss,
+        payroll.philHealth,
+        payroll.pagIBIG,
+        payroll.withholdingTax,
+        payroll.totalDeductions,
+        payroll.netPay,
+        emp.status.toUpperCase()
+      ];
+    });
+
+    // Convert to CSV
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Payroll_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Employee Payroll</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+    <div className="bg-white rounded-xl shadow-md border border-gray-200/70 overflow-hidden h-full flex flex-col">
+      {/* Header with Search and Filters */}
+      <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              Payroll Records
+            </h3>
+            <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                {startIndex + 1}-{Math.min(endIndex, filteredEmployees.length)} of {filteredEmployees.length}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span>Current Period Employees</span>
+            </p>
+          </div>
+          <button
+            onClick={handleExportToExcel}
+            className="px-5 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-sm font-bold rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export to Excel
+          </button>
+        </div>
+
+        {/* Search and Filter Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search employees..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+            />
+          </div>
+
+          {/* Department Filter */}
+          <select
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+          >
+            <option value="all">🏢 All Departments</option>
+            <option value="front_desk">Front Desk</option>
+            <option value="housekeeping">Housekeeping</option>
+            <option value="food_beverage">Food & Beverage</option>
+            <option value="management">Management</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="security">Security</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+          >
+            <option value="all">📊 All Status</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="delayed">⚠️ Delayed</option>
+            <option value="paid">✅ Paid</option>
+          </select>
+
+          {/* Month Filter */}
+          <select
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+          >
+            <option value="all">📅 All Months</option>
+            <option value="2024-10">October 2024</option>
+            <option value="2024-09">September 2024</option>
+            <option value="2024-08">August 2024</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto flex-1">
+        <table className="w-full">
+          <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Employee ID
+              </th>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Position
+              </th>
+              <th className="px-6 py-5 text-right text-xs font-black text-gray-700 uppercase tracking-wider">
+                Basic Pay
+              </th>
+              <th className="px-6 py-5 text-right text-xs font-black text-gray-700 uppercase tracking-wider">
+                Total Deductions
+              </th>
+              <th className="px-6 py-5 text-right text-xs font-black text-gray-700 uppercase tracking-wider">
+                Net Pay
+              </th>
+              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            <tr>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" colSpan={6}>
-                No payroll records found
-              </td>
-            </tr>
+            {currentEmployees.map((employee, index) => {
+              const payroll = calculatePayroll(
+                employee.basicPay,
+                employee.allowance,
+                employee.overtime,
+                employee.overtimeRate
+              );
+
+              return (
+                <tr
+                  key={employee.id}
+                  onClick={() => onEmployeeSelect(employee)}
+                  style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
+                  className={`group cursor-pointer transition-all duration-300 hover:shadow-sm animate-fade-in ${
+                    selectedEmployee?.id === employee.id 
+                      ? 'bg-gradient-to-r from-[#82A33D]/10 via-[#82A33D]/5 to-transparent border-l-4 border-l-[#82A33D] shadow-sm' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="text-sm font-bold text-gray-900">{employee.employeeId}</div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#82A33D] to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                        {employee.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">{employee.name}</div>
+                        <div className="text-xs text-gray-500 font-medium">{getDepartmentName(employee.department)}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="text-sm font-semibold text-gray-700">{employee.position}</div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap text-right">
+                    <div className="text-sm font-bold text-gray-900">₱{payroll.basicPay.toLocaleString()}</div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap text-right">
+                    <div className="inline-flex items-center px-2 py-1 rounded-lg bg-red-50 text-red-700 text-sm font-bold">
+                      -₱{payroll.totalDeductions.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap text-right">
+                    <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#82A33D]/10 text-[#82A33D] text-sm font-black">
+                      ₱{payroll.netPay.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap text-center">
+                    {employee.status === 'paid' ? (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Paid
+                      </span>
+                    ) : employee.status === 'delayed' ? (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200 shadow-sm">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                        Delayed
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm">
+                        <svg className="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Pending
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap text-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEmployeeSelect(employee);
+                      }}
+                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white text-xs font-bold rounded-lg hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
+                    >
+                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {/* Fill empty rows to always show 10 rows */}
+            {Array.from({ length: Math.max(0, 10 - currentEmployees.length) }).map((_, index) => (
+              <tr key={`empty-${index}`} style={{ height: '74px' }} className="bg-gray-50/30 border-dashed border-gray-200">
+                <td className="px-6 py-5" colSpan={8}>
+                  <div className="flex items-center justify-center text-gray-300 text-sm font-medium opacity-60">
+                    <div className="w-2 h-2 rounded-full bg-gray-300 mr-2 opacity-40"></div>
+                    Empty slot {index + 1}
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+      {/* Empty State */}
+      {filteredEmployees.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-5xl mb-4">🔍</div>
+          <p className="text-gray-500 font-medium">No employees found</p>
+          <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
+        </div>
+      )}
+
+      {/* Pagination - Centered */}
+      {filteredEmployees.length > 0 && (
+        <div className="px-6 py-4 border-t border-gray-200/70 bg-gradient-to-r from-gray-50/30 via-white to-gray-50/30">
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <div className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#82A33D] animate-pulse"></div>
+              Page {currentPage} of {totalPages} • Showing {Math.min(endIndex, filteredEmployees.length)} of {filteredEmployees.length} employees
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Previous Button */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-[#82A33D] hover:text-white shadow-sm hover:shadow-md border border-gray-200'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Previous
+              </button>
+
+              {/* Page Numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                // Show first page, last page, current page, and pages around current
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-[36px] px-3 py-2 rounded-full text-sm font-bold transition-all ${
+                        currentPage === page
+                          ? 'bg-[#82A33D] text-white shadow-md scale-105'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 hover:border-[#82A33D] shadow-sm'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                } else if (page === currentPage - 2 || page === currentPage + 2) {
+                  return <span key={page} className="px-2 text-gray-400 font-bold">•••</span>;
+                }
+                return null;
+              })}
+
+              {/* Next Button */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-[#82A33D] hover:text-white shadow-sm hover:shadow-md border border-gray-200'
+                }`}
+              >
+                Next
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
