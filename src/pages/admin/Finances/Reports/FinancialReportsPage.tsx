@@ -4,12 +4,15 @@ import ReportsFilter from '../../../../components/finances/reports/ReportsFilter
 import ReportFoldersGrid from '../../../../components/finances/reports/ReportFoldersGrid';
 import FolderView from '../../../../components/finances/reports/FolderView';
 import ArchiveSection from '../../../../components/finances/reports/ArchiveSection';
+import GenerateReportModal from '../../../../components/finances/reports/GenerateReportModal';
+import SearchResults from '../../../../components/finances/reports/SearchResults';
 
 const FinancialReportsPage: React.FC = () => {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleFolderClick = (categoryId: string) => {
     setSelectedFolder(categoryId);
@@ -17,6 +20,10 @@ const FinancialReportsPage: React.FC = () => {
 
   const handleBackToFolders = () => {
     setSelectedFolder(null);
+  };
+
+  const handleCloseSearch = () => {
+    setSearchQuery('');
   };
 
   return (
@@ -50,7 +57,11 @@ const FinancialReportsPage: React.FC = () => {
           onYearChange={setSelectedYear}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
+          onGenerateClick={() => setIsModalOpen(true)}
         />
+
+        {/* Search Results */}
+        {searchQuery && <SearchResults searchQuery={searchQuery} onClose={handleCloseSearch} />}
 
         {/* Main Content Area */}
         {selectedFolder ? (
@@ -92,6 +103,9 @@ const FinancialReportsPage: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Generate Report Modal */}
+      <GenerateReportModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
