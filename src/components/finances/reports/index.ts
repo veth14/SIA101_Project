@@ -1,11 +1,9 @@
-// Re-export all reports components
-export { ReportsPage } from './ReportsPage';
+// Financial Reports Components - Centralized exports
+
 export { ReportsHeader } from './ReportsHeader';
-export { ReportsFilters } from './ReportsFilters';
-export { ReportsSummary } from './ReportsSummary';
-export { ReportsCharts } from './ReportsCharts';
-export { ReportsTable } from './ReportsTable';
-export { ReportsExport } from './ReportsExport';
-export { ReportFilters } from './ReportFilters';
-export { ReportGenerator } from './ReportGenerator';
-export { ReportHistory } from './ReportHistory';
+export { default as ReportsFilter } from './ReportsFilter';
+export { default as ReportFoldersGrid } from './ReportFoldersGrid';
+export { default as FolderView } from './FolderView';
+export { default as MonthFolderCard } from './MonthFolderCard';
+export { default as ReportList } from './ReportList';
+export { default as ArchiveSection } from './ArchiveSection';

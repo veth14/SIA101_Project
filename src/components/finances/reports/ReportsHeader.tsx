@@ -14,30 +14,36 @@ export const ReportsHeader = () => {
               <div className="relative group">
                 <div className="w-16 h-16 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
                   <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
                 <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
               </div>
               <div className="space-y-2">
                 <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                  Reports & Analytics
+                  Financial Reports
                 </h1>
                 <p className="text-xl text-gray-700 font-medium tracking-wide">
-                  Track hotel performance and export summaries
+                  Comprehensive financial documentation and archives
                 </p>
                 <div className="flex items-center space-x-4 mt-4">
                   <div className="flex items-center space-x-2 bg-emerald-50 backdrop-blur-sm rounded-full px-4 py-2 border border-emerald-200">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-semibold text-emerald-700">All systems operational</span>
+                    <span className="text-sm font-semibold text-emerald-700">127 Active Reports</span>
                   </div>
                   <div className="flex items-center space-x-2 bg-blue-50 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-200">
                     <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
                     <span className="text-sm font-medium text-blue-700">
-                      Tuesday, Sep 24
+                      {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                     </span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-amber-50 backdrop-blur-sm rounded-full px-4 py-2 border border-amber-200">
+                    <svg className="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Year 2025</span>
                   </div>
                 </div>
               </div>

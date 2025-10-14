@@ -1,11 +1,11 @@
 import React from 'react';
 import { AdminLayout } from '../../../layouts/AdminLayout';
-import { ReportsPage } from '../../../components/finances/reports/ReportsPage';
+import FinancialReportsPage from './Reports/FinancialReportsPage';
 
 const AdminReportsPage: React.FC = () => {
   return (
     <AdminLayout>
-      <ReportsPage />
+      <FinancialReportsPage />
     </AdminLayout>
   );
 };
