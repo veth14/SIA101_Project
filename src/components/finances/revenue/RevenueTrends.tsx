@@ -166,7 +166,6 @@ const RevenueTrends: React.FC = () => {
                   axisLine={false}
                   tickLine={false}
                 />
-                {/* @ts-expect-error - Recharts types are complex */}
                 <CartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
@@ -174,6 +173,7 @@ const RevenueTrends: React.FC = () => {
                 />
                 {/* @ts-expect-error - Recharts types are complex */}
                 <Tooltip content={<CustomTooltip />} />
+                {/* @ts-expect-error - Recharts types are complex */}
                 <Area 
                   type="linear" 
                   dataKey="revenue" 
