@@ -10,4 +10,19 @@ export interface Expense {
   approvedBy?: string;
   receiptUrl?: string;
   notes?: string;
+  // Optional administrative fields commonly used by companies
+  invoiceNumber?: string;
+  purchaseOrder?: string;
+  paymentMethod?: string;
+  accountCode?: string;
+  costCenter?: string;
+  vendorContact?: string;
+  project?: string;
+  attachments?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  // Rejection metadata
+  rejectedBy?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
 }

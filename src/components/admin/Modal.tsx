@@ -13,7 +13,7 @@ const sizeClasses = {
   sm: 'max-w-md',
   md: 'max-w-lg',
   lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
+  xl: 'max-w-5xl',
 };
 
 export const Modal = ({ 
@@ -34,39 +34,54 @@ export const Modal = ({
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      // Add blur to root element
+      const root = document.getElementById('root');
+      if (root) {
+        root.style.filter = 'blur(8px)';
+      }
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
+      // Remove blur from root element
+      const root = document.getElementById('root');
+      if (root) {
+        root.style.filter = 'none';
+      }
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 py-8">
+        {/* Backdrop - Dark overlay */}
         <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          className="fixed inset-0 transition-opacity bg-black/70 backdrop-blur-sm"
           onClick={onClose}
-        ></div>
+          aria-hidden="true"
+        />
 
-        {/* Modal panel */}
+        {/* Modal container with animation */}
         <div
-          className={`inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full ${sizeClasses[size]}`}
+          className={`relative bg-white rounded-3xl shadow-2xl w-full ${sizeClasses[size]} transform transition-all animate-in fade-in zoom-in-95 duration-200`}
         >
+          {/* Decorative header bar */}
+          <div className="h-2 bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green rounded-t-3xl" />
+          
           {/* Header */}
-          <div className="bg-white px-6 py-4 border-b border-gray-200">
+          <div className="px-8 py-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-serif font-semibold text-gray-900">
+              <h3 className="text-2xl font-bold tracking-tight text-gray-900">
                 {title}
               </h3>
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="p-2 text-gray-400 transition-all duration-200 hover:text-gray-600 hover:bg-gray-100 rounded-xl"
+                  aria-label="Close modal"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -77,7 +92,7 @@ export const Modal = ({
           </div>
 
           {/* Content */}
-          <div className="bg-white px-6 py-4">
+          <div className="px-8 py-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
             {children}
           </div>
         </div>

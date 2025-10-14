@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import ExpensesHeader from '@/components/finances/expenses/ExpensesHeader';
 import ExpenseList from '@/components/finances/expenses/ExpenseList';
 import type { Expense } from '@/components/finances/expenses/types';
-import ExpenseDetailsPanel from '@/components/finances/expenses/ExpenseDetailsPanel';
 import ExpensesStats from '@/components/finances/expenses/ExpensesStats';
 import ExpensesAnalytics from '@/components/finances/expenses/ExpensesAnalytics';
+import { getCurrentPayrollTotal } from '@/services/payrollService';
 import { expenses as seedExpenses } from '@/components/finances/expenses/expensesData';
 
 export const ExpensesPage: React.FC = () => {
@@ -99,33 +99,21 @@ export const ExpensesPage: React.FC = () => {
   <ExpensesStats expenses={expenses} />
 
   {/* Category Breakdown Analytics */}
-  <ExpensesAnalytics expenses={expenses} />
+  <ExpensesAnalytics expenses={expenses} staffFromPayroll={getCurrentPayrollTotal()} />
 
-        {/* Two-column layout */}
-        <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-4 xl:grid-cols-5">
-          {/* Left: main list */}
-          <div className="lg:col-span-3 xl:col-span-3">
-            <ExpenseList 
-              expenses={expenses}
-              onExpenseSelect={handleExpenseSelect}
-              selectedExpense={selectedExpense}
-              selectedIds={selectedIds}
-              onToggleSelect={toggleSelect}
-              onSelectAll={selectAll}
-              onApprove={(ids) => handleApprove(ids)}
-              onReject={(ids) => handleReject(ids)}
-              onMarkPaid={(ids) => handleMarkPaid(ids)}
-            />
-          </div>
-          {/* Right: details / analytics */}
-          <div className="lg:col-span-1 xl:col-span-2">
-            <ExpenseDetailsPanel 
-              expense={selectedExpense}
-              onApprove={() => selectedExpense && handleApprove(selectedExpense.id)}
-              onReject={() => selectedExpense && handleReject(selectedExpense.id)}
-              onMarkPaid={() => selectedExpense && handleMarkPaid(selectedExpense.id)}
-            />
-          </div>
+        {/* Expense List - Full Width */}
+        <div className="w-full">
+          <ExpenseList 
+            expenses={expenses}
+            onExpenseSelect={handleExpenseSelect}
+            selectedExpense={selectedExpense}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onSelectAll={selectAll}
+            onApprove={(ids) => handleApprove(ids)}
+            onReject={(ids) => handleReject(ids)}
+            onMarkPaid={(ids) => handleMarkPaid(ids)}
+          />
         </div>
 
         {/* Toasts */}

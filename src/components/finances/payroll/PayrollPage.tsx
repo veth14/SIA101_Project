@@ -37,7 +37,7 @@ export const PayrollPage: React.FC = () => {
         {/* Header */}
         <PayrollHeader />
         
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full px-6">
           <PayrollList 
             onEmployeeSelect={handleEmployeeSelect}
             selectedEmployee={selectedEmployee}

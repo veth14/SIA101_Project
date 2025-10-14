@@ -7,6 +7,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 type Props = {
   expenses: Expense[];
+  // New: total staff expenses coming from payroll module
+  staffFromPayroll?: number;
 };
 
 const formatCurrency = (amount: number) => {
@@ -25,7 +27,7 @@ const formatShortCurrency = (amount: number) => {
 
 // Removed ChartPoint (no longer used with bar data shape)
 
-const ExpensesAnalytics: React.FC<Props> = ({ expenses }) => {
+const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) => {
   const [isLoading, setIsLoading] = useState(true);
   // Filters removed per request; demo toggle removed
 
@@ -38,45 +40,55 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses }) => {
 
   // Colors per category for multiple lines (heritage palette)
   // High-contrast heritage-friendly palette
-  const categoryColors: Record<Expense['category'], string> = {
-    utilities: '#2F855A',      // emerald-ish (primary accent)
-    supplies: '#166534',       // darker green for contrast
-    maintenance: '#A3B18A',    // sage
-    marketing: '#3F6212',      // olive
+  // Use Tailwind heritage theme hues for consistency
+  const categoryColors: Record<Exclude<Expense['category'], 'other'>, string> = {
+    utilities: '#82A33D',      // heritage-green
+    supplies: '#5E7A2A',       // darker heritage-green
+    maintenance: '#ABAD8A',    // heritage-neutral
+    marketing: '#708C32',      // olive/heritage mix
     staff: '#4D7C0F',          // moss
     food: '#6CA46C',           // fresh green
-    other: '#8DAA91',          // muted green
-  };
+  } as const;
 
-  const categoryOrder = useMemo<Expense['category'][]>(() => ['utilities','supplies','maintenance','marketing','staff','food','other'], []);
+  const categoryOrder = useMemo<Array<Exclude<Expense['category'], 'other'>>>(() => ['utilities','supplies','maintenance','marketing','staff','food'], []);
 
   // Build weekly/monthly series: one line per category across buckets (actual data)
   const actual = useMemo(() => {
     // Aggregate totals per category (single bar per category)
-    const totals: Record<Expense['category'], number> = {
-      utilities: 0, supplies: 0, maintenance: 0, marketing: 0, staff: 0, food: 0, other: 0,
-    };
-    filtered.forEach(e => { totals[e.category] += e.amount; });
-    const data = categoryOrder.map(cat => ({
-      category: categoryLabel(cat),
-      amount: totals[cat],
-      rawCat: cat,
-    }));
+    const totals: Record<Exclude<Expense['category'], 'other'>, number> = {
+      utilities: 0, supplies: 0, maintenance: 0, marketing: 0, staff: 0, food: 0,
+    } as const as Record<Exclude<Expense['category'], 'other'>, number>;
+    filtered.forEach(e => {
+      if (e.category !== 'other') {
+        totals[e.category] += e.amount;
+      }
+    });
+    // Override staff with payroll feed when provided
+    if (typeof staffFromPayroll === 'number' && staffFromPayroll > 0) {
+      totals.staff = staffFromPayroll;
+    }
+    // Only include categories with amounts > 0
+    const data = categoryOrder
+      .filter(cat => totals[cat] > 0)
+      .map(cat => ({
+        category: categoryLabel(cat),
+        amount: totals[cat],
+        rawCat: cat,
+      }));
     const present = categoryOrder.filter(cat => totals[cat] > 0);
     return { chartData: data, categoriesPresent: present } as const;
-  }, [filtered, categoryOrder]);
+  }, [filtered, categoryOrder, staffFromPayroll]);
 
   // Demo generator: pleasant, deterministic mock curves with slight variation per category and bucket
   const demo = useMemo(() => {
     // Simple pleasant totals per category for bars
-    const base: Record<Expense['category'], number> = {
+    const base: Record<Exclude<Expense['category'], 'other'>, number> = {
       utilities: 420000,
       supplies: 360000,
       maintenance: 260000,
       marketing: 190000,
-      staff: 400000,
+      staff: Math.max(400000, staffFromPayroll || 0),
       food: 310000,
-      other: 140000,
     };
     const data = categoryOrder.map((cat, idx) => ({
       category: categoryLabel(cat),
@@ -84,7 +96,7 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses }) => {
       rawCat: cat,
     }));
     return { chartData: data, categoriesPresent: [...categoryOrder] } as const;
-  }, [categoryOrder]);
+  }, [categoryOrder, staffFromPayroll]);
 
   // Choose between actual and demo (fallback only if actual is empty)
   const useDemo = actual.categoriesPresent.length === 0;
@@ -217,29 +229,35 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses }) => {
             {/* @ts-expect-error - Recharts types compatibility issue */}
             <ResponsiveContainer width="100%" height="100%">
               {/* @ts-expect-error - Recharts types compatibility issue */}
-              <BarChart data={sortedData} margin={{ top: 12, right: 12, left: 12, bottom: 12 }} barCategoryGap={18}>
+              <BarChart data={sortedData} margin={{ top: 12, right: 24, left: 24, bottom: 12 }} barCategoryGap={24}>
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#82A33D" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#82A33D" stopOpacity={0.75} />
+                  </linearGradient>
+                </defs>
                 {/* @ts-expect-error - Recharts types compatibility issue */}
-                <XAxis dataKey="category" tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }} tickLine={false} />
+                <XAxis dataKey="category" tick={{ fill: '#374151', fontSize: 12, fontWeight: 700 }} axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }} tickLine={false} />
                 {/* @ts-expect-error - Recharts types compatibility issue */}
-                <YAxis tickFormatter={formatShortCurrency} tick={{ fill: '#374151', fontSize: 12 }} axisLine={false} tickLine={false} domain={[0, (dataMax: number) => dataMax * 1.18]} />
-                <CartesianGrid strokeDasharray="2 4" vertical={false} stroke="#F3F4F6" />
+                <YAxis tickFormatter={formatShortCurrency} tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} domain={[0, (dataMax: number) => dataMax * 1.18]} />
+                <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="#E5E7EB" />
                 {/* @ts-expect-error - Recharts types compatibility issue */}
                 <Tooltip content={({ active, payload }) => {
                   if (!active || !payload || !payload.length) return null;
                   const p = payload[0];
                   return (
-                    <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-xl p-3 min-w-[200px]">
+                    <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl p-3 min-w-[220px]">
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
-                        <span className="text-xs font-bold text-gray-900">{p.payload.category}</span>
+                        <span className="text-xs font-extrabold text-gray-900">{p.payload.category}</span>
                       </div>
-                      <div className="text-base font-extrabold text-heritage-green">{formatCurrency(Number(p.value))}</div>
+                      <div className="text-lg font-black text-heritage-green">{formatCurrency(Number(p.value))}</div>
                     </div>
                   );
                 }} />
-                {/* Single Bar */}
+                {/* Single Bar with premium gradient */}
                 {/* @ts-expect-error - Recharts types compatibility issue */}
-                <Bar dataKey="amount" radius={[10,10,0,0]} fill="#2F855A" />
+                <Bar dataKey="amount" radius={[12,12,0,0]} fill="url(#barGradient)" isAnimationActive animationDuration={700} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -253,7 +271,7 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses }) => {
                 const total = metrics.totalsByCat?.[name] ?? 0;
                 return (
                   <div key={cat} className="flex items-center gap-2 px-2 py-1 bg-white border rounded-full shadow-sm border-gray-200/80">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: categoryColors[cat] }} />
+                    <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: categoryColors[cat as Exclude<Expense['category'],'other'>] }} />
                     <span className="font-medium">{name}</span>
                     <span className="text-[11px] text-gray-500">{formatCurrency(total)}</span>
                   </div>

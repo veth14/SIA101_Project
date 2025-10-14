@@ -26,7 +26,7 @@ export const RevenuePage: React.FC = () => {
         {/* Header */}
         <RevenueHeader />
         
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full px-6">
           <RevenueDashboard />
         </div>
       </div>
