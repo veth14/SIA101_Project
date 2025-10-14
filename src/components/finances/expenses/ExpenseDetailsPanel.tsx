@@ -1,15 +1,18 @@
 import React from 'react';
-import type { Expense } from './ExpenseList';
+import type { Expense } from './types';
 
 interface Props {
   expense: Expense | null;
+  onApprove?: () => void;
+  onReject?: () => void;
+  onMarkPaid?: () => void;
 }
 
 const StatBadge: React.FC<{ color: string; label: string } > = ({ color, label }) => (
   <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${color}`}>{label}</span>
 );
 
-const ExpenseDetailsPanel: React.FC<Props> = ({ expense }) => {
+const ExpenseDetailsPanel: React.FC<Props> = ({ expense, onApprove, onReject, onMarkPaid }) => {
   return (
     <div className="space-y-6">
       {/* Details Card */}
@@ -75,9 +78,9 @@ const ExpenseDetailsPanel: React.FC<Props> = ({ expense }) => {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2 pt-3">
-              <button className="px-3 py-2 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg">Approve</button>
-              <button className="px-3 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg">Reject</button>
-              <button className="px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg">Mark as Paid</button>
+              <button onClick={onApprove} className="px-3 py-2 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg">Approve</button>
+              <button onClick={onReject} className="px-3 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg">Reject</button>
+              <button onClick={onMarkPaid} className="px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg">Mark as Paid</button>
               <button className="px-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">Print</button>
             </div>
           </div>

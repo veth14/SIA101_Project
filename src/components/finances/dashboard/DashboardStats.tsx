@@ -76,20 +76,20 @@ const DashboardStats: React.FC = () => {
     return (
       <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, index) => (
-          <div key={index} className="overflow-hidden relative p-8 rounded-2xl border shadow-lg backdrop-blur-xl bg-white/95 border-white/50">
-            <div className="flex justify-between items-start">
+          <div key={index} className="relative p-8 overflow-hidden border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50">
+            <div className="flex items-start justify-between">
               <div className="flex-1 mr-5">
                 <div className="flex items-center mb-3">
                   <Skeleton className="w-1 h-5 mr-2 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="w-24 h-4" />
                 </div>
-                <Skeleton className="h-10 w-28 mb-3" />
-                <Skeleton className="h-6 w-32 rounded-full" />
+                <Skeleton className="h-10 mb-3 w-28" />
+                <Skeleton className="w-32 h-6 rounded-full" />
               </div>
               <Skeleton className="w-16 h-16 rounded-xl" />
             </div>
-            <div className="absolute right-0 bottom-0 left-0 h-1">
-              <Skeleton className="h-full w-full" />
+            <div className="absolute bottom-0 left-0 right-0 h-1">
+              <Skeleton className="w-full h-full" />
             </div>
           </div>
         ))}
@@ -102,7 +102,7 @@ const DashboardStats: React.FC = () => {
       {stats.map((stat, index) => (
         <div 
           key={index} 
-          className="overflow-hidden relative p-8 rounded-2xl border shadow-lg backdrop-blur-xl transition-all duration-500 bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
+          className="relative p-8 overflow-hidden transition-all duration-500 border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
           style={{ animationDelay: `${index * 100}ms` }}
         >
           {/* Glass morphism effect */}
@@ -119,7 +119,7 @@ const DashboardStats: React.FC = () => {
           }}></div>
           
           {/* Content container */}
-          <div className="flex relative justify-between items-start">
+          <div className="relative flex items-start justify-between">
             {/* Left side - text content */}
             <div className="flex-1 mr-5">
               <div className="flex items-center mb-3">
@@ -139,7 +139,7 @@ const DashboardStats: React.FC = () => {
                   ? 'bg-red-50 text-red-700 border border-red-200/50' 
                   : 'bg-gray-50 text-gray-700 border border-gray-200/50'
               }`}>
-                <svg className="mr-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={
                     stat.changeType === 'positive' ? "M7 11l5-5m0 0l5 5m-5-5v12" : "M17 13l-5 5m0 0l-5-5m5 5V8"
                   } />
@@ -161,7 +161,7 @@ const DashboardStats: React.FC = () => {
           </div>
           
           {/* Bottom progress indicator - different for each card */}
-          <div className="overflow-hidden absolute right-0 bottom-0 left-0 h-1">
+          <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden">
             <div 
               className={`h-full ${
                 index === 0 ? 'bg-gradient-to-r from-[#82A33D] to-emerald-400' :

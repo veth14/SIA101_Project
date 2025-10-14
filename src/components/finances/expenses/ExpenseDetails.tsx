@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Expense } from './ExpenseList';
+import type { Expense } from './types';
 
 interface ExpenseDetailsProps {
   expense: Expense | null;

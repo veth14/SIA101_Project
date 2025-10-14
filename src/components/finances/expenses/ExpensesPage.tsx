@@ -1,17 +1,75 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ExpensesHeader from '@/components/finances/expenses/ExpensesHeader';
 import ExpenseList from '@/components/finances/expenses/ExpenseList';
-import type { Expense } from '@/components/finances/expenses/ExpenseList';
+import type { Expense } from '@/components/finances/expenses/types';
 import ExpenseDetailsPanel from '@/components/finances/expenses/ExpenseDetailsPanel';
 import ExpensesStats from '@/components/finances/expenses/ExpensesStats';
 import ExpensesAnalytics from '@/components/finances/expenses/ExpensesAnalytics';
+import { expenses as seedExpenses } from '@/components/finances/expenses/expensesData';
 
 export const ExpensesPage: React.FC = () => {
+  const [expenses, setExpenses] = useState<Expense[]>(seedExpenses);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type?: 'success' | 'error' | 'info' }>>([]);
 
   const handleExpenseSelect = (expense: Expense) => {
     setSelectedExpense(expense);
   };
+
+  const toggleSelect = (id: string, selected: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (selected) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
+
+  const selectAll = (ids: string[], select: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      ids.forEach(id => (select ? next.add(id) : next.delete(id)));
+      return next;
+    });
+  };
+
+  const addToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 2500);
+  };
+
+  const updateStatus = useCallback((ids: string[], status: Expense['status']) => {
+    if (ids.length === 0) return;
+    setExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
+    // Update selectedExpense if its status changed
+    setSelectedExpense(prev => (prev && ids.includes(prev.id) ? { ...prev, status } : prev));
+    addToast(`${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Marked as Paid'} ${ids.length} item${ids.length > 1 ? 's' : ''}`);
+    // Clear selection after action
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleApprove = useCallback((ids: string[] | string) => updateStatus(Array.isArray(ids) ? ids : [ids], 'approved'), [updateStatus]);
+  const handleReject = useCallback((ids: string[] | string) => updateStatus(Array.isArray(ids) ? ids : [ids], 'rejected'), [updateStatus]);
+  const handleMarkPaid = useCallback((ids: string[] | string) => updateStatus(Array.isArray(ids) ? ids : [ids], 'paid'), [updateStatus]);
+
+  // Keyboard shortcuts for currently selected expense or selection set
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target && (e.target as HTMLElement).tagName === 'INPUT') return; // avoid interfering with inputs
+      if (selectedIds.size > 0) {
+        if (e.key.toLowerCase() === 'a') handleApprove(Array.from(selectedIds));
+        if (e.key.toLowerCase() === 'r') handleReject(Array.from(selectedIds));
+        if (e.key.toLowerCase() === 'p') handleMarkPaid(Array.from(selectedIds));
+      } else if (selectedExpense) {
+        if (e.key.toLowerCase() === 'a') handleApprove(selectedExpense.id);
+        if (e.key.toLowerCase() === 'r') handleReject(selectedExpense.id);
+        if (e.key.toLowerCase() === 'p') handleMarkPaid(selectedExpense.id);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedIds, selectedExpense, handleApprove, handleReject, handleMarkPaid]);
   
 
   return (
@@ -37,25 +95,48 @@ export const ExpensesPage: React.FC = () => {
         {/* Header */}
         <ExpensesHeader />
         
-        {/* Stats Section */}
-        <ExpensesStats />
+  {/* Stats Section */}
+  <ExpensesStats expenses={expenses} />
 
-        {/* Category Breakdown Analytics */}
-        <ExpensesAnalytics />
+  {/* Category Breakdown Analytics */}
+  <ExpensesAnalytics expenses={expenses} />
 
         {/* Two-column layout */}
         <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-4 xl:grid-cols-5">
           {/* Left: main list */}
           <div className="lg:col-span-3 xl:col-span-3">
             <ExpenseList 
+              expenses={expenses}
               onExpenseSelect={handleExpenseSelect}
               selectedExpense={selectedExpense}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onSelectAll={selectAll}
+              onApprove={(ids) => handleApprove(ids)}
+              onReject={(ids) => handleReject(ids)}
+              onMarkPaid={(ids) => handleMarkPaid(ids)}
             />
           </div>
           {/* Right: details / analytics */}
           <div className="lg:col-span-1 xl:col-span-2">
-            <ExpenseDetailsPanel expense={selectedExpense} />
+            <ExpenseDetailsPanel 
+              expense={selectedExpense}
+              onApprove={() => selectedExpense && handleApprove(selectedExpense.id)}
+              onReject={() => selectedExpense && handleReject(selectedExpense.id)}
+              onMarkPaid={() => selectedExpense && handleMarkPaid(selectedExpense.id)}
+            />
           </div>
+        </div>
+
+        {/* Toasts */}
+        <div className="fixed z-50 space-y-2 bottom-6 right-6">
+          {toasts.map(t => (
+            <div key={t.id} className={`px-4 py-3 rounded-xl shadow-lg text-sm text-white ${
+              t.type === 'success' ? 'bg-emerald-600' : t.type === 'error' ? 'bg-red-600' : 'bg-gray-700'
+            }`}>
+              {t.message}
+            </div>
+          ))}
         </div>
       </div>
     </div>

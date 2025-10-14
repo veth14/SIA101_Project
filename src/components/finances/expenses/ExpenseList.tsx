@@ -1,25 +1,19 @@
-import React, { useState } from 'react';
-
-export interface Expense {
-  id: string;
-  description: string;
-  category: 'utilities' | 'supplies' | 'maintenance' | 'marketing' | 'staff' | 'food' | 'other';
-  amount: number;
-  vendor: string;
-  date: string;
-  status: 'pending' | 'approved' | 'rejected' | 'paid';
-  submittedBy: string;
-  approvedBy?: string;
-  receiptUrl?: string;
-  notes?: string;
-}
+import React, { useMemo, useState } from 'react';
+import type { Expense } from './types';
 
 interface ExpenseListProps {
+  expenses: Expense[];
   onExpenseSelect: (expense: Expense) => void;
   selectedExpense: Expense | null;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string, selected: boolean) => void;
+  onSelectAll: (ids: string[], select: boolean) => void;
+  onApprove: (ids: string[] | string) => void;
+  onReject: (ids: string[] | string) => void;
+  onMarkPaid: (ids: string[] | string) => void;
 }
 
-const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpense }) => {
+const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onExpenseSelect, selectedExpense, selectedIds, onToggleSelect, onSelectAll, onApprove, onReject, onMarkPaid }) => {
   const [filters, setFilters] = useState({
     status: 'all',
     category: 'all',
@@ -27,67 +21,23 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
     searchTerm: ''
   });
 
-  // Sample expense data
-  const expenses: Expense[] = [
-    {
-      id: 'EXP-2024-001',
-      description: 'Monthly electricity bill',
-      category: 'utilities',
-      amount: 2450.00,
-      vendor: 'City Power Company',
-      date: '2024-10-05',
-      status: 'approved',
-      submittedBy: 'John Manager',
-      approvedBy: 'Sarah Director',
-      receiptUrl: '/receipts/exp-001.pdf',
-      notes: 'Higher than usual due to increased AC usage'
-    },
-    {
-      id: 'EXP-2024-002',
-      description: 'Cleaning supplies and chemicals',
-      category: 'supplies',
-      amount: 850.50,
-      vendor: 'CleanCorp Supplies',
-      date: '2024-10-06',
-      status: 'pending',
-      submittedBy: 'Mike Housekeeping',
-      notes: 'Monthly stock replenishment'
-    },
-    {
-      id: 'EXP-2024-003',
-      description: 'HVAC system maintenance',
-      category: 'maintenance',
-      amount: 1200.00,
-      vendor: 'TechFix Solutions',
-      date: '2024-10-07',
-      status: 'pending',
-      submittedBy: 'Tom Maintenance',
-      notes: 'Quarterly maintenance check'
-    },
-    {
-      id: 'EXP-2024-004',
-      description: 'Social media advertising',
-      category: 'marketing',
-      amount: 500.00,
-      vendor: 'Digital Marketing Pro',
-      date: '2024-10-08',
-      status: 'rejected',
-      submittedBy: 'Lisa Marketing',
-      notes: 'Rejected - needs budget approval first'
-    },
-    {
-      id: 'EXP-2024-005',
-      description: 'Fresh produce delivery',
-      category: 'food',
-      amount: 1850.75,
-      vendor: 'Farm Fresh Suppliers',
-      date: '2024-10-08',
-      status: 'paid',
-      submittedBy: 'Chef Robert',
-      approvedBy: 'Sarah Director',
-      notes: 'Weekly fresh produce order'
-    }
-  ];
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((e) => {
+      const statusOk = filters.status === 'all' || e.status === filters.status;
+      const categoryOk = filters.category === 'all' || e.category === filters.category;
+      const search = filters.searchTerm.trim().toLowerCase();
+      const searchOk = !search ||
+        e.id.toLowerCase().includes(search) ||
+        e.description.toLowerCase().includes(search) ||
+        e.vendor.toLowerCase().includes(search) ||
+        e.submittedBy.toLowerCase().includes(search);
+      // Simple date range filter stub (can be expanded later)
+      return statusOk && categoryOk && searchOk;
+    });
+  }, [expenses, filters]);
+
+  const visibleIds = filteredExpenses.map(e => e.id);
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id));
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -211,7 +161,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-bold text-gray-900">Expense Records</h3>
-            <p className="text-sm text-gray-600">{expenses.length} expenses found</p>
+            <p className="text-sm text-gray-600">{filteredExpenses.length} expenses found</p>
           </div>
           <div className="flex gap-2">
             <button className="px-4 py-2 text-sm font-medium text-white bg-[#82A33D] hover:bg-[#6d8735] rounded-lg transition-colors">
@@ -223,8 +173,31 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
           </div>
         </div>
 
+        {/* Bulk Actions Toolbar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 mb-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <p className="text-sm font-medium text-emerald-700">{selectedIds.size} selected</p>
+            <div className="flex gap-2">
+              <button onClick={() => onApprove(Array.from(selectedIds))} className="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg">Approve</button>
+              <button onClick={() => onReject(Array.from(selectedIds))} className="px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg">Reject</button>
+              <button onClick={() => onMarkPaid(Array.from(selectedIds))} className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg">Mark Paid</button>
+              <button onClick={() => onSelectAll(Array.from(selectedIds), false)} className="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-50">Clear</button>
+            </div>
+          </div>
+        )}
+
         {/* Quick Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+          {/* Select all checkbox */}
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={allVisibleSelected}
+              onChange={(e) => onSelectAll(visibleIds, e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-[#82A33D] focus:ring-[#82A33D]"
+            />
+            Select all
+          </label>
           <input
             type="text"
             placeholder="Search expenses..."
@@ -272,7 +245,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
 
       {/* Expense List */}
       <div className="max-h-[600px] overflow-y-auto">
-        {expenses.map((expense) => (
+        {filteredExpenses.map((expense) => (
           <div
             key={expense.id}
             onClick={() => onExpenseSelect(expense)}
@@ -282,6 +255,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 text-[#82A33D] focus:ring-[#82A33D]"
+                  checked={selectedIds.has(expense.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => onToggleSelect(expense.id, e.target.checked)}
+                />
                 {getCategoryIcon(expense.category)}
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-2">
@@ -297,7 +277,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
                   </div>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="flex items-center gap-3">
+                <div className="hidden md:flex gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); onApprove(expense.id); }} className="px-2 py-1 text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-md">Approve</button>
+                  <button onClick={(e) => { e.stopPropagation(); onReject(expense.id); }} className="px-2 py-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-md">Reject</button>
+                  <button onClick={(e) => { e.stopPropagation(); onMarkPaid(expense.id); }} className="px-2 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md">Paid</button>
+                </div>
+                <div className="text-right">
                 <p className="text-xl font-bold text-gray-900">
                   ${expense.amount.toFixed(2)}
                 </p>
@@ -305,46 +291,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ onExpenseSelect, selectedExpe
                   <p className="text-sm text-green-600">📎 Receipt</p>
                 )}
               </div>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Summary Footer */}
-      <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-        <div className="grid grid-cols-5 gap-4 text-center">
-          <div>
-            <p className="text-sm text-gray-600">Pending</p>
-            <p className="text-lg font-bold text-yellow-600">
-              ${expenses.filter(e => e.status === 'pending').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Approved</p>
-            <p className="text-lg font-bold text-green-600">
-              ${expenses.filter(e => e.status === 'approved').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Paid</p>
-            <p className="text-lg font-bold text-blue-600">
-              ${expenses.filter(e => e.status === 'paid').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Rejected</p>
-            <p className="text-lg font-bold text-red-600">
-              ${expenses.filter(e => e.status === 'rejected').reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Overall Total</p>
-            <p className="text-lg font-bold text-gray-900">
-              ${expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Summary Footer removed; totals are now displayed in the stats section */}
     </div>
   );
 };
