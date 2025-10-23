@@ -2,7 +2,7 @@ import React from 'react';
 
 const TicketsTasksPage: React.FC = () => {
   return (
-    <div className="p-6">
+    <div className="p-6 -mt-2">
       {/* Enhanced Header */}
       <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden mb-8">
         <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>

@@ -28,27 +28,28 @@ const ExpensesStats: React.FC<Props> = ({ expenses }) => {
   const [isLoading, setIsLoading] = useState(true);
   const totals = computeTotals(expenses);
   const overall = Object.values(totals).reduce((s, v) => s + v, 0);
+  
   const stats: StatCard[] = [
     {
-      title: 'Pending',
-      value: currency(totals.pending),
-      change: 'Awaiting approval',
-      changeType: 'neutral',
-      iconBg: 'bg-yellow-100',
+      title: 'Total Expenses',
+      value: currency(overall),
+      change: '+12.5% from last month',
+      changeType: 'positive',
+      iconBg: 'bg-green-100',
       icon: (
-        <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
         </svg>
       )
     },
     {
       title: 'Approved',
       value: currency(totals.approved),
-      change: 'Ready for payment',
+      change: '+8.3% from last month',
       changeType: 'positive',
-      iconBg: 'bg-green-100',
+      iconBg: 'bg-blue-100',
       icon: (
-        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       )
@@ -56,23 +57,23 @@ const ExpensesStats: React.FC<Props> = ({ expenses }) => {
     {
       title: 'Paid',
       value: currency(totals.paid),
-      change: 'Completed payments',
+      change: '+2.1% from last month',
       changeType: 'positive',
-      iconBg: 'bg-blue-100',
+      iconBg: 'bg-orange-100',
       icon: (
-        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.105 0-2 .672-2 1.5S10.895 11 12 11s2 .672 2 1.5S13.105 14 12 14m0-6v8m0 0v1m0-1c-1.105 0-2-.672-2-1.5" />
+        <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
         </svg>
       )
     },
     {
       title: 'Rejected',
       value: currency(totals.rejected),
-      change: 'Not approved',
+      change: '-3.2% from last month',
       changeType: 'negative',
-      iconBg: 'bg-red-100',
+      iconBg: 'bg-purple-100',
       icon: (
-        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       )
@@ -109,26 +110,9 @@ const ExpensesStats: React.FC<Props> = ({ expenses }) => {
     );
   }
 
-  // Include Overall Total as a separate card at the end
-  const displayStats: StatCard[] = [
-    ...stats,
-    {
-      title: 'Overall Total',
-      value: currency(overall),
-      change: 'Sum of all amounts',
-      changeType: 'neutral',
-      iconBg: 'bg-gray-100',
-      icon: (
-        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h18M3 6h18M3 18h18" />
-        </svg>
-      )
-    }
-  ];
-
   return (
-    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-5">
-      {displayStats.map((stat, index) => (
+    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+      {stats.map((stat, index) => (
         <div
           key={index}
           className="relative p-8 overflow-hidden transition-all duration-500 border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
@@ -203,15 +187,10 @@ const ExpensesStats: React.FC<Props> = ({ expenses }) => {
           <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden">
             <div
               className={`h-full ${
-                index % 5 === 0
-                  ? 'bg-gradient-to-r from-[#82A33D] to-emerald-400'
-                  : index % 5 === 1
-                  ? 'bg-gradient-to-r from-blue-400 to-blue-600'
-                  : index % 5 === 2
-                  ? 'bg-gradient-to-r from-orange-400 to-orange-600'
-                  : index % 5 === 3
-                  ? 'bg-gradient-to-r from-red-400 to-red-600'
-                  : 'bg-gradient-to-r from-gray-400 to-gray-600'
+                index === 0 ? 'bg-gradient-to-r from-[#82A33D] to-emerald-400' :
+                index === 1 ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
+                index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
+                'bg-gradient-to-r from-purple-400 to-purple-600'
               }`}
               style={{ width: `${(index + 1) * 25}%` }}
             ></div>

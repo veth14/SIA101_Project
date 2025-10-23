@@ -6,7 +6,7 @@ import StaffGrid from './StaffGrid';
 
 const ManageStaffPage: React.FC = () => {
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 -mt-2">
       <StaffHeader />
       <StaffStats />
       <StaffFilters />

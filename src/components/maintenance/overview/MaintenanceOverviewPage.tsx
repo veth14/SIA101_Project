@@ -5,7 +5,7 @@ import RecentActivity from './RecentActivity';
 
 const MaintenanceOverviewPage: React.FC = () => {
   return (
-    <div className="p-6">
+    <div className="p-6 -mt-2">
       <MaintenanceHeader />
       <StatsGrid />
       <RecentActivity />
