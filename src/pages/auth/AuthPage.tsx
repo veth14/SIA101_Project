@@ -57,15 +57,16 @@ export const AuthPage = () => {
     const searchParams = new URLSearchParams(location.search);
     const modeFromUrl = searchParams.get('mode') === 'register';
     
-    if (modeFromUrl) {
-      // Small delay to ensure component is mounted before animation
-      setTimeout(() => {
-        setIsRegisterMode(true);
-        setShouldAnimate(true);
-      }, 100);
-    } else {
+    // Small delay to ensure component is mounted before animation
+    setTimeout(() => {
+      setIsRegisterMode(modeFromUrl);
       setShouldAnimate(true);
-    }
+      // Clear errors and reset password visibility when switching modes
+      setErrors({});
+      setError('');
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+    }, 100);
   }, [location.search]);
 
   // Redirect if already logged in (but not during registration flow)
@@ -378,7 +379,7 @@ export const AuthPage = () => {
       {/* Hero Background Section */}
       <div className="relative h-full flex items-center justify-center">
         {/* Background Image */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 pointer-events-none">
           <div 
             className="absolute inset-0 w-full h-full bg-cover bg-center"
             style={{ 
@@ -390,7 +391,7 @@ export const AuthPage = () => {
         </div>
         
         {/* Content */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pointer-events-auto">
           <div className="grid lg:grid-cols-2 gap-8 items-center h-full">
             
             {/* Left Side - Welcome Content */}
