@@ -244,19 +244,10 @@ export const AdminDashboardPage = () => {
   };
 
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-heritage-green mx-auto"></div>
-          <p className="mt-4 text-sm text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // Removed loading animation - show content immediately
 
   return (
-    <div className="min-h-screen bg-heritage-light">
+    <div className="min-h-screen bg-[#F9F6EE]">
       {/* Light Floating Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Subtle Light Orbs */}

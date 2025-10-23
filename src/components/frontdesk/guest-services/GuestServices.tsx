@@ -10,7 +10,7 @@ export const GuestServices: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'feedback' | 'loyalty' | 'assistance'>('feedback');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-amber-50/20 to-yellow-50/30">
+    <div className="min-h-screen bg-[#F9F6EE]">
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-orange-100/10 to-amber-100/15 rounded-full blur-3xl animate-pulse opacity-20"></div>

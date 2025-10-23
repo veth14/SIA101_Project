@@ -167,7 +167,7 @@ const ModularProcurementPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-heritage-light">
+    <div className="min-h-screen bg-[#F9F6EE]">
       {/* Background Elements */}
       <ProcurementBackground />
 
