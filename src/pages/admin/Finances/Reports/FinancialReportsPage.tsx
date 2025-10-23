@@ -27,7 +27,7 @@ const FinancialReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-heritage-light">
+    <div className="min-h-screen bg-[#F9F6EE]">
       {/* Light Floating Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Subtle Light Orbs */}

@@ -84,7 +84,7 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
 
 
   return (
-    <header className="bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-xl border-b border-gray-200/40 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white backdrop-blur-xl border-b border-heritage-green/20 sticky top-0 z-50 shadow-sm">
       <div className="flex items-center justify-between h-[79px] px-8">
         {/* Left side - Mobile menu button and Breadcrumbs */}
         <div className="flex items-center space-x-4">

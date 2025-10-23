@@ -334,17 +334,10 @@ const navigation: NavItem[] = [
 ];
 
 export const Sidebar = ({ }: SidebarProps) => {
-  console.log('Sidebar component rendering...');
-  
   const location = useLocation();
   const { userData } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const manualInteractionRef = useRef(false);
-  
-  // Debug: Track expandedItems changes
-  useEffect(() => {
-    console.log('expandedItems changed to:', expandedItems);
-  }, [expandedItems]);
   
   const userRole = userData?.role || 'admin';
 
@@ -385,13 +378,10 @@ export const Sidebar = ({ }: SidebarProps) => {
 
   // Auto-close all dropdowns when navigating to Dashboard page
   useEffect(() => {
-    console.log('Dashboard useEffect running. isOnDashboardPage:', isOnDashboardPage, 'expandedItems:', expandedItems);
     if (isOnDashboardPage) {
-      console.log('Dashboard page detected, closing dropdowns');
       // If there are expanded items, always show closing animation
       if (expandedItems.length > 0) {
         const timer = setTimeout(() => {
-          console.log('Dashboard timer: setting expandedItems to []');
           setExpandedItems([]);
           manualInteractionRef.current = false; // Reset the flag
         }, 100);
@@ -404,52 +394,24 @@ export const Sidebar = ({ }: SidebarProps) => {
     // DON'T reset manualInteractionRef when not on dashboard
   }, [isOnDashboardPage]);
 
-  // Auto-expand dropdown based on current page (DISABLED FOR DEBUGGING)
-  // useEffect(() => {
-  //   // Only auto-expand if no manual interaction has occurred AND we're on a specific page
-  //   if (!manualInteractionRef.current && !isOnDashboardPage) {
-  //     let targetExpanded = '';
-      
-  //     if (isOnInventoryPage && !expandedItems.includes('Inventory')) {
-  //       targetExpanded = 'Inventory';
-  //     } else if (isOnFinancialPage && !expandedItems.includes('Finances')) {
-  //       targetExpanded = 'Finances';
-  //     } else if (isOnFrontDeskPage && !expandedItems.includes('Front Desk')) {
-  //       targetExpanded = 'Front Desk';
-  //     } else if (isOnMaintenancePage && !expandedItems.includes('Maintenance')) {
-  //       targetExpanded = 'Maintenance';
-  //     }
-      
-  //     if (targetExpanded && !expandedItems.includes(targetExpanded)) {
-  //       console.log('Auto-expanding:', targetExpanded);
-  //       setExpandedItems([targetExpanded]);
-  //     }
-  //   }
-  // }, [isOnInventoryPage, isOnFinancialPage, isOnFrontDeskPage, isOnMaintenancePage, isOnDashboardPage]);
-
   const toggleExpanded = (itemName: string) => {
-    console.log('Toggle clicked:', itemName, 'Current expanded:', expandedItems);
     // Mark this as a manual interaction
     manualInteractionRef.current = true;
     
     // Reset manual interaction flag after 2 seconds to allow auto-expansion again
     setTimeout(() => {
       if (manualInteractionRef.current) {
-        console.log('Resetting manual interaction flag');
         manualInteractionRef.current = false;
       }
     }, 2000);
     
     setExpandedItems(prev => {
-      console.log('Previous expanded:', prev, 'Toggling:', itemName);
       if (prev.includes(itemName)) {
         // Close the clicked dropdown
         const newExpanded = prev.filter(name => name !== itemName);
-        console.log('Closing, new expanded:', newExpanded);
         return newExpanded;
       } else {
         // Open the clicked dropdown - close all others (accordion behavior)
-        console.log('Opening, new expanded:', [itemName]);
         return [itemName];
       }
     });
@@ -466,7 +428,7 @@ export const Sidebar = ({ }: SidebarProps) => {
   const isSubItemActive = (href: string) => location.pathname === href;
 
   return (
-    <div className="flex relative z-10 flex-col w-72 h-full bg-gradient-to-b from-white border-r-4 shadow-2xl via-heritage-light/50 to-heritage-light border-heritage-green/20 shadow-heritage-green/10">
+    <div className="flex relative z-10 flex-col w-72 h-full bg-gradient-to-b from-white border-r-2 shadow-2xl via-heritage-light/50 to-heritage-light border-heritage-green/20 shadow-heritage-green/10">
       {/* Header */}
       <div className="flex items-center px-5 py-4 bg-gradient-to-r from-white border-b-2 shadow-sm to-heritage-light/30 border-heritage-green/15">
         <div className="flex items-center">
@@ -476,7 +438,6 @@ export const Sidebar = ({ }: SidebarProps) => {
               alt="Balay Ginhawa Hotel Logo" 
               className="object-contain w-full h-full filter brightness-0 invert"
               onError={(e) => {
-                console.log('Logo failed to load:', e);
                 e.currentTarget.style.display = 'none';
               }}
             />
@@ -525,12 +486,8 @@ export const Sidebar = ({ }: SidebarProps) => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Button clicked for:', item.name, 'hasSubItems:', hasSubItems);
-                    console.log('Event:', e);
                     if (hasSubItems) {
                       toggleExpanded(item.name);
-                    } else {
-                      console.log('No subitems for:', item.name);
                     }
                   }}
                   style={{ pointerEvents: 'auto' }}
