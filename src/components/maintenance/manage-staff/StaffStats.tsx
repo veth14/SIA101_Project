@@ -23,34 +23,35 @@ const StaffStats: React.FC = () => {
       value: 8,
       badge: "All Departments",
       icon: <UsersIcon />,
-      colorScheme: 'blue' as const
+      iconBg: 'bg-green-100'
     },
     {
       title: "Housekeeping",
       value: 2,
       badge: "Active",
       icon: <HousekeepingIcon />,
-      colorScheme: 'emerald' as const
+      iconBg: 'bg-blue-100'
     },
     {
       title: "Maintenance",
       value: 5,
       badge: "On Duty",
       icon: <MaintenanceIcon />,
-      colorScheme: 'purple' as const
+      iconBg: 'bg-purple-100'
     }
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      {statsData.map((stat) => (
+      {statsData.map((stat, index) => (
         <StatsCard
           key={stat.title}
           title={stat.title}
           value={stat.value}
           badge={stat.badge}
           icon={stat.icon}
-          colorScheme={stat.colorScheme}
+          iconBg={stat.iconBg}
+          index={index}
         />
       ))}
     </div>
