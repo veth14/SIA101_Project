@@ -343,12 +343,15 @@ export const AuthPage = () => {
   };
 
   const toggleMode = () => {
-    setIsRegisterMode(!isRegisterMode);
-    setErrors({});
-    setError('');
-    // Reset password visibility states when switching modes
-    setShowPassword(false);
-    setShowConfirmPassword(false);
+    // Navigate to proper URL instead of just toggling state
+    if (isRegisterMode) {
+      // Switch to login mode
+      navigate('/auth');
+    } else {
+      // Switch to register mode
+      navigate('/auth?mode=register');
+    }
+    // The useEffect will handle the actual state changes
   };
 
   const handleSuccessModalClose = async () => {
