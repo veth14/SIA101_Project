@@ -353,12 +353,12 @@ export const InvoicesPage: React.FC = () => {
         
         {/* Full Width Layout */}
         <div className="w-full">
-          {/* Split Layout Grid */}
-          <div className="flex gap-6 h-[950px]">
+          {/* Split Layout Grid - Matching Transaction Page */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left Side - Invoice List */}
-            <div className="flex-1">
+            <div className="lg:col-span-2">
               {isLoading ? (
-                <div className="relative overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 h-[950px]">
+                <div className="relative overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 h-[900px]">
                   <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-green/5 rounded-3xl opacity-80"></div>
                   <div className="absolute top-0 right-0 w-32 h-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-bl from-heritage-green/15 to-transparent"></div>
                   <div className="absolute w-24 h-24 rounded-full -bottom-8 -left-8 bg-gradient-to-tr from-heritage-light/40 to-transparent"></div>
@@ -407,203 +407,13 @@ export const InvoicesPage: React.FC = () => {
               )}
             </div>
 
-            {/* Right Side - Compact Invoice Preview Panel */}
-            <div className="flex-shrink-0 w-96">
-              {isLoading ? (
-                <div className="relative flex flex-col h-full bg-white border-2 shadow-lg rounded-2xl border-heritage-green/20 w-96">
-                  <div className="flex-1 p-6 space-y-4 overflow-y-auto">
-                    <div className="flex items-center gap-3 pb-4 border-b border-heritage-green/10">
-                      <Skeleton className="w-10 h-10 rounded-xl" />
-                      <div>
-                        <Skeleton className="w-32 h-6 mb-2" />
-                        <Skeleton className="w-24 h-4" />
-                      </div>
-                      <Skeleton className="w-20 h-6 ml-auto rounded-md" />
-                    </div>
-                    <div className="space-y-4">
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <Skeleton className="w-24 h-4 mb-2" />
-                        <Skeleton className="w-32 h-5" />
-                        <Skeleton className="w-20 h-4" />
-                      </div>
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <Skeleton className="w-24 h-4 mb-2" />
-                        <Skeleton className="w-32 h-5" />
-                        <Skeleton className="w-20 h-4" />
-                      </div>
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <Skeleton className="w-24 h-4 mb-2" />
-                        <Skeleton className="w-32 h-5" />
-                        <Skeleton className="w-20 h-4" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 p-4 bg-white border-t border-heritage-green/10 rounded-b-2xl">
-                    <Skeleton className="flex-1 h-10 rounded-lg" />
-                    <Skeleton className="flex-1 h-10 rounded-lg" />
-                  </div>
-                </div>
-              ) : selectedInvoice ? (
-                <div className="relative flex flex-col h-full bg-white border-2 shadow-lg rounded-2xl border-heritage-green/20">
-                  <div className="flex-1 p-6 space-y-4 overflow-y-auto">
-                    {/* Compact Header */}
-                    <div className="flex items-center gap-3 pb-4 border-b border-heritage-green/10">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-heritage-green">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-heritage-green">Invoice Preview</h3>
-                        <p className="text-sm text-gray-600">#{selectedInvoice.id}</p>
-                      </div>
-                      <span className={`ml-auto px-2 py-1 rounded-md text-xs font-medium ${
-                        selectedInvoice.status === 'paid' ? 'bg-emerald-100 text-emerald-800' :
-                        selectedInvoice.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {selectedInvoice.status.charAt(0).toUpperCase() + selectedInvoice.status.slice(1)}
-                      </span>
-                    </div>
-
-                    {/* Essential Information */}
-                    <div className="space-y-4">
-                      {/* Guest Information */}
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <div className="flex items-center gap-2 mb-2">
-                          <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span className="text-sm font-medium text-gray-600">Guest Information</span>
-                        </div>
-                        <p className="font-bold text-heritage-green">{selectedInvoice.guestName}</p>
-                        <p className="text-sm text-gray-600">Room {selectedInvoice.roomNumber}</p>
-                      </div>
-
-                      {/* Total Amount */}
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <div className="flex items-center gap-2 mb-2">
-                          <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                          </svg>
-                          <span className="text-sm font-medium text-gray-600">Total Amount</span>
-                        </div>
-                        <p className="text-xl font-bold text-heritage-green">${selectedInvoice.totalAmount.toFixed(2)}</p>
-                        <p className="text-sm text-gray-600">{selectedInvoice.items.length} items</p>
-                      </div>
-
-                      {/* Stay Details */}
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <div className="flex items-center gap-2 mb-2">
-                          <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-sm font-medium text-gray-600">Stay Details</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <span className="text-gray-500">Check-in:</span>
-                            <p className="font-medium text-heritage-green">{selectedInvoice.checkIn}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Check-out:</span>
-                            <p className="font-medium text-heritage-green">{selectedInvoice.checkOut}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Invoice Items Preview */}
-                      <div className="p-4 border bg-gray-50 rounded-xl border-heritage-green/10">
-                        <div className="flex items-center gap-2 mb-3">
-                          <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
-                          <span className="text-sm font-medium text-gray-600">Invoice Items</span>
-                        </div>
-                        <div className="space-y-2">
-                          {selectedInvoice.items.slice(0, 3).map((item) => (
-                            <div key={item.id} className="flex justify-between text-sm">
-                              <span className="text-gray-700">{item.description}</span>
-                              <span className="font-medium text-heritage-green">${item.total.toFixed(2)}</span>
-                            </div>
-                          ))}
-                          {selectedInvoice.items.length > 3 && (
-                            <p className="pt-2 text-xs text-center text-gray-500 border-t">
-                              +{selectedInvoice.items.length - 3} more items
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons - Fixed at bottom */}
-                  <div className="flex gap-2 p-4 bg-white border-t border-heritage-green/10 rounded-b-2xl">
-                    <button 
-                      onClick={handleViewDetails}
-                      className="flex items-center justify-center flex-1 gap-2 px-4 py-2 text-sm font-medium bg-white border rounded-lg text-heritage-green border-heritage-green/30 hover:bg-heritage-green/5"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View Full Details
-                    </button>
-                    <button 
-                      onClick={() => handlePrintInvoice(selectedInvoice)}
-                      className="flex items-center justify-center flex-1 gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg bg-heritage-green hover:bg-heritage-green/90"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                      </svg>
-                      Print Invoice
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Enhanced Placeholder when no invoice is selected */
-                <div className="relative h-full overflow-hidden bg-white border-2 shadow-lg rounded-2xl border-heritage-green/10">
-                  <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/2 via-white to-heritage-green/1 rounded-3xl"></div>
-                  <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/3 -translate-y-1/3 bg-gradient-to-bl from-heritage-green/15 to-transparent blur-2xl"></div>
-                  <div className="absolute w-24 h-24 rounded-full -bottom-8 -left-8 bg-gradient-to-tr from-heritage-light/40 to-transparent blur-xl"></div>
-                  
-                  <div className="relative z-10 flex flex-col items-center justify-center h-full p-8 text-center">
-                    <div className="flex items-center justify-center w-20 h-20 mb-8 border-2 shadow-lg bg-gradient-to-br from-heritage-green/20 to-heritage-green/10 rounded-3xl border-heritage-green/20">
-                      <svg className="w-10 h-10 text-heritage-green/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <h3 className="mb-4 text-2xl font-black text-heritage-green">No Invoice Selected</h3>
-                    <p className="max-w-sm mb-8 text-lg font-medium leading-relaxed text-heritage-neutral/80">
-                      Select an invoice from the list to view detailed information, manage payments, and access printing options.
-                    </p>
-                    
-                    {/* Enhanced Loading Animation */}
-                    <div className="w-full max-w-xs space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-heritage-green/30 animate-bounce"></div>
-                        <div className="w-3 h-3 rounded-full bg-heritage-green/50 animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-3 h-3 rounded-full bg-heritage-green/70 animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="h-3 rounded-full bg-gradient-to-r from-heritage-green/20 to-heritage-green/10 animate-pulse"></div>
-                        <div className="w-3/4 h-3 rounded-full bg-gradient-to-r from-heritage-green/15 to-heritage-green/5 animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                        <div className="w-1/2 h-3 rounded-full bg-gradient-to-r from-heritage-green/10 to-heritage-green/5 animate-pulse" style={{animationDelay: '1s'}}></div>
-                      </div>
-                    </div>
-                    
-                    {/* Quick Actions */}
-                    <div className="p-4 mt-8 border bg-heritage-green/5 rounded-2xl border-heritage-green/10">
-                      <p className="mb-2 text-sm font-bold text-heritage-green/70">Quick Actions Available:</p>
-                      <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                        <span className="px-3 py-1 rounded-full bg-heritage-green/10 text-heritage-green">View Details</span>
-                        <span className="px-3 py-1 rounded-full bg-heritage-green/10 text-heritage-green">Print Invoice</span>
-                        <span className="px-3 py-1 rounded-full bg-heritage-green/10 text-heritage-green">Payment Info</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+            {/* Right Side - Invoice Details Panel */}
+            <div className="lg:col-span-1">
+              <InvoiceDetails
+                invoice={selectedInvoice}
+                onClose={() => setSelectedInvoice(null)}
+                onPrint={handlePrintInvoice}
+              />
             </div>
           </div>
         </div>

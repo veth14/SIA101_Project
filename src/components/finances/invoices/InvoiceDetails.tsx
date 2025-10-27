@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Skeleton } from '../../universalLoader/SkeletonLoader';
 import type { Invoice } from './InvoiceList';
 
 interface InvoiceDetailsProps {
@@ -8,16 +9,107 @@ interface InvoiceDetailsProps {
 }
 
 const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPrint }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!invoice) return null;
+  // Loading simulation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2200);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Pagination logic
-  const totalPages = Math.ceil(invoice.items.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = invoice.items.slice(startIndex, endIndex);
+  if (isLoading) {
+    return (
+      <>
+        <style>{`
+          @keyframes slide-in-right {
+            0% {
+              opacity: 0;
+              transform: translateX(30px) scale(0.98);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0) scale(1);
+            }
+          }
+          
+          .animate-slide-in-right {
+            animation: slide-in-right 0.7s ease-out;
+          }
+        `}</style>
+        <div className="h-[900px] p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20">
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <Skeleton className="w-16 h-16 mb-4 rounded-full" />
+            <Skeleton className="w-48 h-6 mb-2" />
+            <Skeleton className="w-40 h-4" />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <>
+        <style>{`
+          @keyframes slide-in-right {
+            0% {
+              opacity: 0;
+              transform: translateX(30px) scale(0.98);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0) scale(1);
+            }
+          }
+          
+          .animate-slide-in-right {
+            animation: slide-in-right 0.7s ease-out;
+          }
+        `}</style>
+        <div className="h-[900px] p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+          <div className="relative flex flex-col items-center justify-center h-full overflow-hidden text-center">
+            {/* Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-neutral/5 rounded-3xl"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 rounded-full translate-x-1/3 -translate-y-1/3 bg-gradient-to-bl from-heritage-green/8 to-transparent"></div>
+            <div className="absolute w-24 h-24 rounded-full -bottom-8 -left-8 bg-gradient-to-tr from-heritage-light/20 to-transparent"></div>
+            
+            <div className="relative z-10 max-w-md mx-auto space-y-6">
+              {/* Large Icon */}
+              <div className="relative mb-8">
+                <div className="flex items-center justify-center w-24 h-24 mx-auto border shadow-2xl bg-gradient-to-br from-heritage-green/10 to-heritage-neutral/10 rounded-3xl border-heritage-green/20">
+                  <svg className="w-12 h-12 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-3xl blur-xl opacity-60"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-bold text-heritage-green">No Invoice Selected</h3>
+                <p className="max-w-sm mx-auto text-base leading-relaxed text-heritage-neutral/70">
+                  Click on any invoice to view details
+                </p>
+                
+                {/* Action Hint */}
+                <div className="p-4 mt-8 border bg-heritage-light/20 rounded-2xl border-heritage-green/20 backdrop-blur-sm">
+                  <div className="flex items-center justify-center space-x-3 text-heritage-green/80">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
+                    <span className="text-sm font-medium">Select to get started</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -31,332 +123,334 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
     if (onPrint) {
       onPrint(invoice);
     } else {
-      // Default print functionality
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Invoice ${invoice.id}</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .header { text-align: center; margin-bottom: 30px; }
-                .details { margin-bottom: 20px; }
-                .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                .items-table th { background-color: #f2f2f2; }
-                .total { margin-top: 20px; text-align: right; font-size: 18px; font-weight: bold; }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <h1>BALAY GINHAWA</h1>
-                <p>Heritage Hotel & Suites</p>
-                <h2>INVOICE ${invoice.id}</h2>
-              </div>
-              <div class="details">
-                <p><strong>Guest:</strong> ${invoice.guestName}</p>
-                <p><strong>Room:</strong> ${invoice.roomNumber}</p>
-                <p><strong>Check-in:</strong> ${invoice.checkIn}</p>
-                <p><strong>Check-out:</strong> ${invoice.checkOut}</p>
-                <p><strong>Status:</strong> ${invoice.status.toUpperCase()}</p>
-              </div>
-              <table class="items-table">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${invoice.items.map(item => `
-                    <tr>
-                      <td>${item.description}</td>
-                      <td>${item.category}</td>
-                      <td>${item.quantity}</td>
-                      <td>$${item.unitPrice.toFixed(2)}</td>
-                      <td>$${item.total.toFixed(2)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-              <div class="total">
-                <p>Total Amount: $${invoice.totalAmount.toFixed(2)}</p>
-              </div>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-      }
-    }
-  };
+      // Create print content in a hidden div
+      const printContent = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px;">
+          <!-- Header with Logo -->
+          <div style="text-align: center; margin-bottom: 40px; border-bottom: 3px solid #82a33d; padding-bottom: 20px;">
+            <div style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #82a33d 0%, #6b8533 100%); border-radius: 12px; margin-bottom: 15px;">
+              <h1 style="color: white; margin: 0; font-size: 32px; font-weight: bold; letter-spacing: 2px;">🏨 BALAY GINHAWA</h1>
+            </div>
+            <p style="color: #666; font-size: 16px; margin: 5px 0;">Heritage Hotel & Suites</p>
+            <p style="color: #999; font-size: 14px;">123 Heritage Street, Manila | +63 (02) 123-4567</p>
+          </div>
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      paid: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: '✓' },
-      pending: { color: 'bg-amber-100 text-amber-800 border-amber-200', icon: '⏳' },
-      overdue: { color: 'bg-red-100 text-red-800 border-red-200', icon: '!' },
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    
-    return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${config.color}`}>
-        <span className="mr-1">{config.icon}</span>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
+          <!-- Invoice Title and ID -->
+          <div style="background: linear-gradient(135deg, #f8f9f5 0%, #e8f0d8 100%); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px solid #82a33d;">
+            <div style="text-align: center;">
+              <h2 style="color: #82a33d; margin: 0 0 10px 0; font-size: 28px;">INVOICE</h2>
+              <p style="color: #666; font-size: 18px; margin: 0;"><strong>Invoice #${invoice.id}</strong></p>
+              <div style="display: inline-block; margin-top: 10px; padding: 6px 16px; background: ${
+                invoice.status === 'paid' ? '#d4edda' : 
+                invoice.status === 'pending' ? '#fff3cd' : '#f8d7da'
+              }; color: ${
+                invoice.status === 'paid' ? '#155724' : 
+                invoice.status === 'pending' ? '#856404' : '#721c24'
+              }; border-radius: 20px; font-size: 14px; font-weight: bold;">
+                ${invoice.status.toUpperCase()}
+              </div>
+            </div>
+          </div>
+
+          <!-- Guest and Stay Details -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div style="background: #fafbf8; padding: 20px; border-radius: 10px; border: 1px solid #e0e4d6;">
+              <h3 style="color: #82a33d; margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #82a33d; padding-bottom: 8px;">Guest Information</h3>
+              <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${invoice.guestName}</p>
+              <p style="margin: 8px 0; color: #555;"><strong>Room:</strong> ${invoice.roomNumber}</p>
+            </div>
+            <div style="background: #fafbf8; padding: 20px; border-radius: 10px; border: 1px solid #e0e4d6;">
+              <h3 style="color: #82a33d; margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #82a33d; padding-bottom: 8px;">Stay Information</h3>
+              <p style="margin: 8px 0; color: #555;"><strong>Check-in:</strong> ${invoice.checkIn}</p>
+              <p style="margin: 8px 0; color: #555;"><strong>Check-out:</strong> ${invoice.checkOut}</p>
+            </div>
+          </div>
+
+          <!-- Invoice Items Table -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, #82a33d 0%, #6b8533 100%); color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #82a33d; font-size: 14px;">#</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #82a33d; font-size: 14px;">Description</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #82a33d; font-size: 14px;">Category</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #82a33d; font-size: 14px;">Qty</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #82a33d; font-size: 14px;">Unit Price</th>
+                <th style="padding: 12px; text-align: right; border: 1px solid #82a33d; font-size: 14px;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.items.map((item, index) => `
+                <tr style="background: ${index % 2 === 0 ? '#fafbf8' : 'white'};">
+                  <td style="padding: 10px; border: 1px solid #e0e4d6; color: #555;">${index + 1}</td>
+                  <td style="padding: 10px; border: 1px solid #e0e4d6; color: #555;">${item.description}</td>
+                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: center; color: #555;">${item.category}</td>
+                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: center; color: #555;">${item.quantity}</td>
+                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: right; color: #555;">${formatCurrency(item.unitPrice)}</td>
+                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: right; color: #82a33d; font-weight: bold;">${formatCurrency(item.total)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <!-- Payment Summary -->
+          <div style="background: #fafbf8; padding: 20px; border-radius: 10px; border: 2px solid #82a33d; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #d0d6c4;">
+              <span style="color: #555;">Subtotal:</span>
+              <span style="color: #555; font-weight: bold;">${formatCurrency(invoice.totalAmount * 0.893)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #82a33d;">
+              <span style="color: #555;">Tax (12%):</span>
+              <span style="color: #555; font-weight: bold;">${formatCurrency(invoice.totalAmount * 0.107)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #82a33d; font-size: 20px; font-weight: bold;">TOTAL AMOUNT:</span>
+              <span style="color: #82a33d; font-size: 28px; font-weight: bold;">${formatCurrency(invoice.totalAmount)}</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align: center; padding-top: 20px; border-top: 2px solid #82a33d; color: #666; font-size: 12px;">
+            <p style="margin: 5px 0;"><strong>Thank you for choosing Balay Ginhawa Hotel!</strong></p>
+            <p style="margin: 5px 0;">For inquiries, please contact us at info@balayginhawa.com or call +63 (02) 123-4567</p>
+            <p style="margin: 10px 0; color: #999;">Printed on: ${new Date().toLocaleDateString('en-PH', { 
+              year: 'numeric', month: 'long', day: 'numeric' 
+            })}</p>
+          </div>
+        </div>
+      `;
+
+      // Create or update print div
+      let printDiv = document.getElementById('invoice-print-content');
+      if (!printDiv) {
+        printDiv = document.createElement('div');
+        printDiv.id = 'invoice-print-content';
+        printDiv.style.display = 'none';
+        document.body.appendChild(printDiv);
+      }
+      printDiv.innerHTML = printContent;
+
+      // Add print styles if not already added
+      if (!document.getElementById('invoice-print-styles')) {
+        const style = document.createElement('style');
+        style.id = 'invoice-print-styles';
+        style.textContent = `
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            #invoice-print-content,
+            #invoice-print-content * {
+              visibility: visible;
+            }
+            #invoice-print-content {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              display: block !important;
+            }
+            @page {
+              margin: 1cm;
+              size: A4;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Trigger print
+      window.print();
+    }
   };
 
   return (
     <>
       <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
+        @keyframes slide-in-right {
+          0% {
+            opacity: 0;
+            transform: translateX(30px) scale(0.98);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(130, 163, 61, 0.1);
-          border-radius: 12px;
+        
+        .animate-slide-in-right {
+          animation: slide-in-right 0.7s ease-out;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        
+        .invoice-items-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .invoice-items-scroll::-webkit-scrollbar-track {
+          background: rgba(130, 163, 61, 0.05);
+          border-radius: 10px;
+        }
+        .invoice-items-scroll::-webkit-scrollbar-thumb {
           background: rgba(130, 163, 61, 0.3);
-          border-radius: 12px;
+          border-radius: 10px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        .invoice-items-scroll::-webkit-scrollbar-thumb:hover {
           background: rgba(130, 163, 61, 0.5);
         }
       `}</style>
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative overflow-hidden bg-white rounded-3xl border-2 border-heritage-green/20 shadow-2xl w-full max-w-4xl max-h-[90vh]">
-        {/* Clean Background Elements */}
-        <div className="absolute inset-0 bg-white rounded-3xl"></div>
-        
-        <div className="relative z-10">
-          {/* Enhanced Modal Header */}
-          <div className="flex items-center justify-between p-8 border-b-2 bg-white border-heritage-green/15">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-16 h-16 border-2 shadow-xl bg-gradient-to-br from-heritage-green via-heritage-green/90 to-heritage-neutral rounded-3xl border-heritage-green/20">
-                <svg className="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-3xl font-black text-heritage-green">Invoice Details</h2>
-                <p className="text-base font-semibold text-heritage-neutral/80">Complete invoice information and management</p>
-              </div>
-            </div>
+      <div className="h-[900px] p-5 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+        <div className="flex flex-col h-full">
+          {/* Compact Header */}
+          <div className="flex items-center justify-between pb-4 mb-4 border-b border-heritage-neutral/20">
+            <h3 className="text-xl font-bold text-heritage-green">Invoice Details</h3>
             <button
               onClick={onClose}
-              className="p-4 transition-all duration-300 border-2 border-transparent text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/15 rounded-2xl hover:border-heritage-green/20"
+              className="p-1.5 transition-colors rounded-lg text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/10"
             >
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Enhanced Invoice Content */}
-          <div className="p-8 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar bg-white">
-            {/* Invoice Header */}
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-16 h-16 shadow-lg rounded-2xl bg-gradient-to-br from-heritage-green to-heritage-neutral">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-heritage-green">Invoice #{invoice.id}</h3>
-                  <p className="mt-1 text-sm text-heritage-neutral/70">Generated for {invoice.guestName}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                {getStatusBadge(invoice.status)}
-                <p className="mt-2 text-sm text-heritage-neutral/70">Total: {formatCurrency(invoice.totalAmount)}</p>
-              </div>
-            </div>
-
-            {/* Guest Information */}
-            <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
-              <div className="p-6 bg-white border shadow-sm rounded-2xl border-heritage-neutral/20">
-                <h4 className="flex items-center gap-2 mb-4 text-lg font-semibold text-heritage-green">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  Guest Information
-                </h4>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-heritage-neutral/70">Guest Name</p>
-                    <p className="font-semibold text-heritage-green">{invoice.guestName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-heritage-neutral/70">Room Number</p>
-                    <p className="font-semibold text-heritage-green">Room {invoice.roomNumber}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 bg-white border shadow-sm rounded-2xl border-heritage-neutral/20">
-                <h4 className="flex items-center gap-2 mb-4 text-lg font-semibold text-heritage-green">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Stay Information
-                </h4>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-heritage-neutral/70">Check-in Date</p>
-                    <p className="font-semibold text-heritage-green">{invoice.checkIn}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-heritage-neutral/70">Check-out Date</p>
-                    <p className="font-semibold text-heritage-green">{invoice.checkOut}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Invoice Items - Compact Modern Design */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="flex items-center gap-2 text-lg font-semibold text-heritage-green">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  Invoice Items ({invoice.items.length})
-                </h4>
-                {totalPages > 1 && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 text-sm transition-colors rounded-lg bg-heritage-green/10 text-heritage-green hover:bg-heritage-green/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    <span className="text-sm text-heritage-neutral/70">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1 text-sm transition-colors rounded-lg bg-heritage-green/10 text-heritage-green hover:bg-heritage-green/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </div>
-              
-              {/* Compact Grid Layout */}
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {currentItems.map((item, index) => (
-                  <div key={item.id} className="relative p-4 transition-all duration-300 bg-white border shadow-md group rounded-xl border-heritage-neutral/20 hover:shadow-lg hover:-translate-y-1">
-                    {/* Compact Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full shadow-sm bg-gradient-to-br from-heritage-green to-heritage-neutral">
-                          <span className="text-xs font-bold text-white">{startIndex + index + 1}</span>
-                        </div>
-                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          item.category === 'room' ? 'bg-blue-100 text-blue-700' :
-                          item.category === 'food' ? 'bg-orange-100 text-orange-700' :
-                          item.category === 'services' ? 'bg-purple-100 text-purple-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {item.category}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-heritage-green">{formatCurrency(item.total)}</div>
-                      </div>
-                    </div>
-                    
-                    {/* Item Details */}
-                    <div className="mb-3">
-                      <h5 className="mb-1 text-sm font-semibold text-heritage-green line-clamp-2">
-                        {item.description}
-                      </h5>
-                    </div>
-                    
-                    {/* Pricing Row */}
-                    <div className="flex items-center justify-between p-2 text-sm rounded-lg bg-heritage-green/5">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <span className="text-heritage-neutral/60">Qty:</span>
-                          <span className="px-2 py-1 text-xs font-bold text-white rounded-md bg-heritage-green">
-                            {item.quantity}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-heritage-neutral/60">Unit:</span>
-                          <span className="font-semibold text-heritage-green">{formatCurrency(item.unitPrice)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination Info */}
-              {totalPages > 1 && (
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-heritage-neutral/60">
-                    Showing {startIndex + 1} to {Math.min(endIndex, invoice.items.length)} of {invoice.items.length} items
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Invoice Summary */}
-            <div className="p-6 bg-white border shadow-sm rounded-2xl border-heritage-neutral/20">
+          {/* Content - Utilizing Full Space */}
+          <div className="flex-1 space-y-3">
+            {/* Invoice ID & Status Row */}
+            <div className="p-3 border bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 rounded-xl border-heritage-green/20">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="mb-2 text-lg font-semibold text-heritage-green">Invoice Summary</h4>
-                  <p className="text-sm text-heritage-neutral/70">{invoice.items.length} items • {invoice.status} payment</p>
+                  <label className="text-xs font-medium text-heritage-neutral/70">Invoice ID</label>
+                  <p className="text-base font-bold text-heritage-green">{invoice.id}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-heritage-neutral/70">Total Amount</p>
-                  <p className="text-3xl font-bold text-heritage-green">{formatCurrency(invoice.totalAmount)}</p>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                  invoice.status === 'paid' 
+                    ? 'bg-emerald-100 text-emerald-800' 
+                    : invoice.status === 'pending'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                    invoice.status === 'paid' ? 'bg-emerald-500' :
+                    invoice.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
+                  }`}></div>
+                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                </span>
+              </div>
+            </div>
+
+            {/* Amount - Highlighted */}
+            <div className="p-4 text-center border bg-gradient-to-br from-heritage-green/10 to-heritage-neutral/5 rounded-xl border-heritage-green/30">
+              <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Total Amount</label>
+              <p className="text-3xl font-black text-heritage-green">{formatCurrency(invoice.totalAmount)}</p>
+              <p className="mt-1 text-xs text-heritage-neutral/60">{invoice.items.length} items included</p>
+            </div>
+
+            {/* Guest & Room Info - 2 Column Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
+                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Guest Name</label>
+                <p className="text-sm font-semibold text-heritage-green">{invoice.guestName}</p>
+              </div>
+              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
+                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Room</label>
+                <p className="text-sm font-semibold text-heritage-green">Room {invoice.roomNumber}</p>
+              </div>
+            </div>
+
+            {/* Check-in & Check-out - 2 Column Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
+                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Check-in</label>
+                <p className="text-sm font-semibold text-heritage-green">{invoice.checkIn}</p>
+              </div>
+              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
+                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Check-out</label>
+                <p className="text-sm font-semibold text-heritage-green">{invoice.checkOut}</p>
+              </div>
+            </div>
+
+            {/* Invoice Items Preview */}
+            <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
+              <label className="block mb-2 text-xs font-medium text-heritage-neutral/70">Invoice Items</label>
+              <div className="space-y-1.5 max-h-32 overflow-y-auto invoice-items-scroll">
+                {invoice.items.slice(0, 4).map((item, index) => (
+                  <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-heritage-green/5">
+                    <div className="flex items-center space-x-2">
+                      <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white rounded-full bg-heritage-green">
+                        {index + 1}
+                      </span>
+                      <span className="text-xs font-medium text-heritage-green line-clamp-1">{item.description}</span>
+                    </div>
+                    <span className="text-xs font-bold text-heritage-green">{formatCurrency(item.total)}</span>
+                  </div>
+                ))}
+                {invoice.items.length > 4 && (
+                  <p className="pt-1 text-xs text-center text-heritage-neutral/60">
+                    +{invoice.items.length - 4} more items
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Payment Summary - 2 Column Grid */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 bg-white border rounded-lg border-heritage-neutral/20">
+                <label className="block mb-0.5 text-xs font-medium text-heritage-neutral/70">Subtotal</label>
+                <p className="text-sm font-bold text-heritage-green">{formatCurrency(invoice.totalAmount * 0.893)}</p>
+              </div>
+              <div className="p-2.5 bg-white border rounded-lg border-heritage-neutral/20">
+                <label className="block mb-0.5 text-xs font-medium text-heritage-neutral/70">Tax (12%)</label>
+                <p className="text-sm font-bold text-heritage-green">{formatCurrency(invoice.totalAmount * 0.107)}</p>
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <div className="p-2.5 border bg-gradient-to-r from-heritage-light/20 to-heritage-green/5 rounded-lg border-heritage-neutral/20">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-heritage-neutral/70">Payment Method:</span>
+                  <p className="font-semibold text-heritage-green">Card Payment</p>
+                </div>
+                <div>
+                  <span className="text-heritage-neutral/70">Invoice Date:</span>
+                  <p className="font-semibold text-heritage-green">{invoice.checkOut}</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Enhanced Action Buttons */}
-          <div className="p-8 border-t-2 bg-white border-heritage-green/15">
-            <div className="flex justify-end gap-4">
+            {/* Action Buttons */}
+            <div className="pt-2 space-y-2 border-t border-heritage-neutral/20">
               <button 
                 onClick={handlePrint}
-                className="flex items-center gap-2 px-6 py-3 text-sm font-bold transition-all duration-300 transform border-2 shadow-lg bg-white text-heritage-green border-heritage-green/30 rounded-2xl hover:bg-heritage-green/5 hover:border-heritage-green/50 hover:shadow-xl hover:-translate-y-1"
+                className="w-full flex items-center justify-center space-x-2 px-5 py-3 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl hover:from-heritage-green/90 hover:to-heritage-neutral/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] group"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
-                Print Invoice
+                <span className="text-sm font-semibold">Print Invoice</span>
               </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-sm font-bold transition-all duration-300 transform border-2 shadow-lg bg-white text-heritage-green border-heritage-green/30 rounded-2xl hover:bg-heritage-green/5 hover:border-heritage-green/50 hover:shadow-xl hover:-translate-y-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Download PDF
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral hover:from-heritage-green/90 hover:to-heritage-neutral/90 rounded-2xl hover:shadow-xl hover:-translate-y-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Send Email
-              </button>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <button 
+                  className="flex items-center justify-center px-3 py-2.5 space-x-1.5 transition-all duration-300 border shadow-sm bg-white/80 border-heritage-neutral/30 text-heritage-neutral rounded-lg hover:bg-heritage-neutral/5 hover:border-heritage-green hover:shadow-md"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="text-xs font-medium">Download</span>
+                </button>
+                
+                <button 
+                  className="flex items-center justify-center px-3 py-2.5 space-x-1.5 transition-all duration-300 border shadow-sm bg-white/80 border-heritage-neutral/30 text-heritage-neutral rounded-lg hover:bg-heritage-neutral/5 hover:border-heritage-green hover:shadow-md"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-xs font-medium">Email</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 };
