@@ -1,8 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../config/firebase';
-import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
+
+interface BookingData {
+  roomName?: string;
+  checkIn?: string;
+  totalAmount?: number;
+}
+
+interface PendingBooking {
+  bookingData?: BookingData | null;
+  timestamp?: number;
+  fromBooking?: boolean;
+}
+
+// Room ID to room type mapping for pre-selection
+const roomIdToTypeMapping: { [key: string]: string } = {
+  '1': 'standard',
+  '2': 'deluxe',
+  '3': 'suite',
+  '4': 'family'
+};
+
+// Check if two date ranges overlap (including touching dates)
+const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
+  const start1 = new Date(checkIn1);
+  const end1 = new Date(checkOut1);
+  const start2 = new Date(checkIn2);
+  const end2 = new Date(checkOut2);
+  return start1 < end2 && start2 < end1;
+};
 
 export const BookingPage = () => {
   const { userData } = useAuth();
@@ -18,15 +47,9 @@ export const BookingPage = () => {
   const [error, setError] = useState('');
   const [availabilityChecking, setAvailabilityChecking] = useState(false);
   const [availabilityMessage, setAvailabilityMessage] = useState('');
-  const [pendingBooking, setPendingBooking] = useState<any>(null);
+  const [pendingBooking, setPendingBooking] = useState<PendingBooking | null>(null);
 
-  // Room ID to room type mapping for pre-selection
-  const roomIdToTypeMapping: { [key: string]: string } = {
-    '1': 'standard',  // Silid Payapa - Standard Room
-    '2': 'deluxe',    // Silid Marahuyo - Deluxe Room  
-    '3': 'suite',     // Silid Ginhawa - Suite Room
-    '4': 'family'     // Silid Haraya - Premium Family Suite
-  };
+  
 
   // Scroll to top and handle room pre-selection when component mounts
   useEffect(() => {
@@ -94,19 +117,10 @@ export const BookingPage = () => {
     return today.toISOString().split('T')[0];
   };
 
-  // Check if dates overlap with existing bookings
-  const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
-    const start1 = new Date(checkIn1);
-    const end1 = new Date(checkOut1);
-    const start2 = new Date(checkIn2);
-    const end2 = new Date(checkOut2);
-
-    // Check if dates overlap (including touching dates)
-    return start1 < end2 && start2 < end1;
-  };
+  
 
   // Check room availability for selected dates
-  const checkRoomAvailability = async (roomType: string, checkIn: string, checkOut: string) => {
+  const checkRoomAvailability = useCallback(async (roomType: string, checkIn: string, checkOut: string) => {
     if (!checkIn || !checkOut) return;
 
     setAvailabilityChecking(true);
@@ -143,7 +157,7 @@ export const BookingPage = () => {
       setAvailabilityChecking(false);
       return false;
     }
-  };
+  }, []);
 
   // Handle date changes and trigger availability check
   const handleDateChange = (field: 'checkIn' | 'checkOut', value: string) => {
@@ -175,7 +189,7 @@ export const BookingPage = () => {
     if (formData.checkIn && formData.checkOut && formData.checkIn < formData.checkOut) {
       checkRoomAvailability(formData.roomType, formData.checkIn, formData.checkOut);
     }
-  }, [formData.checkIn, formData.checkOut, formData.roomType]);
+  }, [formData.checkIn, formData.checkOut, formData.roomType, checkRoomAvailability]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

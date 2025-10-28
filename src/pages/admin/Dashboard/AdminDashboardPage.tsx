@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '../../../config/firebase';
 import RevenueTrendsCard from '../../../components/admin/RevenueTrendsCard';
 import SmartInsightsCard from '../../../components/admin/SmartInsightsCard';
@@ -29,58 +28,30 @@ export const AdminDashboardPage = () => {
     totalRooms: 0,
     availableRooms: 0,
   });
-  const [bookingsData, setBookingsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Typed records for dashboard processing
+  type FieldDate = Date | { toDate: () => Date } | string | undefined;
+  interface BookingRecord {
+    id: string;
+    checkInDate?: FieldDate;
+    status?: string;
+    totalAmount?: number;
+    guestName?: string;
+    userName?: string;
+    createdAt?: FieldDate;
+  }
+  interface InventoryRecord { id: string; currentStock?: number; reorderLevel?: number }
+  interface StaffRecord { id: string; status?: string }
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const [bookingsData, setBookingsData] = useState<BookingRecord[]>([]);
 
-  const fetchDashboardData = async () => {
+
+  const fetchDashboardData = useCallback(async () => {
     try {
-      setLoading(true);
       
-      // Debug authentication state
-      console.log('🔍 Auth Debug:');
-      console.log('auth.currentUser:', auth.currentUser);
-      console.log('User email:', auth.currentUser?.email);
-      console.log('Session admin:', sessionStorage.getItem('isAdminAuthenticated'));
-      
-      // Ensure user is authenticated before fetching data
+      // Ensure user is authenticated before fetching data to avoid permission errors
       if (!auth.currentUser) {
-        console.log('❌ No Firebase Auth user found');
-        const isAdminAuthenticated = sessionStorage.getItem('isAdminAuthenticated');
-        
-        if (isAdminAuthenticated === 'true') {
-          console.log('🔄 Attempting Firebase Auth...');
-          try {
-            const userCredential = await signInWithEmailAndPassword(auth, 'balayginhawaAdmin123@gmail.com', 'Admin12345');
-            console.log('✅ Firebase Auth successful:', userCredential.user.email);
-            
-            // Wait a moment for auth state to propagate, then retry
-            setTimeout(() => {
-              console.log('🔄 Retrying data fetch after auth...');
-              fetchDashboardData();
-            }, 2000);
-            return;
-          } catch (authError) {
-            console.error('❌ Firebase Auth failed:', authError);
-            throw new Error('Authentication failed: ' + authError);
-          }
-        } else {
-          throw new Error('No admin session found');
-        }
-      } else {
-        console.log('✅ Firebase Auth user found:', auth.currentUser.email);
-        
-        // Verify token
-        try {
-          const token = await auth.currentUser.getIdToken();
-          console.log('✅ Auth token obtained, length:', token.length);
-        } catch (tokenError) {
-          console.error('❌ Token error:', tokenError);
-          throw new Error('Token verification failed');
-        }
+        console.warn('No authenticated Firebase user — skipping dashboard fetch to avoid permission errors.');
+        return;
       }
       
       const today = new Date();
@@ -96,63 +67,37 @@ export const AdminDashboardPage = () => {
       ]);
 
       // Process bookings
-      const bookings = bookingsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+  const bookings = bookingsSnapshot.docs.map(d => ({ ...(d.data() as unknown as Omit<BookingRecord, 'id'>), id: d.id })) as BookingRecord[];
       const totalBookings = bookings.length;
-      
-      console.log('📊 Processing bookings:', bookings.length);
-      console.log('Sample booking:', bookings[0]);
-      
+
       // Calculate today's arrivals - check multiple date formats
+      const hasToDate = (v: unknown): v is { toDate: () => Date } => typeof v === 'object' && v !== null && 'toDate' in v;
+
       const todayArrivals = bookings.filter(booking => {
-        if (!booking.checkInDate) return false;
-        
-        let checkInDate;
+        const raw = booking.checkInDate;
+        if (!raw) return false;
+
         try {
-          // Handle Firestore Timestamp
-          if (booking.checkInDate?.toDate) {
-            checkInDate = booking.checkInDate.toDate();
+          let checkInDate: Date | null = null;
+          if (hasToDate(raw)) {
+            checkInDate = raw.toDate();
+          } else if (typeof raw === 'string') {
+            checkInDate = new Date(raw);
+          } else if (raw instanceof Date) {
+            checkInDate = raw;
           }
-          // Handle string dates
-          else if (typeof booking.checkInDate === 'string') {
-            checkInDate = new Date(booking.checkInDate);
-          }
-          // Handle Date objects
-          else if (booking.checkInDate instanceof Date) {
-            checkInDate = booking.checkInDate;
-          }
-          else {
-            return false;
-          }
-          
-          const isToday = checkInDate >= todayStart && checkInDate < todayEnd;
-          if (isToday) {
-            console.log('✅ Today arrival found:', booking.guestName || booking.userName, checkInDate);
-          }
-          return isToday;
-        } catch (error) {
-          console.log('❌ Date parsing error for booking:', booking.id, error);
+          if (!checkInDate) return false;
+          return checkInDate >= todayStart && checkInDate < todayEnd;
+        } catch {
           return false;
         }
       }).length;
 
-      console.log('📅 Today arrivals calculated:', todayArrivals);
-
       const validBookingsForRevenue = bookings.filter(booking => booking.status !== 'cancelled');
       const totalRevenue = validBookingsForRevenue.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
-      
-      console.log('💰 Total Revenue Breakdown:');
-      console.log(`- Total bookings in database: ${bookings.length}`);
-      console.log(`- Valid bookings (not cancelled): ${validBookingsForRevenue.length}`);
-      validBookingsForRevenue.forEach((booking, index) => {
-        const createdDate = booking.createdAt?.toDate?.() || new Date(booking.createdAt) || 'Unknown date';
-        console.log(`  ${index + 1}. ${booking.guestName || booking.userName || 'Guest'}: ₱${booking.totalAmount?.toLocaleString() || 0} (${createdDate instanceof Date ? createdDate.toLocaleDateString() : createdDate})`);
-      });
-      console.log(`- Total Revenue: ₱${totalRevenue.toLocaleString()}`);
 
-      // Process rooms - ensure we show out of 50
-      const rooms = roomsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
-      console.log('🏨 Processing rooms:', rooms.length);
-      console.log('Sample room:', rooms[0]);
+  // Process rooms - ensure we show out of 50
+  const rooms = roomsSnapshot.docs.map(d => ({ ...(d.data() as Record<string, unknown>), id: d.id }));
       
       // Use actual room count or default to 50 if no rooms in database
       const totalRooms = Math.max(rooms.length, 50); // Ensure minimum 50 rooms
@@ -179,13 +124,13 @@ export const AdminDashboardPage = () => {
       console.log('- Available rooms:', availableRooms);
       console.log('- Occupancy rate:', occupancyRate + '%');
 
-      // Process inventory
-      const inventory = inventorySnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
-      const lowStockItems = inventory.filter((item: any) => item.currentStock <= item.reorderLevel).length;
+  // Process inventory
+  const inventory = inventorySnapshot.docs.map(d => ({ ...(d.data() as unknown as InventoryRecord), id: d.id })) as InventoryRecord[];
+  const lowStockItems = inventory.filter(item => (item.currentStock ?? 0) <= (item.reorderLevel ?? 0)).length;
 
-      // Process staff
-      const staff = staffSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as any[];
-      const activeStaff = staff.filter((member: any) => member.status === 'active').length;
+  // Process staff
+  const staff = staffSnapshot.docs.map(d => ({ ...(d.data() as unknown as StaffRecord), id: d.id })) as StaffRecord[];
+  const activeStaff = staff.filter(member => member.status === 'active').length;
 
       setStats({
         totalBookings,
@@ -238,10 +183,12 @@ export const AdminDashboardPage = () => {
       setBookingsData([]);
       
       console.log(`📋 Using fallback data - ${fallbackTotal} rooms total, ${fallbackOccupied} occupied, ${fallbackAvailable} available, ${fallbackOccupancyRate}% occupancy`);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
 
   // Removed loading animation - show content immediately
@@ -251,9 +198,9 @@ export const AdminDashboardPage = () => {
       {/* Light Floating Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Subtle Light Orbs */}
-        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-heritage-green/5 to-emerald-100/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
-        <div className="absolute top-32 right-16 w-80 h-80 bg-gradient-to-r from-blue-100/20 to-indigo-100/20 rounded-full blur-3xl animate-pulse delay-1000 opacity-25"></div>
-        <div className="absolute bottom-16 left-1/4 w-72 h-72 bg-gradient-to-r from-heritage-light/10 to-heritage-neutral/10 rounded-full blur-3xl animate-pulse delay-2000 opacity-20"></div>
+        <div className="absolute rounded-full top-10 left-10 w-96 h-96 bg-gradient-to-r from-heritage-green/5 to-emerald-100/20 blur-3xl animate-pulse opacity-30"></div>
+        <div className="absolute delay-1000 rounded-full opacity-25 top-32 right-16 w-80 h-80 bg-gradient-to-r from-blue-100/20 to-indigo-100/20 blur-3xl animate-pulse"></div>
+        <div className="absolute rounded-full bottom-16 left-1/4 w-72 h-72 bg-gradient-to-r from-heritage-light/10 to-heritage-neutral/10 blur-3xl animate-pulse delay-2000 opacity-20"></div>
         
         {/* Light Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
@@ -265,14 +212,14 @@ export const AdminDashboardPage = () => {
       </div>
       
       {/* Main Content Container */}
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
+      <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
+        <div className="relative overflow-hidden border shadow-2xl bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl border-green-500/10">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
-          <div className="absolute top-1/3 right-1/3 w-40 h-40 bg-green-500/5 rounded-full animate-spin opacity-30" style={{animationDuration: '25s'}}></div>
-          <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-green-500/10 rounded-full animate-bounce opacity-40" style={{animationDuration: '3s'}}></div>
+          <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 rounded-full w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent animate-pulse"></div>
+          <div className="absolute bottom-0 left-0 delay-1000 -translate-x-1/2 translate-y-1/2 rounded-full w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent animate-pulse"></div>
+          <div className="absolute w-40 h-40 rounded-full top-1/3 right-1/3 bg-green-500/5 animate-spin opacity-30" style={{animationDuration: '25s'}}></div>
+          <div className="absolute w-24 h-24 rounded-full bottom-1/4 left-1/4 bg-green-500/10 animate-bounce opacity-40" style={{animationDuration: '3s'}}></div>
           
           <div className="relative p-10">
           <div className="flex items-center justify-between">
@@ -291,15 +238,15 @@ export const AdminDashboardPage = () => {
                   <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
                     Welcome to Balay Ginhawa
                   </h1>
-                  <p className="text-xl text-gray-700 font-medium tracking-wide">
+                  <p className="text-xl font-medium tracking-wide text-gray-700">
                     Your premium hotel management command center
                   </p>
-                  <div className="flex items-center space-x-4 mt-4">
-                    <div className="flex items-center space-x-2 bg-emerald-50 backdrop-blur-sm rounded-full px-4 py-2 border border-emerald-200">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <div className="flex items-center mt-4 space-x-4">
+                    <div className="flex items-center px-4 py-2 space-x-2 border rounded-full bg-emerald-50 backdrop-blur-sm border-emerald-200">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                       <span className="text-sm font-semibold text-emerald-700">All systems operational</span>
                     </div>
-                    <div className="flex items-center space-x-2 bg-blue-50 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-200">
+                    <div className="flex items-center px-4 py-2 space-x-2 border border-blue-200 rounded-full bg-blue-50 backdrop-blur-sm">
                       <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                       </svg>
@@ -313,17 +260,17 @@ export const AdminDashboardPage = () => {
             </div>
             <div className="text-right">
               <div className="relative group">
-                <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl p-8 border border-green-500/20 shadow-xl group-hover:scale-105 transition-all duration-500">
+                <div className="p-8 transition-all duration-500 border shadow-xl bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl border-green-500/20 group-hover:scale-105">
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
                   <div className="relative">
                     <p className="text-4xl font-black bg-gradient-to-r from-[#82A33D] to-green-600 bg-clip-text text-transparent drop-shadow-sm">
                       {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </p>
-                    <p className="text-gray-700 mt-2 font-semibold tracking-wide">Current Time</p>
-                    <div className="mt-3 flex items-center justify-center space-x-2">
+                    <p className="mt-2 font-semibold tracking-wide text-gray-700">Current Time</p>
+                    <div className="flex items-center justify-center mt-3 space-x-2">
                       <div className="w-1 h-1 bg-[#82A33D] rounded-full animate-ping"></div>
-                      <div className="w-1 h-1 bg-green-600 rounded-full animate-ping delay-75"></div>
-                      <div className="w-1 h-1 bg-green-400 rounded-full animate-ping delay-150"></div>
+                      <div className="w-1 h-1 delay-75 bg-green-600 rounded-full animate-ping"></div>
+                      <div className="w-1 h-1 delay-150 bg-green-400 rounded-full animate-ping"></div>
                     </div>
                   </div>
                 </div>
@@ -337,7 +284,7 @@ export const AdminDashboardPage = () => {
         <AdminDashboardStats stats={stats} />
 
         {/* Main Dashboard Grid - 2x2 Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
           <RevenueTrendsCard 
             bookings={bookingsData}
           />

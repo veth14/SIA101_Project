@@ -1,10 +1,34 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { db } from '../../config/firebase';
 import { doc, updateDoc, serverTimestamp, query, collection, where, getDocs, addDoc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const PaymentPage = () => {
+  interface Booking {
+    id?: string;
+    bookingId?: string;
+    status?: string;
+    totalAmount?: number;
+    roomType?: string;
+    roomName?: string;
+    checkIn?: string;
+    checkOut?: string;
+    guests?: number;
+    nights?: number;
+    subtotal?: number;
+    tax?: number;
+    roomPricePerNight?: number;
+    baseGuests?: number;
+    basePrice?: number;
+    additionalGuestPrice?: number;
+  }
+  interface UserData {
+    uid?: string;
+    email?: string;
+    displayName?: string | null;
+  }
   const { bookingId } = useParams<{ bookingId: string }>();
   const { userData } = useAuth();
   const navigate = useNavigate();
@@ -16,11 +40,26 @@ export const PaymentPage = () => {
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
   const [cardholderName, setCardholderName] = useState('');
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // When success modal is shown, blur the entire app root (including header)
+  useEffect(() => {
+    const rootEl = document.getElementById('root');
+    if (!rootEl) return;
+    if (showSuccessModal) {
+      // apply a mild blur so the app (including header) is softly blurred but still readable
+      rootEl.classList.add('filter', 'blur-sm', 'brightness-95');
+    } else {
+      rootEl.classList.remove('filter', 'blur-sm', 'brightness-95');
+    }
+    return () => {
+      rootEl.classList.remove('filter', 'blur-sm', 'brightness-95');
+    };
+  }, [showSuccessModal]);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -37,7 +76,7 @@ export const PaymentPage = () => {
       }
 
       // Check if booking data was passed from BookingPage
-      const navigationState = location.state as any;
+      const navigationState = location.state as { fromBooking?: boolean; bookingData?: Booking } | undefined;
       if (navigationState?.fromBooking && navigationState?.bookingData) {
         // Use booking data from navigation state (new flow - payment required first)
         setBooking(navigationState.bookingData);
@@ -107,9 +146,9 @@ export const PaymentPage = () => {
   }, [bookingId, userData?.uid, location.state]);
 
   // Email receipt function
-  const sendEmailReceipt = async (bookingData: any, user: any) => {
+  const sendEmailReceipt = async (bookingData: Booking, user: UserData) => {
     try {
-      // In a real implementation, you would use a service like EmailJS, SendGrid, or Firebase Functions
+
       // For now, we'll simulate the email sending
       console.log('Sending email receipt to:', user.email);
       console.log('Booking details:', bookingData);
@@ -117,14 +156,7 @@ export const PaymentPage = () => {
       // Simulate email sending delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // In production, you would make an API call to your email service
-      // Example with EmailJS or similar service:
-      // await emailService.send({
-      //   to: user.email,
-      //   subject: `Booking Confirmation - ${bookingData.bookingId}`,
-      //   template: 'booking-receipt',
-      //   data: bookingData
-      // });
+
       
       console.log('Email receipt sent successfully');
     } catch (error) {
@@ -245,22 +277,26 @@ export const PaymentPage = () => {
 
         // Update room availability (optional - if you track room availability)
         try {
-          const roomRef = doc(db, 'rooms', booking.roomType);
-          const roomDoc = await getDoc(roomRef);
-          
-          if (roomDoc.exists()) {
-            const currentBookings = roomDoc.data().bookings || [];
-            currentBookings.push({
-              bookingId: booking.bookingId,
-              checkIn: booking.checkIn,
-              checkOut: booking.checkOut,
-              guests: booking.guests
-            });
-            
-            await updateDoc(roomRef, {
-              bookings: currentBookings,
-              lastBooked: serverTimestamp()
-            });
+          if (typeof booking.roomType === 'string' && booking.roomType) {
+            const roomRef = doc(db, 'rooms', String(booking.roomType));
+            const roomDoc = await getDoc(roomRef);
+
+            if (roomDoc.exists()) {
+              type RoomDoc = { bookings?: unknown[] };
+              const roomData = roomDoc.data() as RoomDoc;
+              const currentBookings = Array.isArray(roomData.bookings) ? roomData.bookings : [];
+              const updatedBookings = [...currentBookings, {
+                bookingId: booking.bookingId,
+                checkIn: booking.checkIn,
+                checkOut: booking.checkOut,
+                guests: booking.guests
+              }];
+
+              await updateDoc(roomRef, {
+                bookings: updatedBookings,
+                lastBooked: serverTimestamp()
+              });
+            }
           }
         } catch (roomError) {
           console.warn('Room update failed:', roomError);
@@ -272,19 +308,21 @@ export const PaymentPage = () => {
 
       } else {
         // OLD FLOW: Update existing booking payment status
-        const bookingRef = doc(db, 'bookings', booking.id);
-        await updateDoc(bookingRef, {
-          paymentStatus: 'paid',
-          paymentMethod: paymentMethod,
-          paymentDetails: {
-            gcashNumber: paymentMethod === 'gcash' ? gcashNumber : null,
-            gcashName: paymentMethod === 'gcash' ? gcashName : null,
-            cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : null,
-            cardholderName: paymentMethod === 'card' ? cardholderName : null,
-            paidAt: serverTimestamp()
-          },
-          updatedAt: serverTimestamp()
-        });
+        if (typeof booking.id === 'string' && booking.id) {
+          const bookingRef = doc(db, 'bookings', String(booking.id));
+          await updateDoc(bookingRef, {
+            paymentStatus: 'paid',
+            paymentMethod: paymentMethod,
+            paymentDetails: {
+              gcashNumber: paymentMethod === 'gcash' ? gcashNumber : null,
+              gcashName: paymentMethod === 'gcash' ? gcashName : null,
+              cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : null,
+              cardholderName: paymentMethod === 'card' ? cardholderName : null,
+              paidAt: serverTimestamp()
+            },
+            updatedAt: serverTimestamp()
+          });
+        }
 
         // Update transaction status
         const transactionsQuery = query(
@@ -339,6 +377,23 @@ export const PaymentPage = () => {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
         <div className="text-center">
           <p className="mb-4 font-medium text-red-600">{error}</p>
+          <button 
+            onClick={() => navigate('/')}
+            className="px-6 py-3 text-white transition-colors bg-heritage-green rounded-xl hover:bg-heritage-neutral"
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // If booking is still null (no data found), show a friendly message
+  if (!booking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
+        <div className="text-center">
+          <p className="mb-4 text-lg font-medium text-slate-700">No booking information available.</p>
           <button 
             onClick={() => navigate('/')}
             className="px-6 py-3 text-white transition-colors bg-heritage-green rounded-xl hover:bg-heritage-neutral"
@@ -654,40 +709,40 @@ export const PaymentPage = () => {
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
                       <span className="font-medium text-heritage-neutral">Check-in:</span>
-                      <span className="font-semibold text-gray-900">{new Date(booking.checkIn).toLocaleDateString()}</span>
+                      <span className="font-semibold text-gray-900">{booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : 'N/A'}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
                       <span className="font-medium text-heritage-neutral">Check-out:</span>
-                      <span className="font-semibold text-gray-900">{new Date(booking.checkOut).toLocaleDateString()}</span>
+                      <span className="font-semibold text-gray-900">{booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : 'N/A'}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
                       <span className="font-medium text-heritage-neutral">Guests:</span>
-                      <span className="font-semibold text-gray-900">{booking.guests}</span>
+                      <span className="font-semibold text-gray-900">{booking.guests ?? 'N/A'}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
                       <span className="font-medium text-heritage-neutral">Nights:</span>
-                      <span className="font-semibold text-gray-900">{booking.nights}</span>
+                      <span className="font-semibold text-gray-900">{booking.nights ?? 'N/A'}</span>
                     </div>
                   </div>
 
                   {/* Pricing Breakdown */}
-                  {booking.subtotal && booking.tax && (
+                  {typeof booking.subtotal === 'number' && typeof booking.tax === 'number' && (
                     <div className="p-4 border bg-white/80 rounded-xl border-heritage-green/20">
                       <h4 className="mb-3 font-bold text-gray-900">Payment Breakdown</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Room Rate ({booking.nights} nights × ₱{booking.roomPricePerNight?.toLocaleString() || '0'}):</span>
-                          <span>₱{booking.subtotal.toLocaleString()}</span>
+                          <span className="text-gray-600">Room Rate ({booking.nights ?? 0} nights × ₱{booking.roomPricePerNight?.toLocaleString() || '0'}):</span>
+                          <span>₱{(booking.subtotal ?? 0).toLocaleString()}</span>
                         </div>
-                        {booking.guests > booking.baseGuests && (
+                        {(booking.guests ?? 0) > (booking.baseGuests ?? 0) && (
                           <div className="flex justify-between text-xs text-gray-500">
-                            <span>• Base: ₱{booking.basePrice?.toLocaleString() || '0'} ({booking.baseGuests} guests)</span>
+                            <span>• Base: ₱{booking.basePrice?.toLocaleString() || '0'} ({booking.baseGuests ?? 0} guests)</span>
                             <span></span>
                           </div>
                         )}
-                        {booking.guests > booking.baseGuests && (
+                        {(booking.guests ?? 0) > (booking.baseGuests ?? 0) && (
                           <div className="flex justify-between text-xs text-gray-500">
-                            <span>• Extra guests: {booking.guests - booking.baseGuests} × ₱{booking.additionalGuestPrice?.toLocaleString() || '0'}</span>
+                            <span>• Extra guests: {(booking.guests ?? 0) - (booking.baseGuests ?? 0)} × ₱{booking.additionalGuestPrice?.toLocaleString() || '0'}</span>
                             <span></span>
                           </div>
                         )}
@@ -698,7 +753,7 @@ export const PaymentPage = () => {
                         <div className="pt-2 mt-3 border-t border-heritage-green/20">
                           <div className="flex justify-between font-bold">
                             <span>Total Amount:</span>
-                            <span className="text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
+                            <span className="text-heritage-green">₱{(booking.totalAmount ?? 0).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -713,7 +768,7 @@ export const PaymentPage = () => {
 
                   <div className="pt-4 mt-6">
                     <div className="mb-4 text-center">
-                      <span className="text-2xl font-bold text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-heritage-green">₱{(booking.totalAmount ?? 0).toLocaleString()}</span>
                       <p className="text-sm text-gray-600">Total Amount to Pay</p>
                     </div>
                     
@@ -732,7 +787,7 @@ export const PaymentPage = () => {
                           <span>Processing Payment...</span>
                         </div>
                       ) : (
-                        `Pay Now • ₱${booking.totalAmount.toLocaleString()}`
+                        `Pay Now • ₱${(booking.totalAmount ?? 0).toLocaleString()}`
                       )}
                     </button>
                   </div>
@@ -748,49 +803,55 @@ export const PaymentPage = () => {
         </div>
       </div>
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-          <div className="w-full max-w-md p-8 mx-4 text-center bg-white rounded-2xl">
-            {/* Success Icon */}
-            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-heritage-green">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            
-            {/* Success Message */}
-            <h3 className="mb-4 text-2xl font-bold text-gray-900">Payment Successful!</h3>
-            <p className="mb-2 text-gray-600">Your booking has been confirmed.</p>
-            <p className="mb-6 text-sm text-gray-500">
-              A receipt has been sent to <span className="font-medium">{userData?.email}</span>
-            </p>
-            
-            {/* Booking Details */}
-            <div className="p-4 mb-6 text-left rounded-lg bg-gray-50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Booking ID:</span>
-                <span className="font-medium text-heritage-green">{booking?.bookingId}</span>
-              </div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Room:</span>
-                <span className="font-medium">{booking?.roomName}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Total Paid:</span>
-                <span className="font-bold text-heritage-green">₱{booking?.totalAmount?.toLocaleString()}</span>
-              </div>
-            </div>
-            
-            {/* Close Button */}
+      {/* Success Modal (rendered in a portal so the root can be blurred) */}
+      {showSuccessModal && createPortal(
+  <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-xl p-16 mx-5 text-center transition-all duration-300 ease-out transform bg-white shadow-2xl rounded-2xl ring-1 ring-black/5">
+            {/* Close X */}
             <button
               onClick={handleSuccessModalClose}
-              className="w-full px-6 py-3 font-medium text-white transition-colors rounded-lg bg-heritage-green hover:bg-heritage-dark"
+              aria-label="Close"
+              className="absolute inline-flex items-center justify-center text-gray-500 bg-white rounded-full shadow-sm top-4 right-4 w-9 h-9 hover:bg-gray-50"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Success Icon */}
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 -mt-10 rounded-full shadow-lg bg-emerald-500">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <h3 className="mb-1 text-2xl font-extrabold text-gray-900">Payment Successful!</h3>
+            <p className="mb-4 text-sm text-gray-600">Your booking has been confirmed.</p>
+            <p className="mb-6 text-xs text-gray-500">A receipt has been sent to <span className="font-medium">{userData?.email}</span></p>
+
+            {/* Booking Details */}
+            <div className="p-4 mb-6 text-left border border-gray-100 rounded-xl bg-gray-50">
+              <div className="grid grid-cols-2 text-sm text-gray-700 gap-y-2 gap-x-4">
+                <div className="col-span-1">Booking ID</div>
+                <div className="col-span-1 font-medium break-all text-emerald-600">{booking?.bookingId ?? '—'}</div>
+
+                <div className="col-span-1">Room</div>
+                <div className="col-span-1 font-medium">{booking?.roomName ?? '—'}</div>
+
+                <div className="col-span-1">Total Paid</div>
+                <div className="col-span-1 font-bold text-emerald-600">₱{(booking?.totalAmount ?? 0).toLocaleString()}</div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSuccessModalClose}
+              className="w-full px-6 py-3 text-sm font-semibold text-white transition-colors rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700"
             >
               Continue to Home
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       </div>
     </div>
