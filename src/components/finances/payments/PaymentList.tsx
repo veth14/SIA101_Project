@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 export interface Payment {
   id: string;
@@ -17,9 +18,10 @@ interface PaymentListProps {
   payments: Payment[];
   onPaymentSelect: (payment: Payment) => void;
   selectedPayment: Payment | null;
+  isLoading: boolean;
 }
 
-const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, selectedPayment }) => {
+const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, selectedPayment, isLoading }) => {
   const [filters, setFilters] = useState({
     status: 'all',
     method: 'all',
@@ -114,10 +116,89 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
 
   // Removed unused getStatusColor after redesign to card-style rows.
 
+  if (isLoading) {
+    return (
+      <div className="bg-white border border-gray-100 shadow-lg rounded-2xl">
+        {/* Header Skeleton */}
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="w-12 h-12 rounded-2xl" />
+              <div>
+                <Skeleton className="h-8 w-56 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
+            <Skeleton className="h-12 w-80 rounded-2xl" />
+          </div>
+        </div>
+
+        {/* List Skeleton */}
+        <div className="px-6 py-4 space-y-2.5">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center justify-between gap-6">
+                <div className="flex items-center gap-3.5 flex-1">
+                  <Skeleton className="w-10 h-10 rounded-lg" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+                <div className="hidden lg:flex flex-col items-center">
+                  <Skeleton className="h-4 w-24 mb-1" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+                <div className="flex flex-col items-end">
+                  <Skeleton className="h-6 w-24 mb-1" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination Skeleton */}
+        <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="flex items-center justify-center gap-3">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white border border-gray-100 shadow-lg rounded-2xl">
-      {/* Header (Transactions-style) */}
-      <div className="p-6 border-b border-gray-100">
+    <>
+      <style>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Ensure the element becomes visible after animation and during delayed start */
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+          animation-fill-mode: both; /* keep both initial and final states during delay and after end */
+        }
+      `}</style>
+      <div className="relative overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 animate-fade-in">
+        <div className="relative z-10">
+        {/* Header (Transactions-style) */}
+        <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center justify-center w-12 h-12 shadow-lg bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl">
@@ -152,50 +233,101 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
         </div>
       </div>
 
-      {/* Payment List */}
-  <div className="px-2 py-2 space-y-2">
-        {visiblePayments.map((payment) => (
+  {/* Payment List */}
+  <div className="px-6 py-6 space-y-4">
+        {visiblePayments.map((payment, index) => (
           <div
             key={payment.id}
             onClick={() => onPaymentSelect(payment)}
-            className={`group bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col gap-1 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-[#82A33D]/40 ${
-              selectedPayment?.id === payment.id ? 'ring-2 ring-[#82A33D]/40 border-[#82A33D]' : ''
+            className={`group relative overflow-hidden bg-gradient-to-r from-white via-white to-gray-50/40 rounded-xl border backdrop-blur-sm p-4 cursor-pointer transition-all duration-300 animate-fade-in ${
+              selectedPayment?.id === payment.id 
+                ? 'ring-2 ring-heritage-green/50 border-heritage-green shadow-lg scale-[1.01]' 
+                : 'border-gray-200/80 hover:border-heritage-green/60 hover:shadow-md hover:scale-[1.005]'
             }`}
+            style={{
+              animationDelay: `${index * 50}ms`,
+              animationFillMode: 'both'
+            }}
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-[100px]">
-                <div className="flex items-center justify-center border border-gray-200 rounded-lg w-9 h-9 bg-gray-50">
+            {/* Accent Line */}
+            <div className={`absolute left-0 top-0 bottom-0 w-1 transition-all duration-300 ${
+              selectedPayment?.id === payment.id ? 'bg-heritage-green' : 'bg-transparent group-hover:bg-heritage-green/50'
+            }`}></div>
+
+            <div className="flex items-center justify-between gap-6">
+              {/* Left: Icon + Payment Info */}
+              <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                <div className="relative flex-shrink-0">
                   {getMethodIcon(payment.paymentMethod)}
+                  {/* Status Indicator Dot */}
+                  <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
+                    payment.status === 'completed' ? 'bg-green-500' :
+                    payment.status === 'pending' ? 'bg-yellow-500' :
+                    payment.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'
+                  }`}></div>
                 </div>
-                <div>
-                  <h4 className="text-base font-semibold tracking-tight text-gray-900">{payment.id}</h4>
-                  {getStatusBadge(payment.status)}
+                
+                <div className="flex flex-col min-w-0 gap-0.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-sm font-bold text-gray-900 tracking-tight">{payment.id}</span>
+                    {getStatusBadge(payment.status)}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="font-medium truncate">{payment.guestName}</span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-500 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      {payment.roomNumber}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col items-end min-w-[100px]">
-                <p className={`text-xl font-bold tracking-wide ${
+
+              {/* Middle: Date/Time */}
+              <div className="hidden lg:flex flex-col items-center px-4 py-1.5 bg-gray-50/80 rounded-lg border border-gray-200/60 min-w-[150px]">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {payment.transactionDate}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {payment.transactionTime}
+                </div>
+              </div>
+
+              {/* Right: Amount + Reference */}
+              <div className="flex flex-col items-end min-w-[130px] gap-1">
+                <span className={`text-xl font-extrabold tracking-tight ${
                   payment.status === 'refunded' ? 'text-blue-600' : 
                   payment.status === 'failed' ? 'text-red-600' : 'text-heritage-green'
                 }`}>
                   {payment.status === 'refunded' ? '-' : ''}${payment.amount.toFixed(2)}
-                </p>
-                <p className="text-[11px] text-gray-400">{payment.reference}</p>
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                  <span className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">{payment.reference}</span>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-1 text-xs text-gray-600">
-              <div className="flex flex-col">
-                <span className="font-medium">{payment.guestName}</span>
-                <span className="text-[11px] text-gray-400">Room {payment.roomNumber}</span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span>{payment.transactionDate} at {payment.transactionTime}</span>
-                <span className="capitalize text-[11px] text-gray-400">{payment.paymentMethod.replace('_', ' ')}</span>
-              </div>
-            </div>
+
+            {/* Subtle gradient overlay on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/0 via-heritage-green/0 to-heritage-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"></div>
           </div>
         ))}
       </div>
-
+        </div>
+      
       {/* Pagination */}
       {(
         <div className="p-6 border-t border-gray-100 bg-gray-50/50">
@@ -250,7 +382,8 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
         </div>
       )}
 
-    </div>
+      </div>
+    </>
   );
 };
 

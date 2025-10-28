@@ -1,8 +1,73 @@
 import React from 'react';
+import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
-const PaymentsHeader: React.FC = () => {
+interface PaymentsHeaderProps {
+  isLoading: boolean;
+}
+
+const PaymentsHeader: React.FC<PaymentsHeaderProps> = ({ isLoading }) => {
+  if (isLoading) {
+    return (
+      <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="relative p-10">
+          <div className="flex items-center justify-between">
+            {/* Left Side Skeleton */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                {/* Icon Skeleton */}
+                <Skeleton className="w-16 h-16 rounded-2xl" />
+                
+                {/* Title and Description Skeleton */}
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-96" />
+                  <Skeleton className="h-6 w-80" />
+                  
+                  {/* Status Indicators Skeleton */}
+                  <div className="flex items-center space-x-4 mt-4">
+                    <Skeleton className="h-10 w-48 rounded-full" />
+                    <Skeleton className="h-10 w-48 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Side Skeleton */}
+            <div className="text-right">
+              <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-xl">
+                <Skeleton className="h-10 w-32 mb-2" />
+                <Skeleton className="h-4 w-24 mx-auto mb-3" />
+                <div className="flex items-center justify-center space-x-2">
+                  <Skeleton className="w-1 h-1 rounded-full" />
+                  <Skeleton className="w-1 h-1 rounded-full" />
+                  <Skeleton className="w-1 h-1 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
+    <>
+      <style>{`
+        @keyframes fade-in-down {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in-down {
+          animation: fade-in-down 0.6s ease-out;
+        }
+      `}</style>
+      <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden animate-fade-in-down">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
@@ -74,7 +139,8 @@ const PaymentsHeader: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

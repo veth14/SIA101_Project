@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PaymentsHeader from './PaymentsHeader';
 import PaymentList from './PaymentList';
 import PaymentDetails from './PaymentDetails';
@@ -8,6 +8,15 @@ import PaymentsActivity from './PaymentsActivity';
 
 export const PaymentsPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Centralized loading state - synchronized for all components
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Unified 2-second loading time
+    return () => clearTimeout(timer);
+  }, []);
 
   // Sample payment data (moved from PaymentList)
   const payments: Payment[] = [
@@ -100,28 +109,27 @@ export const PaymentsPage: React.FC = () => {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
-        {/* Header (unchanged) */}
-        <PaymentsHeader />
+  <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
+        {/* Header */}
+        <PaymentsHeader isLoading={isLoading} />
 
         {/* Stats */}
         <div className="w-full">
-          <PaymentsStats payments={payments} />
+          <PaymentsStats payments={payments} isLoading={isLoading} />
         </div>
 
         {/* Main Grid */}
-            <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-4 xl:grid-cols-5">
-              <div className="col-span-1 lg:col-span-3 xl:col-span-4">
+            <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-start">
+              <div className="lg:col-span-2">
                 <PaymentList 
                   payments={payments}
                   onPaymentSelect={handlePaymentSelect}
                   selectedPayment={selectedPayment}
+                  isLoading={isLoading}
                 />
               </div>
-              <div className="flex col-span-1">
-                <div className="flex flex-col w-full">
-                  <PaymentsActivity payments={payments} />
-                </div>
+              <div className="col-span-1">
+                <PaymentsActivity payments={payments} isLoading={isLoading} />
               </div>
             </div>
       </div>

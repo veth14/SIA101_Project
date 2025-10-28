@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 interface PaymentsStatsProps {
@@ -6,6 +6,7 @@ interface PaymentsStatsProps {
     status: string;
     amount: number;
   }>;
+  isLoading: boolean;
 }
 
 const statsConfig = [
@@ -51,15 +52,7 @@ const statsConfig = [
   }
 ];
 
-const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments, isLoading }) => {
 
   const totalCount = payments.length || 1;
   const stats = statsConfig.map((cfg) => {
@@ -104,13 +97,33 @@ const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
-        <div 
-          key={index} 
-          className="relative p-8 overflow-hidden transition-all duration-500 border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-fade-in"
-          style={{ animationDelay: `${index * 100}ms` }}
-        >
+    <>
+      <style>{`
+        @keyframes slide-up-fade {
+          0% {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        .animate-slide-up-fade {
+          animation: slide-up-fade 0.6s ease-out;
+        }
+      `}</style>
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat, index) => (
+          <div 
+            key={index} 
+            className="relative p-8 overflow-hidden transition-all duration-500 border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group animate-slide-up-fade"
+            style={{ 
+              animationDelay: `${index * 150}ms`,
+              animationFillMode: 'forwards'
+            }}
+          >
           <div className="absolute inset-0 transition-opacity duration-500 opacity-40 bg-gradient-to-br from-[#82A33D]/5 via-white/80 to-[#82A33D]/10 rounded-2xl group-hover:opacity-70"></div>
           <div className="absolute top-0 right-0 w-40 h-40 translate-x-1/3 -translate-y-1/3 rounded-full bg-gradient-to-bl from-[#82A33D]/10 to-transparent"></div>
           <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-gradient-to-tr from-[#82A33D]/5 to-transparent"></div>
@@ -168,7 +181,8 @@ const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments }) => {
           </div>
         </div>
       ))}
-    </div>
+      </div>
+    </>
   );
 };
 

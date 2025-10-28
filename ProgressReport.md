@@ -25,7 +25,7 @@ Front Desk
     B.) Status:
     C.) Time Spent:
     D.) Remarks:
-2.
+2. 
 3.
 4.
 5.
@@ -43,4 +43,16 @@ Maintenance
 3.
 4.
 5.
+
+Finance
+1. Valmores (Payments Page)
+    A.) Task/Feature: Design of The List and Activity
+    B.) Status: Completed
+    C.) Time Spent: 3 Hours
+    D.) Remarks: Issue with Responsiveness
+2. Valmores (Payments Page)
+    A.) Task/Feature: View Modal of Payments
+    B.) Status: On-Going
+    C.) Time Spent: 0 Hours
+    D.) Remarks: Not yet started 
 
