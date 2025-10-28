@@ -361,59 +361,59 @@ export const BookingPage = () => {
   const totalAmount = subtotal + tax;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 relative overflow-hidden pt-24">
+    <div className="relative min-h-screen pt-24 overflow-hidden bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
       {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-heritage-green/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-heritage-light/10 rounded-full blur-2xl"></div>
+      <div className="absolute top-0 right-0 rounded-full w-96 h-96 bg-heritage-green/5 blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 rounded-full w-80 h-80 bg-heritage-light/10 blur-2xl"></div>
       
-      <div className="max-w-7xl mx-auto p-8 relative z-10">
+      <div className="relative z-10 p-8 mx-auto max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="mb-16 text-center">
           <div className="inline-block mb-6">
-            <span className="px-6 py-3 bg-heritage-green/10 text-heritage-green text-lg font-medium rounded-full border border-heritage-green/20 shadow-lg backdrop-blur-sm">
+            <span className="px-6 py-3 text-lg font-medium border rounded-full shadow-lg bg-heritage-green/10 text-heritage-green border-heritage-green/20 backdrop-blur-sm">
               Reserve Your Experience
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+          <h1 className="mb-6 text-4xl font-bold leading-tight text-gray-900 md:text-5xl lg:text-6xl">
             Book Your Stay at
-            <span className="bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text text-transparent block mt-2"> Balay Ginhawa</span>
+            <span className="block mt-2 text-transparent bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text"> Balay Ginhawa</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
-            Where <span className="text-heritage-green font-semibold">timeless Filipino traditions</span> embrace <span className="text-gray-900 font-semibold">modern luxury</span>
+          <p className="max-w-3xl mx-auto text-lg leading-relaxed text-gray-700 md:text-xl">
+            Where <span className="font-semibold text-heritage-green">timeless Filipino traditions</span> embrace <span className="font-semibold text-gray-900">modern luxury</span>
           </p>
         </div>
 
         {/* Pending Booking Notification */}
         {pendingBooking && (
           <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 shadow-lg">
+            <div className="p-6 border border-blue-200 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-blue-800 mb-2">Incomplete Booking Found</h3>
-                  <p className="text-blue-700 mb-4">
+                  <h3 className="mb-2 text-lg font-bold text-blue-800">Incomplete Booking Found</h3>
+                  <p className="mb-4 text-blue-700">
                     You have an incomplete booking for <span className="font-semibold">{pendingBooking.bookingData?.roomName}</span> 
                     {pendingBooking.bookingData?.checkIn && (
                       <span> from {new Date(pendingBooking.bookingData.checkIn).toLocaleDateString()}</span>
                     )}
                     . Would you like to continue with payment?
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <button
                       onClick={continuePendingBooking}
-                      className="px-6 py-2 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                      className="px-6 py-2 font-semibold text-white transition-all duration-200 transform rounded-lg bg-gradient-to-r from-heritage-green to-emerald-600 hover:shadow-lg hover:scale-105"
                     >
                       Continue Payment (₱{pendingBooking.bookingData?.totalAmount?.toLocaleString()})
                     </button>
                     <button
                       onClick={dismissPendingBooking}
-                      className="px-6 py-2 bg-white text-gray-600 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                      className="px-6 py-2 font-semibold text-gray-600 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
                       Start New Booking
                     </button>
@@ -421,7 +421,7 @@ export const BookingPage = () => {
                 </div>
                 <button
                   onClick={dismissPendingBooking}
-                  className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                  className="flex-shrink-0 text-blue-400 transition-colors hover:text-blue-600"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -433,64 +433,64 @@ export const BookingPage = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8 max-w-4xl mx-auto">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="max-w-4xl p-4 mx-auto mb-8 border border-red-200 rounded-lg bg-red-50">
+            <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
         {/* Unified Booking Container */}
         <div className="max-w-5xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-heritage-green/20 overflow-hidden">
+          <div className="overflow-hidden border shadow-2xl bg-white/90 backdrop-blur-md rounded-3xl border-heritage-green/20">
             <form onSubmit={handleSubmit}>
               {/* Progress Steps */}
-              <div className="bg-gradient-to-r from-heritage-green/10 via-heritage-neutral/10 to-heritage-green/10 px-8 py-6 border-b border-heritage-green/10">
+              <div className="px-8 py-6 border-b bg-gradient-to-r from-heritage-green/10 via-heritage-neutral/10 to-heritage-green/10 border-heritage-green/10">
                 <div className="flex items-center justify-center space-x-8">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-sm">1</div>
+                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full bg-heritage-green">1</div>
                     <span className="font-semibold text-heritage-green">Dates</span>
                   </div>
                   <div className="w-16 h-0.5 bg-heritage-green/30"></div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-sm">2</div>
+                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full bg-heritage-green">2</div>
                     <span className="font-semibold text-heritage-green">Room</span>
                   </div>
                   <div className="w-16 h-0.5 bg-heritage-green/30"></div>
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
+                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full bg-heritage-green">3</div>
                     <span className="font-semibold text-heritage-green">Guests</span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid lg:grid-cols-3 gap-0">
+              <div className="grid gap-0 lg:grid-cols-3">
                 {/* Left: Form Sections */}
-                <div className="lg:col-span-2 p-8 space-y-8">
+                <div className="p-8 space-y-8 lg:col-span-2">
                   {/* Dates Section */}
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-xs">1</div>
+                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">1</div>
                       <span>Select Your Dates</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <div>
-                        <label className="block text-sm font-semibold text-heritage-green mb-2">Check-in Date</label>
+                        <label className="block mb-2 text-sm font-semibold text-heritage-green">Check-in Date</label>
                         <input
                           type="date"
                           value={formData.checkIn}
                           min={getTodayDate()}
                           onChange={(e) => handleDateChange('checkIn', e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                          className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-heritage-green mb-2">Check-out Date</label>
+                        <label className="block mb-2 text-sm font-semibold text-heritage-green">Check-out Date</label>
                         <input
                           type="date"
                           value={formData.checkOut}
                           min={formData.checkIn || getTodayDate()}
                           onChange={(e) => handleDateChange('checkOut', e.target.value)}
-                          className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                          className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                           required
                         />
                       </div>
@@ -507,7 +507,7 @@ export const BookingPage = () => {
                       }`}>
                         {availabilityChecking ? (
                           <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                            <div className="w-4 h-4 border-b-2 border-current rounded-full animate-spin"></div>
                             <span>Checking availability...</span>
                           </div>
                         ) : (
@@ -518,12 +518,12 @@ export const BookingPage = () => {
                   </div>
 
                   {/* Room Selection */}
-                  <div className="space-y-6 border-t border-gray-100 pt-8">
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-xs">2</div>
+                  <div className="pt-8 space-y-6 border-t border-gray-100">
+                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">2</div>
                       <span>Choose Your Room</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       {Object.entries(roomDetails).map(([key, room]) => (
                         <label
                           key={key}
@@ -546,9 +546,9 @@ export const BookingPage = () => {
                               )}
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-bold text-gray-900 leading-tight">{room.name}</h3>
-                              <p className="text-xs text-heritage-green font-medium uppercase tracking-wider">{room.type}</p>
-                              <p className="text-sm text-gray-600 mt-1">{room.description}</p>
+                              <h3 className="font-bold leading-tight text-gray-900">{room.name}</h3>
+                              <p className="text-xs font-medium tracking-wider uppercase text-heritage-green">{room.type}</p>
+                              <p className="mt-1 text-sm text-gray-600">{room.description}</p>
                               <div className="mt-2">
                                 <p className="text-xl font-bold text-heritage-green">₱{room.basePrice.toLocaleString()}<span className="text-sm font-normal text-gray-500">/night</span></p>
                                 <p className="text-xs text-gray-500">Base: {room.baseGuests} guests | Max: {room.maxGuests} guests</p>
@@ -572,22 +572,22 @@ export const BookingPage = () => {
                   </div>
 
                   {/* Guests Section */}
-                  <div className="space-y-6 border-t border-gray-100 pt-8">
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-xs">3</div>
+                  <div className="pt-8 space-y-6 border-t border-gray-100">
+                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">3</div>
                       <span>Number of Guests</span>
                     </h2>
                     <div className="flex items-center justify-center space-x-6">
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, guests: Math.max(1, prev.guests - 1) }))}
-                        className="w-12 h-12 border-2 border-heritage-green/30 rounded-lg flex items-center justify-center hover:border-heritage-green hover:bg-heritage-green hover:text-white transition-all duration-300 text-heritage-green font-bold"
+                        className="flex items-center justify-center w-12 h-12 font-bold transition-all duration-300 border-2 rounded-lg border-heritage-green/30 hover:border-heritage-green hover:bg-heritage-green hover:text-white text-heritage-green"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                         </svg>
                       </button>
-                      <div className="text-center px-8">
+                      <div className="px-8 text-center">
                         <div className="text-3xl font-bold text-heritage-green">{formData.guests}</div>
                         <div className="text-sm text-gray-600">guests</div>
                       </div>
@@ -610,15 +610,15 @@ export const BookingPage = () => {
                 </div>
 
                 {/* Right: Booking Summary */}
-                <div className="lg:col-span-1 bg-heritage-green/5 border-l border-heritage-green/10 p-8">
+                <div className="p-8 border-l lg:col-span-1 bg-heritage-green/5 border-heritage-green/10">
                   {selectedRoom ? (
                     <div className="space-y-6">
                       <div className="text-center">
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedRoom.name}</h3>
-                        <p className="text-heritage-green text-sm font-medium uppercase tracking-wider mb-2">{selectedRoom.type}</p>
+                        <h3 className="mb-1 text-xl font-bold text-gray-900">{selectedRoom.name}</h3>
+                        <p className="mb-2 text-sm font-medium tracking-wider uppercase text-heritage-green">{selectedRoom.type}</p>
                         <div className="space-y-1">
-                          <p className="text-heritage-green text-2xl font-bold">₱{roomPricePerNight.toLocaleString()}</p>
-                          <p className="text-gray-600 text-sm">per night ({formData.guests} guests)</p>
+                          <p className="text-2xl font-bold text-heritage-green">₱{roomPricePerNight.toLocaleString()}</p>
+                          <p className="text-sm text-gray-600">per night ({formData.guests} guests)</p>
                           <p className="text-xs text-gray-500">Base: ₱{selectedRoom.basePrice.toLocaleString()} ({selectedRoom.baseGuests} guests)</p>
                           {formData.guests > selectedRoom.baseGuests && (
                             <p className="text-xs text-gray-500">Extra: +₱{((formData.guests - selectedRoom.baseGuests) * selectedRoom.additionalGuestPrice).toLocaleString()}</p>
@@ -626,17 +626,17 @@ export const BookingPage = () => {
                         </div>
                       </div>
 
-                      <div className="aspect-video rounded-xl overflow-hidden shadow-md">
+                      <div className="overflow-hidden shadow-md aspect-video rounded-xl">
                         <img 
                           src={selectedRoom.image} 
                           alt={selectedRoom.name}
-                          className="w-full h-full object-cover"
+                          className="object-cover w-full h-full"
                         />
                       </div>
 
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-bold text-gray-900 mb-3">Room Features</h4>
+                          <h4 className="mb-3 font-bold text-gray-900">Room Features</h4>
                           <div className="space-y-2">
                             {selectedRoom.features.map((feature: string, index: number) => (
                               <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
@@ -647,7 +647,7 @@ export const BookingPage = () => {
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-bold text-gray-900 mb-3">Amenities</h4>
+                          <h4 className="mb-3 font-bold text-gray-900">Amenities</h4>
                           <div className="space-y-2">
                             {selectedRoom.amenities.map((amenity: string, index: number) => (
                               <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
@@ -660,8 +660,8 @@ export const BookingPage = () => {
                       </div>
 
                       {formData.checkIn && formData.checkOut && (
-                        <div className="bg-white/80 rounded-xl p-4 border border-heritage-green/20">
-                          <h4 className="font-bold text-gray-900 mb-3">Booking Summary</h4>
+                        <div className="p-4 border bg-white/80 rounded-xl border-heritage-green/20">
+                          <h4 className="mb-3 font-bold text-gray-900">Booking Summary</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span className="text-gray-600">Check-in:</span>
@@ -680,7 +680,7 @@ export const BookingPage = () => {
                               <span className="font-medium">{formData.guests}</span>
                             </div>
                             
-                            <div className="border-t border-gray-200 pt-2 mt-3 space-y-1">
+                            <div className="pt-2 mt-3 space-y-1 border-t border-gray-200">
                               <div className="flex justify-between text-xs">
                                 <span className="text-gray-600">Room ({nights} nights × ₱{roomPricePerNight.toLocaleString()}):</span>
                                 <span>₱{subtotal.toLocaleString()}</span>
@@ -691,7 +691,7 @@ export const BookingPage = () => {
                               </div>
                             </div>
                             
-                            <div className="border-t border-heritage-green/20 pt-2 mt-3">
+                            <div className="pt-2 mt-3 border-t border-heritage-green/20">
                               <div className="flex justify-between font-bold">
                                 <span>Total:</span>
                                 <span className="text-heritage-green">₱{totalAmount.toLocaleString()}</span>
@@ -702,7 +702,7 @@ export const BookingPage = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="text-center text-gray-500 py-8">
+                    <div className="py-8 text-center text-gray-500">
                       <p>Select a room to see details</p>
                     </div>
                   )}
@@ -710,7 +710,7 @@ export const BookingPage = () => {
               </div>
 
               {/* Submit Button */}
-              <div className="bg-heritage-green/5 px-8 py-6 border-t border-heritage-green/10">
+              <div className="px-8 py-6 border-t bg-heritage-green/5 border-heritage-green/10">
                 <button
                   type="submit"
                   disabled={loading}
@@ -722,7 +722,7 @@ export const BookingPage = () => {
                 >
                   {loading ? (
                     <div className="flex items-center justify-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin"></div>
                       <span>Processing...</span>
                     </div>
                   ) : (

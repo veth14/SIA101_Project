@@ -325,10 +325,10 @@ export const PaymentPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green mx-auto mb-4"></div>
-          <p className="text-heritage-green font-medium">Loading booking details...</p>
+          <div className="w-12 h-12 mx-auto mb-4 border-b-2 rounded-full animate-spin border-heritage-green"></div>
+          <p className="font-medium text-heritage-green">Loading booking details...</p>
         </div>
       </div>
     );
@@ -336,12 +336,12 @@ export const PaymentPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
         <div className="text-center">
-          <p className="text-red-600 font-medium mb-4">{error}</p>
+          <p className="mb-4 font-medium text-red-600">{error}</p>
           <button 
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-heritage-green text-white rounded-xl hover:bg-heritage-neutral transition-colors"
+            className="px-6 py-3 text-white transition-colors bg-heritage-green rounded-xl hover:bg-heritage-neutral"
           >
             Return to Home
           </button>
@@ -351,40 +351,40 @@ export const PaymentPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 relative overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute rounded-full -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 blur-3xl animate-pulse"></div>
+        <div className="absolute rounded-full -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute w-64 h-64 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2 bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       
       <div className="relative z-10 pt-32 pb-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
           {/* Hero Header Section */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl shadow-2xl mb-8 transform hover:scale-110 transition-transform duration-300">
+          <div className="mb-16 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text text-transparent leading-tight">
+              <h1 className="text-5xl font-black leading-tight text-transparent md:text-6xl bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text">
                 Complete Your Payment
               </h1>
-              <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-slate-600">
                 Secure your luxury stay at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
               </p>
             </div>
 
             {/* Status Indicators */}
-            <div className="flex items-center justify-center space-x-8 mt-8">
-              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <div className="flex items-center justify-center mt-8 space-x-8">
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <span className="text-sm font-semibold text-slate-700">Secure Payment</span>
               </div>
-              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
                 <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -396,18 +396,18 @@ export const PaymentPage = () => {
           {/* Pending Booking Notification */}
           {error && error.includes('incomplete booking') && (
             <div className="max-w-4xl mx-auto mb-8">
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 shadow-lg">
+              <div className="p-6 border shadow-lg bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 rounded-2xl">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                       </svg>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-amber-800 mb-2">Booking Recovery</h3>
-                    <p className="text-amber-700 mb-3">{error}</p>
+                    <h3 className="mb-2 text-lg font-bold text-amber-800">Booking Recovery</h3>
+                    <p className="mb-3 text-amber-700">{error}</p>
                     <div className="flex items-center space-x-2 text-sm text-amber-600">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -417,7 +417,7 @@ export const PaymentPage = () => {
                   </div>
                   <button
                     onClick={() => setError('')}
-                    className="flex-shrink-0 text-amber-400 hover:text-amber-600 transition-colors"
+                    className="flex-shrink-0 transition-colors text-amber-400 hover:text-amber-600"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -430,17 +430,17 @@ export const PaymentPage = () => {
 
         {/* Payment Container */}
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-heritage-green/20 overflow-hidden">
+          <div className="overflow-hidden border shadow-2xl bg-white/90 backdrop-blur-md rounded-3xl border-heritage-green/20">
             <div className="grid lg:grid-cols-5 gap-0 min-h-[600px]">
               
               {/* Left: Payment Form */}
-              <div className="lg:col-span-3 p-8 flex flex-col">
-                <div className="space-y-8 flex-grow">
+              <div className="flex flex-col p-8 lg:col-span-3">
+                <div className="flex-grow space-y-8">
                   
                   {/* Payment Method Selection */}
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-xs">1</div>
+                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">1</div>
                       <span>Choose Payment Method</span>
                     </h2>
                     
@@ -463,13 +463,13 @@ export const PaymentPage = () => {
                               </svg>
                             )}
                           </div>
-                          <div className="flex-1 flex items-center justify-between">
+                          <div className="flex items-center justify-between flex-1">
                             <div>
-                              <h3 className="font-bold text-gray-900 text-lg">GCash</h3>
+                              <h3 className="text-lg font-bold text-gray-900">GCash</h3>
                               <p className="text-sm text-gray-600">Pay securely with your GCash account</p>
                             </div>
-                            <div className="w-16 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                              <span className="text-white font-bold text-sm">GCash</span>
+                            <div className="flex items-center justify-center w-16 h-10 bg-blue-600 rounded-lg">
+                              <span className="text-sm font-bold text-white">GCash</span>
                             </div>
                           </div>
                         </div>
@@ -501,17 +501,17 @@ export const PaymentPage = () => {
                               </svg>
                             )}
                           </div>
-                          <div className="flex-1 flex items-center justify-between">
+                          <div className="flex items-center justify-between flex-1">
                             <div>
-                              <h3 className="font-bold text-gray-900 text-lg">Credit/Debit Card</h3>
+                              <h3 className="text-lg font-bold text-gray-900">Credit/Debit Card</h3>
                               <p className="text-sm text-gray-600">Visa, Mastercard, or other major cards</p>
                             </div>
                             <div className="flex space-x-2">
-                              <div className="w-8 h-6 bg-blue-600 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">V</span>
+                              <div className="flex items-center justify-center w-8 h-6 bg-blue-600 rounded">
+                                <span className="text-xs font-bold text-white">V</span>
                               </div>
-                              <div className="w-8 h-6 bg-red-600 rounded flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">M</span>
+                              <div className="flex items-center justify-center w-8 h-6 bg-red-600 rounded">
+                                <span className="text-xs font-bold text-white">M</span>
                               </div>
                             </div>
                           </div>
@@ -529,33 +529,33 @@ export const PaymentPage = () => {
                   </div>
 
                   {/* Payment Details */}
-                  <div className="space-y-6 border-t border-gray-100 pt-8">
-                    <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-heritage-green rounded-full flex items-center justify-center text-white font-bold text-xs">2</div>
+                  <div className="pt-8 space-y-6 border-t border-gray-100">
+                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">2</div>
                       <span>Payment Details</span>
                     </h2>
 
                     {paymentMethod === 'gcash' && (
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-semibold text-heritage-green mb-2">GCash Mobile Number</label>
+                          <label className="block mb-2 text-sm font-semibold text-heritage-green">GCash Mobile Number</label>
                           <input
                             type="tel"
                             value={gcashNumber}
                             onChange={(e) => setGcashNumber(e.target.value)}
                             placeholder="09XXXXXXXXX"
-                            className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                            className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-heritage-green mb-2">Account Holder Name</label>
+                          <label className="block mb-2 text-sm font-semibold text-heritage-green">Account Holder Name</label>
                           <input
                             type="text"
                             value={gcashName}
                             onChange={(e) => setGcashName(e.target.value)}
                             placeholder="Full Name as registered in GCash"
-                            className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                            className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             required
                           />
                         </div>
@@ -565,7 +565,7 @@ export const PaymentPage = () => {
                     {paymentMethod === 'card' && (
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-semibold text-heritage-green mb-2">Card Number</label>
+                          <label className="block mb-2 text-sm font-semibold text-heritage-green">Card Number</label>
                           <input
                             type="text"
                             value={cardNumber}
@@ -578,13 +578,13 @@ export const PaymentPage = () => {
                               }
                             }}
                             placeholder="1234 5678 9012 3456"
-                            className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                            className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             required
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-semibold text-heritage-green mb-2">Expiry Date</label>
+                            <label className="block mb-2 text-sm font-semibold text-heritage-green">Expiry Date</label>
                             <input
                               type="text"
                               value={expiryDate}
@@ -599,12 +599,12 @@ export const PaymentPage = () => {
                               }}
                               placeholder="MM/YY"
                               maxLength={5}
-                              className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                              className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                               required
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-semibold text-heritage-green mb-2">CVV</label>
+                            <label className="block mb-2 text-sm font-semibold text-heritage-green">CVV</label>
                             <input
                               type="text"
                               value={cvv}
@@ -617,19 +617,19 @@ export const PaymentPage = () => {
                               }}
                               placeholder="123"
                               maxLength={4}
-                              className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                              className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                               required
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-heritage-green mb-2">Cardholder Name</label>
+                          <label className="block mb-2 text-sm font-semibold text-heritage-green">Cardholder Name</label>
                           <input
                             type="text"
                             value={cardholderName}
                             onChange={(e) => setCardholderName(e.target.value)}
                             placeholder="Full Name on Card"
-                            className="w-full px-4 py-3 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green transition-all duration-300 font-medium"
+                            className="w-full px-4 py-3 font-medium transition-all duration-300 border-2 border-heritage-green/20 rounded-xl focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             required
                           />
                         </div>
@@ -640,40 +640,40 @@ export const PaymentPage = () => {
               </div>
 
               {/* Right: Booking Summary */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-heritage-green/5 to-heritage-light/10 p-8 border-l border-heritage-green/10 flex flex-col">
-                <div className="space-y-6 flex-grow">
+              <div className="flex flex-col p-8 border-l lg:col-span-2 bg-gradient-to-br from-heritage-green/5 to-heritage-light/10 border-heritage-green/10">
+                <div className="flex-grow space-y-6">
                   <h3 className="text-xl font-bold text-gray-900">Booking Summary</h3>
                                     <div className="space-y-4">
-                    <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
-                      <span className="text-heritage-neutral font-medium">Booking ID:</span>
+                    <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
+                      <span className="font-medium text-heritage-neutral">Booking ID:</span>
                       <span className="font-semibold text-gray-900">{booking.bookingId}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
-                      <span className="text-heritage-neutral font-medium">Room:</span>
+                    <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
+                      <span className="font-medium text-heritage-neutral">Room:</span>
                       <span className="font-semibold text-gray-900">{booking.roomName}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
-                      <span className="text-heritage-neutral font-medium">Check-in:</span>
+                    <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
+                      <span className="font-medium text-heritage-neutral">Check-in:</span>
                       <span className="font-semibold text-gray-900">{new Date(booking.checkIn).toLocaleDateString()}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
-                      <span className="text-heritage-neutral font-medium">Check-out:</span>
+                    <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
+                      <span className="font-medium text-heritage-neutral">Check-out:</span>
                       <span className="font-semibold text-gray-900">{new Date(booking.checkOut).toLocaleDateString()}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
-                      <span className="text-heritage-neutral font-medium">Guests:</span>
+                    <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
+                      <span className="font-medium text-heritage-neutral">Guests:</span>
                       <span className="font-semibold text-gray-900">{booking.guests}</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-heritage-green/10">
-                      <span className="text-heritage-neutral font-medium">Nights:</span>
+                    <div className="flex items-center justify-between py-2 border-b border-heritage-green/10">
+                      <span className="font-medium text-heritage-neutral">Nights:</span>
                       <span className="font-semibold text-gray-900">{booking.nights}</span>
                     </div>
                   </div>
 
                   {/* Pricing Breakdown */}
                   {booking.subtotal && booking.tax && (
-                    <div className="bg-white/80 rounded-xl p-4 border border-heritage-green/20">
-                      <h4 className="font-bold text-gray-900 mb-3">Payment Breakdown</h4>
+                    <div className="p-4 border bg-white/80 rounded-xl border-heritage-green/20">
+                      <h4 className="mb-3 font-bold text-gray-900">Payment Breakdown</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Room Rate ({booking.nights} nights × ₱{booking.roomPricePerNight?.toLocaleString() || '0'}):</span>
@@ -695,7 +695,7 @@ export const PaymentPage = () => {
                           <span className="text-gray-600">Tax (12% VAT):</span>
                           <span>₱{booking.tax.toLocaleString()}</span>
                         </div>
-                        <div className="border-t border-heritage-green/20 pt-2 mt-3">
+                        <div className="pt-2 mt-3 border-t border-heritage-green/20">
                           <div className="flex justify-between font-bold">
                             <span>Total Amount:</span>
                             <span className="text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
@@ -706,13 +706,13 @@ export const PaymentPage = () => {
                   )}
 
                   {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                      <p className="text-red-700 text-sm">{error}</p>
+                    <div className="p-4 mb-4 border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-sm text-red-700">{error}</p>
                     </div>
                   )}
 
                   <div className="pt-4 mt-6">
-                    <div className="text-center mb-4">
+                    <div className="mb-4 text-center">
                       <span className="text-2xl font-bold text-heritage-green">₱{booking.totalAmount.toLocaleString()}</span>
                       <p className="text-sm text-gray-600">Total Amount to Pay</p>
                     </div>
@@ -728,7 +728,7 @@ export const PaymentPage = () => {
                     >
                       {processing ? (
                         <div className="flex items-center justify-center space-x-2">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          <div className="w-5 h-5 border-b-2 border-white rounded-full animate-spin"></div>
                           <span>Processing Payment...</span>
                         </div>
                       ) : (
@@ -737,7 +737,7 @@ export const PaymentPage = () => {
                     </button>
                   </div>
 
-                  <div className="text-center text-sm text-gray-600 space-y-2">
+                  <div className="space-y-2 text-sm text-center text-gray-600">
                     <p>🔒 Your payment is secured with 256-bit SSL encryption</p>
                     <p>💳 We accept all major payment methods</p>
                   </div>
@@ -750,33 +750,33 @@ export const PaymentPage = () => {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-8 mx-4 text-center bg-white rounded-2xl">
             {/* Success Icon */}
-            <div className="w-20 h-20 bg-heritage-green rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-heritage-green">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
             
             {/* Success Message */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Payment Successful!</h3>
-            <p className="text-gray-600 mb-2">Your booking has been confirmed.</p>
-            <p className="text-sm text-gray-500 mb-6">
+            <h3 className="mb-4 text-2xl font-bold text-gray-900">Payment Successful!</h3>
+            <p className="mb-2 text-gray-600">Your booking has been confirmed.</p>
+            <p className="mb-6 text-sm text-gray-500">
               A receipt has been sent to <span className="font-medium">{userData?.email}</span>
             </p>
             
             {/* Booking Details */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-              <div className="flex justify-between items-center mb-2">
+            <div className="p-4 mb-6 text-left rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">Booking ID:</span>
                 <span className="font-medium text-heritage-green">{booking?.bookingId}</span>
               </div>
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">Room:</span>
                 <span className="font-medium">{booking?.roomName}</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Total Paid:</span>
                 <span className="font-bold text-heritage-green">₱{booking?.totalAmount?.toLocaleString()}</span>
               </div>
@@ -785,7 +785,7 @@ export const PaymentPage = () => {
             {/* Close Button */}
             <button
               onClick={handleSuccessModalClose}
-              className="w-full bg-heritage-green text-white py-3 px-6 rounded-lg font-medium hover:bg-heritage-dark transition-colors"
+              className="w-full px-6 py-3 font-medium text-white transition-colors rounded-lg bg-heritage-green hover:bg-heritage-dark"
             >
               Continue to Home
             </button>

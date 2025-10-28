@@ -191,14 +191,14 @@ export const MyBookingsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 py-12 pt-32">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-12 pt-32 bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
+        <div className="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center h-64">
             <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-heritage-light"></div>
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-heritage-green border-t-transparent absolute top-0 left-0"></div>
+              <div className="w-16 h-16 border-4 rounded-full animate-spin border-heritage-light"></div>
+              <div className="absolute top-0 left-0 w-16 h-16 border-4 rounded-full animate-spin border-heritage-green border-t-transparent"></div>
             </div>
-            <p className="mt-4 text-heritage-green font-medium">Loading your bookings...</p>
+            <p className="mt-4 font-medium text-heritage-green">Loading your bookings...</p>
           </div>
         </div>
       </div>
@@ -206,44 +206,44 @@ export const MyBookingsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 relative overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute rounded-full -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 blur-3xl animate-pulse"></div>
+        <div className="absolute rounded-full -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute w-64 h-64 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2 bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
       <div className="relative z-10 pt-32 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           {/* Hero Header Section */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl shadow-2xl mb-8 transform hover:scale-110 transition-transform duration-300">
+          <div className="mb-16 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text text-transparent leading-tight">
+              <h1 className="text-5xl font-black leading-tight text-transparent md:text-6xl bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text">
                 My Reservations
               </h1>
-              <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-slate-600">
                 Manage and track your luxury stays at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
               </p>
             </div>
 
             {/* Status Indicators */}
-            <div className="flex items-center justify-center space-x-8 mt-8">
-              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <div className="flex items-center justify-center mt-8 space-x-8">
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <span className="text-sm font-semibold text-slate-700">Live Sync</span>
               </div>
-              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
                 <span className="text-sm font-semibold text-slate-700">Real-time Updates</span>
               </div>
-              <div className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-white/20">
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
                 <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -253,20 +253,20 @@ export const MyBookingsPage: React.FC = () => {
           </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
           {/* Streamlined Controls Panel */}
-          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 mb-8 overflow-hidden">
+          <div className="mb-8 overflow-hidden border shadow-xl bg-white/95 backdrop-blur-xl rounded-2xl border-white/50">
             <div className="px-6 py-5">
-              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+              <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
                 {/* Compact Search */}
                 <div className="flex-1 max-w-md">
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
@@ -275,14 +275,14 @@ export const MyBookingsPage: React.FC = () => {
                       placeholder="Search bookings..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green transition-all duration-200 bg-white placeholder-slate-400"
+                      className="w-full py-3 pl-10 pr-4 text-sm font-medium transition-all duration-200 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green placeholder-slate-400"
                     />
                     {searchTerm && (
                       <button
                         onClick={() => setSearchTerm('')}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
                       >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
@@ -291,7 +291,7 @@ export const MyBookingsPage: React.FC = () => {
                 </div>
 
                 {/* Enhanced Filter Tabs */}
-                <div className="flex gap-2 bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-2 shadow-inner">
+                <div className="flex gap-2 p-2 shadow-inner bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl">
                   {(() => {
                     const counts = getFilterCounts();
                     return [
@@ -356,7 +356,7 @@ export const MyBookingsPage: React.FC = () => {
               </div>
 
               {/* Results Info */}
-              <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+              <div className="flex items-center justify-between mt-4 text-sm text-slate-500">
                 <div>
                   Showing <span className="font-semibold text-slate-700">{startIndex + 1}–{Math.min(endIndex, filteredBookings.length)}</span> of <span className="font-semibold text-slate-700">{filteredBookings.length}</span> bookings
                 </div>
@@ -373,36 +373,36 @@ export const MyBookingsPage: React.FC = () => {
           </div>
 
           {/* Modern Card-Based Layout */}
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
+          <div className="overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-xl rounded-3xl border-white/50">
             {filteredBookings.length === 0 ? (
-              <div className="text-center py-24">
-                <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center shadow-xl">
+              <div className="py-24 text-center">
+                <div className="flex items-center justify-center w-24 h-24 mx-auto mb-6 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl">
                   <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                <h3 className="mb-3 text-2xl font-bold text-slate-900">
                   {filter === 'upcoming' ? 'No upcoming reservations' : 
                    filter === 'past' ? 'No past reservations' :
                    filter === 'cancelled' ? 'No cancelled reservations' :
                    'No reservations found'}
                 </h3>
-                <p className="text-slate-500 text-lg">
+                <p className="text-lg text-slate-500">
                   {filter === 'upcoming' ? 'You don\'t have any upcoming bookings. Book a new stay to see future reservations here.' :
                    filter === 'past' ? 'You don\'t have any completed or past bookings yet.' :
                    filter === 'cancelled' ? 'You don\'t have any cancelled bookings.' :
                    'Try adjusting your search criteria or create a new booking.'}
                 </p>
-                <button className="mt-6 px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <button className="px-6 py-3 mt-6 font-semibold text-white transition-all duration-300 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-2xl hover:shadow-xl hover:scale-105">
                   Book New Stay
                 </button>
               </div>
             ) : (
               <div className="p-8">
                 {/* Compact Header */}
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+                <div className="flex items-center justify-between pb-4 mb-8 border-b border-slate-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-heritage-green to-emerald-600">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
                       </svg>
@@ -418,11 +418,11 @@ export const MyBookingsPage: React.FC = () => {
                 </div>
 
                 {/* Responsive Card Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   {currentItems.map((booking, index) => (
                     <div 
                       key={booking.id} 
-                      className="group relative bg-gradient-to-br from-white to-slate-50/50 rounded-2xl border border-slate-200/50 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                      className="relative p-6 transition-all duration-300 border group bg-gradient-to-br from-white to-slate-50/50 rounded-2xl border-slate-200/50 hover:shadow-xl hover:-translate-y-1"
                     >
                       {/* Status Strip */}
                       <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl ${
@@ -435,16 +435,16 @@ export const MyBookingsPage: React.FC = () => {
                       {/* Header Row */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <div className="flex items-center justify-center w-12 h-12 transition-transform duration-300 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-xl group-hover:scale-110">
                             <svg className="w-6 h-6 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
                             </svg>
                           </div>
                           <div>
-                            <h4 className="font-bold text-slate-900 text-lg leading-tight">
+                            <h4 className="text-lg font-bold leading-tight text-slate-900">
                               {booking.roomName || getRoomDisplayName(booking.roomType)}
                             </h4>
-                            <p className="text-sm text-slate-500 font-mono">
+                            <p className="font-mono text-sm text-slate-500">
                               ID: {booking.bookingId || booking.id.slice(-8)}
                             </p>
                           </div>
@@ -464,11 +464,11 @@ export const MyBookingsPage: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="space-y-3">
                           <div>
-                            <div className="flex items-center space-x-2 mb-1">
+                            <div className="flex items-center mb-1 space-x-2">
                               <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V7a2 2 0 012-2h4a2 2 0 012 2v0M8 7v10a2 2 0 002 2h4a2 2 0 002-2V7" />
                               </svg>
-                              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Check-in</span>
+                              <span className="text-xs font-semibold tracking-wide uppercase text-slate-600">Check-in</span>
                             </div>
                             <div className="text-sm font-bold text-slate-900">
                               {new Date(booking.checkIn).toLocaleDateString('en-US', { 
@@ -485,11 +485,11 @@ export const MyBookingsPage: React.FC = () => {
 
                         <div className="space-y-3">
                           <div>
-                            <div className="flex items-center space-x-2 mb-1">
+                            <div className="flex items-center mb-1 space-x-2">
                               <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                               </svg>
-                              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Check-out</span>
+                              <span className="text-xs font-semibold tracking-wide uppercase text-slate-600">Check-out</span>
                             </div>
                             <div className="text-sm font-bold text-slate-900">
                               {new Date(booking.checkOut).toLocaleDateString('en-US', { 
@@ -532,7 +532,7 @@ export const MyBookingsPage: React.FC = () => {
 
                         <button
                           onClick={() => setSelectedBooking(booking)}
-                          className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-heritage-green to-emerald-600 text-white text-sm font-bold rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                          className="inline-flex items-center px-4 py-2 text-sm font-bold text-white transition-all duration-200 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:shadow-lg hover:scale-105"
                         >
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -547,7 +547,7 @@ export const MyBookingsPage: React.FC = () => {
 
                 {/* Enhanced Pagination */}
                 {totalPages > 1 && (
-                  <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-t border-gray-200 mt-6">
+                  <div className="px-6 py-4 mt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                     <div className="flex items-center justify-between">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}

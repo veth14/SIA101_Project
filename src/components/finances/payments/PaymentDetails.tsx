@@ -58,11 +58,13 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
   const methodInfo = getMethodDetails(payment.paymentMethod);
 
   const handleRetryPayment = () => {
-    alert('Retry payment functionality would be implemented here');
+    // placeholder - implement server-side retry
+    console.warn('Retry payment not implemented yet');
   };
 
   const handleRefundPayment = () => {
-    alert('Refund payment functionality would be implemented here');
+    // placeholder - implement refund flow
+    console.warn('Refund payment not implemented yet');
   };
 
   const handlePrintReceipt = () => {
@@ -117,15 +119,35 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
         aria-label="Close overlay"
       />
 
-      <div className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl bg-white/95 shadow-2xl ring-1 ring-black/5">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-[#82A33D] to-[#6d8735]">
-          <div className="text-white">
-            <h2 className="text-2xl font-bold">Payment Details</h2>
-            <p className="text-green-100">{payment.id}</p>
+      <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
+        {/* Header (branded) - match Payments list reference */}
+        <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+                {/* filled document icon */}
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M9 2h6l4 4v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                  <path d="M9 7h6M9 11h6" stroke="rgba(255,255,255,0.9)" strokeWidth="1" fill="none" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-lg font-semibold md:text-2xl text-emerald-700">Payment Details</h2>
+                <p className="mt-1 text-sm text-gray-500">{payment.id}</p>
+              </div>
+            </div>
+
+            {/* right side empty to mirror list header spacing */}
+            <div aria-hidden />
           </div>
-          <button onClick={onClose} className="text-white transition-colors hover:text-green-200" aria-label="Close">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+          {/* Close button (small subtle) */}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -134,7 +156,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
   {/* Content */}
   <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
           {/* Status banner */}
-          <div className={`p-4 rounded-xl mb-6 ${statusStyles.banner}`}>
+          <div className={`p-4 rounded-xl mb-6 ${statusStyles.banner} ring-1 ring-black/5`}> 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`text-2xl ${statusStyles.accent}`}>{statusStyles.icon}</div>
@@ -157,17 +179,17 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
 
           {/* Info grid */}
           <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
-            <div className="p-4 bg-gray-50 rounded-xl">
+            <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
               <h4 className="mb-3 text-lg font-semibold text-gray-900">Guest Information</h4>
-              <div className="space-y-2">
+              <div className="space-y-2 text-sm text-gray-700">
                 <p><span className="font-medium text-gray-600">Name:</span> {payment.guestName}</p>
                 <p><span className="font-medium text-gray-600">Room:</span> {payment.roomNumber}</p>
                 <p><span className="font-medium text-gray-600">Description:</span> {payment.description}</p>
               </div>
             </div>
-            <div className="p-4 bg-gray-50 rounded-xl">
+            <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
               <h4 className="mb-3 text-lg font-semibold text-gray-900">Transaction Details</h4>
-              <div className="space-y-2">
+              <div className="space-y-2 text-sm text-gray-700">
                 <p><span className="font-medium text-gray-600">Reference:</span> {payment.reference}</p>
                 <p><span className="font-medium text-gray-600">Date:</span> {payment.transactionDate}</p>
                 <p><span className="font-medium text-gray-600">Time:</span> {payment.transactionTime}</p>
@@ -176,7 +198,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
           </div>
 
           {/* Method details */}
-          <div className="p-6 mb-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+          <div className="p-6 mb-6 bg-white rounded-2xl ring-1 ring-black/5">
             <div className="flex items-center gap-4 mb-4">
               <div className={`p-3 rounded-xl ${methodInfo.color}`}>
                 <span className="text-2xl" aria-hidden>{methodInfo.icon}</span>
@@ -189,7 +211,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               {methodInfo.details.map((detail, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                  <div className="w-2 h-2 rounded-full bg-[#82A33D]"></div>
+                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
                   <span>{detail}</span>
                 </div>
               ))}
@@ -201,7 +223,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
             <h4 className="mb-4 text-lg font-semibold text-gray-900">Transaction Timeline</h4>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-3 h-3 rounded-full bg-[#82A33D]"></div>
+                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">Payment Initiated</p>
                   <p className="text-sm text-gray-600">{payment.transactionDate} at {payment.transactionTime}</p>
@@ -234,7 +256,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
           
         </div>
         {/* Footer Actions */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50">
+        <div className="p-6 bg-white border-t border-gray-100">
           <div className="flex justify-end gap-3">
             {payment.status === 'failed' && (
               <button
