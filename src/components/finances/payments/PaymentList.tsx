@@ -119,17 +119,18 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
   if (isLoading) {
     return (
       <div className="bg-white border border-gray-100 shadow-lg rounded-2xl">
+        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}} .skeleton-shimmer{background:linear-gradient(90deg,#ececec 0%,#f5f5f5 50%,#ececec 100%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;border-radius:6px}`}</style>
         {/* Header Skeleton */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
-              <Skeleton className="w-12 h-12 rounded-2xl" />
+              <Skeleton className="w-12 h-12 rounded-2xl skeleton-shimmer" />
               <div>
-                <Skeleton className="h-8 w-56 mb-2" />
-                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-8 w-56 mb-2 skeleton-shimmer" />
+                <Skeleton className="h-4 w-64 skeleton-shimmer" />
               </div>
             </div>
-            <Skeleton className="h-12 w-80 rounded-2xl" />
+            <Skeleton className="h-12 w-80 rounded-2xl skeleton-shimmer" />
           </div>
         </div>
 
@@ -139,22 +140,22 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
             <div key={index} className="bg-white border border-gray-200 rounded-xl p-4">
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-3.5 flex-1">
-                  <Skeleton className="w-10 h-10 rounded-lg" />
+                  <Skeleton className="w-10 h-10 rounded-lg skeleton-shimmer" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-20 skeleton-shimmer" />
+                      <Skeleton className="h-4 w-24 skeleton-shimmer" />
                     </div>
-                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-4 w-48 skeleton-shimmer" />
                   </div>
                 </div>
                 <div className="hidden lg:flex flex-col items-center">
-                  <Skeleton className="h-4 w-24 mb-1" />
-                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-4 w-24 mb-1 skeleton-shimmer" />
+                  <Skeleton className="h-3 w-16 skeleton-shimmer" />
                 </div>
                 <div className="flex flex-col items-end">
-                  <Skeleton className="h-6 w-24 mb-1" />
-                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-6 w-24 mb-1 skeleton-shimmer" />
+                  <Skeleton className="h-3 w-20 skeleton-shimmer" />
                 </div>
               </div>
             </div>
@@ -163,12 +164,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
 
         {/* Pagination Skeleton */}
         <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-          <div className="flex items-center justify-center gap-3">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-10 rounded-md" />
-            <Skeleton className="h-10 w-10 rounded-md" />
-            <Skeleton className="h-10 w-10 rounded-md" />
-            <Skeleton className="h-10 w-24" />
+            <div className="flex items-center justify-center gap-3">
+            <Skeleton className="h-10 w-24 skeleton-shimmer" />
+            <Skeleton className="h-10 w-10 rounded-md skeleton-shimmer" />
+            <Skeleton className="h-10 w-10 rounded-md skeleton-shimmer" />
+            <Skeleton className="h-10 w-10 rounded-md skeleton-shimmer" />
+            <Skeleton className="h-10 w-24 skeleton-shimmer" />
           </div>
         </div>
       </div>
