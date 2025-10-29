@@ -257,46 +257,59 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
         </div>
         {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-gray-100">
-          <div className="flex justify-end gap-3">
-            {payment.status === 'failed' && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
+            {/* Left-side optional actions (stacked on small screens) */}
+            <div className="flex items-center gap-2 order-2 sm:order-1">
+              {payment.status === 'failed' && (
+                <button
+                  onClick={handleRetryPayment}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
+                  title="Retry this payment"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Retry
+                </button>
+              )}
+
+              {payment.status === 'completed' && (
+                <button
+                  onClick={handleRefundPayment}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-2xl shadow-md hover:bg-red-700 transition transform hover:-translate-y-0.5"
+                  title="Process a refund"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+                  Refund
+                </button>
+              )}
+
               <button
-                onClick={handleRetryPayment}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-orange-600 rounded-lg hover:bg-orange-700"
+                onClick={handlePrintReceipt}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-heritage-green border border-heritage-green/20 bg-white/80 rounded-2xl shadow-sm hover:backdrop-blur-sm hover:translate-y-0 hover:-translate-y-0.5 transition transform"
+                title="Print receipt"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
-                Retry Payment
+                Print
               </button>
-            )}
-            {payment.status === 'completed' && (
+            </div>
+
+            {/* Primary action */}
+            <div className="order-1 sm:order-2">
               <button
-                onClick={handleRefundPayment}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
+                className="inline-flex items-center gap-3 px-5 py-2.5 text-sm font-semibold text-white rounded-3xl bg-gradient-to-br from-[#82A33D] to-[#6d8a33] shadow-lg hover:scale-[1.02] transform transition-all ring-1 ring-black/5"
+                title="Send receipt to guest"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                Process Refund
+                Send Receipt
               </button>
-            )}
-            <button
-              onClick={handlePrintReceipt}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 transition-colors border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-800"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Print Receipt
-            </button>
-            <button
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors rounded-lg bg-[#82A33D] hover:bg-[#6d8735]"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Send Receipt
-            </button>
+            </div>
           </div>
         </div>
       </div>

@@ -9,23 +9,24 @@ const PaymentsHeader: React.FC<PaymentsHeaderProps> = ({ isLoading }) => {
   if (isLoading) {
     return (
       <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}} .skeleton-shimmer{background:linear-gradient(90deg,#ececec 0%,#f5f5f5 50%,#ececec 100%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;border-radius:6px}`}</style>
         <div className="relative p-10">
           <div className="flex items-center justify-between">
             {/* Left Side Skeleton */}
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 {/* Icon Skeleton */}
-                <Skeleton className="w-16 h-16 rounded-2xl" />
+                <Skeleton className="w-16 h-16 rounded-2xl skeleton-shimmer" />
                 
                 {/* Title and Description Skeleton */}
                 <div className="space-y-2">
-                  <Skeleton className="h-12 w-96" />
-                  <Skeleton className="h-6 w-80" />
+                  <Skeleton className="h-12 w-96 skeleton-shimmer" />
+                  <Skeleton className="h-6 w-80 skeleton-shimmer" />
                   
                   {/* Status Indicators Skeleton */}
                   <div className="flex items-center space-x-4 mt-4">
-                    <Skeleton className="h-10 w-48 rounded-full" />
-                    <Skeleton className="h-10 w-48 rounded-full" />
+                    <Skeleton className="h-10 w-48 rounded-full skeleton-shimmer" />
+                    <Skeleton className="h-10 w-48 rounded-full skeleton-shimmer" />
                   </div>
                 </div>
               </div>
@@ -33,13 +34,13 @@ const PaymentsHeader: React.FC<PaymentsHeaderProps> = ({ isLoading }) => {
             
             {/* Right Side Skeleton */}
             <div className="text-right">
-              <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-xl">
-                <Skeleton className="h-10 w-32 mb-2" />
-                <Skeleton className="h-4 w-24 mx-auto mb-3" />
+                <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-xl">
+                <Skeleton className="h-10 w-32 mb-2 skeleton-shimmer" />
+                <Skeleton className="h-4 w-24 mx-auto mb-3 skeleton-shimmer" />
                 <div className="flex items-center justify-center space-x-2">
-                  <Skeleton className="w-1 h-1 rounded-full" />
-                  <Skeleton className="w-1 h-1 rounded-full" />
-                  <Skeleton className="w-1 h-1 rounded-full" />
+                  <Skeleton className="w-1 h-1 rounded-full skeleton-shimmer" />
+                  <Skeleton className="w-1 h-1 rounded-full skeleton-shimmer" />
+                  <Skeleton className="w-1 h-1 rounded-full skeleton-shimmer" />
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 
 interface Booking {
@@ -26,8 +26,8 @@ interface Booking {
   userId: string;
   userEmail: string;
   userName: string;
-  createdAt?: { toDate?: () => Date } | Date | null;
-  updatedAt?: { toDate?: () => Date } | Date | null;
+  createdAt?: any;
+  updatedAt?: any;
   bookingDate?: string;
   guestName?: string;
   guestEmail?: string;
@@ -49,61 +49,54 @@ export const MyBookingsPage: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'cancelled'>('all');
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  const fetchBookings = useCallback(async () => {
-    if (!userData?.email) return;
+  useEffect(() => {
+    if (userData?.email) {
+      fetchBookings();
+    }
+  }, [userData]);
 
+  const fetchBookings = async () => {
+    if (!userData?.email) return;
+    
     try {
       const bookingsQuery = query(
         collection(db, 'bookings'),
         where('userEmail', '==', userData.email)
       );
-
+      
       const querySnapshot = await getDocs(bookingsQuery);
       const bookingsData: Booking[] = [];
-
-      querySnapshot.forEach((d) => {
+      
+      querySnapshot.forEach((doc) => {
         bookingsData.push({
-          id: d.id,
-          ...(d.data() as Partial<Booking>)
+          id: doc.id,
+          ...doc.data()
         } as Booking);
       });
-
-      const getTimeFromCreatedAt = (val: Booking['createdAt']) => {
-        if (!val) return 0;
-        // Firestore Timestamp-like object with toDate()
-        if (typeof val === 'object' && val !== null && 'toDate' in val && typeof (val as { toDate?: unknown }).toDate === 'function') {
-          return (val as { toDate: () => Date }).toDate().getTime();
-        }
-        if (val instanceof Date) return val.getTime();
-        const num = Number(val as unknown);
-        return isNaN(num) ? 0 : num;
-      };
-
+      
       bookingsData.sort((a, b) => {
-        const aTime = getTimeFromCreatedAt(a.createdAt) || new Date(a.bookingDate || '').getTime();
-        const bTime = getTimeFromCreatedAt(b.createdAt) || new Date(b.bookingDate || '').getTime();
-        return bTime - aTime;
+        if (a.createdAt && b.createdAt) {
+          return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
+        }
+        return new Date(b.bookingDate || '').getTime() - new Date(a.bookingDate || '').getTime();
       });
-
+      
       setBookings(bookingsData);
       setError('');
-    } catch (err) {
-      console.error('Error fetching bookings:', err);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
       setError('Failed to load bookings. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [userData?.email]);
-
-  useEffect(() => {
-    if (userData?.email) fetchBookings();
-  }, [userData?.email, fetchBookings]);
+  };
 
   const getFilteredBookings = () => {
     const now = new Date();
@@ -195,47 +188,6 @@ export const MyBookingsPage: React.FC = () => {
 
     return counts;
   };
-
-  type TabKey = 'all' | 'upcoming' | 'past' | 'cancelled';
-  type Tab = {
-    key: TabKey;
-    label: string;
-    count: number;
-    activeClass: string;
-    hoverClass: string;
-  };
-
-  const counts = getFilterCounts();
-  const tabs: Tab[] = [
-    {
-      key: 'all',
-      label: 'All',
-      count: counts.all,
-      activeClass: 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-lg',
-      hoverClass: 'hover:bg-gradient-to-r hover:from-heritage-green/80 hover:to-heritage-neutral/80 hover:text-white'
-    },
-    {
-      key: 'upcoming',
-      label: 'Upcoming',
-      count: counts.upcoming,
-      activeClass: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg',
-      hoverClass: 'hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 hover:text-white'
-    },
-    {
-      key: 'past',
-      label: 'Past',
-      count: counts.past,
-      activeClass: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg',
-      hoverClass: 'hover:bg-gradient-to-r hover:from-emerald-400 hover:to-emerald-500 hover:text-white'
-    },
-    {
-      key: 'cancelled',
-      label: 'Cancelled',
-      count: counts.cancelled,
-      activeClass: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg',
-      hoverClass: 'hover:bg-gradient-to-r hover:from-red-400 hover:to-red-500 hover:text-white'
-    }
-  ];
 
   if (loading) {
     return (
@@ -340,59 +292,66 @@ export const MyBookingsPage: React.FC = () => {
 
                 {/* Enhanced Filter Tabs */}
                 <div className="flex gap-2 p-2 shadow-inner bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      onClick={() => setFilter(tab.key)}
-                      className={`relative px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                        filter === tab.key
-                          ? `${tab.activeClass} scale-105 ring-2 ring-white/30`
-                          : `text-slate-600 bg-white/70 backdrop-blur-sm border border-slate-200/50 ${tab.hoverClass} hover:shadow-md hover:border-transparent`
-                      }`}
-                    >
-                      {filter === tab.key && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-xl"></div>
-                      )}
-
-                      <div className="relative flex items-center space-x-2">
-                        <span>{tab.label}</span>
-                        {tab.count > 0 && (
-                          <span className={`px-2 py-1 rounded-full text-xs font-black ${
-                            filter === tab.key 
-                              ? 'bg-white/25 text-white backdrop-blur-sm' 
-                              : 'bg-slate-100 text-slate-600 group-hover:bg-white/20 group-hover:text-white'
-                          }`}>
-                            {tab.count}
-                          </span>
+                  {(() => {
+                    const counts = getFilterCounts();
+                    return [
+                      { 
+                        key: 'all', 
+                        label: 'All', 
+                        count: counts.all, 
+                        activeClass: 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-lg',
+                        hoverClass: 'hover:bg-gradient-to-r hover:from-heritage-green/80 hover:to-heritage-neutral/80 hover:text-white'
+                      },
+                      { 
+                        key: 'upcoming', 
+                        label: 'Upcoming', 
+                        count: counts.upcoming, 
+                        activeClass: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg',
+                        hoverClass: 'hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 hover:text-white'
+                      },
+                      { 
+                        key: 'past', 
+                        label: 'Past', 
+                        count: counts.past, 
+                        activeClass: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg',
+                        hoverClass: 'hover:bg-gradient-to-r hover:from-emerald-400 hover:to-emerald-500 hover:text-white'
+                      },
+                      { 
+                        key: 'cancelled', 
+                        label: 'Cancelled', 
+                        count: counts.cancelled, 
+                        activeClass: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg',
+                        hoverClass: 'hover:bg-gradient-to-r hover:from-red-400 hover:to-red-500 hover:text-white'
+                      }
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setFilter(tab.key as any)}
+                        className={`relative px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                          filter === tab.key
+                            ? `${tab.activeClass} scale-105 ring-2 ring-white/30`
+                            : `text-slate-600 bg-white/70 backdrop-blur-sm border border-slate-200/50 ${tab.hoverClass} hover:shadow-md hover:border-transparent`
+                        }`}
+                      >
+                        {filter === tab.key && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-xl"></div>
                         )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                {selectedBooking && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="w-full max-w-lg p-6 mx-4 bg-white shadow-2xl rounded-xl">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900">{selectedBooking.roomName || getRoomDisplayName(selectedBooking.roomType)}</h3>
-                          <p className="text-sm text-slate-500">Booking ID: {selectedBooking.bookingId}</p>
+                        
+                        <div className="relative flex items-center space-x-2">
+                          <span>{tab.label}</span>
+                          {tab.count > 0 && (
+                            <span className={`px-2 py-1 rounded-full text-xs font-black ${
+                              filter === tab.key 
+                                ? 'bg-white/25 text-white backdrop-blur-sm' 
+                                : 'bg-slate-100 text-slate-600 group-hover:bg-white/20 group-hover:text-white'
+                            }`}>
+                              {tab.count}
+                            </span>
+                          )}
                         </div>
-                        <button onClick={() => setSelectedBooking(null)} className="text-slate-500 hover:text-slate-700">✕</button>
-                      </div>
-
-                      <div className="mt-4 text-sm text-slate-700">
-                        <p><strong>Check-in:</strong> {new Date(selectedBooking.checkIn).toLocaleDateString()}</p>
-                        <p><strong>Check-out:</strong> {new Date(selectedBooking.checkOut).toLocaleDateString()}</p>
-                        <p><strong>Guests:</strong> {selectedBooking.guests}</p>
-                        <p className="mt-2"><strong>Total:</strong> ₱{(selectedBooking.totalAmount ?? 0).toLocaleString()}</p>
-                      </div>
-
-                      <div className="flex justify-end mt-6">
-                        <button onClick={() => setSelectedBooking(null)} className="px-4 py-2 font-semibold text-white rounded-lg bg-heritage-green">Close</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                      </button>
+                    ));
+                  })()}
                 </div>
               </div>
 
@@ -460,7 +419,7 @@ export const MyBookingsPage: React.FC = () => {
 
                 {/* Responsive Card Grid */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  {currentItems.map((booking) => (
+                  {currentItems.map((booking, index) => (
                     <div 
                       key={booking.id} 
                       className="relative p-6 transition-all duration-300 border group bg-gradient-to-br from-white to-slate-50/50 rounded-2xl border-slate-200/50 hover:shadow-xl hover:-translate-y-1"
@@ -655,31 +614,7 @@ export const MyBookingsPage: React.FC = () => {
             )}
           </div>
         </div>
-      {/* Selected Booking Modal */}
-      {selectedBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-lg p-6 mx-4 bg-white shadow-2xl rounded-xl">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">{selectedBooking.roomName || getRoomDisplayName(selectedBooking.roomType)}</h3>
-                <p className="text-sm text-slate-500">Booking ID: {selectedBooking.bookingId}</p>
-              </div>
-              <button onClick={() => setSelectedBooking(null)} className="text-slate-500 hover:text-slate-700">✕</button>
-            </div>
-
-            <div className="mt-4 text-sm text-slate-700">
-              <p><strong>Check-in:</strong> {new Date(selectedBooking.checkIn).toLocaleDateString()}</p>
-              <p><strong>Check-out:</strong> {new Date(selectedBooking.checkOut).toLocaleDateString()}</p>
-              <p><strong>Guests:</strong> {selectedBooking.guests}</p>
-              <p className="mt-2"><strong>Total:</strong> ₱{(selectedBooking.totalAmount ?? 0).toLocaleString()}</p>
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <button onClick={() => setSelectedBooking(null)} className="px-4 py-2 font-semibold text-white rounded-lg bg-heritage-green">Close</button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

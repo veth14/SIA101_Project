@@ -119,18 +119,27 @@ export const PaymentsPage: React.FC = () => {
         </div>
 
         {/* Main Grid */}
-            <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-start">
-              <div className="lg:col-span-2">
-                <PaymentList 
-                  payments={payments}
-                  onPaymentSelect={handlePaymentSelect}
-                  selectedPayment={selectedPayment}
-                  isLoading={isLoading}
-                />
+            <div className="relative w-full">
+              <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
+                <div className="lg:col-span-2 h-full">
+                  <PaymentList 
+                    payments={payments}
+                    onPaymentSelect={handlePaymentSelect}
+                    selectedPayment={selectedPayment}
+                    isLoading={isLoading}
+                  />
+                </div>
+                <div className="col-span-1 h-full">
+                  <PaymentsActivity payments={payments} isLoading={isLoading} />
+                </div>
               </div>
-              <div className="col-span-1">
-                <PaymentsActivity payments={payments} isLoading={isLoading} />
-              </div>
+
+              {/* Page-level shimmer overlay for the grid while loading */}
+              {isLoading && (
+                <div className="absolute inset-0 z-20 pointer-events-none flex items-start">
+                  <div className="w-full h-full bg-gradient-to-r from-white/60 via-white/40 to-white/60 animate-pulse backdrop-blur-sm rounded-3xl"></div>
+                </div>
+              )}
             </div>
       </div>
 
