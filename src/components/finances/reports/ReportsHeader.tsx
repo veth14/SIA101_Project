@@ -1,4 +1,39 @@
-export const ReportsHeader = () => {
+interface ReportsHeaderProps {
+  isLoading?: boolean;
+}
+
+export const ReportsHeader: React.FC<ReportsHeaderProps> = ({ isLoading = false }) => {
+  if (isLoading) {
+    return (
+      <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl shadow-xl border border-gray-200 overflow-hidden animate-pulse">
+        <div className="relative p-10">
+          <div className="flex items-center justify-between">
+            <div className="space-y-4 flex-1">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-gray-300 rounded-2xl"></div>
+                <div className="space-y-3 flex-1">
+                  <div className="h-12 w-80 bg-gray-300 rounded"></div>
+                  <div className="h-6 w-96 bg-gray-200 rounded"></div>
+                  <div className="flex items-center space-x-4 mt-4">
+                    <div className="h-10 w-40 bg-gray-200 rounded-full"></div>
+                    <div className="h-10 w-48 bg-gray-200 rounded-full"></div>
+                    <div className="h-10 w-32 bg-gray-200 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="bg-gray-200 rounded-3xl p-8">
+                <div className="h-10 w-32 bg-gray-300 rounded mb-2"></div>
+                <div className="h-5 w-28 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>

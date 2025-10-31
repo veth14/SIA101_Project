@@ -4,7 +4,15 @@ import { getArchivedReports, reportCategories } from '../../../data/financialRep
 
 const ArchiveSection: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const archivedReports = getArchivedReports();
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const getFileIcon = (fileType: string) => {
     switch (fileType) {
@@ -26,53 +34,100 @@ const ArchiveSection: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-gray-200/30 to-transparent rounded-full translate-y-1/2 -translate-x-1/2"></div>
       
       {/* Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="relative z-10 w-full flex items-center justify-between p-8 hover:bg-white/50 transition-all duration-300 group"
-      >
-        <div className="flex items-center gap-5">
-          {/* Premium Archive Icon */}
-          <div className="relative">
-            <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-              <Archive className="w-8 h-8 text-white drop-shadow-md" />
+      {isLoading ? (
+        // Header Skeleton Loader
+        <div className="relative z-10 w-full flex items-center justify-between p-8 animate-pulse">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 bg-slate-300 rounded-2xl"></div>
+            <div className="text-left space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-48 bg-slate-300 rounded"></div>
+                <div className="h-6 w-24 bg-slate-200 rounded-full"></div>
+              </div>
+              <div className="h-4 w-96 bg-slate-200 rounded"></div>
             </div>
-            {/* Glow Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-slate-600 to-slate-700 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex h-10 w-32 bg-slate-200 rounded-xl"></div>
+            <div className="w-12 h-12 bg-slate-200 rounded-xl"></div>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="relative z-10 w-full flex items-center justify-between p-8 hover:bg-white/50 transition-all duration-300 group"
+        >
+          <div className="flex items-center gap-5">
+            {/* Premium Archive Icon */}
+            <div className="relative">
+              <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                <Archive className="w-8 h-8 text-white drop-shadow-md" />
+              </div>
+              {/* Glow Effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-slate-600 to-slate-700 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+            </div>
+            
+            <div className="text-left">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-2xl font-black bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                  Archived Reports
+                </h3>
+                <div className="px-3 py-1 bg-slate-600/10 backdrop-blur-sm border border-slate-600/20 rounded-full">
+                  <span className="text-xs font-bold text-slate-700">{archivedReports.length} Reports</span>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 font-medium">
+                Historical reports stored for compliance and reference
+              </p>
+            </div>
           </div>
           
-          <div className="text-left">
-            <div className="flex items-center gap-3 mb-1">
-              <h3 className="text-2xl font-black bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Archived Reports
-              </h3>
-              <div className="px-3 py-1 bg-slate-600/10 backdrop-blur-sm border border-slate-600/20 rounded-full">
-                <span className="text-xs font-bold text-slate-700">{archivedReports.length} Reports</span>
+          <div className="flex items-center gap-4">
+            {!isExpanded && (
+              <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl">
+                <span className="text-xs font-semibold text-blue-700">Click to expand</span>
               </div>
+            )}
+            <div className={`p-3 rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-all duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+              <ChevronDown className="w-6 h-6 text-slate-600" />
             </div>
-            <p className="text-sm text-slate-600 font-medium">
-              Historical reports stored for compliance and reference
-            </p>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          {!isExpanded && (
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl">
-              <span className="text-xs font-semibold text-blue-700">Click to expand</span>
-            </div>
-          )}
-          <div className={`p-3 rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-all duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-            <ChevronDown className="w-6 h-6 text-slate-600" />
-          </div>
-        </div>
-      </button>
+        </button>
+      )}
 
       {/* Expanded Content */}
-      {isExpanded && (
-        <div className="relative z-10 border-t-2 border-slate-200/50">
+      <div 
+        className={`relative z-10 border-t-2 border-slate-200/50 overflow-hidden transition-all duration-500 ease-in-out ${
+          isExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
           {/* Archived Reports Grid */}
           <div className="p-8">
-            {archivedReports.length === 0 ? (
+            {isLoading ? (
+              // Skeleton Loader
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="bg-gradient-to-br from-white to-slate-50 border-2 border-slate-200 rounded-2xl p-5 animate-pulse">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-12 h-12 bg-slate-300 rounded-xl"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-3/4 bg-slate-300 rounded"></div>
+                        <div className="h-3 w-1/2 bg-slate-200 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-2 mb-4">
+                      <div className="h-8 bg-slate-200 rounded-lg"></div>
+                      <div className="h-8 bg-slate-200 rounded-lg"></div>
+                      <div className="h-8 bg-slate-200 rounded-lg"></div>
+                    </div>
+                    <div className="flex gap-2 pt-3 border-t-2 border-slate-200">
+                      <div className="flex-1 h-10 bg-slate-300 rounded-xl"></div>
+                      <div className="flex-1 h-10 bg-slate-300 rounded-xl"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : archivedReports.length === 0 ? (
               <div className="text-center py-16">
                 <div className="relative mx-auto mb-6">
                   <div className="w-24 h-24 mx-auto bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl flex items-center justify-center shadow-lg">
@@ -103,7 +158,7 @@ const ArchiveSection: React.FC = () => {
                       </div>
 
                       {/* Content */}
-                      <div className="flex items-start gap-3 mb-4">
+                      <div className="flex items-start gap-3 mb-4 pr-20">
                         <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
                           <span className="text-2xl">{getFileIcon(report.fileType)}</span>
                         </div>
@@ -168,7 +223,7 @@ const ArchiveSection: React.FC = () => {
           </div>
 
           {/* Premium Summary Footer */}
-          {archivedReports.length > 0 && (
+          {!isLoading && archivedReports.length > 0 && (
             <div className="px-8 py-5 bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50 border-t-2 border-slate-200/50">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-slate-700">
@@ -181,13 +236,9 @@ const ArchiveSection: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
-      )}
-      
-      {/* Bottom Accent Line */}
-      {isExpanded && (
-        <div className="h-1.5 bg-gradient-to-r from-slate-400 via-slate-600 to-slate-400"></div>
-      )}
+      </div>
+
+      <div className={`h-1.5 bg-gradient-to-r from-slate-400 via-slate-600 to-slate-400 transition-all duration-500 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0'}`}></div>
     </div>
   );
 };
