@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
+import { ROOMS_DATA } from '../../../data/roomsData';
 import { CheckInModal } from './CheckInModal';
 import { WalkInModal } from './WalkInModal';
 import { ReservationDetailsModal } from './ReservationDetailsModal';
@@ -150,7 +151,7 @@ export const ReservationsPage = () => {
           email: data.email || data.userEmail || '',
           phone: data.phone || data.userPhone || '',
           roomType: formatRoomType(data.roomType || 'standard'),
-          roomNumber: data.roomNumber || `Room ${Math.floor(Math.random() * 300) + 101}`,
+          roomNumber: data.roomNumber || undefined,
           checkIn: parseDate(
             data.checkInDate || data.checkIn || data.check_in || data.checkin || data.startDate || data.arrival,
             'checkInDate'
@@ -199,6 +200,37 @@ export const ReservationsPage = () => {
     }
   };
 
+  // Ensure rooms collection is populated from local canonical data if empty
+  useEffect(() => {
+    let mounted = true;
+    const ensureRooms = async () => {
+      try {
+        const roomsSnap = await getDocs(collection(db, 'rooms'));
+        if (mounted && roomsSnap.empty) {
+          // populate rooms collection using ROOMS_DATA
+          for (const r of ROOMS_DATA) {
+            try {
+              await setDoc(doc(db, 'rooms', r.roomNumber), {
+                roomNumber: r.roomNumber,
+                roomName: r.roomName,
+                type: r.roomType ? r.roomType.toLowerCase().replace(/\s+/g, '-') : 'standard',
+                status: r.status || 'available',
+                currentReservation: null
+              });
+            } catch (e) {
+              console.warn('Failed to populate room', r.roomNumber, e);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Error ensuring rooms collection populated:', err);
+      }
+    };
+
+    if (user) ensureRooms();
+    return () => { mounted = false; };
+  }, [user]);
+
   // Since we removed filters, we'll use all reservations
   useEffect(() => {
     setFilteredReservations(reservations);
@@ -244,6 +276,27 @@ export const ReservationsPage = () => {
       const bookingWithId = { ...newBooking, id: docRef.id };
       const updatedReservations = [...reservations, bookingWithId];
       setReservations(updatedReservations);
+
+      // Mark the assigned room as occupied in the rooms collection (if roomNumber provided)
+      if (newBooking.roomNumber) {
+        try {
+          await updateDoc(doc(db, 'rooms', newBooking.roomNumber), {
+            currentReservation: docRef.id,
+            status: 'occupied'
+          });
+        } catch (e) {
+          // If update fails (document may not exist), create/merge the doc
+          try {
+            await setDoc(doc(db, 'rooms', newBooking.roomNumber), {
+              roomNumber: newBooking.roomNumber,
+              status: 'occupied',
+              currentReservation: docRef.id,
+            }, { merge: true });
+          } catch (err) {
+            console.warn('Failed to mark room occupied after walk-in booking:', err);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error adding walk-in booking:', error);
       alert('Failed to create walk-in booking. Please try again.');
@@ -523,7 +576,44 @@ export const ReservationsPage = () => {
                   r.id === updatedReservation.id ? updatedReservation : r
                 )
               );
-                      setShowCheckInModal(false);
+              // Update rooms collection: mark new room occupied and free previous room if different
+              try {
+                const prevRoom = reservations.find(r => r.id === updatedReservation.id)?.roomNumber;
+                const newRoom = updatedReservation.roomNumber;
+                if (newRoom) {
+                  try {
+                    await updateDoc(doc(db, 'rooms', newRoom), {
+                      currentReservation: updatedReservation.id,
+                      status: 'occupied'
+                    });
+                  } catch (e) {
+                    await setDoc(doc(db, 'rooms', newRoom), {
+                      roomNumber: newRoom,
+                      status: 'occupied',
+                      currentReservation: updatedReservation.id
+                    }, { merge: true });
+                  }
+                }
+
+                if (prevRoom && prevRoom !== newRoom) {
+                  try {
+                    await updateDoc(doc(db, 'rooms', prevRoom), {
+                      currentReservation: null,
+                      status: 'available'
+                    });
+                  } catch (e) {
+                    await setDoc(doc(db, 'rooms', prevRoom), {
+                      roomNumber: prevRoom,
+                      status: 'available',
+                      currentReservation: null
+                    }, { merge: true });
+                  }
+                }
+              } catch (err) {
+                console.warn('Failed to update rooms documents on check-in:', err);
+              }
+
+              setShowCheckInModal(false);
               setSelectedReservation(null);
             } catch (error) {
               console.error('Error checking in reservation:', error);
