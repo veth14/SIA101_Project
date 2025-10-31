@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '../../admin/Modal';
+import { db } from '../../../config/firebase';
+import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
+// Rely on Firestore `rooms` collection only for runtime data. Do not use local ROOMS_DATA fallback.
 
 interface Reservation {
   id: string;
@@ -23,14 +26,14 @@ interface CheckInModalProps {
   onCheckIn: (updatedReservation: Reservation) => void;
 }
 
-const availableRooms = [
-  { number: '101', type: 'Standard Room' },
-  { number: '102', type: 'Standard Room' },
-  { number: '201', type: 'Deluxe Room' },
-  { number: '202', type: 'Deluxe Room' },
-  { number: '301', type: 'Suite Room' },
-  { number: '401', type: 'Family Suite' },
-];
+interface AvailableRoom {
+  number: string;
+  type: string;
+  status?: string;
+}
+
+// We'll load rooms from Firestore (fallback to ROOMS_DATA)
+// and check bookings for availability when needed.
 
 export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckInModalProps) => {
   const [selectedRoom, setSelectedRoom] = useState(reservation.roomNumber || '');
@@ -39,6 +42,9 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
   const [notes, setNotes] = useState('');
   const [guestIdVerified, setGuestIdVerified] = useState(false);
   const [keyCardsIssued, setKeyCardsIssued] = useState(false);
+  const [rooms, setRooms] = useState<AvailableRoom[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [filteredRooms, setFilteredRooms] = useState<AvailableRoom[]>([]);
 
   const handleCheckIn = () => {
     if (!selectedRoom) {
@@ -62,9 +68,117 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
   };
 
   const remainingBalance = reservation.totalAmount - paymentReceived;
-  const filteredRooms = availableRooms.filter(room => 
-    room.type.toLowerCase().includes(reservation.roomType.toLowerCase())
-  );
+
+  // Check if two date ranges overlap (including touching dates)
+  const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
+    const start1 = new Date(checkIn1);
+    const end1 = new Date(checkOut1);
+    const start2 = new Date(checkIn2);
+    const end2 = new Date(checkOut2);
+    return start1 < end2 && start2 < end1;
+  };
+
+  const isRoomAvailableForDates = async (roomNumber: string, checkIn: string, checkOut: string) => {
+    if (!roomNumber || !checkIn || !checkOut) return false;
+    try {
+      const bookingsCol = collection(db, 'bookings');
+      const q = query(bookingsCol, where('roomNumber', '==', roomNumber), where('status', 'in', ['confirmed', 'checked-in']));
+      const snap = await getDocs(q);
+      const existing = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+      for (const b of existing) {
+        if (typeof b.checkIn === 'string' && typeof b.checkOut === 'string') {
+          if (b.id && reservation && b.id === reservation.id) continue;
+          if (checkDateOverlap(checkIn, checkOut, b.checkIn, b.checkOut)) return false;
+        }
+      }
+      return true;
+    } catch (err) {
+      console.error('Error checking room availability:', err);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchRooms = async () => {
+      setLoadingRooms(true);
+      try {
+        const roomsCol = collection(db, 'rooms');
+        const snap = await getDocs(roomsCol);
+        const fetched = snap.docs.map(d => ({ number: d.id, ...(d.data() as any) }));
+        
+        if (mounted && fetched.length > 0) {
+          const normalizeType = (raw: string | undefined) => {
+            if (!raw) return 'standard';
+            const base = raw.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
+            const map: Record<string, string> = {
+              'standard': 'standard', 'standard room': 'standard',
+              'deluxe': 'deluxe', 'deluxe room': 'deluxe',
+              'suite': 'suite', 'suite room': 'suite',
+              'family': 'family', 'family suite': 'family',
+              'premium family suite': 'family'
+            };
+            return map[base] || 'standard';
+          };
+
+          setRooms(fetched.map(r => ({
+            number: r.number || r.id,
+            type: normalizeType(r.type || r.roomType),
+            status: r.status || 'available'
+          })));
+        } else if (mounted) {
+          console.warn('No rooms found in Firestore.');
+          setRooms([]);
+        }
+      } catch (err) {
+        console.error('Error loading rooms:', err);
+        if (mounted) setRooms([]);
+      } finally {
+        if (mounted) setLoadingRooms(false);
+      }
+    };
+    fetchRooms();
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const compute = async () => {
+      if (!reservation) {
+        setFilteredRooms([]);
+        return;
+      }
+
+      const normalizeTypeKey = (s: string) => s.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
+      const reservationTypeKey = normalizeTypeKey(reservation.roomType);
+      const candidates = rooms.filter(r => r.type === reservationTypeKey);
+      
+      try {
+        const roomsSnap = await getDocs(collection(db, 'rooms'));
+        const roomMap = Object.fromEntries(roomsSnap.docs.map(d => [d.id, d.data()]));
+        
+        const results = await Promise.all(candidates.map(async r => {
+          if (r.number === reservation.roomNumber) return r;
+          
+          const roomData = roomMap[r.number];
+          const status = roomData?.status || r.status || 'available';
+          
+          if (status !== 'available') return null;
+          if (!reservation.checkIn || !reservation.checkOut) return null;
+          
+          const isAvailable = await isRoomAvailableForDates(r.number, reservation.checkIn, reservation.checkOut);
+          return isAvailable ? r : null;
+        }));
+        
+        if (!cancelled) setFilteredRooms(results.filter((r): r is AvailableRoom => r !== null));
+      } catch (e) {
+        console.error('Failed to check room availability:', e);
+        if (!cancelled) setFilteredRooms([]);
+      }
+    };
+    compute();
+    return () => { cancelled = true; };
+  }, [rooms, reservation, reservation?.checkIn, reservation?.checkOut]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Guest Check-In" size="lg">
@@ -121,6 +235,8 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
             Assign Room <span className="text-red-500">*</span>
           </label>
           <select
+            title="Room Assignment"
+            aria-label="Room Assignment"
             value={selectedRoom}
             onChange={(e) => setSelectedRoom(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-heritage-green focus:border-heritage-green"
@@ -168,6 +284,8 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
               <select
+                title="Payment Method"
+                aria-label="Payment Method"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-heritage-green focus:border-heritage-green"
