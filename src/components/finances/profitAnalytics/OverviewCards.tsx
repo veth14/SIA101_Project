@@ -5,13 +5,15 @@ interface OverviewCardsProps {
   totalExpenses: number;
   netProfit: number;
   monthlyTarget: number;
+  isLoading?: boolean;
 }
 
 export const OverviewCards: React.FC<OverviewCardsProps> = ({
   totalRevenue,
   totalExpenses,
   netProfit,
-  monthlyTarget
+  monthlyTarget,
+  isLoading = false
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -25,6 +27,29 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({
   const achievementPercentage = (netProfit / monthlyTarget) * 100;
   const profitMargin = ((netProfit / totalRevenue) * 100);
   const isPositiveGrowth = netProfit > monthlyTarget * 0.8;
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="overflow-hidden relative p-6 rounded-2xl border shadow-lg backdrop-blur-xl bg-white/95 border-white/50 animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl"></div>
+            <div className="flex relative justify-between items-start">
+              <div className="flex-1 mr-4">
+                <div className="flex items-center mb-2">
+                  <div className="w-1 h-4 mr-2 rounded-full bg-gray-300"></div>
+                  <div className="h-4 w-28 bg-gray-300 rounded"></div>
+                </div>
+                <div className="h-9 w-36 bg-gray-300 rounded mb-2"></div>
+                <div className="h-6 w-32 bg-gray-200 rounded"></div>
+              </div>
+              <div className="w-12 h-12 bg-gray-300 rounded-xl"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
