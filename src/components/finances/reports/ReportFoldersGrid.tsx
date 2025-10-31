@@ -6,12 +6,14 @@ interface ReportFoldersGridProps {
   onFolderClick: (categoryId: string) => void;
   selectedCategory?: string;
   searchQuery?: string;
+  isLoading?: boolean;
 }
 
 const ReportFoldersGrid: React.FC<ReportFoldersGridProps> = ({ 
   onFolderClick,
   selectedCategory = 'all',
-  searchQuery = ''
+  searchQuery = '',
+  isLoading = false
 }) => {
   // Filter categories based on selected category and search query
   const filteredCategories = reportCategories.filter(folder => {
@@ -21,32 +23,73 @@ const ReportFoldersGrid: React.FC<ReportFoldersGridProps> = ({
       folder.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-gradient-to-r from-green-500/20 via-green-400/20 to-transparent">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
-              <svg className="w-7 h-7 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-              </svg>
+      {isLoading ? (
+        // Header Skeleton
+        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-gray-200 animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-gray-300 rounded-2xl"></div>
+            <div>
+              <div className="h-9 w-64 bg-gray-300 rounded mb-2"></div>
+              <div className="h-4 w-80 bg-gray-200 rounded"></div>
             </div>
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
           </div>
-          <div>
-            <h2 className="text-3xl font-black text-[#82A33D] drop-shadow-sm">
-              Report Categories
-            </h2>
-            <p className="text-sm text-gray-700 mt-1 font-medium">Choose a category to explore financial reports</p>
+          <div className="hidden md:flex h-10 w-48 bg-gray-200 rounded-full"></div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-gradient-to-r from-green-500/20 via-green-400/20 to-transparent">
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
+                <svg className="w-7 h-7 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+            </div>
+            <div>
+              <h2 className="text-3xl font-black text-[#82A33D] drop-shadow-sm">
+                Report Categories
+              </h2>
+              <p className="text-sm text-gray-700 mt-1 font-medium">Choose a category to explore financial reports</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 backdrop-blur-sm rounded-full border border-emerald-200">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <p className="text-sm font-semibold text-emerald-700">6 Categories Available</p>
           </div>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 backdrop-blur-sm rounded-full border border-emerald-200">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-          <p className="text-sm font-semibold text-emerald-700">6 Categories Available</p>
-        </div>
-      </div>
+      )}
       
-      {filteredCategories.length === 0 ? (
+      {isLoading ? (
+        // Skeleton Loader
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="relative bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 rounded-3xl shadow-lg overflow-hidden animate-pulse">
+              <div className="absolute top-0 left-0 w-28 h-10 bg-gray-300 rounded-br-3xl"></div>
+              <div className="relative p-7 pt-14">
+                <div className="w-20 h-20 mb-5 bg-gray-300 rounded-2xl"></div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gray-300 rounded"></div>
+                    <div className="flex-1">
+                      <div className="h-6 w-3/4 bg-gray-300 rounded mb-2"></div>
+                    </div>
+                  </div>
+                  <div className="h-4 w-full bg-gray-200 rounded"></div>
+                  <div className="h-4 w-5/6 bg-gray-200 rounded"></div>
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
+                    <div className="h-6 w-16 bg-gray-300 rounded-lg"></div>
+                    <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredCategories.length === 0 ? (
         <div className="col-span-full text-center py-16">
           <div className="flex flex-col items-center justify-center">
             <FolderOpen className="w-16 h-16 text-gray-300 mb-4" />

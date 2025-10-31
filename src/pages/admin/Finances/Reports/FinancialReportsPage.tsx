@@ -13,6 +13,14 @@ const FinancialReportsPage: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleFolderClick = (categoryId: string) => {
     setSelectedFolder(categoryId);
@@ -27,7 +35,7 @@ const FinancialReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F6EE]">
+    <div className="relative min-h-screen bg-[#F9F6EE]">
       {/* Light Floating Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Subtle Light Orbs */}
@@ -47,7 +55,7 @@ const FinancialReportsPage: React.FC = () => {
       {/* Main Content Container */}
       <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
         {/* Header */}
-        <ReportsHeader />
+        <ReportsHeader isLoading={isLoading} />
 
         {/* Filters */}
         <ReportsFilter
@@ -58,6 +66,7 @@ const FinancialReportsPage: React.FC = () => {
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
           onGenerateClick={() => setIsModalOpen(true)}
+          isLoading={isLoading}
         />
 
         {/* Search Results */}
@@ -87,6 +96,7 @@ const FinancialReportsPage: React.FC = () => {
                 onFolderClick={handleFolderClick}
                 selectedCategory={selectedCategory}
                 searchQuery={searchQuery}
+                isLoading={isLoading}
               />
             </div>
           </div>
@@ -95,84 +105,115 @@ const FinancialReportsPage: React.FC = () => {
         {/* Archive Section - Always visible */}
         <ArchiveSection />
 
-            {/* Premium Info Banner */}
-            <div className="relative w-full overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 border-2 border-amber-200/50 rounded-3xl shadow-xl">
-              {/* Animated Background Elements */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-amber-200/30 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-orange-200/30 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
-              
-              {/* Content */}
-              <div className="relative p-8">
-                <div className="flex items-start gap-6">
-                  {/* Premium Icon Container */}
-                  <div className="relative group flex-shrink-0">
-                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
-                      <span className="text-3xl filter drop-shadow-lg">💡</span>
+        {/* Report Management Tips */}
+        {isLoading ? (
+          // Skeleton Loader for Report Management Tips
+          <div className="relative w-full overflow-hidden bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 border-2 border-gray-200 rounded-3xl shadow-xl animate-pulse">
+            <div className="relative p-8">
+              <div className="flex items-start gap-6">
+                <div className="w-16 h-16 bg-gray-300 rounded-2xl"></div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-64 bg-gray-300 rounded"></div>
+                    <div className="h-6 w-24 bg-gray-200 rounded-full"></div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="p-4 bg-white/60 rounded-2xl border border-gray-200">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-gray-300 rounded-lg"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 w-32 bg-gray-300 rounded"></div>
+                            <div className="h-3 w-full bg-gray-200 rounded"></div>
+                            <div className="h-3 w-5/6 bg-gray-200 rounded"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative w-full overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 border-2 border-amber-200/50 rounded-3xl shadow-xl">
+            {/* Animated Background Elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-amber-200/30 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-orange-200/30 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
+            
+            {/* Content */}
+            <div className="relative p-8">
+              <div className="flex items-start gap-6">
+                {/* Premium Icon Container */}
+                <div className="relative group flex-shrink-0">
+                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
+                    <span className="text-3xl filter drop-shadow-lg">💡</span>
+                  </div>
+                  {/* Glow Effect */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                </div>
+                
+                {/* Text Content */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-2xl font-black bg-gradient-to-r from-amber-900 to-orange-800 bg-clip-text text-transparent">
+                      Report Management Tips
+                    </h3>
+                    <div className="px-3 py-1 bg-amber-500/20 backdrop-blur-sm border border-amber-500/30 rounded-full">
+                      <span className="text-xs font-bold text-amber-800">Best Practices</span>
                     </div>
-                    {/* Glow Effect */}
-                    <div className="absolute -inset-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
                   </div>
                   
-                  {/* Text Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <h3 className="text-2xl font-black bg-gradient-to-r from-amber-900 to-orange-800 bg-clip-text text-transparent">
-                        Report Management Tips
-                      </h3>
-                      <div className="px-3 py-1 bg-amber-500/20 backdrop-blur-sm border border-amber-500/30 rounded-full">
-                        <span className="text-xs font-bold text-amber-800">Best Practices</span>
+                  {/* Premium Tips Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span className="text-lg">📝</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Automatic Naming</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">Reports use pattern: <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded">Category-YYYY-MM-Type-vN</span></p>
                       </div>
                     </div>
                     
-                    {/* Premium Tips Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                          <span className="text-lg">📝</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 mb-1">Automatic Naming</p>
-                          <p className="text-xs text-gray-600 leading-relaxed">Reports use pattern: <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded">Category-YYYY-MM-Type-vN</span></p>
-                        </div>
+                    <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span className="text-lg">📅</span>
                       </div>
-                      
-                      <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
-                          <span className="text-lg">📅</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 mb-1">Monthly Generation</p>
-                          <p className="text-xs text-gray-600 leading-relaxed">Reports are auto-generated on the last day of each month</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Monthly Generation</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">Reports are auto-generated on the last day of each month</p>
                       </div>
-                      
-                      <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-                          <span className="text-lg">📦</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 mb-1">Smart Archiving</p>
-                          <p className="text-xs text-gray-600 leading-relaxed">Archive reports older than 3 months for better organization</p>
-                        </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span className="text-lg">📦</span>
                       </div>
-                      
-                      <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
-                        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg flex items-center justify-center shadow-md">
-                          <span className="text-lg">🔒</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 mb-1">Secure Storage</p>
-                          <p className="text-xs text-gray-600 leading-relaxed">All reports are encrypted and accessible 24/7 with full audit trails</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Smart Archiving</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">Archive reports older than 3 months for better organization</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-amber-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-300">
+                      <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg flex items-center justify-center shadow-md">
+                        <span className="text-lg">🔒</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">Secure Storage</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">All reports are encrypted and accessible 24/7 with full audit trails</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              {/* Bottom Accent Line */}
-              <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400"></div>
             </div>
+            
+            {/* Bottom Accent Line */}
+            <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400"></div>
+          </div>
+        )}
       </div>
 
       {/* Generate Report Modal */}
