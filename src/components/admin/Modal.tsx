@@ -37,7 +37,7 @@ export const Modal = ({
       // Add blur to root element
       const root = document.getElementById('root');
       if (root) {
-        root.style.filter = 'blur(8px)';
+        root.style.filter = 'blur(0px)'; // Change Value from 8px to 0, because Reservation Modals are not visible due to Blur
       }
     }
 
