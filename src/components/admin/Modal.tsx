@@ -35,10 +35,10 @@ export const Modal = ({
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
       // Add blur to root element
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.filter = 'blur(8px)';
-      }
+      // const root = document.getElementById('root');
+      // if (root) {
+      //   root.style.filter = 'blur(8px)';
+      // }
     }
 
     return () => {

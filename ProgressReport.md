@@ -20,12 +20,16 @@ Reports should submitted every Saturday ( 9:00 PM )
 
 
 Front Desk
-1. DETERA (Reservation)
-    A.) Task/Feature:
-    B.) Status:
-    C.) Time Spent:
+1. DETERA (Lost and Found)
+    A.) Task/Feature: Add Lost and Found Items 
+    B.) Status: On-Going
+    C.) Time Spent: 2 hour
     D.) Remarks:
-2. 
+2. DETERA (Reservation)
+    A.) Task/Feature: View Modal of Lost and Found Items   
+    B.) Status: Completed
+    C.) Time Spent: 1 Hour
+    D.) Remarks: Change Status not done yet 
 3.
 4.
 5.
