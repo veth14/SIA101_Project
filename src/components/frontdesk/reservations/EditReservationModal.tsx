@@ -29,10 +29,10 @@ interface EditReservationModalProps {
 }
 
 const roomTypes = [
-  { id: 'standard', name: 'Standard Room (Silid Payapa)', price: 2500 },
-  { id: 'deluxe', name: 'Deluxe Room (Silid Marahuyo)', price: 3800 },
-  { id: 'suite', name: 'Suite Room (Silid Ginhawa)', price: 5500 },
-  { id: 'family', name: 'Family Suite (Silid Haraya)', price: 8000 },
+  { id: 'standard', name: 'Standard Room', price: 2500, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 500 },
+  { id: 'deluxe', name: 'Deluxe Room', price: 3800, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 750 },
+  { id: 'suite', name: 'Suite Room', price: 5500, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 1000 },
+  { id: 'family', name: 'Family Suite', price: 8000, baseGuests: 4, maxGuests: 8, additionalGuestPrice: 1200 },
 ];
 
 // Map verbose room type names to short ids used across the UI
@@ -103,6 +103,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    // Required fields validation
     if (!formData.guestName.trim()) newErrors.guestName = 'Guest name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
@@ -113,6 +114,12 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     // Validate dates
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (checkIn < today) {
+      newErrors.checkIn = 'Check-in date cannot be in the past';
+    }
     if (checkOut <= checkIn) {
       newErrors.checkOut = 'Check-out must be after check-in date';
     }
@@ -121,6 +128,18 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Validate phone number (must be at least 11 digits)
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 11) {
+      newErrors.phone = 'Phone number must have at least 11 digits';
+    }
+
+    // Validate guest count against room capacity
+    const selectedRoomType = roomTypes.find(rt => rt.id === formData.roomType);
+    if (selectedRoomType && formData.guests > selectedRoomType.maxGuests) {
+      newErrors.guests = `This room type can only accommodate up to ${selectedRoomType.maxGuests} guests`;
     }
 
     setErrors(newErrors);
@@ -138,8 +157,17 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
     const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-    const subtotal = roomTypeData.price * nights;
-
+    
+    // Calculate base room price
+    let roomPricePerNight = roomTypeData.price;
+    
+    // Add additional guest charges if guests exceed base capacity
+    const extraGuests = Math.max(0, formData.guests - roomTypeData.baseGuests);
+    if (extraGuests > 0) {
+      roomPricePerNight += extraGuests * roomTypeData.additionalGuestPrice;
+    }
+    
+    const subtotal = roomPricePerNight * nights;
     const vatRate = 0.12; // 12% VAT only
     const vat = subtotal * vatRate;
     const total = subtotal + vat;

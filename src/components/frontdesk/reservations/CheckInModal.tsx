@@ -4,6 +4,14 @@ import { db } from '../../../config/firebase';
 import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 // Rely on Firestore `rooms` collection only for runtime data. Do not use local ROOMS_DATA fallback.
 
+/**
+  Fix naming/normalize naming across
+  Add additional fee to more guest above the base line
+  Add validation checks
+  Create a roomType collection
+  Edit is using bulk while Walk in is using something elses
+ **/
+
 interface Reservation {
   id: string;
   guestName: string;

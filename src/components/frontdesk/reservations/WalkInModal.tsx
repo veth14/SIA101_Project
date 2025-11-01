@@ -11,10 +11,10 @@ interface WalkInModalProps {
 
 // Default room types used when Firestore roomTypes collection is empty
 const defaultRoomTypes = [
-  { id: 'standard', name: 'Standard Room (Silid Payapa)', price: 2500, maxGuests: 2 },
-  { id: 'deluxe', name: 'Deluxe Room (Silid Marahuyo)', price: 3800, maxGuests: 2 },
-  { id: 'suite', name: 'Suite Room (Silid Ginhawa)', price: 5500, maxGuests: 4 },
-  { id: 'family', name: 'Family Suite (Silid Haraya)', price: 8000, maxGuests: 6 },
+  { id: 'standard', name: 'Standard Room', price: 2500, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 500 },
+  { id: 'deluxe', name: 'Deluxe Room', price: 3800, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 750 },
+  { id: 'suite', name: 'Suite Room', price: 5500, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 1000 },
+  { id: 'family', name: 'Family Suite', price: 8000, baseGuests: 4, maxGuests: 8, additionalGuestPrice: 1200 },
 ];
 
 // Check if two date ranges overlap (including touching dates)
@@ -169,10 +169,23 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     
+    // Required fields validation
     if (!formData.guestName.trim()) newErrors.guestName = 'Guest name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    // Validate phone number (must be at least 10 digits)
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      newErrors.phone = 'Phone number must have at least 10 digits';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -185,8 +198,15 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     if (!formData.roomNumber) newErrors.roomNumber = 'Room selection is required';
     if (!formData.checkOut) newErrors.checkOut = 'Check-out date is required';
     
+    // Validate dates
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (checkIn < today) {
+      newErrors.checkIn = 'Check-in date cannot be in the past';
+    }
     if (checkOut <= checkIn) {
       newErrors.checkOut = 'Check-out must be after check-in date';
     }
@@ -243,12 +263,22 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
 
   const calculateTotal = () => {
     const rt = roomTypes.find(rt => rt.id === formData.roomType);
-    const price = rt ? rt.price : 0;
-    if (!formData.checkOut) return 0;
+    if (!rt || !formData.checkOut) return 0;
+    
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
     const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
-    const subtotal = price * nights;
+    
+    // Calculate base room price
+    let roomPricePerNight = rt.price;
+    
+    // Add additional guest charges if guests exceed base capacity
+    const extraGuests = Math.max(0, formData.guests - rt.baseGuests);
+    if (extraGuests > 0) {
+      roomPricePerNight += extraGuests * rt.additionalGuestPrice;
+    }
+    
+    const subtotal = roomPricePerNight * nights;
     const vatRate = 0.12; // 12% VAT only
     const vat = subtotal * vatRate;
     const total = subtotal + vat;
