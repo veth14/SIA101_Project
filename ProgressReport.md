@@ -38,8 +38,13 @@ Inventory
 5
 
 Maintenance
-1.
+1.Mamaril (Manage Staff)
+    A.) Task/Feature: CRUD for staff
+    B.) Status: Complete
+    C.) Time Spent: 2hrs
+    D.) Remarks: Naka connect sa database ko pero working na yung crud, can also add staff using rfid but no authentication
 2.
+
 3.
 4.
 5.
