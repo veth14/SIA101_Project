@@ -327,7 +327,7 @@ const LostFoundPage: React.FC = () => {
                       <option value="claimed">Claimed</option>
                       <option value="disposed">Disposed</option>
                     </select>
-                  </div>
+                </div>
               </div>
 
               <div>
