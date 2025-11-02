@@ -34,7 +34,7 @@ const LostFoundPage: React.FC = () => {
   }>;
 
   // Cache TTL (ms). If cache is older than this we will re-read Firestore on mount.
-    const CACHE_TTL_MS = 5 * 60 * 1000;
+  const CACHE_TTL_MS = 5 * 60 * 1000;
 
   // Helper: fetch from Firestore and cache results
   const fetchAndCacheFromFirestore = useCallback(async () => {
