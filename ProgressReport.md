@@ -24,7 +24,7 @@ Front Desk
     A.) Task/Feature: Add Lost and Found Items to DB
     B.) Status: On-Going
     C.) Time Spent: 3 hours
-    D.) Remarks: Added a refresh button for force updated list from db 
+    D.) Remarks: Added a refresh button for force update list from db 
 2. DETERA (Lost and Found )
     A.) Task/Feature: View Modal of Lost and Found Items   
     B.) Status: Completed
