@@ -152,7 +152,7 @@ const LostFoundPage: React.FC = () => {
 
   const handleMarkClaimed = (item: LostFoundItem) => {
     // mark item as claimed in local state and persist to firestore when possible
-  const updated: LostFoundItem = { ...item, status: 'claimed' as LostFoundItem['status'], claimedDate: new Date().toISOString() };
+    const updated: LostFoundItem = { ...item, status: 'claimed' as LostFoundItem['status'], claimedDate: new Date().toISOString() };
     // update local state
       setLostFoundItems(prev => {
       const next = dedupeItemsById(prev.map(i => i.id === updated.id ? updated : i));
