@@ -35,13 +35,13 @@ Front Desk
     A.) Task/Feature: Replaced any hardcode data into Firebase, on both WalkIn and Edit, Removed automatic room assignment. 
     B.) Status: OnGoing
     C.) Time Spent: 5 hours
-    D.)Remarks: No validation, had to Edit Modal.tsx to change blur value from 8px into 0. Previously could not see anything.
+    D.) Remarks: No validation, had to Edit Modal.tsx to change blur value from 8px into 0. Previously could not see anything.
 
 4. INFIESTO (Reservation-v2 )
     A.) Task/Feature: Added additional fee per guest above base, fixed naming, added validation checks.
     B.) Status: OnGoing
     C.) Time Spent: 3 hours
-    D.)Remarks: Still need to create a Roomtype collection, add function to the 4 other buttons
+    D.) Remarks: Still need to create a Roomtype collection, add function to the 4 other buttons
 
 
 Inventory

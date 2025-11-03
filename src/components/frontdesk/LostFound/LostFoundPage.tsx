@@ -6,7 +6,7 @@ import type { LostFoundItem, LostFoundStats as StatsType } from './types';
 import { sampleLostFoundItems } from './sampleData';
 import { Modal } from '../../admin/Modal';
 import { db } from '../../../config/firebase';
-import { collection, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, setDoc, runTransaction } from 'firebase/firestore';
 
 const LostFoundPage: React.FC = () => {
   // Use sample data from external file (make stateful so we can add/update items)
@@ -33,8 +33,64 @@ const LostFoundPage: React.FC = () => {
     claimedBy: string;
   }>;
 
-  // Cache TTL (ms). If cache is older than this we will re-read Firestore on mount.
-    const CACHE_TTL_MS = 5 * 60 * 1000;
+  // (No localStorage cache in simplified Option A)
+
+  // Helper: remove duplicate items by id while preserving first occurrence order
+  const dedupeItemsById = (arr: LostFoundItem[]) => {
+    const seen = new Set<string>();
+    const out: LostFoundItem[] = [];
+    for (const it of arr) {
+      if (!it || typeof it.id === 'undefined' || it.id === null) continue;
+      const key = String(it.id);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(it);
+    }
+    return out;
+  };
+
+  // Helper: compute next sequential ID of form LF### (e.g., LF001 -> LF002)
+  const getNextSequentialId = (items: LostFoundItem[]) => {
+    let max = 0;
+    for (const it of items) {
+      if (!it || !it.id) continue;
+      const idStr = String(it.id).toUpperCase();
+      const m = idStr.match(/^LF0*(\d+)$/);
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (!Number.isNaN(n) && n > max) max = n;
+      }
+    }
+    const next = max + 1;
+    return `LF${String(next).padStart(3, '0')}`;
+  };
+
+  // Allocate a globally-unique sequential ID using a Firestore transaction.
+  // This avoids race conditions where multiple clients compute the same next id locally.
+  const allocateSequentialId = async () => {
+    try {
+      const counterRef = doc(db, 'counters', 'lostFound');
+      const nextNum = await runTransaction(db, async (tx) => {
+        const snap = await tx.get(counterRef);
+        if (!snap.exists()) {
+          // Initialize counter using current known items to avoid collisions with pre-existing IDs
+          const localNextStr = getNextSequentialId(lostFoundItems); // e.g. LF005
+          const localNext = parseInt(localNextStr.replace(/^LF0*/i, ''), 10) || 1;
+          tx.set(counterRef, { last: localNext });
+          return localNext;
+        }
+        const data = snap.data() as { last?: number };
+        const last = (data.last ?? 0) + 1;
+        tx.update(counterRef, { last });
+        return last;
+      });
+      return `LF${String(nextNum).padStart(3, '0')}`;
+    } catch (err) {
+      console.warn('Failed to allocate sequential ID via transaction, falling back to local next id', err);
+      // fallback to local computation (may risk collision across clients)
+      return getNextSequentialId(lostFoundItems);
+    }
+  };
 
   // Helper: fetch from Firestore and cache results
   const fetchAndCacheFromFirestore = useCallback(async () => {
@@ -64,50 +120,19 @@ const LostFoundPage: React.FC = () => {
         map[itemId] = d.id;
       });
 
-      setLostFoundItems(items);
-      setDocMap(map);
-      try { localStorage.setItem('lostFoundItems_cache', JSON.stringify(items)); } catch (err) { console.warn('Failed to cache lostFoundItems', err); }
-      try { localStorage.setItem('lostFoundItems_docMap', JSON.stringify(map)); } catch (err) { console.warn('Failed to cache docMap', err); }
-      try { localStorage.setItem('lostFoundItems_cache_ts', String(Date.now())); } catch (err) { console.warn('Failed to cache timestamp', err); }
+  setLostFoundItems(dedupeItemsById(items));
+  setDocMap(map);
     } catch (err) {
       console.warn('Failed to fetch lostFoundItems from firestore:', err);
     }
   }, []);
 
-  // Load items from cache or firestore (only once). We prefer localStorage cache to avoid repeated reads.
+  // Fetch items from Firestore on mount. (No localStorage cache in Option A)
   useEffect(() => {
-    const cached = localStorage.getItem('lostFoundItems_cache');
-    const docMapRaw = localStorage.getItem('lostFoundItems_docMap');
-    const cacheTsRaw = localStorage.getItem('lostFoundItems_cache_ts');
-    const cacheTs = cacheTsRaw ? Number(cacheTsRaw) : 0;
-    const now = Date.now();
-
-    if (cached && cacheTs && (now - cacheTs) < CACHE_TTL_MS) {
-      try {
-        const items = JSON.parse(cached) as LostFoundItem[];
-        setLostFoundItems(items);
-        setDocMap(docMapRaw ? JSON.parse(docMapRaw) : {});
-        return; // cache is fresh; do not re-read from firestore
-      } catch (err) {
-        console.warn('Failed to parse lostFoundItems cache:', err);
-      }
-    }
-
-    // cache absent or stale -> fetch from firestore once and cache it
     fetchAndCacheFromFirestore();
-  }, []);
+  }, [fetchAndCacheFromFirestore]);
 
-  // Manual refresh: clear local cache and re-fetch from Firestore
-  const handleRefreshFromServer = async () => {
-    try {
-      localStorage.removeItem('lostFoundItems_cache');
-      localStorage.removeItem('lostFoundItems_docMap');
-      localStorage.removeItem('lostFoundItems_cache_ts');
-    } catch (err) {
-      console.warn('Failed to clear lostFoundItems cache', err);
-    }
-    await fetchAndCacheFromFirestore();
-  };
+  // (Refresh handled by reloading the page or calling fetchAndCacheFromFirestore manually if needed)
 
   // Calculate statistics
   const statusCounts: StatsType = {
@@ -129,9 +154,8 @@ const LostFoundPage: React.FC = () => {
     // mark item as claimed in local state and persist to firestore when possible
   const updated: LostFoundItem = { ...item, status: 'claimed' as LostFoundItem['status'], claimedDate: new Date().toISOString() };
     // update local state
-    setLostFoundItems(prev => {
-      const next = prev.map(i => i.id === updated.id ? updated : i);
-      try { localStorage.setItem('lostFoundItems_cache', JSON.stringify(next)); } catch (err) { console.warn('Failed to cache lostFoundItems', err); }
+      setLostFoundItems(prev => {
+      const next = dedupeItemsById(prev.map(i => i.id === updated.id ? updated : i));
       return next;
     });
 
@@ -150,36 +174,35 @@ const LostFoundPage: React.FC = () => {
     // Optimistic save: update UI immediately, persist to Firestore in background
     let savedItem: LostFoundItem = { ...updated };
 
-    // determine next LF id count
-    const currentCount = Object.keys(docMap).length || lostFoundItems.length;
-
+    // determine if we need to create a new ID for this item
+    // Use a timestamp + random suffix to avoid collisions when multiple items are created rapidly
     if (!updated.id || updated.id.toString().startsWith('new-') || !docMap[updated.id]) {
-      // create deterministic newId 
-      const newId = `LF${(currentCount + 1).toString().padStart(3, '0')}`;
-      savedItem = { ...updated, id: newId };
+      // Create path (non-blocking): give a temporary client id, close modal immediately,
+      // then allocate a final LF### id in background and reconcile the local state.
+      const tempId = `new-${Date.now().toString()}-${Math.random().toString(36).slice(2,8)}`;
+      savedItem = { ...updated, id: tempId };
 
-      // optimistic local update
+      // optimistic local update with temp id
       setLostFoundItems(prev => {
-        const next = [savedItem, ...prev];
-        try { localStorage.setItem('lostFoundItems_cache', JSON.stringify(next)); } catch (err) { console.warn('Failed to cache lostFoundItems', err); }
+        const next = dedupeItemsById([savedItem, ...prev]);
         return next;
       });
 
-      setDocMap(prev => {
-        const next = { ...prev, [newId]: newId };
-        try { localStorage.setItem('lostFoundItems_docMap', JSON.stringify(next)); } catch (err) { console.warn('Failed to cache docMap', err); }
-        return next;
-      });
+      // tentatively map tempId -> tempId so updates during the short window work
+      setDocMap(prev => ({ ...prev, [tempId]: tempId }));
 
+      // close modal immediately for snappy UX
       setIsModalOpen(false);
       setSelectedItem(null);
       setFormItem(null);
 
-      // Persist to Firestore in background 
+      // Background: allocate final sequential id and persist to Firestore
       (async () => {
         try {
-          await setDoc(doc(db, 'lostFoundItems', newId), {
-            itemId: newId,
+          const finalId = await allocateSequentialId();
+          // write document with finalId as doc id
+          await setDoc(doc(db, 'lostFoundItems', finalId), {
+            itemId: finalId,
             itemName: savedItem.itemName,
             description: savedItem.description,
             category: savedItem.category,
@@ -191,17 +214,30 @@ const LostFoundPage: React.FC = () => {
             claimedDate: savedItem.claimedDate ?? null,
             claimedBy: savedItem.claimedBy ?? null
           });
+
+          // reconcile local state: replace tempId with finalId
+          setLostFoundItems(prev => {
+            const replaced = prev.map(i => i.id === tempId ? { ...i, id: finalId } : i);
+            return dedupeItemsById(replaced);
+          });
+
+          // update docMap: remove temp mapping and add final mapping
+          setDocMap(prev => {
+            const next = { ...prev };
+            delete next[tempId as string];
+            next[finalId] = finalId;
+            return next;
+          });
         } catch (err) {
-          console.warn('Failed to write new lostFound item to firestore:', err);
-          // Optionally: mark item as unsynced or show toast
+          console.warn('Failed to allocate/persist new lostFound item:', err);
+          // Optionally: mark temp item as unsynced or show toast to user
         }
       })();
     } else {
       // updating existing item: optimistic local update and background updateDoc
       savedItem = updated;
       setLostFoundItems(prev => {
-        const next = prev.map(i => i.id === savedItem.id ? savedItem : i);
-        try { localStorage.setItem('lostFoundItems_cache', JSON.stringify(next)); } catch (err) { console.warn('Failed to cache lostFoundItems', err); }
+        const next = dedupeItemsById(prev.map(i => i.id === savedItem.id ? savedItem : i));
         return next;
       });
 
@@ -243,6 +279,15 @@ const LostFoundPage: React.FC = () => {
     if (selectedItem) setFormItem({ ...selectedItem });
   }, [selectedItem]);
 
+  // Validation helper for Add Item (all required fields)
+  const isFormNew = !!formItem && String(formItem.id ?? '').startsWith('new-');
+  const isAddFormValid = () => {
+    if (!formItem) return false;
+    const required = [formItem.itemName, formItem.category, formItem.location, formItem.dateFound, formItem.foundBy, formItem.description];
+    return required.every(f => typeof f === 'string' && f.trim().length > 0);
+  };
+  const saveDisabled = isFormNew && !isAddFormValid();
+
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
@@ -273,9 +318,7 @@ const LostFoundPage: React.FC = () => {
         {/* Items Grid */}
         <div className="flex items-center justify-between">
           <div />
-          <div className="flex items-center space-x-2">
-            <button onClick={handleRefreshFromServer} className="px-3 py-2 rounded-md border text-sm">Refresh</button>
-          </div>
+          <div className="flex items-center space-x-2">{/* intentional placeholder - refresh removed in Option A */}</div>
         </div>
 
         <LostFoundGrid
@@ -283,160 +326,215 @@ const LostFoundPage: React.FC = () => {
           onViewDetails={handleViewDetails}
           onMarkClaimed={handleMarkClaimed}
         />
-        {/* Reuse shared Modal for viewing/adding items */}
+  {/* Reuse shared Modal wrapper but render invoice-style header and content inside */}
         <Modal
           isOpen={isModalOpen}
           onClose={handleModalClose}
-          title={formItem ? (formItem.id?.toString().startsWith('new-') ? 'Add Lost Item' : 'Item Details') : 'Item Details'}
+          title=""
           size="lg"
+          showCloseButton={false}
+          showHeaderBar={false}
+          headerContent={formItem ? (
+            <div className="relative z-30 flex m-auto w-[100%] px-8 py-8 items-center justify-between border-b border-heritage-neutral/10 bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 backdrop-blur-sm">
+              <div className="flex items-center space-x-3 ">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-heritage-green">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>  
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-heritage-green">{formItem.id?.toString().startsWith('new-') ? 'Add Lost Item' : 'Item Details'}</h2>
+                  <p className="text-sm text-heritage-neutral">{formItem.id?.toString().startsWith('new-') ? 'Create a new lost item record' : 'View or edit the lost item information'}</p>
+                </div>
+              </div>
+              <button onClick={handleModalClose} className="p-2 transition-all duration-200 rounded-full text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/10 ml-4">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          ) : undefined}
         >
           {formItem && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Item Name</label>
-                  <input
-                    value={formItem.itemName}
-                    onChange={(e) => setFormItem({ ...formItem, itemName: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <select
-                    value={formItem.category}
-                    onChange={(e) => setFormItem({ ...formItem, category: e.target.value as LostFoundItem['category'] })}
-                    className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                  >
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="jewelry">Jewelry</option>
-                    <option value="documents">Documents</option>
-                    <option value="personal">Personal</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+            <div className="p-6">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                    <label className="block mb-2 text-sm font-medium text-heritage-neutral">Item Name</label>
+                    <input
+                      value={formItem.itemName}
+                      onChange={(e) => setFormItem({ ...formItem, itemName: e.target.value })}
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                      placeholder="Enter item name"
+                    />
+                    {isFormNew && (!formItem.itemName || formItem.itemName.trim() === '') && (
+                      <p className="text-xs text-red-500 mt-1">Item name is required.</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-heritage-neutral">Category</label>
+                    <select
+                      value={formItem.category}
+                      onChange={(e) => setFormItem({ ...formItem, category: e.target.value as LostFoundItem['category'] })}
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    >
+                      <option value="electronics">Electronics</option>
+                      <option value="clothing">Clothing</option>
+                      <option value="jewelry">Jewelry</option>
+                      <option value="documents">Documents</option>
+                      <option value="personal">Personal</option>
+                      <option value="other">Other</option>
+                    </select>
+                    {isFormNew && (!formItem.category || formItem.category.trim() === '') && (
+                      <p className="text-xs text-red-500 mt-1">Category is required.</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-heritage-neutral">Status</label>
                     <select
                       value={formItem.status}
                       onChange={(e) => setFormItem({ ...formItem, status: e.target.value as LostFoundItem['status'] })}
-                      className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                     >
                       <option value="unclaimed">Unclaimed</option>
                       <option value="claimed">Claimed</option>
                       <option value="disposed">Disposed</option>
                     </select>
                   </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Location Found</label>
-                <input
-                  value={formItem.location}
-                  onChange={(e) => setFormItem({ ...formItem, location: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Found By</label>
-                <input
-                  value={formItem.foundBy}
-                  onChange={(e) => setFormItem({ ...formItem, foundBy: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Date Found</label>
-                <input
-                  type="date"
-                  value={new Date(formItem.dateFound).toISOString().slice(0, 10)}
-                  onChange={(e) => setFormItem({ ...formItem, dateFound: new Date(e.target.value).toISOString() })}
-                  className="mt-1 block w-48 rounded-md border-gray-200 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
-                <textarea
-                  value={formItem.description}
-                  onChange={(e) => setFormItem({ ...formItem, description: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                  rows={4}
-                />
-              </div>
-
-              {/* Guest / Claim information - show when status is claimed or allow editing */}
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Claimed By (Name)</label>
-                  <input
-                    value={formItem.claimedBy ?? ''}
-                    onChange={(e) => setFormItem({ ...formItem, claimedBy: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                  />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Claimed Date</label>
+                <div className="mt-4">
+                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">Location Found</label>
+                  <input
+                    value={formItem.location}
+                    onChange={(e) => setFormItem({ ...formItem, location: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    placeholder="e.g., Lobby, Poolside"
+                  />
+                  {isFormNew && (!formItem.location || formItem.location.trim() === '') && (
+                    <p className="text-xs text-red-500 mt-1">Location is required.</p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">Found By</label>
+                  <input
+                    value={formItem.foundBy}
+                    onChange={(e) => setFormItem({ ...formItem, foundBy: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    placeholder="Staff name or description"
+                  />
+                  {isFormNew && (!formItem.foundBy || formItem.foundBy.trim() === '') && (
+                    <p className="text-xs text-red-500 mt-1">Found by is required.</p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">Date Found</label>
                   <input
                     type="date"
-                    value={formItem.claimedDate ? new Date(formItem.claimedDate).toISOString().slice(0, 10) : ''}
-                    onChange={(e) => setFormItem({ ...formItem, claimedDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                    className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
+                    value={new Date(formItem.dateFound).toISOString().slice(0, 10)}
+                    onChange={(e) => setFormItem({ ...formItem, dateFound: new Date(e.target.value).toISOString() })}
+                    className="w-48 px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                   />
+                  {isFormNew && (!formItem.dateFound || String(formItem.dateFound).trim() === '') && (
+                    <p className="text-xs text-red-500 mt-1">Date found is required.</p>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">&nbsp;</label>
-                  <div className="text-sm text-gray-500 mt-1">Optional claim details for guest contact</div>
+                <div className="mt-4">
+                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">Description</label>
+                  <textarea
+                    value={formItem.description}
+                    onChange={(e) => setFormItem({ ...formItem, description: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg resize-none border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    rows={4}
+                  />
+                  {isFormNew && (!formItem.description || formItem.description.trim() === '') && (
+                    <p className="text-xs text-red-500 mt-1">Description is required.</p>
+                  )}
+                </div>
+
+                {/* Guest / Claim information - show when not a new form */}
+                {!isFormNew && (
+                  <div className="mt-6">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block mb-2 text-sm font-medium text-heritage-neutral">Claimed By (Name)</label>
+                        <input
+                          value={formItem.claimedBy ?? ''}
+                          onChange={(e) => setFormItem({ ...formItem, claimedBy: e.target.value })}
+                          className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-2 text-sm font-medium text-heritage-neutral">Claimed Date</label>
+                        <input
+                          type="date"
+                          value={formItem.claimedDate ? new Date(formItem.claimedDate).toISOString().slice(0, 10) : ''}
+                          onChange={(e) => setFormItem({ ...formItem, claimedDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
+                          className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block mb-2 text-sm font-medium text-heritage-neutral">&nbsp;</label>
+                        <div className="text-sm text-heritage-neutral/80 mt-1">Optional claim details for guest contact</div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <h4 className="flex items-center text-lg font-bold text-heritage-green">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Guest Information
+                      </h4>
+
+                      <div className="grid grid-cols-3 gap-4 mt-3">
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-heritage-neutral">Name</label>
+                          <input
+                            value={(formItem.guestInfo && formItem.guestInfo.name) ?? ''}
+                            onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: e.target.value, room: formItem.guestInfo?.room ?? '', contact: formItem.guestInfo?.contact ?? '' } })}
+                            className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                            placeholder="Guest full name"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-heritage-neutral">Room</label>
+                          <input
+                            value={(formItem.guestInfo && formItem.guestInfo.room) ?? ''}
+                            onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: formItem.guestInfo?.name ?? '', room: e.target.value, contact: formItem.guestInfo?.contact ?? '' } })}
+                            className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                            placeholder="Room number"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-heritage-neutral">Contact</label>
+                          <input
+                            value={(formItem.guestInfo && formItem.guestInfo.contact) ?? ''}
+                            onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: formItem.guestInfo?.name ?? '', room: formItem.guestInfo?.room ?? '', contact: e.target.value } })}
+                            className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                            placeholder="Contact number or email"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action buttons - invoice style */}
+                <div className="flex pt-6 mt-6 space-x-4 border-t border-heritage-neutral/10">
+                  <button onClick={handleModalClose} className="flex-1 px-6 py-3 transition-all duration-300 border-2 border-heritage-neutral/30 text-heritage-neutral rounded-xl hover:bg-heritage-neutral/5">Cancel</button>
+                  <button onClick={() => formItem && handleSaveItem(formItem)} disabled={saveDisabled} className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl hover:from-heritage-green/90 hover:to-heritage-neutral/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <span>Save</span>
+                  </button>
                 </div>
               </div>
-
-              <div className="pt-2">
-                <h4 className="text-sm font-medium text-gray-800">Guest Information</h4>
-                <div className="grid grid-cols-3 gap-4 mt-2">
-                  <div>
-                    <label className="block text-sm text-gray-600">Name</label>
-                    <input
-                      value={(formItem.guestInfo && formItem.guestInfo.name) ?? ''}
-                      onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: e.target.value, room: formItem.guestInfo?.room ?? '', contact: formItem.guestInfo?.contact ?? '' } })}
-                      className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-600">Room</label>
-                    <input
-                      value={(formItem.guestInfo && formItem.guestInfo.room) ?? ''}
-                      onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: formItem.guestInfo?.name ?? '', room: e.target.value, contact: formItem.guestInfo?.contact ?? '' } })}
-                      className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-600">Contact</label>
-                    <input
-                      value={(formItem.guestInfo && formItem.guestInfo.contact) ?? ''}
-                      onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: formItem.guestInfo?.name ?? '', room: formItem.guestInfo?.room ?? '', contact: e.target.value } })}
-                      className="mt-1 block w-full rounded-md border-gray-200 shadow-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button onClick={handleModalClose} className="px-4 py-2 rounded-md border">Cancel</button>
-                <button
-                  onClick={() => formItem && handleSaveItem(formItem)}
-                  className="px-4 py-2 rounded-md bg-heritage-green text-white"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
           )}
         </Modal>
       </div>
