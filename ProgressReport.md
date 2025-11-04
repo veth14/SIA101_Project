@@ -52,8 +52,16 @@ Inventory
 5
 
 Maintenance
-1.
-2.
+1. Albiola (Archive)
+    A.)Task: Added clock logs in the archive section
+    B.)Status: Completed
+    C.)Time Spent: 1 hour
+    D.)Remarks: No backend logic yet.
+2. Cruz (Tickets & Tasks)
+    A.)Task: Added create ticket modals and action buttons
+    B.)Status: Completed
+    C.)Time Spent: 1 hour
+    D.)Remarks: No backend logic yet.
 3.
 4.
 5.
