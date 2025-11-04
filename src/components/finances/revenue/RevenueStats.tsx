@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import React from 'react';
+import { formatCurrencyPH } from '../../../lib/utils';
 
 interface StatCard {
   title: string;
@@ -23,19 +23,11 @@ const RevenueStats: React.FC<RevenueStatsProps> = ({
   growthRate,
   topSource
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const stats: StatCard[] = [
     {
       title: 'Total Revenue',
-      value: `$${totalRevenue.toLocaleString()}`,
+      value: formatCurrencyPH(totalRevenue),
       change: `+${growthRate}% from last month`,
       changeType: 'positive',
       iconBg: 'bg-green-100',
@@ -47,7 +39,7 @@ const RevenueStats: React.FC<RevenueStatsProps> = ({
     },
     {
       title: 'Average Daily',
-      value: `$${averageDaily.toLocaleString()}`,
+      value: formatCurrencyPH(averageDaily),
       change: 'Daily revenue average',
       changeType: 'neutral',
       iconBg: 'bg-blue-100',
@@ -83,30 +75,7 @@ const RevenueStats: React.FC<RevenueStatsProps> = ({
     }
   ];
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, index) => (
-          <div key={index} className="relative p-8 overflow-hidden border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 mr-5">
-                <div className="flex items-center mb-3">
-                  <Skeleton className="w-1 h-5 mr-2 rounded-full" />
-                  <Skeleton className="w-24 h-4" />
-                </div>
-                <Skeleton className="h-10 mb-3 w-28" />
-                <Skeleton className="w-32 h-6 rounded-full" />
-              </div>
-              <Skeleton className="w-16 h-16 rounded-xl" />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1">
-              <Skeleton className="w-full h-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  
 
   return (
     <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">

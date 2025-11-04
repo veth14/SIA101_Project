@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { OverviewCards } from './OverviewCards';
+import React from 'react';
 import ProfitTrendsChart from './ProfitTrendsChart';
 import { DepartmentCards } from './DepartmentCards';
 import { CostBreakdown } from './CostBreakdown';
@@ -34,38 +33,18 @@ export const ProfitAnalysisCharts: React.FC<ProfitAnalysisChartsProps> = ({
   costAnalysis,
   departmentProfits
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate initial data loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-  const totalExpenses = costAnalysis.reduce((sum, cost) => sum + cost.amount, 0);
-  const totalRevenue = departmentProfits.reduce((sum, dept) => sum + dept.revenue, 0);
-  const netProfit = departmentProfits.reduce((sum, dept) => sum + dept.profit, 0);
-  const monthlyTarget = 2000000;
-
+  // No skeleton/loading simulation: render charts and sections immediately
   return (
-    <div className="space-y-6">
-      <OverviewCards 
-        totalRevenue={totalRevenue}
-        totalExpenses={totalExpenses}
-        netProfit={netProfit}
-        monthlyTarget={monthlyTarget}
-        isLoading={isLoading}
-      />
-
-      <div className="mb-6">
+    <div className="space-y-8">
+      {/* Profit Trends Chart */}
+      <div className="mb-2">
         <ProfitTrendsChart />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DepartmentCards departmentProfits={departmentProfits} isLoading={isLoading} />
-        <CostBreakdown isLoading={isLoading} />
+      {/* Department Performance and Cost Analysis Grid */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <DepartmentCards departmentProfits={departmentProfits} />
+        <CostBreakdown costAnalysis={costAnalysis} />
       </div>
     </div>
   );

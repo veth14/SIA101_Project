@@ -1,49 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import React from 'react';
 import { BarChart3 } from 'lucide-react';
 
 export const ProfitAnalysisHeader: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading - synchronized with all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
-        <div className="relative z-10 px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <Skeleton className="w-16 h-16 rounded-2xl" />
-              <div>
-                <Skeleton className="h-10 w-64 mb-3" />
-                <Skeleton className="h-5 w-96" />
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Skeleton className="w-32 h-12 rounded-2xl" />
-              <div className="text-right">
-                <Skeleton className="h-4 w-24 mb-2" />
-                <Skeleton className="h-6 w-32" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden animate-fade-in">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
+  <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2"></div>
+  <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 delay-1000"></div>
       
       {/* Header Content */}
       <div className="relative p-10">
@@ -71,7 +35,7 @@ export const ProfitAnalysisHeader: React.FC = () => {
                 {/* Status Indicators */}
                 <div className="flex items-center space-x-4 mt-4">
                   <div className="flex items-center space-x-2 bg-emerald-50 backdrop-blur-sm rounded-full px-4 py-2 border border-emerald-200">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                     <span className="text-sm font-semibold text-emerald-700">Analysis Ready</span>
                   </div>
                   <div className="flex items-center space-x-2 bg-blue-50 backdrop-blur-sm rounded-full px-4 py-2 border border-blue-200">

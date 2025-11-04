@@ -1,7 +1,24 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { SkeletonChart } from '../../universalLoader/SkeletonLoader';
+import { formatCurrencyPH, formatShortCurrencyPH } from '../../../lib/utils';
+
+// Workaround: Recharts JSX types sometimes conflict with the project's React typings.
+// Create safe aliases typed as React.ComponentType<any> and use them in JSX to avoid typing issues.
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
+// Tooltip payload shape used by Recharts tooltip entries
+interface TooltipPayload {
+  dataKey: string;
+  value: number;
+  color?: string;
+}
 
 // Sample profit data generator
 const getProfitData = (timeframe: 'weekly' | 'monthly' | 'yearly') => {
@@ -40,31 +57,16 @@ const getProfitData = (timeframe: 'weekly' | 'monthly' | 'yearly') => {
   return baseData[timeframe];
 };
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-const formatShortCurrency = (amount: number) => {
-  if (amount >= 1000000) {
-    return `$${(amount / 1000000).toFixed(1)}M`;
-  } else if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(0)}K`;
-  }
-  return `$${amount}`;
-};
+const formatCurrency = formatCurrencyPH;
+const formatShortCurrency = formatShortCurrencyPH;
 
 // Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: any[], label: string }) => {
+const CustomTooltip = ({ active, payload, label }: { active: boolean; payload: TooltipPayload[]; label: string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg p-4 min-w-[200px]">
         <p className="mb-2 font-medium text-gray-900">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipPayload, index: number) => (
           <div key={`tooltip-${String(index)}`} className="flex items-center justify-between gap-4 mb-1">
             <div className="flex items-center gap-2">
               <div 
@@ -90,7 +92,6 @@ interface ProfitTrendsChartProps {
 
 const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" }) => {
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [isLoading, setIsLoading] = useState(true);
   
   // Get data and calculate metrics
   const profitData = useMemo(() => getProfitData(activeTimeframe), [activeTimeframe]);
@@ -115,28 +116,18 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
     };
   }, [profitData]);
 
-  // Initial loading only
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SkeletonChart />;
-  }
+  // Render immediately — removed artificial loading/skeleton
 
   const isProfitable = metrics.totalProfit > 0;
 
   return (
     <div className={`overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in ${className}`}>
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+      <div className="absolute inset-0 transition-opacity duration-700 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100"></div>
       
       <div className="relative z-10">
         {/* Header */}
-        <div className="px-8 py-7 border-b bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
+        <div className="px-8 border-b py-7 bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
@@ -158,12 +149,12 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                 }`}></div>
               </div>
               <div>
-                <h3 className="text-2xl font-black bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-black text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text">
                   Profit Analysis
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-gray-600">Performance Metrics</p>
-                  <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
+                  <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
                   <span className="text-sm font-bold text-heritage-green">October 2025</span>
                 </div>
               </div>
@@ -210,29 +201,22 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
         {/* Chart Area */}
         <div className="px-6 py-6">
           <div className="h-[340px] w-full">
-            {/* @ts-ignore */}
-            <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-ignore */}
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+              <RAreaChart
                 data={profitData}
                 margin={{ top: 20, right: 30, left: 50, bottom: 40 }}
               >
                 <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#D97706" stopOpacity={0.7} />
+                    <stop offset="95%" stopColor="#FCD34D" stopOpacity={0.1} />
+                  </linearGradient>
+                  <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#82A33D" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#ABAD8A" stopOpacity={0.1} />
                   </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#FCA5A5" stopOpacity={0.1} />
-                  </linearGradient>
-                  <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.7} />
-                    <stop offset="95%" stopColor="#6EE7B7" stopOpacity={0.1} />
-                  </linearGradient>
                 </defs>
-                {/* @ts-ignore */}
-                <XAxis 
+                <RXAxis 
                   dataKey="period" 
                   tick={{ fill: '#82A33D', fontSize: 11 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
@@ -242,30 +226,28 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                   angle={0}
                   textAnchor="middle"
                 />
-                {/* @ts-ignore */}
-                <YAxis 
+
+                <RYAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                {/* @ts-ignore */}
-                <CartesianGrid 
+
+                <RCartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
-                {/* @ts-ignore */}
-                <Tooltip content={<CustomTooltip active={false} payload={[]} label="" />} />
+                <RTooltip content={<CustomTooltip active={false} payload={[]} label="" />} />
                 
-                {/* Revenue Area - Primary (Top Layer) */}
-                {/* @ts-ignore */}
-                <Area 
+                {/* Profit Area - Primary (Top Layer) */}
+                <RArea 
                   type="monotone" 
-                  dataKey="revenue" 
+                  dataKey="profit" 
                   stroke="#82A33D" 
                   fillOpacity={1}
-                  fill="url(#colorRevenue)" 
+                  fill="url(#colorProfit)" 
                   strokeWidth={3}
                   activeDot={{ 
                     r: 6, 
@@ -276,62 +258,40 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                 />
                 
                 {/* Expenses Area - Secondary Layer */}
-                {/* @ts-ignore */}
-                <Area 
+                <RArea 
                   type="monotone" 
                   dataKey="expenses" 
-                  stroke="#EF4444" 
+                  stroke="#D97706" 
                   fillOpacity={0.7}
                   fill="url(#colorExpenses)" 
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   activeDot={{ 
                     r: 5, 
-                    stroke: '#EF4444',
+                    stroke: '#D97706',
                     strokeWidth: 2,
                     fill: 'white'
                   }}
                 />
-                
-                {/* Profit Area - Bottom Layer */}
-                {/* @ts-ignore */}
-                <Area 
-                  type="monotone" 
-                  dataKey="profit" 
-                  stroke="#10B981" 
-                  fillOpacity={0.8}
-                  fill="url(#colorProfit)" 
-                  strokeWidth={2}
-                  activeDot={{ 
-                    r: 5, 
-                    stroke: '#10B981',
-                    strokeWidth: 2,
-                    fill: 'white'
-                  }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}
-          <div className="flex items-center justify-center mt-2 pb-2 space-x-6">
+          <div className="flex items-center justify-center pb-2 mt-2 space-x-6">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <div className="w-3 h-0.5 bg-heritage-green rounded"></div>
-              <span>Revenue</span>
+              <span className="font-semibold">Net Profit</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-3 h-0.5 bg-red-500 rounded"></div>
-              <span>Expenses</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-3 h-0.5 bg-emerald-500 rounded"></div>
-              <span>Profit</span>
+              <div className="w-3 h-0.5 bg-amber-600 rounded"></div>
+              <span className="font-semibold">Total Expenses</span>
             </div>
           </div>
         </div>
         
         {/* Stats and Insights Section */}
         <div className="grid grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 md:grid-cols-4">
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Total Profit</div>
             <div className={`text-2xl font-bold ${isProfitable ? 'text-heritage-green' : 'text-red-600'}`}>
               {formatCurrency(metrics.totalProfit)}
@@ -344,7 +304,7 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
             </div>
           </div>
           
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Average Profit</div>
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics.averageProfit)}
@@ -352,7 +312,7 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
             <div className="text-xs text-gray-500">Per {activeTimeframe.slice(0, -2)}</div>
           </div>
           
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Best Period</div>
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics.maxProfit)}
@@ -360,12 +320,12 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
             <div className="text-xs text-gray-500">{metrics.maxProfitPeriod}</div>
           </div>
           
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
-            <div className="text-sm font-medium text-gray-500">Revenue</div>
-            <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics.totalRevenue)}
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
+            <div className="text-sm font-medium text-gray-500">Total Expenses</div>
+            <div className="text-2xl font-bold text-amber-600">
+              {formatCurrency(metrics.totalExpenses)}
             </div>
-            <div className="text-xs text-gray-500">Total income</div>
+            <div className="text-xs text-gray-500">Operating costs</div>
           </div>
         </div>
       </div>

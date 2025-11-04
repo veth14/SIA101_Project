@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
@@ -7,7 +7,6 @@ import {
   formatCurrency, 
   formatShortCurrency
 } from './chartsLogic/revenueAnalyticsLogic';
-import { SkeletonChart } from '../../universalLoader/SkeletonLoader';
 
 // Define types for tooltip data
 interface TooltipPayload {
@@ -44,29 +43,18 @@ const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: T
 
 const RevenueTrends: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [isLoading, setIsLoading] = useState(true);
   
   // Get data and metrics
   const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
   const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
 
-  // Initial loading only
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-  
   // Transform data for recharts
   const chartData = revenueData.map((item) => ({
     day: item.day,
     revenue: item.revenue
   }));
 
-  if (isLoading) {
-    return <SkeletonChart />;
-  }
+  
 
   return (
     <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">

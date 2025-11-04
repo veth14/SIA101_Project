@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import { formatCurrencyPH } from '../../../lib/utils';
 
 interface PaymentsStatsProps {
   payments: Array<{
@@ -65,7 +66,7 @@ const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments, isLoading }) =>
     // Pending and refunded are neutral
     return {
       ...cfg,
-      value: `$${valueAmount.toFixed(2)}`,
+      value: formatCurrencyPH(valueAmount),
       change: `${percent}% of payments`,
       changeType,
     };
