@@ -56,7 +56,7 @@ const RevenueDistribution: React.FC<RevenueDistributionProps> = ({ revenueData }
         <div className="px-8 py-7 border-b bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
           <div className="flex items-center space-x-5">
             <div className="relative group">
-              <div className="flex items-center justify-center w-12 h-12 shadow-2xl bg-gradient-to-br from-heritage-neutral via-heritage-neutral to-heritage-green rounded-2xl transition-all duration-300 group-hover:scale-105">
+              <div className="flex items-center justify-center w-12 h-12 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl transition-all duration-300 group-hover:scale-105">
                 <PieChart className="w-6 h-6 text-white" strokeWidth={2.5} />
               </div>
               <div className="absolute -inset-2 bg-gradient-to-r from-heritage-neutral/20 to-heritage-green/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -145,7 +145,7 @@ const RevenueDistribution: React.FC<RevenueDistributionProps> = ({ revenueData }
         <div className="px-8 py-6 border-t bg-gradient-to-r from-heritage-light/20 via-white to-heritage-light/20 border-gray-200/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-heritage-green to-heritage-neutral flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-heritage-green to-heritage-green flex items-center justify-center shadow-lg">
                 <span className="text-white text-lg font-black">Σ</span>
               </div>
               <div>

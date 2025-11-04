@@ -125,7 +125,7 @@ export const calculateInventoryStats = (items: InventoryItem[]): InventoryStats 
  * Filter inventory items based on search term, category, and stock status
  */
 export const filterInventoryItems = (items: InventoryItem[], filters: InventoryFilters): InventoryItem[] => {
-  let filteredItems = items.filter(item => {
+  const filteredItems = items.filter(item => {
     // Search filter
     const matchesSearch = filters.searchTerm === '' || 
       item.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||

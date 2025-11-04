@@ -162,17 +162,18 @@ export const generateSVGPath = (coordinates: Array<{x: number; y: number}>, clos
 };
 
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
+  // Keep for backward compatibility — prefer formatCurrencyPH from utils
+  return new Intl.NumberFormat('en-PH', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'PHP',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
 };
 
 export const formatShortCurrency = (value: number): string => {
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`;
-  }
-  return `$${value}`;
+  // Simple compact formatting for display in axis ticks
+  if (value >= 1000000) return `₱${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `₱${(value / 1000).toFixed(0)}K`;
+  return `₱${value.toLocaleString('en-PH')}`;
 };

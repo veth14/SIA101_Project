@@ -11,10 +11,18 @@ interface DepartmentProfit {
 
 interface DepartmentCardsProps {
   departmentProfits: DepartmentProfit[];
-  isLoading?: boolean;
 }
 
-export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProfits, isLoading = false }) => {
+export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProfits }) => {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <div className="lg:col-span-2 relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60">
       {/* Gradient Overlay */}
@@ -23,69 +31,23 @@ export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProf
       <div className="relative z-10 p-8">
         {/* Header */}
         <div className="flex items-center space-x-3 mb-6">
-          {isLoading ? (
-            <>
-              <div className="w-12 h-12 bg-gray-300 rounded-2xl animate-pulse"></div>
-              <div className="space-y-1">
-                <div className="h-6 w-56 bg-gray-300 rounded animate-pulse"></div>
-                <div className="h-4 w-72 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-br from-heritage-green via-emerald-600 to-emerald-700 rounded-2xl flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green/20 to-emerald-600/20 rounded-2xl blur-lg opacity-60"></div>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-gray-900">Department Performance</h3>
-                <p className="text-sm font-semibold text-gray-600">Revenue and profitability overview</p>
-              </div>
-            </>
-          )}
+          <div className="relative">
+            <div className="w-12 h-12 bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-lg opacity-60"></div>
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-gray-900">Department Performance</h3>
+            <p className="text-sm font-semibold text-gray-600">Revenue and profitability overview</p>
+          </div>
         </div>
 
         {/* Cards Grid */}
         <div className="grid grid-cols-2 gap-4">
-          {isLoading ? (
-            // Skeleton Loader
-            <>
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="relative overflow-hidden bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-gray-200/60 animate-pulse">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gray-300 rounded-xl"></div>
-                      <div className="space-y-2">
-                        <div className="h-4 w-24 bg-gray-300 rounded"></div>
-                        <div className="h-3 w-16 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                    <div className="h-5 w-16 bg-gray-300 rounded-full"></div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <div className="h-3 w-16 bg-gray-200 rounded"></div>
-                      <div className="h-3 w-20 bg-gray-300 rounded"></div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div className="h-3 w-12 bg-gray-200 rounded"></div>
-                      <div className="h-3 w-24 bg-gray-300 rounded"></div>
-                    </div>
-                    <div className="pt-3 border-t border-gray-200/60">
-                      <div className="flex justify-between">
-                        <div className="h-3 w-14 bg-gray-200 rounded"></div>
-                        <div className="h-5 w-16 bg-gray-300 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
+          {departmentProfits && departmentProfits.length > 0 ? (
             departmentProfits.map((dept, index) => (
             <div 
               key={dept.department} 
@@ -129,13 +91,13 @@ export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProf
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-gray-600">Revenue</span>
-                    <span className="text-base font-bold text-gray-900">${dept.revenue.toLocaleString()}</span>
+                    <span className="text-base font-bold text-gray-900">{formatCurrency(dept.revenue)}</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-gray-600">Profit</span>
                     <span className={`text-base font-black ${dept.profit > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {dept.profit > 0 ? '+' : ''}${dept.profit.toLocaleString()}
+                      {dept.profit > 0 ? '+' : ''}{formatCurrency(Math.abs(dept.profit))}
                     </span>
                   </div>
                   
@@ -143,7 +105,7 @@ export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProf
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-semibold text-gray-600">Margin</span>
                       <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${dept.margin > 0 ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`}></div>
+                        <div className={`w-2 h-2 rounded-full ${dept.margin > 0 ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
                         <span className={`text-xl font-black ${dept.margin > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                           {dept.margin > 0 ? '+' : ''}{dept.margin.toFixed(1)}%
                         </span>
@@ -154,6 +116,8 @@ export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProf
               </div>
             </div>
             ))
+          ) : (
+            <div className="col-span-2 p-6 text-center text-sm text-gray-500">No department data available.</div>
           )}
         </div>
       </div>

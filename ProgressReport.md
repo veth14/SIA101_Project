@@ -98,6 +98,12 @@ Completed:
     C.) Time Spent: 2 Hours
     D.) Remarks: Functions 
 
+5. Valmores (Revenue Tracking)
+    A.) Task/Feature: Redesign added Tabs for Profit Page 
+    B.) Status: Completed
+    C.) Time Spent: 2 Hours
+    D.) Remarks: Back-end not done yet
+
 Pending:
 1. Valmores (MyBookingsPage)
     A.) Task/Feature: Redesign MyBookingsPage
@@ -117,11 +123,11 @@ Pending:
     C.) Time Spent:
     D.) Remarks:
 
-4. Valmores (Revenue Tracking)
-    A.) Task/Feature:
-    B.) Status:
-    C.) Time Spent:
-    D.) Remarks:
+4. Valmores (User Guest Page)
+    A.) Task/Feature: Add Pages For FAQs | Terms and Conditions | Privacy Policy | Contact Us
+    B.) Status: On-Going
+    C.) Time Spent: 0 Hours
+    D.) Remarks: Nov 04, 2025 Starting 
 
 5. Valmores (Payroll)
     A.) Task/Feature:

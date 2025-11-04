@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import { formatCurrencyPH } from '../../../lib/utils';
 
 interface StatCard {
   title: string;
@@ -13,7 +14,7 @@ interface StatCard {
 const stats: StatCard[] = [
   {
     title: 'Total Revenue',
-    value: '$245,800',
+    value: formatCurrencyPH(245800),
     change: '+12.5% from last month',
     changeType: 'positive',
     iconBg: 'bg-green-100',
@@ -25,7 +26,7 @@ const stats: StatCard[] = [
   },
   {
     title: 'Net Profit',
-    value: '$89,240',
+    value: formatCurrencyPH(89240),
     change: '+8.3% from last month',
     changeType: 'positive',
     iconBg: 'bg-blue-100',
@@ -37,7 +38,7 @@ const stats: StatCard[] = [
   },
   {
     title: 'Total Expenses',
-    value: '$156,560',
+    value: formatCurrencyPH(156560),
     change: '+2.1% from last month',
     changeType: 'positive',
     iconBg: 'bg-orange-100',
@@ -49,7 +50,7 @@ const stats: StatCard[] = [
   },
   {
     title: 'Cash Flow',
-    value: '$45,320',
+    value: formatCurrencyPH(45320),
     change: '-3.2% from last month',
     changeType: 'negative',
     iconBg: 'bg-purple-100',

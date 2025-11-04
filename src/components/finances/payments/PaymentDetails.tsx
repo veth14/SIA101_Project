@@ -257,9 +257,9 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose }) => 
         </div>
         {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
+          <div className="flex flex-col justify-end gap-3 sm:flex-row sm:items-center">
             {/* Left-side optional actions (stacked on small screens) */}
-            <div className="flex items-center gap-2 order-2 sm:order-1">
+            <div className="flex items-center order-2 gap-2 sm:order-1">
               {payment.status === 'failed' && (
                 <button
                   onClick={handleRetryPayment}

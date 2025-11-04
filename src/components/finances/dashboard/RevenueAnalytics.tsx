@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
@@ -7,17 +7,24 @@ import {
   formatCurrency, 
   formatShortCurrency
 } from './chartsLogic/revenueAnalyticsLogic';
-import { SkeletonChart } from '../../universalLoader/SkeletonLoader';
 
 
+
+
+// Tooltip payload shape
+interface TooltipPayload {
+  dataKey: string;
+  value: number;
+  color?: string;
+}
 
 // Custom tooltip component with proper typing
-const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: any[], label: string }) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg p-4 min-w-[200px]">
         <p className="mb-2 font-medium text-gray-900">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: TooltipPayload, index: number) => (
           <div key={`tooltip-${String(index)}`} className="flex items-center justify-between gap-4 mb-1">
             <div className="flex items-center gap-2">
               <div 
@@ -37,55 +44,53 @@ const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: a
   return null;
 };
 
+// Recharts aliases to avoid JSX typing conflicts
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 const RevenueAnalytics: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [isLoading, setIsLoading] = useState(true);
   
   // Get data and metrics
   const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
   const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
 
-  // Initial loading only
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-  
   // Transform data for recharts
   const chartData = revenueData.map((item) => ({
     day: item.day,
     revenue: item.revenue
   }));
 
-  if (isLoading) {
-    return <SkeletonChart />;
-  }
+  
 
   return (
-    <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">
+    <div className="relative overflow-hidden shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 animate-fade-in">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+      <div className="absolute inset-0 transition-opacity duration-700 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100"></div>
       
       <div className="relative z-10">
         {/* Header */}
-        <div className="px-8 py-7 border-b bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
+        <div className="px-8 border-b py-7 bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl transition-all duration-300 group-hover:scale-105">
+                <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl group-hover:scale-105">
                   <TrendingUp className="w-6 h-6 text-white" strokeWidth={2.5} />
                 </div>
-                <div className="absolute -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
               </div>
               <div>
-                <h3 className="text-2xl font-black bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-black text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text">
                   Revenue Analytics
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-gray-600">Performance Metrics</p>
-                  <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
+                  <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
                   <span className="text-sm font-bold text-heritage-green">October 2025</span>
                 </div>
               </div>
@@ -132,10 +137,8 @@ const RevenueAnalytics: React.FC = () => {
         {/* Chart Area */}
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
-            {/* @ts-ignore */}
-            <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-ignore */}
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+              <RAreaChart
                 data={chartData}
                 margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
               >
@@ -145,8 +148,7 @@ const RevenueAnalytics: React.FC = () => {
                     <stop offset="95%" stopColor="#ABAD8A" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                {/* @ts-ignore */}
-                <XAxis 
+                <RXAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
@@ -154,23 +156,19 @@ const RevenueAnalytics: React.FC = () => {
                   interval={0}
                   padding={{ left: 0, right: 0 }}
                 />
-                {/* @ts-ignore */}
-                <YAxis 
+                <RYAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                {/* @ts-ignore */}
-                <CartesianGrid 
+                <RCartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
-                {/* @ts-ignore */}
-                <Tooltip content={<CustomTooltip />} />
-                {/* @ts-ignore */}
-                <Area 
+                <RTooltip content={<CustomTooltip />} />
+                <RArea 
                   type="linear" 
                   dataKey="revenue" 
                   stroke="#82A33D" 
@@ -186,12 +184,12 @@ const RevenueAnalytics: React.FC = () => {
                     fill: 'white'
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}
-          <div className="flex items-center justify-center mt-2 pb-2">
+          <div className="flex items-center justify-center pb-2 mt-2">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <div className="w-3 h-0.5 bg-heritage-green rounded"></div>
               <span>Daily Revenue</span>
@@ -201,12 +199,12 @@ const RevenueAnalytics: React.FC = () => {
         
         {/* Stats and Insights Section */}
         <div className="grid grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 md:grid-cols-4">
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Total Revenue</div>
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics?.totalRevenue || 85800)}
             </div>
-            <div className="flex gap-1 items-center mt-1 text-xs font-medium text-emerald-600">
+            <div className="flex items-center gap-1 mt-1 text-xs font-medium text-emerald-600">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
               </svg>
@@ -214,7 +212,7 @@ const RevenueAnalytics: React.FC = () => {
             </div>
           </div>
           
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Average</div>
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics?.averageRevenue || 12257)}
@@ -222,7 +220,7 @@ const RevenueAnalytics: React.FC = () => {
             <div className="text-xs text-gray-500">Per day</div>
           </div>
           
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Highest Day</div>
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics?.maxRevenue || 15400)}
@@ -230,7 +228,7 @@ const RevenueAnalytics: React.FC = () => {
             <div className="text-xs text-gray-500">{metrics?.maxDay || "Friday"}</div>
           </div>
           
-          <div className="p-4 bg-white/80 border rounded-xl shadow-sm border-heritage-light">
+          <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Projected</div>
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics?.projectedRevenue || 92500)}
