@@ -97,7 +97,7 @@ export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProf
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-semibold text-gray-600">Profit</span>
                     <span className={`text-base font-black ${dept.profit > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {dept.profit > 0 ? '+' : ''}{formatCurrency(Math.abs(dept.profit))}
+                      {dept.profit > 0 ? '+' : '-'}{formatCurrency(Math.abs(dept.profit))}
                     </span>
                   </div>
                   
