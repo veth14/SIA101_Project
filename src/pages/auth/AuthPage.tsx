@@ -384,11 +384,11 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="min-h-screen overflow-hidden">
       <Header />
       
       {/* Hero Background Section */}
-      <div className="relative h-full flex items-center justify-center">
+      <div className="relative min-h-screen flex items-center justify-center py-20 sm:py-24">
         {/* Background Image */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div 
@@ -402,38 +402,38 @@ export const AuthPage = () => {
         </div>
         
         {/* Content */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pointer-events-auto">
-          <div className="grid lg:grid-cols-2 gap-8 items-center h-full">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pointer-events-auto">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-center">
             
-            {/* Left Side - Welcome Content */}
-            <div className="text-white space-y-8">
+            {/* Left Side - Welcome Content - Hidden on mobile, visible on lg+ */}
+            <div className="hidden lg:block text-white space-y-6 lg:space-y-8">
               <div>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                   Welcome to <span className="text-heritage-light">Balay Ginhawa</span>
                 </h1>
-                <p className="text-xl md:text-2xl text-white/90 mt-6 leading-relaxed">
+                <p className="text-xl md:text-2xl text-white/90 mt-4 lg:mt-6 leading-relaxed">
                   Experience authentic Filipino heritage in our luxurious accommodations
                 </p>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 lg:space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-heritage-light rounded-full"></div>
-                  <p className="text-lg text-white/80">Luxury rooms with Filipino cultural touches</p>
+                  <div className="w-2 h-2 bg-heritage-light rounded-full flex-shrink-0"></div>
+                  <p className="text-base lg:text-lg text-white/80">Luxury rooms with Filipino cultural touches</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-heritage-light rounded-full"></div>
-                  <p className="text-lg text-white/80">World-class amenities and services</p>
+                  <div className="w-2 h-2 bg-heritage-light rounded-full flex-shrink-0"></div>
+                  <p className="text-base lg:text-lg text-white/80">World-class amenities and services</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-heritage-light rounded-full"></div>
-                  <p className="text-lg text-white/80">Authentic Filipino hospitality</p>
+                  <div className="w-2 h-2 bg-heritage-light rounded-full flex-shrink-0"></div>
+                  <p className="text-base lg:text-lg text-white/80">Authentic Filipino hospitality</p>
                 </div>
               </div>
             </div>
             
-            {/* Right Side - Auth Form */}
-            <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-white/20 max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar">
+            {/* Right Side - Auth Form - Full width on mobile */}
+            <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-6 lg:p-8 border border-white/20 w-full max-w-md lg:max-w-none mx-auto">
               {/* Loading Overlay */}
               {loading && (
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-3xl flex items-center justify-center z-10">
@@ -450,15 +450,15 @@ export const AuthPage = () => {
                   </div>
                 </div>
               )}
-              <div className="text-center mb-4 sm:mb-6">
+              <div className="text-center mb-5 sm:mb-6">
                 <div className="flex items-center justify-center mb-3 sm:mb-4">
                   <img 
                     src="/BalayGinhawa/balaylogopng.png" 
                     alt="Balay Ginhawa Logo" 
-                    className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                    className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
                   />
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-2 transition-all duration-300">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 transition-all duration-300">
                   {isRegisterMode ? 'Create Account' : 'Sign In'}
                 </h2>
                 <p className="text-sm sm:text-base text-gray-600">
@@ -467,14 +467,14 @@ export const AuthPage = () => {
               </div>
 
               <form className={`space-y-3 sm:space-y-4 transition-opacity duration-300 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`} onSubmit={handleSubmit}>
-                <div className={`space-y-3 sm:space-y-4 ${shouldAnimate ? 'transition-all duration-500' : ''} ${isRegisterMode ? 'opacity-100' : 'opacity-100'}`}>
+                <div className={`space-y-3 ${shouldAnimate ? 'transition-all duration-500' : ''} ${isRegisterMode ? 'opacity-100' : 'opacity-100'}`}>
                   
                   {/* Registration Fields */}
-                  <div className={`grid grid-cols-2 gap-4 ${shouldAnimate ? 'transition-all duration-500' : ''} overflow-hidden ${
-                    isRegisterMode ? 'max-h-32 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${shouldAnimate ? 'transition-all duration-500' : ''} overflow-hidden ${
+                    isRegisterMode ? 'max-h-96 sm:max-h-32 opacity-100' : 'max-h-0 opacity-0'
                   }`}>
                     <div>
-                      <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-1">
                         First Name
                       </label>
                       <input
@@ -482,18 +482,18 @@ export const AuthPage = () => {
                         type="text"
                         value={registerData.firstName}
                         onChange={(e) => handleRegisterInputChange('firstName', e.target.value)}
-                        className={`block w-full px-3 py-2.5 sm:py-3 border ${
+                        className={`block w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
                           errors.firstName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="First name"
                       />
                       {errors.firstName && (
-                        <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                        <p className="mt-0.5 text-xs text-red-600">{errors.firstName}</p>
                       )}
                     </div>
                     
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-1">
                         Last Name
                       </label>
                       <input
@@ -501,20 +501,20 @@ export const AuthPage = () => {
                         type="text"
                         value={registerData.lastName}
                         onChange={(e) => handleRegisterInputChange('lastName', e.target.value)}
-                        className={`block w-full px-3 py-2.5 sm:py-3 border ${
+                        className={`block w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border ${
                           errors.lastName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Last name"
                       />
                       {errors.lastName && (
-                        <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                        <p className="mt-0.5 text-xs text-red-600">{errors.lastName}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Email Field */}
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
                       Email Address
                     </label>
                     <div className="relative">
@@ -532,15 +532,15 @@ export const AuthPage = () => {
                           ? handleRegisterInputChange('email', e.target.value)
                           : handleLoginInputChange('email', e.target.value)
                         }
-                        className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border ${
+                        className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 text-sm sm:text-base border ${
                           errors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Enter your email address"
                       />
                     </div>
                     {errors.email && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <p className="mt-1 text-xs text-red-600 flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
                         {errors.email}
@@ -550,7 +550,7 @@ export const AuthPage = () => {
 
                   {/* Password Field */}
                   <div>
-                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
                       Password
                     </label>
                     <div className="relative">
@@ -568,7 +568,7 @@ export const AuthPage = () => {
                           ? handleRegisterInputChange('password', e.target.value)
                           : handleLoginInputChange('password', e.target.value)
                         }
-                        className={`block w-full pl-10 pr-12 py-2.5 sm:py-3 border ${
+                        className={`block w-full pl-10 pr-12 py-2.5 sm:py-3 text-sm sm:text-base border ${
                           errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Enter your password"
@@ -591,8 +591,8 @@ export const AuthPage = () => {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <p className="mt-1 text-xs text-red-600 flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
                         {errors.password}
@@ -605,9 +605,9 @@ export const AuthPage = () => {
 
                   {/* Confirm Password Field - Only for Registration */}
                   <div className={`${shouldAnimate ? 'transition-all duration-500' : ''} overflow-hidden ${
-                    isRegisterMode ? 'max-h-40 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
+                    isRegisterMode ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
                   }`}>
-                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -622,7 +622,7 @@ export const AuthPage = () => {
                         autoComplete="new-password"
                         value={registerData.confirmPassword}
                         onChange={(e) => handleRegisterInputChange('confirmPassword', e.target.value)}
-                        className={`block w-full pl-10 pr-12 py-2.5 sm:py-3 border ${
+                        className={`block w-full pl-10 pr-12 py-2.5 sm:py-3 text-sm sm:text-base border ${
                           errors.confirmPassword ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Confirm your password"
@@ -645,8 +645,8 @@ export const AuthPage = () => {
                       </button>
                     </div>
                     {errors.confirmPassword && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <p className="mt-1 text-xs text-red-600 flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
                         {errors.confirmPassword}
@@ -668,11 +668,11 @@ export const AuthPage = () => {
                   </div>
                 )}
 
-                <div>
+                <div className="pt-1">
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`group relative w-full flex justify-center py-4 px-6 border border-transparent text-base font-semibold rounded-lg text-white transition-all duration-300 ${
+                    className={`group relative w-full flex justify-center py-3 sm:py-4 px-6 border border-transparent text-sm sm:text-base font-semibold rounded-lg text-white transition-all duration-300 ${
                       loading
                         ? 'bg-heritage-green/60 cursor-not-allowed'
                         : 'bg-heritage-green hover:bg-heritage-green/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-heritage-green hover:scale-105 hover:shadow-lg'
@@ -695,8 +695,8 @@ export const AuthPage = () => {
                 </div>
                 
                 {/* Toggle Link */}
-                <div className="text-center pt-6 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">
+                <div className="text-center pt-5 sm:pt-6 border-t border-gray-200">
+                  <p className="text-xs sm:text-sm text-gray-600">
                     {isRegisterMode ? 'Already have an account?' : "Don't have an account?"}{' '}
                     <button
                       type="button"

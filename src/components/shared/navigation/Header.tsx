@@ -20,6 +20,9 @@ export const Header = () => {
   // Pages where header should always be solid (not transparent)
   const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
+  
+  // Mobile menu should be solid on auth pages for better visibility
+  const shouldMobileMenuBeSolid = isScrolled || shouldUseSolidHeader || location.pathname.startsWith('/auth');
 
 
   const handleScrollTo = (sectionId: string) => {
@@ -62,6 +65,12 @@ export const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setShowUserDropdown(false);
+  }, [location.pathname]);
 
   return (
     <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
@@ -366,12 +375,12 @@ export const Header = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className={`lg:hidden transition-all duration-300 ${
-            isScrolled || shouldUseSolidHeader
-              ? 'bg-white/95 backdrop-blur-md border-t border-heritage-light/20' 
-              : 'bg-black/20 backdrop-blur-md border-t border-white/20'
+          <div className={`lg:hidden transition-all duration-500 ease-in-out rounded-b-3xl shadow-2xl overflow-hidden animate-in slide-in-from-top-5 fade-in mb-6 ${
+            shouldMobileMenuBeSolid
+              ? 'bg-gradient-to-b from-white via-white to-gray-50/50 backdrop-blur-xl border-t border-gray-200'
+              : 'bg-slate-900/98 backdrop-blur-xl border-t border-white/10'
           }`}>
-            <div className="px-4 py-6 space-y-4">
+            <div className="px-4 pt-5 pb-8 space-y-2">
               {navigation.map((link) => (
                 link.type === 'link' ? (
                   <Link
@@ -381,14 +390,14 @@ export const Header = () => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                    className={`block w-full text-left px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 transform hover:scale-[1.02] ${
                       location.pathname === link.href
-                        ? (isScrolled || shouldUseSolidHeader)
-                          ? 'text-heritage-green bg-heritage-light/20'
-                          : 'text-white bg-white/20'
-                        : (isScrolled || shouldUseSolidHeader)
-                          ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
-                          : 'text-white/90 hover:text-white hover:bg-white/20'
+                        ? shouldMobileMenuBeSolid
+                          ? 'text-heritage-green bg-gradient-to-r from-heritage-light/40 to-heritage-light/20 shadow-sm'
+                          : 'text-heritage-light bg-white/20 shadow-sm'
+                        : shouldMobileMenuBeSolid
+                          ? 'text-gray-700 hover:text-heritage-green hover:bg-gradient-to-r hover:from-heritage-light/30 hover:to-heritage-light/10'
+                          : 'text-white hover:text-heritage-light hover:bg-white/20'
                     }`}
                   >
                     {link.name}
@@ -400,10 +409,10 @@ export const Header = () => {
                       handleScrollTo(link.scrollTo);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
-                      (isScrolled || shouldUseSolidHeader)
-                        ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
-                        : 'text-white/90 hover:text-white hover:bg-white/20'
+                    className={`block w-full text-left px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 transform hover:scale-[1.02] ${
+                      shouldMobileMenuBeSolid
+                        ? 'text-gray-700 hover:text-heritage-green hover:bg-gradient-to-r hover:from-heritage-light/30 hover:to-heritage-light/10'
+                        : 'text-white hover:text-heritage-light hover:bg-white/20'
                     }`}
                   >
                     {link.name}
@@ -412,14 +421,16 @@ export const Header = () => {
               ))}
               
               {/* Mobile Auth Buttons */}
-              <div className="pt-4 border-t border-current/20 space-y-3">
+              <div className={`pt-5 pb-2 space-y-3 transition-colors duration-300 ${
+                shouldMobileMenuBeSolid ? 'border-t border-gray-200' : 'border-t border-white/20'
+              }`}>
                 {userData ? (
                   <>
                     {userData.role === 'guest' ? (
                       <>
                         <Link
                           to="/booking"
-                          className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                          className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-all duration-300 shadow-md transform hover:scale-[1.02]"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Book Now
@@ -429,10 +440,10 @@ export const Header = () => {
                             logout();
                             setIsMobileMenuOpen(false);
                           }}
-                          className={`block w-full px-4 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                            isScrolled || shouldUseSolidHeader
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                              : 'bg-white/20 text-white hover:bg-white/30'
+                          className={`block w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${
+                            shouldMobileMenuBeSolid
+                              ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                              : 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
                           }`}
                         >
                           Sign Out
@@ -441,7 +452,7 @@ export const Header = () => {
                     ) : (
                       <Link
                         to="/account"
-                        className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                        className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-all duration-300 shadow-md transform hover:scale-[1.02]"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         My Account
@@ -452,10 +463,10 @@ export const Header = () => {
                   <>
                     <Link
                       to="/auth"
-                      className={`block w-full text-center px-4 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                        isScrolled || shouldUseSolidHeader
-                          ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30'
-                          : 'bg-white/20 text-white hover:bg-white/30'
+                      className={`block w-full text-center px-4 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${
+                        shouldMobileMenuBeSolid
+                          ? 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'
+                          : 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -463,7 +474,7 @@ export const Header = () => {
                     </Link>
                     <Link
                       to="/auth?mode=register"
-                      className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                      className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-all duration-300 shadow-md transform hover:scale-[1.02]"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Register
