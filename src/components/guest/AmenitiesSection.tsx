@@ -38,48 +38,48 @@ export const AmenitiesSection: React.FC<{ amenities: AmenityProps[] }> = ({ amen
   }, []);
 
   return (
-    <section ref={sectionRef} className="w-full py-12 bg-gradient-to-br from-white via-heritage-light/10 to-white relative overflow-hidden">
+    <section ref={sectionRef} className="w-full py-10 sm:py-12 md:py-16 bg-gradient-to-br from-white via-heritage-light/10 to-white relative overflow-hidden">
       {/* Floating Background Elements */}
       <div className="absolute top-10 left-10 w-72 h-72 bg-heritage-green/5 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-heritage-neutral/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Enhanced Section Header */}
-        <div className={`text-center mb-10 transition-all duration-1000 ${
+        {/* Enhanced Section Header - MOBILE RESPONSIVE */}
+        <div className={`text-center mb-8 sm:mb-10 transition-all duration-1000 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
-          <div className="inline-block mb-6 animate-bounce">
-            <span className="px-6 py-3 bg-heritage-green/10 text-heritage-green text-lg font-medium rounded-full border border-heritage-green/20 shadow-lg backdrop-blur-sm">
+          <div className="inline-block mb-4 sm:mb-6 animate-bounce">
+            <span className="px-4 sm:px-6 py-2 sm:py-3 bg-heritage-green/10 text-heritage-green text-sm sm:text-base md:text-lg font-medium rounded-full border border-heritage-green/20 shadow-lg backdrop-blur-sm">
               Hotel Features
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">
             Premium <span className="bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text text-transparent animate-pulse">Amenities</span>
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Experience world-class facilities designed to make your stay unforgettable
           </p>
         </div>
 
-        {/* Enhanced Amenities Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+        {/* Enhanced Amenities Grid - MOBILE RESPONSIVE */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
           {amenities.map(({ icon: Icon, name, description }, index) => {
             const IconComponent = Icon as React.ComponentType<IconBaseProps>;
             return (
               <div 
                 key={name} 
-                className={`group text-center p-6 rounded-2xl bg-gradient-to-br from-white to-heritage-light/20 hover:from-heritage-green/5 hover:to-heritage-neutral/10 border border-heritage-light/30 hover:border-heritage-green/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-4 transform ${
+                className={`group text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-gradient-to-br from-white to-heritage-light/20 hover:from-heritage-green/5 hover:to-heritage-neutral/10 border border-heritage-light/30 hover:border-heritage-green/30 transition-all duration-500 hover:shadow-2xl active:scale-95 sm:hover:-translate-y-4 transform ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-heritage-green/10 to-heritage-neutral/10 rounded-full flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-heritage-green group-hover:to-heritage-neutral group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg">
-                  <IconComponent className="w-10 h-10 text-heritage-green group-hover:text-white transition-all duration-300" />
+                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 mx-auto mb-4 sm:mb-5 md:mb-6 bg-gradient-to-br from-heritage-green/10 to-heritage-neutral/10 rounded-full flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-heritage-green group-hover:to-heritage-neutral sm:group-hover:scale-125 sm:group-hover:rotate-12 transition-all duration-500 shadow-lg">
+                  <IconComponent className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-heritage-green group-hover:text-white transition-all duration-300" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-heritage-green transition-colors duration-300">
+                <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-heritage-green transition-colors duration-300">
                   {name}
                 </h3>
-                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
                   {description}
                 </p>
                 
@@ -91,16 +91,16 @@ export const AmenitiesSection: React.FC<{ amenities: AmenityProps[] }> = ({ amen
           })}
         </div>
 
-        {/* Enhanced Bottom CTA */}
-        <div className={`text-center mt-10 transition-all duration-1000 delay-500 ${
+        {/* Enhanced Bottom CTA - MOBILE RESPONSIVE */}
+        <div className={`text-center mt-8 sm:mt-10 px-4 transition-all duration-1000 delay-500 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
             Discover more about our exceptional facilities and services
           </p>
           <button 
             onClick={() => navigate('/amenities')}
-            className="group relative px-10 py-5 bg-gradient-to-r from-heritage-green to-heritage-neutral hover:from-heritage-neutral hover:to-heritage-green text-white font-semibold rounded-full transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 hover:scale-110 overflow-hidden"
+            className="group relative px-8 sm:px-10 py-3 sm:py-4 md:py-5 bg-gradient-to-r from-heritage-green to-heritage-neutral hover:from-heritage-neutral hover:to-heritage-green text-white text-sm sm:text-base font-semibold rounded-full transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 active:scale-95 sm:hover:scale-110 overflow-hidden"
           >
             <span className="relative z-10">View All Amenities</span>
             <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"></div>

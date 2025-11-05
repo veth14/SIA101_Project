@@ -162,9 +162,9 @@ export const AmenitiesPage = () => {
     : amenities.filter(amenity => amenity.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 pt-20">
-      {/* Header Section */}
-      <div className="relative py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-heritage-green/95 via-heritage-neutral/90 to-heritage-green/95 text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 pt-16 sm:pt-20">
+      {/* Header Section - MOBILE RESPONSIVE */}
+      <div className="relative py-16 sm:py-24 md:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-heritage-green/95 via-heritage-neutral/90 to-heritage-green/95 text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-64 h-64 bg-white rounded-full blur-3xl"></div>
@@ -179,13 +179,13 @@ export const AmenitiesPage = () => {
             <div className="inline-flex items-center justify-center w-20 h-1 bg-heritage-light rounded-full mb-6"></div>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-serif font-bold mb-8 tracking-tight leading-none">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold mb-6 sm:mb-8 tracking-tight leading-tight">
             <span className="bg-gradient-to-r from-white via-heritage-light to-white bg-clip-text text-transparent">
               Premium Amenities
             </span>
           </h1>
           
-          <p className="text-2xl md:text-3xl text-heritage-light/90 max-w-4xl mx-auto leading-relaxed font-light mb-12">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-heritage-light/90 max-w-4xl mx-auto leading-relaxed font-light mb-8 sm:mb-12 px-4">
             Experience world-class facilities designed to make your stay unforgettable
           </p>
           
@@ -197,39 +197,38 @@ export const AmenitiesPage = () => {
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className="sticky top-20 z-40 bg-white/90 backdrop-blur-md border-b border-heritage-green/10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-wrap gap-3 justify-center">
+      {/* Category Filter - SIMPLIFIED & NON-STICKY */}
+      <div className="bg-gradient-to-b from-white via-heritage-light/5 to-white border-y border-heritage-green/10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+                className={`px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg text-xs sm:text-sm md:text-base font-semibold transition-all duration-300 ${
                   selectedCategory === category.id
-                    ? 'bg-heritage-green text-white shadow-lg transform scale-105'
-                    : 'bg-white text-heritage-green border border-heritage-green/20 hover:bg-heritage-green/5 hover:border-heritage-green/40'
+                    ? 'bg-heritage-green text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-heritage-green hover:text-heritage-green active:scale-95'
                 }`}
               >
-                <span className="text-lg">{category.icon}</span>
-                <span>{category.name}</span>
+                {category.name}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Amenities Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Amenities Grid - MOBILE RESPONSIVE */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredAmenities.map((amenity, index) => (
             <div 
               key={amenity.id}
-              className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform hover:-translate-y-2"
+              className="group bg-white rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform sm:hover:-translate-y-2 active:scale-95 sm:active:scale-100"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Image */}
-              <div className="relative h-64 overflow-hidden">
+              {/* Image - MOBILE RESPONSIVE */}
+              <div className="relative h-48 sm:h-56 md:h-64 overflow-hidden">
                 <img 
                   src={amenity.image} 
                   alt={amenity.name}
@@ -237,38 +236,38 @@ export const AmenitiesPage = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                 
-                {/* Icon Badge */}
-                <div className="absolute top-4 left-4 w-16 h-16 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">{amenity.icon}</span>
+                {/* Icon Badge - MOBILE RESPONSIVE */}
+                <div className="absolute top-3 sm:top-4 left-3 sm:left-4 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+                  <span className="text-2xl sm:text-2xl md:text-3xl">{amenity.icon}</span>
                 </div>
                 
-                {/* Availability Badge */}
-                <div className="absolute top-4 right-4 bg-heritage-green/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
+                {/* Availability Badge - MOBILE RESPONSIVE */}
+                <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-heritage-green/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                   {amenity.availability}
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="p-8">
-                <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{amenity.name}</h3>
-                  <div className="w-12 h-1 bg-heritage-green rounded-full"></div>
+              {/* Content - MOBILE RESPONSIVE */}
+              <div className="p-5 sm:p-6 md:p-8">
+                <div className="mb-3 sm:mb-4">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{amenity.name}</h3>
+                  <div className="w-10 sm:w-12 h-1 bg-heritage-green rounded-full"></div>
                 </div>
                 
-                <p className="text-gray-600 leading-relaxed mb-6">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-4 sm:mb-6">
                   {amenity.description}
                 </p>
 
-                {/* Features */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 flex items-center">
+                {/* Features - MOBILE RESPONSIVE */}
+                <div className="space-y-2 sm:space-y-3">
+                  <h4 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center">
                     <span className="w-2 h-2 bg-heritage-green rounded-full mr-2"></span>
                     Features
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     {amenity.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center text-sm text-gray-600">
-                        <svg className="w-4 h-4 text-heritage-green mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <div key={idx} className="flex items-start text-xs sm:text-sm text-gray-600">
+                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-heritage-green mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                         <span>{feature}</span>
@@ -282,20 +281,20 @@ export const AmenitiesPage = () => {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="bg-gradient-to-r from-heritage-green/10 via-heritage-light/10 to-heritage-green/10 py-20">
+      {/* Call to Action - MOBILE RESPONSIVE */}
+      <div className="bg-gradient-to-r from-heritage-green/10 via-heritage-light/10 to-heritage-green/10 py-12 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4 sm:mb-6">
             Ready to Experience Our Amenities?
           </h2>
-          <p className="text-xl text-gray-700 mb-10 leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-8 sm:mb-10 leading-relaxed">
             Book your stay at Balay Ginhawa and enjoy access to all our premium facilities and services.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <button 
               onClick={() => navigate('/rooms')}
-              className="group relative bg-gradient-to-r from-heritage-green to-heritage-green/90 hover:from-heritage-green/90 hover:to-heritage-green text-white font-bold py-4 px-8 rounded-2xl transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 transform hover:scale-105 text-lg overflow-hidden"
+              className="group relative bg-gradient-to-r from-heritage-green to-heritage-green/90 hover:from-heritage-green/90 hover:to-heritage-green text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 transform active:scale-95 sm:hover:scale-105 text-base sm:text-lg overflow-hidden"
             >
               <span className="relative z-10 flex items-center justify-center">
                 View Our Rooms
@@ -311,7 +310,7 @@ export const AmenitiesPage = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 setTimeout(() => navigate('/'), 300);
               }}
-              className="group bg-white text-heritage-green font-bold py-4 px-8 rounded-2xl border-2 border-heritage-green hover:bg-heritage-green hover:text-white transition-all duration-300 text-lg"
+              className="group bg-white text-heritage-green font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl border-2 border-heritage-green hover:bg-heritage-green hover:text-white transition-all duration-300 text-base sm:text-lg active:scale-95"
             >
               <span className="flex items-center justify-center">
                 Back to Home

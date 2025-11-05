@@ -127,28 +127,62 @@ export const BookingPage = () => {
     setAvailabilityMessage('');
 
     try {
-      // Query bookings for the selected room type
+      // Map room types to room names in Firebase
+      const roomTypeToNameMap: { [key: string]: string } = {
+        'standard': 'Silid Payapa',
+        'deluxe': 'Silid Marahuyo',
+        'suite': 'Silid Ginhawa',
+        'family': 'Silid Haraya'
+      };
+
+      const roomName = roomTypeToNameMap[roomType];
+
+      // 1. Get total count of rooms of this type
+      const roomsQuery = query(
+        collection(db, 'rooms'),
+        where('roomName', '==', roomName),
+        where('isActive', '==', true)
+      );
+      const roomsSnapshot = await getDocs(roomsQuery);
+      const totalRooms = roomsSnapshot.size;
+
+      if (totalRooms === 0) {
+        setAvailabilityMessage('No rooms of this type are currently available.');
+        setAvailabilityChecking(false);
+        return false;
+      }
+
+      // 2. Get bookings that overlap with the selected dates
       const bookingsQuery = query(
         collection(db, 'bookings'),
         where('roomType', '==', roomType),
-        where('status', 'in', ['confirmed', 'checked-in'])
+        where('status', 'in', ['confirmed', 'checked-in', 'pending'])
       );
 
-      const querySnapshot = await getDocs(bookingsQuery);
-      const existingBookings = querySnapshot.docs.map(doc => doc.data());
+      const bookingsSnapshot = await getDocs(bookingsQuery);
+      const existingBookings = bookingsSnapshot.docs.map(doc => doc.data());
 
-      // Check for date conflicts
+      // 3. Count how many rooms are booked during the selected dates
+      let bookedRoomsCount = 0;
+      const conflictingBookings: any[] = [];
+
       for (const booking of existingBookings) {
         if (checkDateOverlap(checkIn, checkOut, booking.checkIn, booking.checkOut)) {
-          const conflictStart = new Date(booking.checkIn).toLocaleDateString();
-          const conflictEnd = new Date(booking.checkOut).toLocaleDateString();
-          setAvailabilityMessage(`Room is already reserved from ${conflictStart} to ${conflictEnd}. Please select different dates.`);
-          setAvailabilityChecking(false);
-          return false;
+          bookedRoomsCount++;
+          conflictingBookings.push(booking);
         }
       }
 
-      setAvailabilityMessage('✓ Room is available for selected dates');
+      // 4. Check if there are available rooms
+      const availableRooms = totalRooms - bookedRoomsCount;
+
+      if (availableRooms <= 0) {
+        setAvailabilityMessage(`All ${roomName} rooms are reserved for the selected dates. Please choose different dates.`);
+        setAvailabilityChecking(false);
+        return false;
+      }
+
+      setAvailabilityMessage(`✓ ${availableRooms} ${roomName} room${availableRooms > 1 ? 's' : ''} available for selected dates`);
       setAvailabilityChecking(false);
       return true;
     } catch (error) {
@@ -285,7 +319,16 @@ export const BookingPage = () => {
     // Add additional guest charges if guests exceed base capacity
     if (guests > room.baseGuests) {
       const additionalGuests = guests - room.baseGuests;
-      totalPrice += additionalGuests * room.additionalGuestPrice;
+      const guestsUpToMax = Math.min(additionalGuests, room.maxGuests - room.baseGuests);
+      const excessGuests = Math.max(0, guests - room.maxGuests);
+      
+      // Charge normal rate for guests up to maxGuests
+      totalPrice += guestsUpToMax * room.additionalGuestPrice;
+      
+      // Charge excess rate for guests beyond maxGuests (if any)
+      if (excessGuests > 0 && room.excessGuestPrice) {
+        totalPrice += excessGuests * room.excessGuestPrice;
+      }
     }
 
     return totalPrice;
@@ -314,7 +357,9 @@ export const BookingPage = () => {
       basePrice: 2500,
       baseGuests: 2,
       maxGuests: 4,
-      additionalGuestPrice: 500,
+      maxCapacity: 4, // Hard limit - cannot exceed
+      additionalGuestPrice: 500, // Price for guests 3-4
+      excessGuestPrice: 800, // Price for guests beyond max (if allowed)
       description: 'A cozy sanctuary that embodies tranquility and comfort. Perfect for solo travelers or couples seeking an intimate retreat with authentic Filipino hospitality.',
       features: ['Queen-size bed', 'City view', 'Air conditioning', 'Private bathroom', 'Work desk'],
       amenities: ['Free Wi-Fi', 'Cable TV', 'Mini fridge', 'Coffee maker', 'Daily housekeeping'],
@@ -326,8 +371,10 @@ export const BookingPage = () => {
       type: 'Deluxe Room',
       basePrice: 3800,
       baseGuests: 2,
-      maxGuests: 4,
-      additionalGuestPrice: 750,
+      maxGuests: 5,
+      maxCapacity: 5, // Hard limit - cannot exceed
+      additionalGuestPrice: 750, // Price for guests 3-5
+      excessGuestPrice: 1200, // Price for guests beyond max (if allowed)
       description: 'Spacious elegance meets modern comfort in this beautifully appointed room. Designed with premium amenities and Filipino-inspired décor for the discerning traveler.',
       features: ['King-size bed', 'Ocean view', 'Premium amenities', 'Marble bathroom', 'Seating area'],
       amenities: ['Free Wi-Fi', 'Smart TV', 'Mini bar', 'Coffee & tea station', 'Bathrobes', 'Room service'],
@@ -338,9 +385,11 @@ export const BookingPage = () => {
       name: 'Silid Ginhawa',
       type: 'Suite Room',
       basePrice: 5500,
-      baseGuests: 2,
-      maxGuests: 4,
-      additionalGuestPrice: 1000,
+      baseGuests: 4,
+      maxGuests: 6,
+      maxCapacity: 6, // Hard limit - cannot exceed
+      additionalGuestPrice: 1000, // Price for guests 5-6
+      excessGuestPrice: 1500, // Price for guests beyond max (if allowed)
       description: 'Experience ultimate comfort in this sophisticated suite featuring a separate living area, elegant interiors, and enhanced privacy for an unforgettable stay.',
       features: ['Separate living area', 'Premium furnishing', 'City & ocean view', 'Luxury bathroom', 'Dining area'],
       amenities: ['Free Wi-Fi', 'Smart TV', 'Full mini bar', 'Coffee machine', 'Premium toiletries', 'Concierge service'],
@@ -353,7 +402,9 @@ export const BookingPage = () => {
       basePrice: 8000,
       baseGuests: 4,
       maxGuests: 8,
-      additionalGuestPrice: 1200,
+      maxCapacity: 8, // Hard limit - cannot exceed
+      additionalGuestPrice: 1200, // Price for guests 5-8
+      excessGuestPrice: 2000, // Price for guests beyond max (if allowed)
       description: 'Our grandest accommodation designed for families and groups. Featuring multiple bedrooms, spacious living areas, and panoramic views in a heritage-inspired setting.',
       features: ['Multiple bedrooms', 'Family-friendly layout', 'Panoramic views', 'Premium amenities', 'Private balcony'],
       amenities: ['Free Wi-Fi', 'Multiple TVs', 'Full kitchen', 'Dining area', 'Premium toiletries', '24/7 room service'],
@@ -375,33 +426,33 @@ export const BookingPage = () => {
   const totalAmount = subtotal + tax;
 
   return (
-    <div className="relative min-h-screen pt-24 overflow-hidden bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
+    <div className="relative min-h-screen pt-20 sm:pt-24 overflow-hidden bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 rounded-full w-96 h-96 bg-heritage-green/5 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 rounded-full w-80 h-80 bg-heritage-light/10 blur-2xl"></div>
       
-      <div className="relative z-10 p-8 mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-16 text-center">
-          <div className="inline-block mb-6">
-            <span className="px-6 py-3 text-lg font-medium border rounded-full shadow-lg bg-heritage-green/10 text-heritage-green border-heritage-green/20 backdrop-blur-sm">
+      <div className="relative z-10 p-4 sm:p-6 md:p-8 mx-auto max-w-7xl">
+        {/* Header - MOBILE RESPONSIVE */}
+        <div className="mb-8 sm:mb-12 md:mb-16 text-center">
+          <div className="inline-block mb-4 sm:mb-6">
+            <span className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base md:text-lg font-medium border rounded-full shadow-lg bg-heritage-green/10 text-heritage-green border-heritage-green/20 backdrop-blur-sm">
               Reserve Your Experience
             </span>
           </div>
-          <h1 className="mb-6 text-4xl font-bold leading-tight text-gray-900 md:text-5xl lg:text-6xl">
+          <h1 className="mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight text-gray-900 px-4">
             Book Your Stay at
-            <span className="block mt-2 text-transparent bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text"> Balay Ginhawa</span>
+            <span className="block mt-1 sm:mt-2 text-transparent bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text"> Balay Ginhawa</span>
           </h1>
-          <p className="max-w-3xl mx-auto text-lg leading-relaxed text-gray-700 md:text-xl">
+          <p className="max-w-3xl mx-auto text-base sm:text-lg md:text-xl leading-relaxed text-gray-700 px-4">
             Where <span className="font-semibold text-heritage-green">timeless Filipino traditions</span> embrace <span className="font-semibold text-gray-900">modern luxury</span>
           </p>
         </div>
 
-        {/* Pending Booking Notification */}
+        {/* Pending Booking Notification - MOBILE RESPONSIVE */}
         {pendingBooking && (
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="p-6 border border-blue-200 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
-              <div className="flex items-start space-x-4">
+          <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+            <div className="p-4 sm:p-6 border border-blue-200 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <div className="flex-shrink-0">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -409,25 +460,25 @@ export const BookingPage = () => {
                     </svg>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="mb-2 text-lg font-bold text-blue-800">Incomplete Booking Found</h3>
-                  <p className="mb-4 text-blue-700">
+                <div className="flex-1 min-w-0">
+                  <h3 className="mb-2 text-base sm:text-lg font-bold text-blue-800">Incomplete Booking Found</h3>
+                  <p className="mb-3 sm:mb-4 text-sm sm:text-base text-blue-700">
                     You have an incomplete booking for <span className="font-semibold">{pendingBooking.bookingData?.roomName}</span> 
                     {pendingBooking.bookingData?.checkIn && (
                       <span> from {new Date(pendingBooking.bookingData.checkIn).toLocaleDateString()}</span>
                     )}
                     . Would you like to continue with payment?
                   </p>
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row">
                     <button
                       onClick={continuePendingBooking}
-                      className="px-6 py-2 font-semibold text-white transition-all duration-200 transform rounded-lg bg-gradient-to-r from-heritage-green to-emerald-600 hover:shadow-lg hover:scale-105"
+                      className="px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold text-white transition-all duration-200 transform rounded-lg bg-gradient-to-r from-heritage-green to-emerald-600 hover:shadow-lg active:scale-95 sm:hover:scale-105"
                     >
                       Continue Payment (₱{pendingBooking.bookingData?.totalAmount?.toLocaleString()})
                     </button>
                     <button
                       onClick={dismissPendingBooking}
-                      className="px-6 py-2 font-semibold text-gray-600 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold text-gray-600 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
                       Start New Booking
                     </button>
@@ -452,40 +503,40 @@ export const BookingPage = () => {
           </div>
         )}
 
-        {/* Unified Booking Container */}
+        {/* Unified Booking Container - MOBILE RESPONSIVE */}
         <div className="max-w-5xl mx-auto">
-          <div className="overflow-hidden border shadow-2xl bg-white/90 backdrop-blur-md rounded-3xl border-heritage-green/20">
+          <div className="overflow-hidden border shadow-2xl bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl border-heritage-green/20">
             <form onSubmit={handleSubmit}>
-              {/* Progress Steps */}
-              <div className="px-8 py-6 border-b bg-gradient-to-r from-heritage-green/10 via-heritage-neutral/10 to-heritage-green/10 border-heritage-green/10">
-                <div className="flex items-center justify-center space-x-8">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full bg-heritage-green">1</div>
-                    <span className="font-semibold text-heritage-green">Dates</span>
+              {/* Progress Steps - MOBILE RESPONSIVE */}
+              <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b bg-gradient-to-r from-heritage-green/10 via-heritage-neutral/10 to-heritage-green/10 border-heritage-green/10">
+                <div className="flex items-center justify-center gap-3 sm:gap-6 md:gap-8">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-xs sm:text-sm font-bold text-white rounded-full bg-heritage-green flex-shrink-0">1</div>
+                    <span className="text-xs sm:text-sm md:text-base font-semibold text-heritage-green">Dates</span>
                   </div>
-                  <div className="w-16 h-0.5 bg-heritage-green/30"></div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full bg-heritage-green">2</div>
-                    <span className="font-semibold text-heritage-green">Room</span>
+                  <div className="w-8 sm:w-12 md:w-16 h-0.5 bg-heritage-green/30"></div>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-xs sm:text-sm font-bold text-white rounded-full bg-heritage-green flex-shrink-0">2</div>
+                    <span className="text-xs sm:text-sm md:text-base font-semibold text-heritage-green">Room</span>
                   </div>
-                  <div className="w-16 h-0.5 bg-heritage-green/30"></div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white rounded-full bg-heritage-green">3</div>
-                    <span className="font-semibold text-heritage-green">Guests</span>
+                  <div className="w-8 sm:w-12 md:w-16 h-0.5 bg-heritage-green/30"></div>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 text-xs sm:text-sm font-bold text-white rounded-full bg-heritage-green flex-shrink-0">3</div>
+                    <span className="text-xs sm:text-sm md:text-base font-semibold text-heritage-green">Guests</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-0 lg:grid-cols-3">
-                {/* Left: Form Sections */}
-                <div className="p-8 space-y-8 lg:col-span-2">
-                  {/* Dates Section */}
-                  <div className="space-y-6">
-                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
-                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">1</div>
+                {/* Left: Form Sections - MOBILE RESPONSIVE */}
+                <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 lg:col-span-2">
+                  {/* Dates Section - MOBILE RESPONSIVE */}
+                  <div className="space-y-4 sm:space-y-6">
+                    <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green flex-shrink-0">1</div>
                       <span>Select Your Dates</span>
                     </h2>
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
                       <div>
                         <label className="block mb-2 text-sm font-semibold text-heritage-green">Check-in Date</label>
                         <input
@@ -531,17 +582,17 @@ export const BookingPage = () => {
                     )}
                   </div>
 
-                  {/* Room Selection */}
-                  <div className="pt-8 space-y-6 border-t border-gray-100">
-                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
-                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">2</div>
+                  {/* Room Selection - MOBILE RESPONSIVE */}
+                  <div className="pt-6 sm:pt-8 space-y-4 sm:space-y-6 border-t border-gray-100">
+                    <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green flex-shrink-0">2</div>
                       <span>Choose Your Room</span>
                     </h2>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                       {Object.entries(roomDetails).map(([key, room]) => (
                         <label
                           key={key}
-                          className={`block p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
+                          className={`block p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md ${
                             formData.roomType === key
                               ? 'border-heritage-green bg-heritage-green/5 shadow-md'
                               : 'border-gray-200 hover:border-heritage-green/50'
@@ -623,55 +674,57 @@ export const BookingPage = () => {
                   </div>
                 </div>
 
-                {/* Right: Booking Summary */}
-                <div className="p-8 border-l lg:col-span-1 bg-heritage-green/5 border-heritage-green/10">
-                  {selectedRoom ? (
-                    <div className="space-y-6">
-                      <div className="text-center">
-                        <h3 className="mb-1 text-xl font-bold text-gray-900">{selectedRoom.name}</h3>
-                        <p className="mb-2 text-sm font-medium tracking-wider uppercase text-heritage-green">{selectedRoom.type}</p>
-                        <div className="space-y-1">
-                          <p className="text-2xl font-bold text-heritage-green">₱{roomPricePerNight.toLocaleString()}</p>
-                          <p className="text-sm text-gray-600">per night ({formData.guests} guests)</p>
-                          <p className="text-xs text-gray-500">Base: ₱{selectedRoom.basePrice.toLocaleString()} ({selectedRoom.baseGuests} guests)</p>
-                          {formData.guests > selectedRoom.baseGuests && (
-                            <p className="text-xs text-gray-500">Extra: +₱{((formData.guests - selectedRoom.baseGuests) * selectedRoom.additionalGuestPrice).toLocaleString()}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="overflow-hidden shadow-md aspect-video rounded-xl">
-                        <img 
-                          src={selectedRoom.image} 
-                          alt={selectedRoom.name}
-                          className="object-cover w-full h-full"
-                        />
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="mb-3 font-bold text-gray-900">Room Features</h4>
-                          <div className="space-y-2">
-                            {selectedRoom.features.map((feature: string, index: number) => (
-                              <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
-                                <div className="w-1.5 h-1.5 bg-heritage-green rounded-full"></div>
-                                <span>{feature}</span>
-                              </div>
-                            ))}
+                {/* Right: Booking Summary - MOBILE RESPONSIVE WITH STICKY */}
+                <div className="p-4 sm:p-6 lg:p-8 border-t lg:border-t-0 lg:border-l lg:col-span-1 bg-heritage-green/5 border-heritage-green/10">
+                  <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2">
+                    {selectedRoom ? (
+                      <div className="space-y-4 sm:space-y-6">
+                        <div className="text-center">
+                          <h3 className="mb-1 text-lg sm:text-xl font-bold text-gray-900">{selectedRoom.name}</h3>
+                          <p className="mb-2 text-xs sm:text-sm font-medium tracking-wider uppercase text-heritage-green">{selectedRoom.type}</p>
+                          <div className="space-y-1">
+                            <p className="text-xl sm:text-2xl font-bold text-heritage-green">₱{roomPricePerNight.toLocaleString()}</p>
+                            <p className="text-xs sm:text-sm text-gray-600">per night ({formData.guests} guests)</p>
+                            <p className="text-xs text-gray-500">Base: ₱{selectedRoom.basePrice.toLocaleString()} ({selectedRoom.baseGuests} guests)</p>
+                            {formData.guests > selectedRoom.baseGuests && (
+                              <p className="text-xs text-gray-500">Extra: +₱{((formData.guests - selectedRoom.baseGuests) * selectedRoom.additionalGuestPrice).toLocaleString()}</p>
+                            )}
                           </div>
                         </div>
-                        <div>
-                          <h4 className="mb-3 font-bold text-gray-900">Amenities</h4>
-                          <div className="space-y-2">
-                            {selectedRoom.amenities.map((amenity: string, index: number) => (
-                              <div key={index} className="flex items-center space-x-2 text-sm text-gray-700">
-                                <div className="w-1.5 h-1.5 bg-heritage-neutral rounded-full"></div>
-                                <span>{amenity}</span>
-                              </div>
-                            ))}
+
+                        <div className="overflow-hidden shadow-md aspect-video rounded-xl">
+                          <img 
+                            src={selectedRoom.image} 
+                            alt={selectedRoom.name}
+                            className="object-cover w-full h-full"
+                          />
+                        </div>
+
+                        {/* Collapsible Features on Mobile */}
+                        <div className="space-y-3 sm:space-y-4">
+                          <div>
+                            <h4 className="mb-2 sm:mb-3 text-sm sm:text-base font-bold text-gray-900">Room Features</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 sm:gap-2">
+                              {selectedRoom.features.slice(0, 3).map((feature: string, index: number) => (
+                                <div key={index} className="flex items-center space-x-2 text-xs sm:text-sm text-gray-700">
+                                  <div className="w-1.5 h-1.5 bg-heritage-green rounded-full flex-shrink-0"></div>
+                                  <span>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="mb-2 sm:mb-3 text-sm sm:text-base font-bold text-gray-900">Amenities</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 sm:gap-2">
+                              {selectedRoom.amenities.slice(0, 3).map((amenity: string, index: number) => (
+                                <div key={index} className="flex items-center space-x-2 text-xs sm:text-sm text-gray-700">
+                                  <div className="w-1.5 h-1.5 bg-heritage-neutral rounded-full flex-shrink-0"></div>
+                                  <span>{amenity}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
                       {formData.checkIn && formData.checkOut && (
                         <div className="p-4 border bg-white/80 rounded-xl border-heritage-green/20">
@@ -720,27 +773,32 @@ export const BookingPage = () => {
                       <p>Select a room to see details</p>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="px-8 py-6 border-t bg-heritage-green/5 border-heritage-green/10">
+              {/* Submit Button - MOBILE RESPONSIVE */}
+              <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-t bg-heritage-green/5 border-heritage-green/10">
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all duration-300 ${
+                  className={`w-full py-3 sm:py-4 px-6 sm:px-8 rounded-xl font-bold text-base sm:text-lg transition-all duration-300 ${
                     loading
                       ? 'bg-gray-400 text-white cursor-not-allowed'
-                      : 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-lg hover:shadow-xl'
+                      : 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-lg hover:shadow-xl active:scale-95'
                   }`}
                 >
                   {loading ? (
-                    <div className="flex items-center justify-center space-x-2">
+                    <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin"></div>
                       <span>Processing...</span>
                     </div>
                   ) : (
-                    `Complete Booking • ₱${totalAmount.toLocaleString()}`
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="hidden sm:inline">Complete Booking •</span>
+                      <span className="sm:hidden">Book Now •</span>
+                      <span>₱{totalAmount.toLocaleString()}</span>
+                    </span>
                   )}
                 </button>
               </div>

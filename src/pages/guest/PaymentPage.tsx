@@ -406,7 +406,7 @@ export const PaymentPage = () => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-20 sm:pt-24">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute rounded-full -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 blur-3xl animate-pulse"></div>
@@ -414,36 +414,65 @@ export const PaymentPage = () => {
         <div className="absolute w-64 h-64 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2 bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
       
-      <div className="relative z-10 pt-32 pb-12">
+      <div className="relative z-10 py-8 sm:py-12">
         <div className="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
-          {/* Hero Header Section */}
-          <div className="mb-16 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Hero Header Section - MOBILE RESPONSIVE */}
+          <div className="mb-8 sm:mb-12 md:mb-16 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-6 sm:mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
             
-            <div className="space-y-4">
-              <h1 className="text-5xl font-black leading-tight text-transparent md:text-6xl bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-transparent bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text px-4">
                 Complete Your Payment
               </h1>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-slate-600">
+              <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl leading-relaxed text-slate-600 px-4">
                 Secure your luxury stay at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
               </p>
             </div>
 
-            {/* Status Indicators */}
-            <div className="flex items-center justify-center mt-8 space-x-8">
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-sm font-semibold text-slate-700">Secure Payment</span>
+            {/* Security Indicators - MOBILE RESPONSIVE */}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8 px-4">
+              <div className="flex items-center px-3 sm:px-4 py-2 gap-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Secure Payment</span>
               </div>
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center px-3 sm:px-4 py-2 gap-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <svg className="w-4 h-4 text-heritage-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <span className="text-sm font-semibold text-slate-700">SSL Encrypted</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">SSL Encrypted</span>
+              </div>
+              <div className="flex items-center px-3 sm:px-4 py-2 gap-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <svg className="w-4 h-4 text-heritage-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">PCI Compliant</span>
+              </div>
+            </div>
+            
+            {/* Payment Logos - NEW */}
+            <div className="mt-6 sm:mt-8">
+              <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 font-medium">We Accept</p>
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6">
+                {/* GCash Logo */}
+                <div className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-white rounded-lg shadow-md border border-gray-200">
+                  <span className="text-sm sm:text-base font-bold text-blue-600">GCash</span>
+                </div>
+                {/* Visa Logo */}
+                <div className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-white rounded-lg shadow-md border border-gray-200">
+                  <span className="text-sm sm:text-base font-bold text-blue-700">VISA</span>
+                </div>
+                {/* Mastercard Logo */}
+                <div className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-white rounded-lg shadow-md border border-gray-200">
+                  <span className="text-sm sm:text-base font-bold text-red-600">Mastercard</span>
+                </div>
+                {/* PayPal Logo */}
+                <div className="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-white rounded-lg shadow-md border border-gray-200">
+                  <span className="text-sm sm:text-base font-bold text-blue-800">PayPal</span>
+                </div>
               </div>
             </div>
           </div>
@@ -483,19 +512,19 @@ export const PaymentPage = () => {
             </div>
           )}
 
-        {/* Payment Container */}
+        {/* Payment Container - MOBILE RESPONSIVE */}
         <div className="max-w-4xl mx-auto">
-          <div className="overflow-hidden border shadow-2xl bg-white/90 backdrop-blur-md rounded-3xl border-heritage-green/20">
+          <div className="overflow-hidden border shadow-2xl bg-white/90 backdrop-blur-md rounded-2xl sm:rounded-3xl border-heritage-green/20">
             <div className="grid lg:grid-cols-5 gap-0 min-h-[600px]">
               
-              {/* Left: Payment Form */}
-              <div className="flex flex-col p-8 lg:col-span-3">
-                <div className="flex-grow space-y-8">
+              {/* Left: Payment Form - MOBILE RESPONSIVE */}
+              <div className="flex flex-col p-4 sm:p-6 md:p-8 lg:col-span-3">
+                <div className="flex-grow space-y-6 sm:space-y-8">
                   
-                  {/* Payment Method Selection */}
-                  <div className="space-y-6">
-                    <h2 className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
-                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green">1</div>
+                  {/* Payment Method Selection - MOBILE RESPONSIVE */}
+                  <div className="space-y-4 sm:space-y-6">
+                    <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-heritage-green flex-shrink-0">1</div>
                       <span>Choose Payment Method</span>
                     </h2>
                     
