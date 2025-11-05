@@ -76,10 +76,14 @@ export const ContactTab: React.FC<ContactTabProps> = ({ onNavigateToTab }) => {
     return pattern.test(ref);
   };
 
-  // Check if booking reference exists in Firebase
-  const checkBookingInFirebase = async (bookingRef: string): Promise<boolean> => {
+  // Check if booking reference exists in Firebase AND belongs to current user
+  const checkBookingInFirebase = async (bookingRef: string): Promise<{ exists: boolean; belongsToUser: boolean }> => {
     try {
       setIsValidatingBooking(true);
+      
+      if (!user?.uid) {
+        return { exists: false, belongsToUser: false };
+      }
       
       // Try to find booking in 'bookings' collection
       const bookingsRef = collection(db, 'bookings');
@@ -87,7 +91,13 @@ export const ContactTab: React.FC<ContactTabProps> = ({ onNavigateToTab }) => {
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
-        return true; // Booking found
+        const bookingDoc = querySnapshot.docs[0];
+        const bookingData = bookingDoc.data();
+        
+        // Check if booking belongs to current user
+        const belongsToUser = bookingData.guestId === user.uid || bookingData.userId === user.uid;
+        
+        return { exists: true, belongsToUser };
       }
       
       // Also check 'reservations' collection if it exists
@@ -95,10 +105,20 @@ export const ContactTab: React.FC<ContactTabProps> = ({ onNavigateToTab }) => {
       const q2 = query(reservationsRef, where('bookingReference', '==', bookingRef));
       const querySnapshot2 = await getDocs(q2);
       
-      return !querySnapshot2.empty;
+      if (!querySnapshot2.empty) {
+        const reservationDoc = querySnapshot2.docs[0];
+        const reservationData = reservationDoc.data();
+        
+        // Check if reservation belongs to current user
+        const belongsToUser = reservationData.guestId === user.uid || reservationData.userId === user.uid;
+        
+        return { exists: true, belongsToUser };
+      }
+      
+      return { exists: false, belongsToUser: false };
     } catch (error) {
       console.error('Error checking booking reference:', error);
-      return false;
+      return { exists: false, belongsToUser: false };
     } finally {
       setIsValidatingBooking(false);
     }
@@ -122,18 +142,30 @@ export const ContactTab: React.FC<ContactTabProps> = ({ onNavigateToTab }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate booking reference if it's a cancellation or modification
-    if ((formData.inquiryType === 'cancellation' || formData.inquiryType === 'modification') && formData.bookingReference) {
+    // Validate booking reference for cancellation or modification requests
+    if (formData.inquiryType === 'cancellation' || formData.inquiryType === 'modification') {
+      // Booking reference is REQUIRED for these request types
+      if (!formData.bookingReference || formData.bookingReference.trim() === '') {
+        setBookingRefError('Booking reference is required for cancellation and modification requests.');
+        return;
+      }
+      
       // First check format
       if (!validateBookingReferenceFormat(formData.bookingReference)) {
         setBookingRefError('Please enter a valid booking reference format (e.g., BK1761629662783i7bw7dtsz)');
         return;
       }
       
-      // Then check if it exists in Firebase
-      const bookingExists = await checkBookingInFirebase(formData.bookingReference);
-      if (!bookingExists) {
+      // Then check if it exists in Firebase AND belongs to user
+      const bookingCheck = await checkBookingInFirebase(formData.bookingReference);
+      
+      if (!bookingCheck.exists) {
         setBookingRefError('Booking reference not found. Please check your booking confirmation email.');
+        return;
+      }
+      
+      if (!bookingCheck.belongsToUser) {
+        setBookingRefError('This booking does not belong to your account. You can only cancel your own bookings.');
         return;
       }
     }
@@ -154,9 +186,9 @@ export const ContactTab: React.FC<ContactTabProps> = ({ onNavigateToTab }) => {
         subject: formData.subject,
         message: formData.message,
         referenceNumber: referenceNumber,
-        status: 'pending', // pending, in-progress, resolved
+        status: 'pending', // pending, in-progress, resolved, cancelled
         createdAt: serverTimestamp(),
-        submittedAt: new Date().toISOString()
+        submittedAt: serverTimestamp() // Use serverTimestamp for consistency
       };
       
       console.log('Saving contact request to Firebase...', contactRequestData);

@@ -192,6 +192,36 @@ Maintenance
         - Fixed "Missing or insufficient permissions" Firestore errors
         -**Verified Working**: Gmail integration confirmed, emails being sent successfully, verification badge displays correctly, modal shows after registration, profile stats connected to database, NO unauthorized access during registration
 
+10. Valmores (Contact Tab Security Fix + My Requests Cancel Functionality + Code Quality Fixes)
+    A.) Task/Feature: Fixed critical security vulnerability | Added request cancellation | Code cleanup and validation improvements
+    B.) Status: Completed
+    C.) Time Spent: 1.5 Hours
+    D.) Remarks: Implemented:
+        - **CRITICAL SECURITY FIX**: Added booking ownership verification in ContactTab
+        - System now checks if booking belongs to the logged-in user before allowing cancellation
+        - Validates both `guestId` and `userId` fields in booking documents
+        - Clear error message: "This booking does not belong to your account"
+        - Prevents unauthorized cancellation requests
+        - Checks both 'bookings' and 'reservations' collections
+        - Returns detailed validation: { exists: boolean, belongsToUser: boolean }
+        - Users can only cancel/modify their own bookings
+        - **NEW: My Requests Page - Cancel Request Feature**
+        - Users can cancel their own pending support requests
+        - Cancel button only visible for 'pending' status requests
+        - Confirmation modal with request details before cancellation
+        - Updates Firestore with 'cancelled' status, cancelledAt timestamp, and cancelledBy userId
+        - Added 'Cancelled' filter button to view cancelled requests
+        - Real-time UI update after cancellation
+        - Cannot cancel requests that are 'in-progress' or 'resolved'
+        - **CODE QUALITY FIXES**:
+        - Made bookingReference REQUIRED for cancellation/modification requests
+        - Fixed timestamp consistency: Changed `submittedAt` from ISO string to `serverTimestamp()` in ContactTab
+        - Added Firestore Timestamp conversion in MyRequestsPage for proper date handling
+        - Removed unused imports: `Filter` and `Phone` from MyRequestsPage
+        - Improved validation: Now checks if bookingReference is empty/null before allowing submission
+        - Added client-side sorting to ensure latest requests always appear first (sorted by submittedAt DESC)
+        **Security Impact**: Prevents malicious users from canceling other guests' reservations and requests
+
 ## On-Going:
 
 ## Pending:

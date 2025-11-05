@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../hooks/useAuth';
-import { MessageSquare, Clock, CheckCircle, AlertCircle, Calendar, Mail, Phone, FileText, Search, Filter, ChevronRight, Package } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, AlertCircle, Calendar, Mail, FileText, Search, ChevronRight, Package, XCircle, Trash2 } from 'lucide-react';
 
 interface ContactRequest {
   id: string;
@@ -10,7 +10,7 @@ interface ContactRequest {
   inquiryType: string;
   subject: string;
   message: string;
-  status: 'pending' | 'in-progress' | 'resolved';
+  status: 'pending' | 'in-progress' | 'resolved' | 'cancelled';
   submittedAt: string;
   bookingReference?: string;
   firstName: string;
@@ -23,11 +23,14 @@ export const MyRequestsPage: React.FC = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState<ContactRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'in-progress' | 'resolved'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'in-progress' | 'resolved' | 'cancelled'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const requestsPerPage = 5;
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [requestToCancel, setRequestToCancel] = useState<ContactRequest | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -57,6 +60,12 @@ export const MyRequestsPage: React.FC = () => {
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           console.log('📄 Request document:', doc.id, data);
+          
+          // Convert Firestore Timestamp to ISO string for consistent handling
+          const submittedAtValue = data.submittedAt?.toDate?.() 
+            ? data.submittedAt.toDate().toISOString() 
+            : data.submittedAt || new Date().toISOString();
+          
           fetchedRequests.push({
             id: doc.id,
             referenceNumber: data.referenceNumber,
@@ -64,7 +73,7 @@ export const MyRequestsPage: React.FC = () => {
             subject: data.subject,
             message: data.message,
             status: data.status,
-            submittedAt: data.submittedAt,
+            submittedAt: submittedAtValue,
             bookingReference: data.bookingReference,
             firstName: data.firstName,
             lastName: data.lastName,
@@ -85,6 +94,40 @@ export const MyRequestsPage: React.FC = () => {
     fetchRequests();
   }, [user]);
 
+  const handleCancelRequest = async (request: ContactRequest) => {
+    setRequestToCancel(request);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelRequest = async () => {
+    if (!requestToCancel) return;
+    
+    setCancellingId(requestToCancel.id);
+    try {
+      const requestRef = doc(db, 'contactRequests', requestToCancel.id);
+      await updateDoc(requestRef, {
+        status: 'cancelled',
+        cancelledAt: new Date().toISOString(),
+        cancelledBy: user?.uid
+      });
+      
+      // Update local state
+      setRequests(prev => prev.map(req => 
+        req.id === requestToCancel.id 
+          ? { ...req, status: 'cancelled' as const }
+          : req
+      ));
+      
+      setShowCancelModal(false);
+      setRequestToCancel(null);
+    } catch (error) {
+      console.error('Error cancelling request:', error);
+      alert('Failed to cancel request. Please try again.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
@@ -93,6 +136,8 @@ export const MyRequestsPage: React.FC = () => {
         return <AlertCircle className="w-5 h-5 text-blue-500" />;
       case 'resolved':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'cancelled':
+        return <XCircle className="w-5 h-5 text-red-500" />;
       default:
         return <Clock className="w-5 h-5 text-gray-500" />;
     }
@@ -106,6 +151,8 @@ export const MyRequestsPage: React.FC = () => {
         return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'resolved':
         return 'bg-green-100 text-green-800 border-green-300';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 border-red-300';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-300';
     }
@@ -118,7 +165,13 @@ export const MyRequestsPage: React.FC = () => {
       req.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
       req.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       req.message.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    )
+    .sort((a, b) => {
+      // Sort by submittedAt in descending order (newest first)
+      const dateA = new Date(a.submittedAt).getTime();
+      const dateB = new Date(b.submittedAt).getTime();
+      return dateB - dateA;
+    });
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredRequests.length / requestsPerPage);
@@ -244,6 +297,16 @@ export const MyRequestsPage: React.FC = () => {
                 }`}
               >
                 Resolved
+              </button>
+              <button
+                onClick={() => setFilter('cancelled')}
+                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                  filter === 'cancelled'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white text-red-600 border border-gray-300 hover:bg-red-50'
+                }`}
+              >
+                Cancelled
               </button>
             </div>
           </div>
@@ -410,6 +473,32 @@ export const MyRequestsPage: React.FC = () => {
                       <h4 className="mb-2 text-sm font-black text-gray-700">Full Message</h4>
                       <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">{request.message}</p>
                     </div>
+
+                    {/* Cancel Button - Only show for pending requests */}
+                    {request.status === 'pending' && (
+                      <div className="pt-4 border-t-2 border-gray-100">
+                        <button
+                          onClick={() => handleCancelRequest(request)}
+                          disabled={cancellingId === request.id}
+                          className="flex items-center justify-center w-full gap-2 px-6 py-3 font-bold text-white transition-all duration-300 bg-red-600 rounded-2xl hover:bg-red-700 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                          {cancellingId === request.id ? (
+                            <>
+                              <Clock className="w-5 h-5 animate-spin" />
+                              Cancelling...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="w-5 h-5" />
+                              Cancel This Request
+                            </>
+                          )}
+                        </button>
+                        <p className="mt-2 text-xs text-center text-gray-500">
+                          You can only cancel pending requests. Once in progress or resolved, cancellation is not available.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -477,6 +566,66 @@ export const MyRequestsPage: React.FC = () => {
         )}
         </div>
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && requestToCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-6 bg-white shadow-2xl rounded-3xl animate-slideUp">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-2xl">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Cancel Request?</h3>
+            </div>
+            
+            <div className="mb-6 space-y-3">
+              <p className="text-gray-700">
+                Are you sure you want to cancel this request?
+              </p>
+              <div className="p-4 border-2 rounded-2xl bg-gray-50 border-gray-200">
+                <p className="mb-1 text-xs font-semibold text-gray-500">Reference Number</p>
+                <p className="mb-2 text-sm font-bold text-heritage-green">{requestToCancel.referenceNumber}</p>
+                <p className="mb-1 text-xs font-semibold text-gray-500">Subject</p>
+                <p className="text-sm text-gray-800">{requestToCancel.subject}</p>
+              </div>
+              <div className="p-3 border-l-4 rounded-r-2xl bg-amber-50 border-amber-500">
+                <p className="text-sm font-semibold text-amber-800">
+                  ⚠️ This action cannot be undone. You'll need to submit a new request if needed.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setRequestToCancel(null);
+                }}
+                className="flex-1 px-6 py-3 font-bold text-gray-700 transition-all duration-300 bg-gray-100 rounded-2xl hover:bg-gray-200"
+              >
+                Keep Request
+              </button>
+              <button
+                onClick={confirmCancelRequest}
+                disabled={cancellingId !== null}
+                className="flex items-center justify-center flex-1 gap-2 px-6 py-3 font-bold text-white transition-all duration-300 bg-red-600 rounded-2xl hover:bg-red-700 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {cancellingId ? (
+                  <>
+                    <Clock className="w-5 h-5 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-5 h-5" />
+                    Yes, Cancel
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
