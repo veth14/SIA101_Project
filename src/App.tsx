@@ -15,6 +15,7 @@ import { PaymentPage } from './pages/guest/PaymentPage'
 import { MyBookingsPage } from './pages/guest/MyBookingsPage'
 import { MyRequestsPage } from './pages/guest/MyRequests'
 import { HelpCenterPage } from './pages/guest/HelpCenter/HelpCenterPage'
+import { SubmitReviewPage } from './pages/guest/SubmitReviewPage'
 import { AdminDashboardPage } from './pages/admin/Dashboard/AdminDashboardPage'
 import AdminRoomsPage from './pages/admin/Front-Desk/AdminRoomsPage'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -113,6 +114,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['guest']}>
                 <GuestLayout><MyRequestsPage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/submit-review/:bookingId"
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><SubmitReviewPage /></GuestLayout>
               </ProtectedRoute>
             } 
           />
