@@ -18,7 +18,7 @@ export const Header = () => {
   ];
 
   // Pages where header should always be solid (not transparent)
-  const solidHeaderPages = ['/booking', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
+  const solidHeaderPages = ['/booking', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
 
 
@@ -233,7 +233,7 @@ export const Header = () => {
                             <button
                               onClick={() => {
                                 setShowUserDropdown(false);
-                                navigate('/my-bookings');
+                                navigate('/mybookings');
                               }}
                               className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
@@ -243,6 +243,22 @@ export const Header = () => {
                               <div className="text-left">
                                 <div className="font-medium">My Bookings</div>
                                 <div className="text-sm text-gray-500">View your reservations</div>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setShowUserDropdown(false);
+                                navigate('/myrequests');
+                              }}
+                              className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                              </svg>
+                              <div className="text-left">
+                                <div className="font-medium">My Requests</div>
+                                <div className="text-sm text-gray-500">Track support requests</div>
                               </div>
                             </button>
 

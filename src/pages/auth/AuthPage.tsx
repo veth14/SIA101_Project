@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Header } from '../../components/shared/navigation/Header';
 import { SuccessModal } from '../../components/auth/SuccessModal';
+import { PasswordStrengthIndicator } from '../../components/auth/PasswordStrengthIndicator';
+import { EmailVerificationModal } from '../../components/auth/EmailVerificationModal';
 
 interface LoginFormData {
   email: string;
@@ -51,6 +53,11 @@ export const AuthPage = () => {
   // Success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registrationData, setRegistrationData] = useState<{ firstName: string; lastName: string; email: string; password: string } | null>(null);
+  
+  // Email verification modal state
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [unverifiedPassword, setUnverifiedPassword] = useState('');
 
   // Handle initial mode from URL with animation
   useEffect(() => {
@@ -247,8 +254,14 @@ export const AuthPage = () => {
         await login(loginData);
         // Redirect to landing page after successful login
         navigate('/', { replace: true });
-      } catch (err) {
+      } catch (err: any) {
         console.error('Login failed:', err);
+        // Check if error is due to unverified email
+        if (err.message && err.message.includes('Email not verified')) {
+          setUnverifiedEmail(loginData.email);
+          setUnverifiedPassword(loginData.password);
+          setShowVerificationModal(true);
+        }
       }
     }
   };
@@ -354,25 +367,20 @@ export const AuthPage = () => {
     // The useEffect will handle the actual state changes
   };
 
-  const handleSuccessModalClose = async () => {
+  const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
-    if (registrationData) {
-      // Auto-login the user after successful registration
-      try {
-        await login({
-          email: registrationData.email,
-          password: registrationData.password
-        });
-        // Redirect to landing page after login
-        navigate('/', { replace: true });
-      } catch (err) {
-        console.error('Auto-login failed:', err);
-        // If auto-login fails, switch to login mode
-        setIsRegisterMode(false);
-        setError('Registration successful! Please sign in with your credentials.');
-      }
-      setRegistrationData(null);
-    }
+    // Don't auto-login - require email verification first
+    // Switch to login mode so user can try to login after verifying
+    setIsRegisterMode(false);
+    setRegistrationData(null);
+    // Clear the form
+    setRegisterData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
   };
 
   return (
@@ -425,7 +433,7 @@ export const AuthPage = () => {
             </div>
             
             {/* Right Side - Auth Form */}
-            <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 lg:p-8 border border-white/20 max-h-[calc(100vh-8rem)] overflow-y-auto">
+            <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 border border-white/20 max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar">
               {/* Loading Overlay */}
               {loading && (
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-3xl flex items-center justify-center z-10">
@@ -442,31 +450,31 @@ export const AuthPage = () => {
                   </div>
                 </div>
               )}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center mb-6">
+              <div className="text-center mb-4 sm:mb-6">
+                <div className="flex items-center justify-center mb-3 sm:mb-4">
                   <img 
                     src="/BalayGinhawa/balaylogopng.png" 
                     alt="Balay Ginhawa Logo" 
-                    className="w-16 h-16 object-contain"
+                    className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
                   />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2 transition-all duration-300">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1.5 sm:mb-2 transition-all duration-300">
                   {isRegisterMode ? 'Create Account' : 'Sign In'}
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   {isRegisterMode ? 'Join our heritage hotel family' : 'Access your account to continue'}
                 </p>
               </div>
 
-              <form className={`space-y-4 transition-opacity duration-300 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`} onSubmit={handleSubmit}>
-                <div className={`space-y-4 ${shouldAnimate ? 'transition-all duration-500' : ''} ${isRegisterMode ? 'opacity-100' : 'opacity-100'}`}>
+              <form className={`space-y-3 sm:space-y-4 transition-opacity duration-300 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`} onSubmit={handleSubmit}>
+                <div className={`space-y-3 sm:space-y-4 ${shouldAnimate ? 'transition-all duration-500' : ''} ${isRegisterMode ? 'opacity-100' : 'opacity-100'}`}>
                   
                   {/* Registration Fields */}
                   <div className={`grid grid-cols-2 gap-4 ${shouldAnimate ? 'transition-all duration-500' : ''} overflow-hidden ${
                     isRegisterMode ? 'max-h-32 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
                   }`}>
                     <div>
-                      <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-1.5">
                         First Name
                       </label>
                       <input
@@ -474,7 +482,7 @@ export const AuthPage = () => {
                         type="text"
                         value={registerData.firstName}
                         onChange={(e) => handleRegisterInputChange('firstName', e.target.value)}
-                        className={`block w-full px-3 py-3 border ${
+                        className={`block w-full px-3 py-2.5 sm:py-3 border ${
                           errors.firstName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="First name"
@@ -485,7 +493,7 @@ export const AuthPage = () => {
                     </div>
                     
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-1.5">
                         Last Name
                       </label>
                       <input
@@ -493,7 +501,7 @@ export const AuthPage = () => {
                         type="text"
                         value={registerData.lastName}
                         onChange={(e) => handleRegisterInputChange('lastName', e.target.value)}
-                        className={`block w-full px-3 py-3 border ${
+                        className={`block w-full px-3 py-2.5 sm:py-3 border ${
                           errors.lastName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Last name"
@@ -506,7 +514,7 @@ export const AuthPage = () => {
 
                   {/* Email Field */}
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Email Address
                     </label>
                     <div className="relative">
@@ -524,7 +532,7 @@ export const AuthPage = () => {
                           ? handleRegisterInputChange('email', e.target.value)
                           : handleLoginInputChange('email', e.target.value)
                         }
-                        className={`block w-full pl-10 pr-3 py-3 border ${
+                        className={`block w-full pl-10 pr-3 py-2.5 sm:py-3 border ${
                           errors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Enter your email address"
@@ -542,7 +550,7 @@ export const AuthPage = () => {
 
                   {/* Password Field */}
                   <div>
-                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Password
                     </label>
                     <div className="relative">
@@ -560,7 +568,7 @@ export const AuthPage = () => {
                           ? handleRegisterInputChange('password', e.target.value)
                           : handleLoginInputChange('password', e.target.value)
                         }
-                        className={`block w-full pl-10 pr-12 py-3 border ${
+                        className={`block w-full pl-10 pr-12 py-2.5 sm:py-3 border ${
                           errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Enter your password"
@@ -590,13 +598,16 @@ export const AuthPage = () => {
                         {errors.password}
                       </p>
                     )}
+                    
+                    {/* Password Strength Indicator - Only show in register mode */}
+                    {isRegisterMode && <PasswordStrengthIndicator password={registerData.password} />}
                   </div>
 
                   {/* Confirm Password Field - Only for Registration */}
                   <div className={`${shouldAnimate ? 'transition-all duration-500' : ''} overflow-hidden ${
                     isRegisterMode ? 'max-h-40 opacity-100 mb-4' : 'max-h-0 opacity-0 mb-0'
                   }`}>
-                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -611,7 +622,7 @@ export const AuthPage = () => {
                         autoComplete="new-password"
                         value={registerData.confirmPassword}
                         onChange={(e) => handleRegisterInputChange('confirmPassword', e.target.value)}
-                        className={`block w-full pl-10 pr-12 py-3 border ${
+                        className={`block w-full pl-10 pr-12 py-2.5 sm:py-3 border ${
                           errors.confirmPassword ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-heritage-green focus:border-heritage-green'
                         } rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors duration-200`}
                         placeholder="Confirm your password"
@@ -707,8 +718,19 @@ export const AuthPage = () => {
         isOpen={showSuccessModal}
         onClose={handleSuccessModalClose}
         title="Account Created Successfully!"
-        message={`Welcome to Balay Ginhawa, ${registrationData?.firstName}! Your account has been created and you're now ready to experience authentic Filipino hospitality.`}
-        buttonText="Continue to Dashboard"
+        message={`Welcome, ${registrationData?.firstName}! A verification email has been sent to ${registrationData?.email}. You must verify your email before you can log in.`}
+        buttonText="I Understand - Go to Login"
+      />
+
+      {/* Email Verification Modal */}
+      <EmailVerificationModal
+        isOpen={showVerificationModal}
+        onClose={() => {
+          setShowVerificationModal(false);
+          setUnverifiedPassword(''); // Clear password when closing
+        }}
+        email={unverifiedEmail}
+        password={unverifiedPassword}
       />
     </div>
   );

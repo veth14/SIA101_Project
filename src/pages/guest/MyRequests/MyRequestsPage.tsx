@@ -1,0 +1,482 @@
+import React, { useState, useEffect } from 'react';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
+import { useAuth } from '../../../hooks/useAuth';
+import { MessageSquare, Clock, CheckCircle, AlertCircle, Calendar, Mail, Phone, FileText, Search, Filter, ChevronRight, Package } from 'lucide-react';
+
+interface ContactRequest {
+  id: string;
+  referenceNumber: string;
+  inquiryType: string;
+  subject: string;
+  message: string;
+  status: 'pending' | 'in-progress' | 'resolved';
+  submittedAt: string;
+  bookingReference?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+export const MyRequestsPage: React.FC = () => {
+  const { user } = useAuth();
+  const [requests, setRequests] = useState<ContactRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'in-progress' | 'resolved'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const requestsPerPage = 5;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        console.log('🔍 Fetching requests for user:', user.uid);
+        const requestsRef = collection(db, 'contactRequests');
+        const q = query(
+          requestsRef,
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const fetchedRequests: ContactRequest[] = [];
+        
+        console.log('📦 Found', querySnapshot.size, 'requests in Firebase');
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log('📄 Request document:', doc.id, data);
+          fetchedRequests.push({
+            id: doc.id,
+            referenceNumber: data.referenceNumber,
+            inquiryType: data.inquiryType,
+            subject: data.subject,
+            message: data.message,
+            status: data.status,
+            submittedAt: data.submittedAt,
+            bookingReference: data.bookingReference,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone
+          });
+        });
+        
+        console.log('✅ Loaded', fetchedRequests.length, 'requests');
+        setRequests(fetchedRequests);
+      } catch (error) {
+        console.error('❌ Error fetching requests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [user]);
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="w-5 h-5 text-amber-500" />;
+      case 'in-progress':
+        return <AlertCircle className="w-5 h-5 text-blue-500" />;
+      case 'resolved':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      default:
+        return <Clock className="w-5 h-5 text-gray-500" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'resolved':
+        return 'bg-green-100 text-green-800 border-green-300';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const filteredRequests = requests
+    .filter(req => filter === 'all' || req.status === filter)
+    .filter(req => 
+      searchQuery === '' || 
+      req.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.message.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredRequests.length / requestsPerPage);
+  const indexOfLastRequest = currentPage * requestsPerPage;
+  const indexOfFirstRequest = indexOfLastRequest - requestsPerPage;
+  const currentRequests = filteredRequests.slice(indexOfFirstRequest, indexOfLastRequest);
+
+  // Reset to page 1 when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchQuery]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen py-20 bg-gradient-to-br from-heritage-light via-white to-heritage-green/5">
+        <div className="container px-4 mx-auto">
+          <div className="max-w-2xl p-12 mx-auto text-center bg-white shadow-xl rounded-3xl">
+            <MessageSquare className="w-16 h-16 mx-auto mb-4 text-heritage-green" />
+            <h2 className="mb-4 text-2xl font-bold text-gray-800">Sign In Required</h2>
+            <p className="text-gray-600">Please sign in to view your contact requests.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute rounded-full -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 blur-3xl animate-pulse"></div>
+        <div className="absolute rounded-full -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute w-64 h-64 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2 bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
+
+      <div className="relative z-10 pt-32 pb-12">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          {/* Hero Header Section */}
+          <div className="mb-12 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
+              <MessageSquare className="w-10 h-10 text-white" />
+            </div>
+            
+            <div className="space-y-4">
+              <h1 className="text-5xl font-black leading-tight text-transparent md:text-6xl bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text">
+                My Requests
+              </h1>
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-slate-600">
+                Track and manage your support requests at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
+              </p>
+            </div>
+
+            {/* Status Indicators */}
+            <div className="flex items-center justify-center mt-8 space-x-8">
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-sm font-semibold text-slate-700">Live Sync</span>
+              </div>
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <span className="text-sm font-semibold text-slate-700">Real-time Updates</span>
+              </div>
+              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <CheckCircle className="w-4 h-4 text-heritage-green" />
+                <span className="text-sm font-semibold text-slate-700">Secure</span>
+              </div>
+            </div>
+          </div>
+
+        {/* Search and Filter Bar */}
+        <div className="p-6 mb-6 bg-white shadow-xl rounded-3xl">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-4 top-1/2" />
+              <input
+                type="text"
+                placeholder="Search by reference, subject, or message..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full py-3 pl-12 pr-4 transition-all duration-300 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/10"
+              />
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setFilter('all')}
+                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                  filter === 'all'
+                    ? 'bg-heritage-green text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilter('pending')}
+                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                  filter === 'pending'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-white text-orange-600 border border-gray-300 hover:bg-orange-50'
+                }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => setFilter('in-progress')}
+                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                  filter === 'in-progress'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-blue-600 border border-gray-300 hover:bg-blue-50'
+                }`}
+              >
+                In Progress
+              </button>
+              <button
+                onClick={() => setFilter('resolved')}
+                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                  filter === 'resolved'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-white text-green-600 border border-gray-300 hover:bg-green-50'
+                }`}
+              >
+                Resolved
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="p-12 text-center bg-white shadow-xl rounded-3xl">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-heritage-green animate-spin" />
+            <p className="text-gray-600">Loading your requests...</p>
+          </div>
+        ) : filteredRequests.length === 0 ? (
+          /* Empty State */
+          <div className="p-16 text-center bg-white shadow-xl rounded-3xl">
+            <div className="relative inline-block mb-6">
+              <div className="absolute inset-0 bg-gray-200 rounded-full opacity-50 blur-2xl"></div>
+              <div className="relative p-6 bg-gray-100 rounded-full">
+                <Package className="w-16 h-16 text-gray-400" />
+              </div>
+            </div>
+            <h3 className="mb-3 text-2xl font-black text-gray-800">No Requests Found</h3>
+            <p className="max-w-md mx-auto mb-6 text-gray-600">
+              {searchQuery 
+                ? `No requests match "${searchQuery}". Try a different search term.`
+                : filter === 'all' 
+                  ? "You haven't submitted any requests yet. Contact us through the Help Center to get started."
+                  : `You don't have any ${filter.replace('-', ' ')} requests at the moment.`}
+            </p>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="px-6 py-3 font-bold text-white transition-all duration-300 shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-2xl hover:shadow-xl hover:scale-105"
+              >
+                Clear Search
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Requests List */}
+            <div className="mb-6 space-y-5">
+              {currentRequests.map((request) => (
+              <div
+                key={request.id}
+                className="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-3xl hover:shadow-2xl"
+              >
+                {/* Card Header */}
+                <div className="p-6 pb-4">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-start flex-1 gap-4">
+                      {/* Status Icon with Gradient Background */}
+                      <div className={`p-3 rounded-2xl ${
+                        request.status === 'pending' ? 'bg-gradient-to-br from-amber-100 to-amber-50' :
+                        request.status === 'in-progress' ? 'bg-gradient-to-br from-blue-100 to-blue-50' :
+                        'bg-gradient-to-br from-green-100 to-green-50'
+                      }`}>
+                        {getStatusIcon(request.status)}
+                      </div>
+
+                      {/* Request Info */}
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                          <h3 className="text-xl font-black text-gray-800">{request.subject}</h3>
+                          <span className={`px-4 py-1.5 text-xs font-bold rounded-full ${getStatusColor(request.status)}`}>
+                            {request.status.replace('-', ' ').toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 mb-3 text-sm">
+                          <span className="flex items-center gap-1.5 font-semibold text-heritage-green">
+                            <FileText className="w-4 h-4" />
+                            {request.referenceNumber}
+                          </span>
+                          <span className="flex items-center gap-1.5 text-gray-600">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(request.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          <span className="px-3 py-1 text-xs font-semibold capitalize rounded-full bg-heritage-green/10 text-heritage-green">
+                            {request.inquiryType.replace('_', ' ')}
+                          </span>
+                        </div>
+                        {request.bookingReference && (
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-3 text-sm font-semibold border-2 rounded-2xl bg-amber-50 border-amber-200 text-amber-800">
+                            <AlertCircle className="w-4 h-4" />
+                            Booking: {request.bookingReference}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expand Button */}
+                    <button
+                      onClick={() => setExpandedRequest(expandedRequest === request.id ? null : request.id)}
+                      className="p-2 transition-all duration-300 rounded-2xl hover:bg-gray-100"
+                    >
+                      <ChevronRight className={`w-6 h-6 text-gray-600 transition-transform duration-300 ${
+                        expandedRequest === request.id ? 'rotate-90' : ''
+                      }`} />
+                    </button>
+                  </div>
+
+                  {/* Message Preview */}
+                  <p className={`text-gray-600 leading-relaxed ${
+                    expandedRequest === request.id ? '' : 'line-clamp-2'
+                  }`}>
+                    {request.message}
+                  </p>
+                </div>
+
+                {/* Expanded Content */}
+                {expandedRequest === request.id && (
+                  <div className="px-6 pb-6 space-y-4 border-t-2 border-gray-100 animate-fadeIn">
+                    <div className="grid gap-4 pt-4 md:grid-cols-2">
+                      {/* Contact Information Card */}
+                      <div className="p-4 border-2 rounded-2xl bg-gradient-to-br from-heritage-green/5 to-heritage-light/10 border-heritage-green/20">
+                        <h4 className="flex items-center gap-2 mb-3 text-sm font-black text-gray-700">
+                          <Mail className="w-4 h-4 text-heritage-green" />
+                          Contact Information
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-600">Name:</span>
+                            <span className="text-gray-800">{request.firstName} {request.lastName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-600">Email:</span>
+                            <span className="text-gray-800">{request.email}</span>
+                          </div>
+                          {request.phone && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-600">Phone:</span>
+                              <span className="text-gray-800">{request.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Request Details Card */}
+                      <div className="p-4 border-2 rounded-2xl bg-gradient-to-br from-gray-50 to-white border-gray-200">
+                        <h4 className="flex items-center gap-2 mb-3 text-sm font-black text-gray-700">
+                          <FileText className="w-4 h-4 text-gray-600" />
+                          Request Details
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-600">Type:</span>
+                            <span className="text-gray-800 capitalize">{request.inquiryType.replace('_', ' ')}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-600">Status:</span>
+                            <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${getStatusColor(request.status)}`}>
+                              {request.status.replace('-', ' ').toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-600">Submitted:</span>
+                            <span className="text-gray-800">{new Date(request.submittedAt).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Full Message */}
+                    <div className="p-4 border-2 rounded-2xl bg-gray-50 border-gray-200">
+                      <h4 className="mb-2 text-sm font-black text-gray-700">Full Message</h4>
+                      <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">{request.message}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-col items-center gap-4 p-6 bg-white shadow-xl sm:flex-row sm:justify-between rounded-3xl">
+              {/* Page Info */}
+              <div className="text-sm text-gray-600">
+                Showing <span className="font-bold text-heritage-green">{indexOfFirstRequest + 1}</span> to{' '}
+                <span className="font-bold text-heritage-green">
+                  {Math.min(indexOfLastRequest, filteredRequests.length)}
+                </span>{' '}
+                of <span className="font-bold text-heritage-green">{filteredRequests.length}</span> requests
+              </div>
+
+              {/* Pagination Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 font-bold rounded-2xl transition-all duration-300 ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-heritage-green text-white hover:shadow-lg hover:scale-105'
+                  }`}
+                >
+                  Previous
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-10 h-10 font-bold rounded-2xl transition-all duration-300 ${
+                        currentPage === page
+                          ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-lg scale-110'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 font-bold rounded-2xl transition-all duration-300 ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-heritage-green text-white hover:shadow-lg hover:scale-105'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          </>
+        )}
+        </div>
+      </div>
+    </div>
+  );
+};

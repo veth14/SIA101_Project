@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../../config/firebase';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc } from 'firebase/firestore';
 
 interface UserProfile {
   firstName: string;
@@ -18,6 +20,12 @@ export const NewProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [userStats, setUserStats] = useState({
+    memberSince: new Date().getFullYear(),
+    totalBookings: 0,
+    loyaltyPoints: 0,
+    membershipTier: 'Bronze'
+  });
 
   const [profile, setProfile] = useState<UserProfile>({
     firstName: '',
@@ -31,6 +39,46 @@ export const NewProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (userData) {
+      // Fetch user stats and profile data from Firestore
+      fetchUserStats();
+      fetchProfileData();
+    }
+  }, [userData]);
+
+  const fetchProfileData = async () => {
+    if (!userData?.uid) return;
+    
+    try {
+      // Try to get data from guestprofiles first
+      const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
+      const guestProfileSnap = await getDoc(guestProfileRef);
+      
+      if (guestProfileSnap.exists()) {
+        const data = guestProfileSnap.data();
+        setProfile({
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: userData.email || '',
+          phone: data.phone || '',
+          dateOfBirth: data.dateOfBirth || '',
+          nationality: data.nationality || '',
+          address: data.address || ''
+        });
+      } else {
+        // Fallback to displayName from userData
+        const displayName = userData.displayName || '';
+        const nameParts = displayName.split(' ');
+        
+        setProfile(prev => ({
+          ...prev,
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          email: userData.email || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      // Fallback to displayName
       const displayName = userData.displayName || '';
       const nameParts = displayName.split(' ');
       
@@ -41,16 +89,93 @@ export const NewProfilePage: React.FC = () => {
         email: userData.email || ''
       }));
     }
-  }, [userData]);
+  };
+
+  const fetchUserStats = async () => {
+    if (!userData?.uid) return;
+    
+    try {
+      // Get user creation date from users collection
+      const userDocRef = doc(db, 'users', userData.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userFirestoreData = userDocSnap.data();
+        const createdAt = userFirestoreData.createdAt?.toDate() || new Date();
+        const memberYear = createdAt.getFullYear();
+        
+        setUserStats(prev => ({
+          ...prev,
+          memberSince: memberYear
+        }));
+      }
+      
+      // Get guest profile stats if user is a guest
+      if (userData.role === 'guest') {
+        const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
+        const guestProfileSnap = await getDoc(guestProfileRef);
+        
+        if (guestProfileSnap.exists()) {
+          const guestData = guestProfileSnap.data();
+          setUserStats(prev => ({
+            ...prev,
+            loyaltyPoints: guestData.loyaltyPoints || 0,
+            totalBookings: guestData.totalBookings || 0,
+            membershipTier: guestData.membershipTier || 'Bronze'
+          }));
+        }
+        
+        // Also count actual bookings from bookings collection
+        const bookingsQuery = query(
+          collection(db, 'bookings'),
+          where('guestId', '==', userData.uid)
+        );
+        const bookingsSnapshot = await getDocs(bookingsQuery);
+        const bookingCount = bookingsSnapshot.size;
+        
+        setUserStats(prev => ({
+          ...prev,
+          totalBookings: bookingCount
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  };
 
   const handleInputChange = (field: keyof UserProfile, value: string) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
+    if (!userData?.uid) return;
+    
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Update guestprofiles collection
+      const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
+      const guestProfileData = {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        fullName: `${profile.firstName} ${profile.lastName}`,
+        phone: profile.phone || '',
+        dateOfBirth: profile.dateOfBirth || null,
+        nationality: profile.nationality || '',
+        address: profile.address || '',
+        updatedAt: new Date()
+      };
+      
+      await setDoc(guestProfileRef, guestProfileData, { merge: true });
+      
+      // Also update users collection for consistency
+      const userRef = doc(db, 'users', userData.uid);
+      await updateDoc(userRef, {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        displayName: `${profile.firstName} ${profile.lastName}`,
+        lastLogin: new Date()
+      });
+      
       setMessage('Profile updated successfully!');
       setIsEditing(false);
       setTimeout(() => setMessage(''), 3000);
@@ -207,7 +332,7 @@ export const NewProfilePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar - Heritage User Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700">
+            <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700 h-full flex flex-col">
               <div className="text-center">
                 {/* Heritage User Avatar */}
                 <div className="relative mb-8">
@@ -235,27 +360,47 @@ export const NewProfilePage: React.FC = () => {
                   <p className="text-heritage-neutral/80 text-lg mb-4">{profile.email}</p>
                   
                   {/* Heritage Verification Status */}
-                  <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 backdrop-blur-xl text-heritage-green rounded-2xl text-sm font-semibold shadow-xl border border-heritage-green/30">
-                    <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified Member
-                  </div>
+                  {userData?.emailVerified ? (
+                    <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 backdrop-blur-xl text-heritage-green rounded-2xl text-sm font-semibold shadow-xl border border-heritage-green/30">
+                      <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Verified Member
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-100/80 to-amber-50/80 backdrop-blur-xl text-amber-700 rounded-2xl text-sm font-semibold shadow-xl border border-amber-300/50">
+                      <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      Email Not Verified
+                    </div>
+                  )}
                 </div>
 
                 {/* Heritage User Stats */}
-                <div className="space-y-4 pt-6 border-t border-heritage-neutral/20">
+                <div className="space-y-4 pt-6 border-t border-heritage-neutral/20 flex-grow">
                   <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
                     <span className="text-heritage-neutral font-medium">Member since</span>
-                    <span className="font-bold text-heritage-green text-lg">2024</span>
+                    <span className="font-bold text-heritage-green text-lg">{userStats.memberSince}</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
                     <span className="text-heritage-neutral font-medium">Total bookings</span>
-                    <span className="font-bold text-heritage-green text-lg">0</span>
+                    <span className="font-bold text-heritage-green text-lg">{userStats.totalBookings}</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
                     <span className="text-heritage-neutral font-medium">Loyalty Points</span>
-                    <span className="font-bold text-heritage-green text-lg">250</span>
+                    <span className="font-bold text-heritage-green text-lg">{userStats.loyaltyPoints.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
+                    <span className="text-heritage-neutral font-medium">Membership Tier</span>
+                    <span className={`font-bold text-lg px-3 py-1 rounded-lg ${
+                      userStats.membershipTier === 'Platinum' ? 'bg-gradient-to-r from-gray-400 to-gray-200 text-gray-900' :
+                      userStats.membershipTier === 'Gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-200 text-yellow-900' :
+                      userStats.membershipTier === 'Silver' ? 'bg-gradient-to-r from-gray-300 to-gray-100 text-gray-700' :
+                      'bg-gradient-to-r from-amber-600 to-amber-400 text-white'
+                    }`}>
+                      {userStats.membershipTier}
+                    </span>
                   </div>
                 </div>
               </div>

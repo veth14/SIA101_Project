@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AuthContextType, AuthState, LoginCredentials, RegisterCredentials, User } from '../types/auth.types';
 import { auth, db } from '../config/firebase';
@@ -9,7 +9,8 @@ import {
   signOut,
   onAuthStateChanged,
   setPersistence,
-  browserSessionPersistence
+  browserSessionPersistence,
+  sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -22,6 +23,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading: true,
     error: null
   });
+  const isRegisteringRef = useRef(false);
+  const isResendingVerificationRef = useRef(false);
 
   useEffect(() => {
     // Check for admin session and authenticate with Firebase if needed
@@ -92,6 +95,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Don't update state if currently in registration process
+      if (isRegisteringRef.current) {
+        console.log('Registration in progress, skipping auth state update');
+        return;
+      }
+      
+      // Don't update state if currently resending verification email
+      if (isResendingVerificationRef.current) {
+        console.log('Resending verification in progress, skipping auth state update');
+        return;
+      }
+      
       if (firebaseUser) {
         try {
           // Determine user role based on email domain or specific emails
@@ -121,7 +136,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             role: userRole,
             createdAt: new Date(),
             lastLogin: new Date(),
-            isEnabled: true
+            isEnabled: true,
+            emailVerified: firebaseUser.emailVerified
           };
 
           setState({
@@ -163,7 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Determine role and redirect
+      // Check if email is verified (skip for admin accounts)
       const email_lower = userCredential.user.email?.toLowerCase() || '';
       const adminEmails = [
         'admin@hotel.com', 
@@ -171,9 +187,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
       ];
       
-      if (adminEmails.includes(email_lower)) {
+      const isAdmin = adminEmails.includes(email_lower);
+      
+      // Enforce email verification for non-admin users
+      if (!isAdmin && !userCredential.user.emailVerified) {
+        // Sign out the user immediately
+        await signOut(auth);
+        
+        setState(prev => ({ 
+          ...prev, 
+          isLoading: false,
+          error: 'Please verify your email address before logging in. Check your inbox for the verification link.'
+        }));
+        
+        throw new Error('Email not verified. Please check your inbox and verify your email address before logging in.');
+      }
+      
+      if (isAdmin) {
         console.log('Admin login detected, will redirect to admin dashboard');
         // The onAuthStateChanged listener will handle the redirect
+      }
+      
+      // Update Firestore emailVerified field if it was just verified
+      if (userCredential.user.emailVerified) {
+        try {
+          const userDocRef = doc(db, 'users', userCredential.user.uid);
+          await setDoc(userDocRef, { 
+            emailVerified: true,
+            lastLogin: new Date()
+          }, { merge: true });
+          console.log('Email verification status synced to Firestore');
+        } catch (firestoreError) {
+          console.error('Failed to update Firestore verification status:', firestoreError);
+          // Don't throw - user can still log in
+        }
       }
       
       // Auth state listener will handle the rest
@@ -189,6 +236,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async ({ email, password, firstName, lastName }: RegisterCredentials): Promise<void> => {
     try {
+      // Set registration flag to prevent onAuthStateChanged from firing
+      isRegisteringRef.current = true;
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
       // Create user with Firebase Auth
@@ -224,71 +273,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: userRole,
         createdAt: new Date(),
         lastLogin: new Date(),
-        isEnabled: true
+        isEnabled: true,
+        emailVerified: false  // Initially false, will be true after verification
       };
       
       await setDoc(doc(db, 'users', userCredential.user.uid), userData);
       console.log('User data saved to Firestore:', userData);
       
-      // If user is a guest, also create guest and guest profile documents
+      // Send email verification
+      try {
+        await sendEmailVerification(userCredential.user);
+        console.log('Verification email sent to:', email);
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Don't throw error - allow registration to continue even if email fails
+      }
+      
+      // If user is a guest, create comprehensive guest profile document
       if (userRole === 'guest') {
-        // Create guest document
-        const guestData = {
-          uid: userCredential.user.uid,
-          email: email,
-          firstName: firstName,
-          lastName: lastName,
-          fullName: `${firstName} ${lastName}`,
-          phone: '', // Can be updated later
-          address: '', // Can be updated later
-          dateOfBirth: null, // Can be updated later
-          nationality: '', // Can be updated later
-          idType: '', // Can be updated later
-          idNumber: '', // Can be updated later
-          emergencyContact: {
-            name: '',
-            phone: '',
-            relationship: ''
-          },
-          preferences: {
-            roomType: '',
-            bedType: '',
-            smokingPreference: false,
-            dietaryRestrictions: []
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          isActive: true
-        };
-        
-        await setDoc(doc(db, 'guests', userCredential.user.uid), guestData);
-        console.log('Guest data saved to Firestore:', guestData);
-        
-        // Create guest profile document
+        // Create single guest profile document with all data
         const guestProfileData = {
+          // Basic Info
           uid: userCredential.user.uid,
           guestId: userCredential.user.uid,
           email: email,
           firstName: firstName,
           lastName: lastName,
           fullName: `${firstName} ${lastName}`,
+          phone: '',
+          address: '',
+          dateOfBirth: null,
+          nationality: '',
           profilePicture: '',
+          
+          // Loyalty & Stats
           loyaltyPoints: 0,
           membershipTier: 'Bronze',
           totalBookings: 0,
           totalSpent: 0,
           lastBookingDate: null,
-          preferences: {
-            communicationMethod: 'email',
-            newsletter: true,
-            promotions: true,
-            roomPreferences: {
-              floor: '',
-              view: '',
-              bedType: '',
-              amenities: []
-            }
+          
+          // Booking-Specific Data (moved from guests collection)
+          emergencyContact: {
+            name: '',
+            phone: '',
+            relationship: ''
           },
+          idInfo: {
+            idType: '',
+            idNumber: ''
+          },
+          bookingPreferences: {
+            roomType: '',
+            bedType: '',
+            smokingPreference: false,
+            dietaryRestrictions: [],
+            floor: '',
+            view: '',
+            amenities: []
+          },
+          
+          // Communication Preferences
+          communicationPreferences: {
+            method: 'email',
+            newsletter: true,
+            promotions: true
+          },
+          
+          // Metadata
           createdAt: new Date(),
           updatedAt: new Date(),
           isActive: true
@@ -298,12 +350,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('Guest profile data saved to Firestore:', guestProfileData);
       }
       
-      // Set loading to false on successful registration - don't update user state yet
-      // This allows the registration modal to show before auto-login
-      setState(prev => ({ ...prev, isLoading: false }));
+      // IMPORTANT: Sign out the user immediately after registration
+      // User must verify their email before they can log in
+      // This prevents auto-login and forces the verification flow
+      await signOut(auth);
+      console.log('User signed out after registration - verification required before login');
+      
+      // Clear registration flag and set loading to false
+      isRegisteringRef.current = false;
+      setState(prev => ({ 
+        ...prev, 
+        isLoading: false,
+        user: null  // Clear user state to ensure they can't access anything
+      }));
       
     } catch (error) {
       console.error('Registration error:', error);
+      // Clear registration flag on error
+      isRegisteringRef.current = false;
       setState(prev => ({ 
         ...prev, 
         isLoading: false,
@@ -355,6 +419,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isAdmin = (): boolean => hasRole('admin');
   const isStaff = (): boolean => hasRole('staff');
+  
+  const setResendingVerification = (isResending: boolean) => {
+    isResendingVerificationRef.current = isResending;
+  };
 
   const contextValue: AuthContextType = {
     ...state,
@@ -366,7 +434,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logout,
     hasRole,
     isAdmin,
-    isStaff
+    isStaff,
+    setResendingVerification
   };
 
   return (
