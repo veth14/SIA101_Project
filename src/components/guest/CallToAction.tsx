@@ -23,7 +23,7 @@ export const CallToAction: React.FC = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="w-full py-12 bg-gradient-to-br from-heritage-green via-heritage-green/90 to-heritage-neutral relative overflow-hidden">
+    <section ref={sectionRef} className="w-full py-10 sm:py-12 md:py-16 bg-gradient-to-br from-heritage-green via-heritage-green/90 to-heritage-neutral relative overflow-hidden">
       {/* Enhanced Background Patterns */}
       <div className="absolute inset-0 opacity-15">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-y-12 animate-pulse"></div>
@@ -40,15 +40,15 @@ export const CallToAction: React.FC = () => {
         <div className={`text-center transition-all duration-1000 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
-          {/* Enhanced Badge */}
-          <div className="inline-block mb-6 animate-bounce">
-            <span className="px-8 py-4 bg-white/20 backdrop-blur-md text-white text-lg font-medium rounded-full border border-white/30 shadow-2xl">
+          {/* Enhanced Badge - MOBILE RESPONSIVE */}
+          <div className="inline-block mb-4 sm:mb-6 animate-bounce">
+            <span className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-white/20 backdrop-blur-md text-white text-sm sm:text-base md:text-lg font-medium rounded-full border border-white/30 shadow-2xl">
               Ready to Experience?
             </span>
           </div>
 
-          {/* Enhanced Main Heading */}
-          <h2 className={`text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight transition-all duration-1500 delay-300 ${
+          {/* Enhanced Main Heading - MOBILE RESPONSIVE */}
+          <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight transition-all duration-1500 delay-300 px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
           }`}>
             Experience Authentic
@@ -57,24 +57,24 @@ export const CallToAction: React.FC = () => {
             </span>
           </h2>
 
-          {/* Enhanced Description */}
-          <p className={`text-lg md:text-xl text-white/90 mb-8 max-w-4xl mx-auto leading-relaxed transition-all duration-1000 delay-500 ${
+          {/* Enhanced Description - MOBILE RESPONSIVE */}
+          <p className={`text-sm sm:text-base md:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 max-w-4xl mx-auto leading-relaxed transition-all duration-1000 delay-500 px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             Book your stay now and create lasting memories at Balay Ginhawa. 
             Discover the perfect blend of <span className="text-heritage-light font-semibold">heritage charm</span> and <span className="text-white font-semibold">modern luxury</span>.
           </p>
 
-          {/* Enhanced CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-6 justify-center items-center transition-all duration-1000 delay-700 ${
+          {/* Enhanced CTA Buttons - MOBILE RESPONSIVE */}
+          <div className={`flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-stretch sm:items-center transition-all duration-1000 delay-700 px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             <Link
               to="/booking"
-              className="group relative inline-flex items-center justify-center px-12 py-6 bg-white hover:bg-heritage-light text-heritage-green font-bold text-lg rounded-full transition-all duration-500 hover:shadow-2xl hover:shadow-white/25 hover:scale-110 min-w-[220px] overflow-hidden"
+              className="group relative inline-flex items-center justify-center px-8 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 lg:py-6 bg-white hover:bg-heritage-light text-heritage-green font-bold text-sm sm:text-base md:text-lg rounded-full transition-all duration-500 hover:shadow-2xl hover:shadow-white/25 active:scale-95 sm:hover:scale-110 overflow-hidden text-center"
             >
               <span className="relative z-10">Reserve Now</span>
-              <svg className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform duration-300 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="ml-2 sm:ml-3 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 group-hover:translate-x-2 transition-transform duration-300 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
               <div className="absolute inset-0 bg-gradient-to-r from-heritage-light to-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
@@ -82,36 +82,36 @@ export const CallToAction: React.FC = () => {
 
             <Link
               to="/rooms"
-              className="group relative inline-flex items-center justify-center px-12 py-6 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-semibold text-lg rounded-full border-2 border-white/30 hover:border-white/50 transition-all duration-500 hover:shadow-2xl hover:shadow-white/25 hover:scale-110 min-w-[220px]"
+              className="group relative inline-flex items-center justify-center px-8 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 lg:py-6 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-semibold text-sm sm:text-base md:text-lg rounded-full border-2 border-white/30 hover:border-white/50 transition-all duration-500 hover:shadow-2xl hover:shadow-white/25 active:scale-95 sm:hover:scale-110 text-center"
             >
               <span className="relative z-10">Explore Rooms</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-heritage-light/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </Link>
           </div>
 
-          {/* Enhanced Trust Indicators */}
-          <div className={`mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto transition-all duration-1000 delay-900 ${
+          {/* Enhanced Trust Indicators - MOBILE RESPONSIVE */}
+          <div className={`mt-8 sm:mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto transition-all duration-1000 delay-900 px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             <div className="text-center group">
-              <div className="text-4xl md:text-5xl font-bold text-white mb-3 group-hover:scale-110 transition-transform duration-300">24/7</div>
-              <div className="text-white/80 font-medium text-lg">Concierge Service</div>
-              <div className="w-16 h-1 bg-heritage-light mx-auto mt-2 rounded-full"></div>
+              <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">24/7</div>
+              <div className="text-white/80 font-medium text-sm sm:text-base md:text-lg">Concierge Service</div>
+              <div className="w-12 sm:w-16 h-1 bg-heritage-light mx-auto mt-2 rounded-full"></div>
             </div>
             <div className="text-center group">
-              <div className="text-4xl md:text-5xl font-bold text-white mb-3 group-hover:scale-110 transition-transform duration-300">Free</div>
-              <div className="text-white/80 font-medium text-lg">Cancellation</div>
-              <div className="w-16 h-1 bg-heritage-light mx-auto mt-2 rounded-full"></div>
+              <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">Free</div>
+              <div className="text-white/80 font-medium text-sm sm:text-base md:text-lg">Cancellation</div>
+              <div className="w-12 sm:w-16 h-1 bg-heritage-light mx-auto mt-2 rounded-full"></div>
             </div>
             <div className="text-center group">
-              <div className="text-4xl md:text-5xl font-bold text-white mb-3 group-hover:scale-110 transition-transform duration-300">Best</div>
-              <div className="text-white/80 font-medium text-lg">Price Guarantee</div>
-              <div className="w-16 h-1 bg-heritage-light mx-auto mt-2 rounded-full"></div>
+              <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">Best</div>
+              <div className="text-white/80 font-medium text-sm sm:text-base md:text-lg">Price Guarantee</div>
+              <div className="w-12 sm:w-16 h-1 bg-heritage-light mx-auto mt-2 rounded-full"></div>
             </div>
           </div>
 
-          {/* Enhanced Bottom Text */}
-          <div className={`mt-10 text-white/70 text-lg transition-all duration-1000 delay-1100 ${
+          {/* Enhanced Bottom Text - MOBILE RESPONSIVE */}
+          <div className={`mt-6 sm:mt-8 md:mt-10 text-white/70 text-sm sm:text-base md:text-lg transition-all duration-1000 delay-1100 px-4 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
             Join thousands of satisfied guests who have experienced the warmth of Filipino hospitality

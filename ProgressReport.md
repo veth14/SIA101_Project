@@ -222,6 +222,383 @@ Maintenance
         - Added client-side sorting to ensure latest requests always appear first (sorted by submittedAt DESC)
         **Security Impact**: Prevents malicious users from canceling other guests' reservations and requests
 
+11. Valmores (Landing Page Mobile Responsiveness)
+    A.) Task/Feature: Made entire landing page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 1 Hour
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Hero Section**:
+          - Adjusted font sizes from text-4xl to text-9xl with proper mobile scaling
+          - Made buttons full-width on mobile, proper spacing (gap-3 sm:gap-4)
+          - Repositioned floating "2,500+ Guests" badge for mobile visibility
+          - Hidden scroll indicator on mobile devices
+          - Added active:scale-95 for mobile touch feedback
+          - Proper padding adjustments (px-2, px-4) for mobile screens
+        - **Welcome Section**:
+          - Reduced section padding (py-12 sm:py-16 md:py-20)
+          - Adjusted image grid height (h-[400px] sm:h-[500px] md:h-[600px])
+          - Stats grid with mobile-friendly text sizes (text-2xl sm:text-3xl md:text-4xl)
+          - Responsive badge sizes and spacing
+          - Better image labels for mobile
+        - **Amenities Section**:
+          - Grid changed to 1-2 columns on mobile (grid-cols-1 xs:grid-cols-2 lg:grid-cols-5)
+          - Responsive icon sizes (w-16 sm:w-18 md:w-20)
+          - Mobile-friendly card padding (p-4 sm:p-5 md:p-6)
+          - Smaller text sizes for mobile (text-sm sm:text-base)
+        - **Room Carousel**:
+          - Smaller navigation arrows on mobile (w-10 h-10 sm:w-12)
+          - Adjusted minimum heights (min-h-[400px] sm:min-h-[500px])
+          - Mobile-optimized price badges
+          - Responsive button text (text-sm sm:text-base)
+          - Better room feature tag sizes
+        - **Testimonials Section**:
+          - Responsive star sizes (w-6 sm:w-7 md:w-8)
+          - Mobile padding adjustments (p-6 sm:p-8)
+          - Smaller quote icon on mobile
+          - Trust indicators stacking properly on mobile
+        - **Call to Action Section**:
+          - Full-width buttons on mobile
+          - Responsive trust indicator grid (cols-1 sm:cols-3)
+          - Proper font scaling for mobile devices
+          - Better spacing and padding
+        - **Global Mobile Improvements**:
+          - All text properly scales (text-sm sm:text-base md:text-lg)
+          - Touch-friendly button sizes (py-3 sm:py-4)
+          - Active states for mobile (active:scale-95)
+          - Proper horizontal padding throughout (px-4)
+          - Responsive gaps and spacing
+        **Impact**: Landing page now fully responsive and optimized for mobile users (majority of traffic)
+        - **Header Navigation Fix**:
+          - Fixed "Balay Ginhawa" text wrapping on mobile
+          - Added whitespace-nowrap to prevent line breaks
+          - Responsive logo sizing (w-12 sm:w-14 md:w-16)
+          - Responsive text sizing (text-lg sm:text-xl md:text-2xl)
+          - Added flex-shrink-0 to logo to prevent compression
+        - **Room Carousel Touch/Swipe Support**:
+          - Added touch event handlers for mobile swipe gestures
+          - Left swipe advances to next room
+          - Right swipe goes to previous room
+          - Minimum swipe distance of 50px to prevent accidental slides
+          - Navigation arrows hidden on mobile (hidden md:flex)
+          - Arrows only visible on tablets/desktop (md breakpoint and above)
+          - Touch-friendly mobile navigation
+        - **Header Navigation Mobile Optimization**:
+          - Redesigned header buttons for better mobile experience
+          - "Book Now" button hidden on extra small screens (< 640px), visible on sm+
+          - "Sign In" button hidden on extra small screens, visible on sm+
+          - Reduced button padding on mobile (px-4 vs px-6)
+          - Smaller text on mobile (text-sm vs text-base)
+          - User avatar reduced to w-7 h-7 on mobile (vs w-8 h-8)
+          - Better spacing with gap-2 on mobile (vs gap-3)
+          - Hamburger menu icon uses rounded-lg for better touch target
+          - Mobile menu: "Book Now" prominent green button
+          - Mobile menu: "Sign Out" improved styling (red-50 background)
+          - All buttons scale properly across different phone sizes
+          - Cleaner, less cluttered mobile header layout
+          - Added flex-shrink-0 to prevent icon compression
+
+12. Valmores (Amenities Page Mobile Responsiveness)
+    A.) Task/Feature: Made Amenities page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 30 Minutes
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Hero Header Section**:
+          - Reduced padding: py-16 sm:py-24 md:py-32 (was py-32)
+          - Title scaled: text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl
+          - Description scaled: text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl
+          - Added horizontal padding to description for mobile
+          - Better spacing on all screen sizes
+        - **Category Filter Buttons**:
+          - Smaller gaps on mobile: gap-2 sm:gap-3
+          - Responsive padding: px-3 sm:px-4 md:px-6
+          - Responsive text: text-xs sm:text-sm md:text-base
+          - Added whitespace-nowrap to prevent text wrapping
+          - Active scale feedback for mobile: active:scale-95
+          - Better touch targets for mobile users
+          - Sticky position adjusted: top-16 sm:top-20
+        - **Amenity Cards**:
+          - Reduced image height on mobile: h-48 sm:h-56 md:h-64
+          - Smaller card padding: p-5 sm:p-6 md:p-8
+          - Responsive title: text-xl sm:text-2xl
+          - Responsive description: text-sm sm:text-base
+          - Icon badge scaled: w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
+          - Smaller availability badges on mobile
+          - Feature list: text-xs sm:text-sm
+          - Active scale on mobile: active:scale-95
+          - Rounded corners adjusted for mobile: rounded-2xl sm:rounded-3xl
+        - **Grid Layout**:
+          - Reduced gap on mobile: gap-6 sm:gap-8
+          - Single column on mobile, 2 on tablet, 3 on desktop
+          - Better card spacing
+        - **Call to Action Section**:
+          - Reduced padding: py-12 sm:py-16 md:py-20
+          - Title scaled: text-2xl sm:text-3xl md:text-4xl lg:text-5xl
+          - Button sizing: py-3 sm:py-4 px-6 sm:px-8
+          - Button text: text-base sm:text-lg
+          - Responsive button corners: rounded-xl sm:rounded-2xl
+        - **Global Mobile Improvements**:
+          - Better touch feedback with active:scale-95
+          - Proper spacing throughout
+          - All text scales appropriately
+          - Touch-friendly button sizes
+          - Optimized for phones 320px-640px width
+        **Impact**: Amenities page now fully mobile-responsive and easy to navigate on all devices
+        - **Category Filter Redesign** (User Feedback):
+          - Removed emoji icons from filter buttons (cleaner look)
+          - Removed sticky positioning (no longer sticks to screen)
+          - Simplified design: text-only buttons
+          - Changed from rounded-full to rounded-lg (more modern)
+          - Better background gradient instead of sticky bar
+          - Filters now scroll naturally with the page
+          - Less visual clutter, easier to focus on content
+
+13. Valmores (Rooms Page Mobile Responsiveness)
+    A.) Task/Feature: Made Rooms page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 30 Minutes
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Hero Header Section**:
+          - Reduced padding: py-16 sm:py-24 md:py-32 (was py-32)
+          - Title scaled: text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl
+          - Description scaled: text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl
+          - Better spacing for mobile devices
+        - **Room Cards/Sections**:
+          - Responsive padding: py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32
+          - Grid gaps: gap-8 sm:gap-12 md:gap-16 lg:gap-20
+          - Image heights: h-64 sm:h-80 md:h-96 lg:h-[500px]
+          - Price badge responsive: px-3 sm:px-4 md:px-6, text-lg sm:text-xl md:text-2xl
+          - Room number badge: text-sm sm:text-base, px-3 sm:px-4
+        - **Room Information**:
+          - Title: text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+          - Room type: text-sm sm:text-base md:text-lg lg:text-xl
+          - Description: text-base sm:text-lg md:text-xl
+          - Spacing: space-y-6 sm:space-y-8 md:space-y-10
+        - **Quick Details Cards**:
+          - Smaller gaps: gap-3 sm:gap-4 md:gap-6
+          - Icon sizes: w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12
+          - Label text: text-xs sm:text-sm
+          - Value text: text-lg sm:text-xl md:text-2xl
+          - Touch feedback: active:scale-95
+        - **Feature/Amenity Tags**:
+          - Smaller tags: px-3 sm:px-4 md:px-5
+          - Text size: text-xs sm:text-sm
+          - Gaps: gap-2 sm:gap-3
+          - Touch-friendly: active:scale-95
+        - **Book Now Button**:
+          - Responsive sizing: py-3 sm:py-4 md:py-5 lg:py-6
+          - Text size: text-base sm:text-lg md:text-xl
+          - Icon size: w-5 h-5 sm:w-6 sm:h-6
+          - Touch feedback: active:scale-95
+        - **Global Mobile Improvements**:
+          - All elements scale properly
+          - Better touch targets
+          - Proper spacing throughout
+          - Images adapt to screen size
+          - Text readable on all devices
+        **Impact**: Rooms page now fully mobile-responsive with beautiful room showcase on all devices
+        - **Room Card Mobile Optimization** (User Feedback):
+          - Reduced padding on mobile: py-8 (was py-12)
+          - Smaller gaps: gap-6 sm:gap-8 (was gap-8 sm:gap-12)
+          - Consistent white background on mobile (no alternating colors)
+          - Alternating colors only show on desktop (lg: breakpoint)
+          - Added subtle border separators between cards on mobile
+          - Hidden decorative background elements on mobile
+          - Cards take up less space, more content visible
+          - Cleaner, more uniform look on mobile devices
+
+14. Valmores (My Profile Page Mobile Responsiveness)
+    A.) Task/Feature: Made My Profile page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 45 Minutes
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Page Container**:
+          - Reduced padding: py-8 sm:py-12 pt-20 sm:pt-24 md:pt-32
+          - Better mobile spacing
+        - **Header Section**:
+          - Responsive layout: flex-col sm:flex-row
+          - Icon sizes: w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
+          - Title: text-xl sm:text-2xl md:text-3xl
+          - Description: text-sm sm:text-base md:text-lg
+          - Full-width button on mobile: w-full sm:w-auto
+          - Button sizing: px-4 sm:px-6 md:px-8, py-2.5 sm:py-3 md:py-4
+        - **Success/Error Messages**:
+          - Responsive padding: p-4 sm:p-6
+          - Icon sizes: w-10 h-10 sm:w-12 sm:h-12
+          - Text sizes: text-sm sm:text-base md:text-xl
+        - **User Avatar Card**:
+          - Card padding: p-6 sm:p-8
+          - Avatar size: w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32
+          - Online indicator: w-6 h-6 sm:w-8 sm:h-8
+          - Name: text-xl sm:text-2xl
+          - Email: text-sm sm:text-base md:text-lg
+          - Verification badge: px-4 sm:px-6, text-xs sm:text-sm
+          - Stats spacing: space-y-3 sm:space-y-4
+          - Stats text: text-sm sm:text-base
+        - **Form Fields**:
+          - Grid gap: gap-4 sm:gap-6
+          - Label sizes: text-xs sm:text-sm
+          - Input padding: px-4 sm:px-6 py-3 sm:py-4
+          - Input text: text-sm sm:text-base
+          - Rounded corners: rounded-xl sm:rounded-2xl
+          - All fields properly scaled
+        - **Quick Actions Section**:
+          - Card padding: p-6 sm:p-8
+          - Button padding: p-4 sm:p-6
+          - Icon sizes: w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
+          - Title: text-base sm:text-lg md:text-xl
+          - Description: text-sm sm:text-base md:text-lg
+          - Touch feedback: active:scale-95
+        - **Account Security Section**:
+          - Responsive padding and text sizes
+          - Sign Out button properly sized
+          - Touch-friendly interactions
+        - **Global Mobile Improvements**:
+          - All text scales appropriately
+          - Touch-friendly button sizes
+          - flex-shrink-0 on icons to prevent compression
+          - Proper spacing throughout
+          - Rounded corners adapt (rounded-xl sm:rounded-2xl)
+        **Impact**: Profile page now fully mobile-responsive with excellent UX on all devices
+
+15. Valmores (My Bookings Page Mobile Responsiveness)
+    A.) Task/Feature: Made My Bookings page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 30 Minutes
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Page Container**:
+          - Added top padding: pt-20 sm:pt-24
+          - Reduced section padding: py-8 sm:py-12
+          - Better spacing from navigation
+        - **Hero Header Section**:
+          - Icon sizes: w-16 h-16 sm:w-20 sm:h-20
+          - Icon SVG: w-8 h-8 sm:w-10 sm:h-10
+          - Title: text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+          - Description: text-base sm:text-lg md:text-xl
+          - Spacing: space-y-3 sm:space-y-4
+          - Bottom margin: mb-8 sm:mb-12 md:mb-16
+        - **Status Indicators**:
+          - Changed from flex to flex-wrap
+          - Gap: gap-3 sm:gap-4 md:gap-8
+          - Padding: px-3 sm:px-4
+          - Text: text-xs sm:text-sm
+          - Added whitespace-nowrap
+          - Added flex-shrink-0 to icons
+        - **Search Bar**:
+          - Full width on mobile: w-full lg:flex-1
+          - Padding: py-2.5 sm:py-3
+          - Responsive container padding: px-4 sm:px-6 py-4 sm:py-5
+        - **Filter Tabs**:
+          - Full width on mobile: w-full lg:w-auto
+          - Horizontal scroll: overflow-x-auto scrollbar-hide
+          - Min width to prevent wrapping: min-w-max
+          - Maintains desktop layout on larger screens
+        - **Controls Panel**:
+          - Responsive padding: px-4 sm:px-6
+          - Better spacing: mb-6 sm:mb-8
+        - **Booking Cards**:
+          - Already responsive with lg:grid-cols-2
+          - Cards work well on mobile
+        **Impact**: My Bookings page now fully mobile-responsive with easy filtering and search on all devices
+
+16. Valmores (My Requests Page Mobile Responsiveness)
+    A.) Task/Feature: Made My Requests page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 25 Minutes
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Page Container**:
+          - Added top padding: pt-20 sm:pt-24
+          - Reduced section padding: py-8 sm:py-12
+          - Better spacing from navigation
+        - **Hero Header Section**:
+          - Icon sizes: w-16 h-16 sm:w-20 sm:h-20
+          - Icon SVG: w-8 h-8 sm:w-10 sm:h-10
+          - Title: text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+          - Description: text-base sm:text-lg md:text-xl
+          - Spacing: space-y-3 sm:space-y-4
+          - Bottom margin: mb-8 sm:mb-10 md:mb-12
+        - **Status Indicators**:
+          - Changed to flex-wrap
+          - Gap: gap-3 sm:gap-4 md:gap-8
+          - Padding: px-3 sm:px-4
+          - Text: text-xs sm:text-sm
+          - Added whitespace-nowrap and flex-shrink-0
+        - **Search Bar**:
+          - Full width on mobile: w-full md:flex-1
+          - Icon: w-4 h-4 sm:w-5 sm:h-5
+          - Padding: py-2.5 sm:py-3, pl-10 sm:pl-12
+          - Text: text-sm sm:text-base
+          - Shorter placeholder on mobile
+        - **Filter Buttons**:
+          - 2-column grid on mobile: grid-cols-2 sm:flex
+          - Padding: px-4 sm:px-6
+          - Text: text-sm sm:text-base
+          - Gap: gap-2 sm:gap-3
+        - **Request Cards**:
+          - Padding: p-4 sm:p-6
+          - Border radius: rounded-2xl sm:rounded-3xl
+          - Status icon: p-2 sm:p-3
+          - Title: text-base sm:text-lg md:text-xl
+          - Badge padding: px-2 sm:px-3 md:px-4
+          - Meta icons: w-3 h-3 sm:w-4 sm:h-4
+          - Meta text: text-xs sm:text-sm
+          - Added truncate for long text
+          - Expand button: w-5 h-5 sm:w-6 sm:h-6
+          - Message preview: text-sm sm:text-base
+        - **Pagination**:
+          - Padding: p-4 sm:p-6
+          - Info text: text-xs sm:text-sm
+          - Button padding: px-3 sm:px-4
+          - Button text: text-sm sm:text-base
+          - "Previous" → "Prev" on mobile
+          - Page numbers: w-8 h-8 sm:w-10 sm:h-10
+          - Gap: gap-1 sm:gap-2
+        **Impact**: My Requests page now fully mobile-responsive with excellent UX on all screen sizes
+
+17. Valmores (Booking Page Mobile Responsiveness)
+    A.) Task/Feature: Made Booking page fully responsive for mobile devices
+    B.) Status: Completed
+    C.) Time Spent: 20 Minutes
+    D.) Remarks: Implemented comprehensive mobile-first responsive design:
+        - **Page Container**:
+          - Top padding: pt-20 sm:pt-24
+          - Container padding: p-4 sm:p-6 md:p-8
+          - Better spacing from navigation
+        - **Header Section**:
+          - Badge: px-4 sm:px-6, py-2 sm:py-3, text-sm sm:text-base md:text-lg
+          - Title: text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl
+          - Description: text-base sm:text-lg md:text-xl
+          - Margins: mb-8 sm:mb-12 md:mb-16
+        - **Pending Booking Notification**:
+          - Padding: p-4 sm:p-6
+          - Border radius: rounded-xl sm:rounded-2xl
+          - Gap: gap-3 sm:gap-4
+          - Title: text-base sm:text-lg
+          - Text: text-sm sm:text-base
+          - Button padding: px-4 sm:px-6
+        - **Progress Steps**:
+          - Padding: px-4 sm:px-6 md:px-8, py-4 sm:py-6
+          - Gap: gap-3 sm:gap-6 md:gap-8
+          - Step circles: w-7 h-7 sm:w-8 sm:h-8
+          - Step text: text-xs sm:text-sm md:text-base
+          - Connector lines: w-8 sm:w-12 md:w-16
+        - **Form Container**:
+          - Border radius: rounded-2xl sm:rounded-3xl
+          - Form padding: p-4 sm:p-6 md:p-8
+          - Section spacing: space-y-6 sm:space-y-8
+        - **Section Headers**:
+          - Gap: gap-2 sm:gap-3
+          - Text: text-lg sm:text-xl md:text-2xl
+          - Spacing: space-y-4 sm:space-y-6
+        - **Date Inputs**:
+          - Grid gap: gap-4 sm:gap-6
+          - Responsive grid: grid-cols-1 md:grid-cols-2
+        - **Room Selection Cards**:
+          - Padding: p-3 sm:p-4
+          - Gap: gap-3 sm:gap-4
+          - Grid: grid-cols-1 md:grid-cols-2
+          - Responsive layout for all screen sizes
+        **Impact**: Booking page now fully mobile-responsive with smooth booking flow on all devices
+
 ## On-Going:
 
 ## Pending:

@@ -199,7 +199,7 @@ export const MyRequestsPage: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-20 sm:pt-24">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute rounded-full -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 blur-3xl animate-pulse"></div>
@@ -207,60 +207,60 @@ export const MyRequestsPage: React.FC = () => {
         <div className="absolute w-64 h-64 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2 bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
-      <div className="relative z-10 pt-32 pb-12">
+      <div className="relative z-10 py-8 sm:py-12">
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          {/* Hero Header Section */}
-          <div className="mb-12 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
-              <MessageSquare className="w-10 h-10 text-white" />
+          {/* Hero Header Section - MOBILE RESPONSIVE */}
+          <div className="mb-8 sm:mb-10 md:mb-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-6 sm:mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
+              <MessageSquare className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             </div>
             
-            <div className="space-y-4">
-              <h1 className="text-5xl font-black leading-tight text-transparent md:text-6xl bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-transparent bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text px-4">
                 My Requests
               </h1>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-slate-600">
+              <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl leading-relaxed text-slate-600 px-4">
                 Track and manage your support requests at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
               </p>
             </div>
 
-            {/* Status Indicators */}
-            <div className="flex items-center justify-center mt-8 space-x-8">
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-sm font-semibold text-slate-700">Live Sync</span>
+            {/* Status Indicators - MOBILE RESPONSIVE */}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-8 mt-6 sm:mt-8 px-4">
+              <div className="flex items-center px-3 sm:px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Live Sync</span>
               </div>
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <span className="text-sm font-semibold text-slate-700">Real-time Updates</span>
+              <div className="flex items-center px-3 sm:px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0" style={{ animationDelay: '1s' }}></div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Real-time Updates</span>
               </div>
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <CheckCircle className="w-4 h-4 text-heritage-green" />
-                <span className="text-sm font-semibold text-slate-700">Secure</span>
+              <div className="flex items-center px-3 sm:px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <CheckCircle className="w-4 h-4 text-heritage-green flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Secure</span>
               </div>
             </div>
           </div>
 
-        {/* Search and Filter Bar */}
-        <div className="p-6 mb-6 bg-white shadow-xl rounded-3xl">
+        {/* Search and Filter Bar - MOBILE RESPONSIVE */}
+        <div className="p-4 sm:p-6 mb-6 bg-white shadow-xl rounded-2xl sm:rounded-3xl">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-4 top-1/2" />
+            {/* Search Bar - MOBILE RESPONSIVE */}
+            <div className="relative w-full md:flex-1 md:max-w-md">
+              <Search className="absolute w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transform -translate-y-1/2 left-3 sm:left-4 top-1/2" />
               <input
                 type="text"
-                placeholder="Search by reference, subject, or message..."
+                placeholder="Search requests..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full py-3 pl-12 pr-4 transition-all duration-300 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/10"
+                className="w-full py-2.5 sm:py-3 pl-10 sm:pl-12 pr-4 text-sm sm:text-base transition-all duration-300 border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/10"
               />
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-3">
+            {/* Filter Buttons - MOBILE RESPONSIVE */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
               <button
                 onClick={() => setFilter('all')}
-                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-200 ${
                   filter === 'all'
                     ? 'bg-heritage-green text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -270,7 +270,7 @@ export const MyRequestsPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setFilter('pending')}
-                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-200 ${
                   filter === 'pending'
                     ? 'bg-orange-500 text-white'
                     : 'bg-white text-orange-600 border border-gray-300 hover:bg-orange-50'
@@ -280,7 +280,7 @@ export const MyRequestsPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setFilter('in-progress')}
-                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-200 ${
                   filter === 'in-progress'
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-blue-600 border border-gray-300 hover:bg-blue-50'
@@ -290,7 +290,7 @@ export const MyRequestsPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setFilter('resolved')}
-                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-200 ${
                   filter === 'resolved'
                     ? 'bg-green-600 text-white'
                     : 'bg-white text-green-600 border border-gray-300 hover:bg-green-50'
@@ -300,7 +300,7 @@ export const MyRequestsPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setFilter('cancelled')}
-                className={`px-6 py-2 font-semibold rounded-full transition-all duration-200 ${
+                className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-semibold rounded-full transition-all duration-200 ${
                   filter === 'cancelled'
                     ? 'bg-red-600 text-white'
                     : 'bg-white text-red-600 border border-gray-300 hover:bg-red-50'
@@ -346,19 +346,19 @@ export const MyRequestsPage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Requests List */}
-            <div className="mb-6 space-y-5">
+            {/* Requests List - MOBILE RESPONSIVE */}
+            <div className="mb-6 space-y-4 sm:space-y-5">
               {currentRequests.map((request) => (
               <div
                 key={request.id}
-                className="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-3xl hover:shadow-2xl"
+                className="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-2xl sm:rounded-3xl hover:shadow-2xl"
               >
-                {/* Card Header */}
-                <div className="p-6 pb-4">
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-start flex-1 gap-4">
-                      {/* Status Icon with Gradient Background */}
-                      <div className={`p-3 rounded-2xl ${
+                {/* Card Header - MOBILE RESPONSIVE */}
+                <div className="p-4 sm:p-6 pb-3 sm:pb-4">
+                  <div className="flex items-start justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+                    <div className="flex items-start flex-1 gap-2 sm:gap-4 min-w-0">
+                      {/* Status Icon with Gradient Background - MOBILE RESPONSIVE */}
+                      <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl flex-shrink-0 ${
                         request.status === 'pending' ? 'bg-gradient-to-br from-amber-100 to-amber-50' :
                         request.status === 'in-progress' ? 'bg-gradient-to-br from-blue-100 to-blue-50' :
                         'bg-gradient-to-br from-green-100 to-green-50'
@@ -366,49 +366,49 @@ export const MyRequestsPage: React.FC = () => {
                         {getStatusIcon(request.status)}
                       </div>
 
-                      {/* Request Info */}
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                          <h3 className="text-xl font-black text-gray-800">{request.subject}</h3>
-                          <span className={`px-4 py-1.5 text-xs font-bold rounded-full ${getStatusColor(request.status)}`}>
+                      {/* Request Info - MOBILE RESPONSIVE */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                          <h3 className="text-base sm:text-lg md:text-xl font-black text-gray-800 break-words">{request.subject}</h3>
+                          <span className={`px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 text-xs font-bold rounded-full whitespace-nowrap ${getStatusColor(request.status)}`}>
                             {request.status.replace('-', ' ').toUpperCase()}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 mb-3 text-sm">
-                          <span className="flex items-center gap-1.5 font-semibold text-heritage-green">
-                            <FileText className="w-4 h-4" />
-                            {request.referenceNumber}
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3 text-xs sm:text-sm">
+                          <span className="flex items-center gap-1 sm:gap-1.5 font-semibold text-heritage-green">
+                            <FileText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">{request.referenceNumber}</span>
                           </span>
-                          <span className="flex items-center gap-1.5 text-gray-600">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(request.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          <span className="flex items-center gap-1 sm:gap-1.5 text-gray-600">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">{new Date(request.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                           </span>
-                          <span className="px-3 py-1 text-xs font-semibold capitalize rounded-full bg-heritage-green/10 text-heritage-green">
+                          <span className="px-2 sm:px-3 py-1 text-xs font-semibold capitalize rounded-full bg-heritage-green/10 text-heritage-green whitespace-nowrap">
                             {request.inquiryType.replace('_', ' ')}
                           </span>
                         </div>
                         {request.bookingReference && (
-                          <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-3 text-sm font-semibold border-2 rounded-2xl bg-amber-50 border-amber-200 text-amber-800">
-                            <AlertCircle className="w-4 h-4" />
+                          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 mb-2 sm:mb-3 text-xs sm:text-sm font-semibold border-2 rounded-xl sm:rounded-2xl bg-amber-50 border-amber-200 text-amber-800">
+                            <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             Booking: {request.bookingReference}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Expand Button */}
+                    {/* Expand Button - MOBILE RESPONSIVE */}
                     <button
                       onClick={() => setExpandedRequest(expandedRequest === request.id ? null : request.id)}
-                      className="p-2 transition-all duration-300 rounded-2xl hover:bg-gray-100"
+                      className="p-1.5 sm:p-2 transition-all duration-300 rounded-xl sm:rounded-2xl hover:bg-gray-100 flex-shrink-0"
                     >
-                      <ChevronRight className={`w-6 h-6 text-gray-600 transition-transform duration-300 ${
+                      <ChevronRight className={`w-5 h-5 sm:w-6 sm:h-6 text-gray-600 transition-transform duration-300 ${
                         expandedRequest === request.id ? 'rotate-90' : ''
                       }`} />
                     </button>
                   </div>
 
-                  {/* Message Preview */}
-                  <p className={`text-gray-600 leading-relaxed ${
+                  {/* Message Preview - MOBILE RESPONSIVE */}
+                  <p className={`text-sm sm:text-base text-gray-600 leading-relaxed ${
                     expandedRequest === request.id ? '' : 'line-clamp-2'
                   }`}>
                     {request.message}
@@ -505,11 +505,11 @@ export const MyRequestsPage: React.FC = () => {
             ))}
           </div>
 
-          {/* Pagination Controls */}
+          {/* Pagination Controls - MOBILE RESPONSIVE */}
           {totalPages > 1 && (
-            <div className="flex flex-col items-center gap-4 p-6 bg-white shadow-xl sm:flex-row sm:justify-between rounded-3xl">
-              {/* Page Info */}
-              <div className="text-sm text-gray-600">
+            <div className="flex flex-col items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-white shadow-xl sm:flex-row sm:justify-between rounded-2xl sm:rounded-3xl">
+              {/* Page Info - MOBILE RESPONSIVE */}
+              <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                 Showing <span className="font-bold text-heritage-green">{indexOfFirstRequest + 1}</span> to{' '}
                 <span className="font-bold text-heritage-green">
                   {Math.min(indexOfLastRequest, filteredRequests.length)}
@@ -517,29 +517,30 @@ export const MyRequestsPage: React.FC = () => {
                 of <span className="font-bold text-heritage-green">{filteredRequests.length}</span> requests
               </div>
 
-              {/* Pagination Buttons */}
-              <div className="flex items-center gap-2">
+              {/* Pagination Buttons - MOBILE RESPONSIVE */}
+              <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 font-bold rounded-2xl transition-all duration-300 ${
+                  className={`px-3 sm:px-4 py-2 text-sm sm:text-base font-bold rounded-xl sm:rounded-2xl transition-all duration-300 ${
                     currentPage === 1
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-heritage-green text-white hover:shadow-lg hover:scale-105'
+                      : 'bg-heritage-green text-white hover:shadow-lg active:scale-95 sm:hover:scale-105'
                   }`}
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </button>
 
-                {/* Page Numbers */}
-                <div className="flex gap-2">
+                {/* Page Numbers - MOBILE RESPONSIVE */}
+                <div className="flex gap-1 sm:gap-2">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-10 h-10 font-bold rounded-2xl transition-all duration-300 ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 text-sm sm:text-base font-bold rounded-xl sm:rounded-2xl transition-all duration-300 ${
                         currentPage === page
-                          ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-lg scale-110'
+                          ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-lg scale-105 sm:scale-110'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -551,10 +552,10 @@ export const MyRequestsPage: React.FC = () => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className={`px-4 py-2 font-bold rounded-2xl transition-all duration-300 ${
+                  className={`px-3 sm:px-4 py-2 text-sm sm:text-base font-bold rounded-xl sm:rounded-2xl transition-all duration-300 ${
                     currentPage === totalPages
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-heritage-green text-white hover:shadow-lg hover:scale-105'
+                      : 'bg-heritage-green text-white hover:shadow-lg active:scale-95 sm:hover:scale-105'
                   }`}
                 >
                   Next
