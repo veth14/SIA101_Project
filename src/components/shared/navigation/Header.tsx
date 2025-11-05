@@ -18,7 +18,7 @@ export const Header = () => {
   ];
 
   // Pages where header should always be solid (not transparent)
-  const solidHeaderPages = ['/booking', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
+  const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
 
 
@@ -168,7 +168,10 @@ export const Header = () => {
                     {/* User Profile Dropdown */}
                     <div className="relative">
                       <button
-                        onClick={() => setShowUserDropdown(!showUserDropdown)}
+                        onClick={() => {
+                          setShowUserDropdown(!showUserDropdown);
+                          setIsMobileMenuOpen(false); // Close mobile menu when opening user dropdown
+                        }}
                         className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 ${
                           isScrolled || shouldUseSolidHeader
                             ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
@@ -341,7 +344,10 @@ export const Header = () => {
                   ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
                   : 'text-white hover:text-white/80 hover:bg-white/20'
               }`}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => {
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+                setShowUserDropdown(false); // Close user dropdown when opening mobile menu
+              }}
               aria-label="Toggle menu"
             >
               <span className="sr-only">Open menu</span>
