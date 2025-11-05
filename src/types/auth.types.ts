@@ -16,6 +16,7 @@ export interface User {
   createdAt: Date;
   lastLogin?: Date;
   isEnabled: boolean;
+  emailVerified?: boolean;
 }
 
 export interface AuthState {
@@ -75,6 +76,7 @@ export interface AuthContextType extends AuthState {
   hasRole: (role: UserRole | UserRole[]) => boolean;
   isAdmin: () => boolean;
   isStaff: () => boolean;
+  setResendingVerification?: (isResending: boolean) => void;
 }
 
 // Protected route props

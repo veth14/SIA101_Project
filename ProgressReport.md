@@ -104,41 +104,146 @@ Maintenance
     C.) Time Spent: 2 Hours
     D.) Remarks: Back-end not done yet
 
+6. Valmores (Help Center & Contact System)
+    A.) Task/Feature: Refactored Help Center with Tabbed Interface | Contact Form with Cancellation Request | Auto-Fill User Data
+    B.) Status: Completed
+    C.) Time Spent: 3 Hours
+    D.) Remarks: Implemented centralized FAQ data, GuestLayout component, smooth tab transitions, scroll-to-top navigation, contact form with cancellation request feature, and smart auto-fill for logged-in users (name, email, phone)
+
+7. Valmores (Code Cleanup & Optimization)
+    A.) Task/Feature: Removed unused files | Fixed MyBookings navigation | Cleaned imports
+    B.) Status: Completed
+    C.) Time Spent: 1 Hour
+    D.) Remarks: Deleted ProfilePage.tsx, unused standalone pages, fixed route mismatch (/my-bookings → /mybookings)
+
+8. Valmores (MyBookingsPage Redesign)
+    A.) Task/Feature: Complete redesign of MyBookingsPage with modern UI | Streamlined controls panel | Enhanced filter tabs | Improved card layout
+    B.) Status: Completed
+    C.) Time Spent: 2 Hours
+    D.) Remarks: Fixed JSX structure issues, implemented compact search, enhanced filter tabs with shadow effects, improved responsive design, added results info display
+
+9. Valmores (Account Creation & Validation System + Profile Verification Badge Fix + Security Rules)
+    A.) Task/Feature: Enhanced authentication with comprehensive validation | Password strength indicator | Email verification | Security improvements | Profile verification badge | Firestore security rules
+    B.) Status: Completed
+    C.) Time Spent: 6 Hours
+    D.) Remarks: Implemented:
+        - Real-time password strength indicator with visual feedback
+        - 5-level strength meter (Weak, Fair, Good, Strong)
+        - Password requirements checklist (8+ chars, uppercase, lowercase, number, special char)
+        - Email format validation with regex pattern
+        - Automatic email verification link sent upon registration via Firebase
+        - **ENFORCED email verification before login** - Users CANNOT access account until verified
+        - **Explicit verification modal** with step-by-step instructions after registration
+        - Email verification modal with resend functionality for unverified login attempts
+        - Enhanced form validation with detailed error messages
+        - Visual feedback for all validation states
+        - **Prominent success modal** with animated email icon, warning box, and clear instructions
+        - Security best practices implemented (password visibility toggle, secure storage)
+        - Created PasswordStrengthIndicator component for reusability
+        - Created EmailVerificationModal component with resend feature
+        - Redesigned SuccessModal with explicit Gmail checking instructions
+        - Updated AuthContext to support sendEmailVerification from Firebase
+        - Login blocks unverified users and shows verification modal
+        - Admin accounts exempt from email verification requirement
+        - Improved modal responsiveness for mobile devices
+        - Disabled backdrop click and ESC key on critical verification modal
+        - Removed auto-login after registration to enforce verification
+        - Created EMAIL_VERIFICATION_TROUBLESHOOTING.md guide
+        - **Fixed Profile Verification Badge**: Badge now correctly shows "Verified Member" only for verified emails
+        - Added "Email Not Verified" warning badge for unverified accounts
+        - Added emailVerified property to User interface and AuthContext
+        - Fixed profile card height to match personal information section (full height flex layout)
+        - **CRITICAL FIX**: Added emailVerified field to Firestore on registration (initially false)
+        - **CRITICAL FIX**: User is signed out immediately after registration to prevent auto-login
+        - **CRITICAL FIX**: Success modal now displays properly after registration
+        - Firestore emailVerified field synced to true on first verified login
+        - Email verification status tracked in both Firebase Auth and Firestore
+        - **Connected Profile Stats to Firestore**: Member since, Total bookings, Loyalty points, Membership tier now show real data
+        - Member since fetched from user creation date in Firestore
+        - Total bookings counted from actual bookings collection
+        - Loyalty points fetched from guestprofiles collection
+        - Membership tier displayed with color-coded badges (Bronze, Silver, Gold, Platinum)
+        - **Implemented Profile Save Functionality**: Profile edits now save to Firestore
+        - Saves to guestprofiles collection (primary)
+        - Also updates users collection for consistency
+        - Profile data loaded from guestprofiles on page load
+        - Updates firstName, lastName, phone, dateOfBirth, nationality, address
+        - **Removed guests collection**: Consolidated all data into guestprofiles
+        - guestprofiles now contains basic info, loyalty data, AND booking-specific data
+        - Simplified data structure - no more duplication across collections
+        - Added emergencyContact, idInfo, bookingPreferences to guestprofiles
+        - **CRITICAL FIX**: Registration flag using useRef prevents brief unauthorized access after registration
+        - Fixed race condition where onAuthStateChanged fired before signOut during registration
+        - Users are now completely blocked from accessing protected routes during registration
+        - **Fixed Resend Verification Email**: Modal now temporarily signs in, resends email, then signs out
+        - Resend button passes user's password to allow temporary authentication
+        - **CRITICAL FIX**: Added flag to block navigation during resend operation
+        - Prevents user from being redirected to landing page during temporary sign-in for resend
+        - Modal stays open, user stays on auth page, seamless UX
+        - **Enhanced Verification Modal UI**: Clean, simplified design with lock icon
+        - Success message stays visible (doesn't auto-hide after 5 seconds)
+        - Simple, non-intrusive success notification when email is resent
+        - Removed cluttered warning boxes and excessive instructions
+        - Clean layout with minimal colored boxes
+        - Error messages displayed clearly when needed
+        - Loading state with spinner while resending
+        - Users can only access their own data (principle of least privilege)
+        - Admin role verified by email address
+        - Fixed "Missing or insufficient permissions" Firestore errors
+        -**Verified Working**: Gmail integration confirmed, emails being sent successfully, verification badge displays correctly, modal shows after registration, profile stats connected to database, NO unauthorized access during registration
+
+10. Valmores (Contact Tab Security Fix + My Requests Cancel Functionality + Code Quality Fixes)
+    A.) Task/Feature: Fixed critical security vulnerability | Added request cancellation | Code cleanup and validation improvements
+    B.) Status: Completed
+    C.) Time Spent: 1.5 Hours
+    D.) Remarks: Implemented:
+        - **CRITICAL SECURITY FIX**: Added booking ownership verification in ContactTab
+        - System now checks if booking belongs to the logged-in user before allowing cancellation
+        - Validates both `guestId` and `userId` fields in booking documents
+        - Clear error message: "This booking does not belong to your account"
+        - Prevents unauthorized cancellation requests
+        - Checks both 'bookings' and 'reservations' collections
+        - Returns detailed validation: { exists: boolean, belongsToUser: boolean }
+        - Users can only cancel/modify their own bookings
+        - **NEW: My Requests Page - Cancel Request Feature**
+        - Users can cancel their own pending support requests
+        - Cancel button only visible for 'pending' status requests
+        - Confirmation modal with request details before cancellation
+        - Updates Firestore with 'cancelled' status, cancelledAt timestamp, and cancelledBy userId
+        - Added 'Cancelled' filter button to view cancelled requests
+        - Real-time UI update after cancellation
+        - Cannot cancel requests that are 'in-progress' or 'resolved'
+        - **CODE QUALITY FIXES**:
+        - Made bookingReference REQUIRED for cancellation/modification requests
+        - Fixed timestamp consistency: Changed `submittedAt` from ISO string to `serverTimestamp()` in ContactTab
+        - Added Firestore Timestamp conversion in MyRequestsPage for proper date handling
+        - Removed unused imports: `Filter` and `Phone` from MyRequestsPage
+        - Improved validation: Now checks if bookingReference is empty/null before allowing submission
+        - Added client-side sorting to ensure latest requests always appear first (sorted by submittedAt DESC)
+        **Security Impact**: Prevents malicious users from canceling other guests' reservations and requests
 
 ## On-Going:
-1. Valmores (User Guest Page)
-    A.) Task/Feature: Add Pages For FAQs | Terms and Conditions | Privacy Policy | Contact Us
-    B.) Status: On-Going
-    C.) Time Spent: 5 Hours
-    D.) Remarks: No Backend for Contact Us | Subject for redesign
-
 
 ## Pending:
-1. Valmores (MyBookingsPage)
-    A.) Task/Feature: Redesign MyBookingsPage
-    B.) Status: Pending
-    C.) Time Spent:  
-    D.) Remarks: N/A  
-
-2. Valmores (Financial Reports)
+1. Valmores (Financial Reports)
     A.) Task/Feature:
     B.) Status: Pending
     C.) Time Spent:
     D.) Remarks:
 
-3. Valmores (Expense Management)
+2. Valmores (Expense Management)
     A.) Task/Feature:
     B.) Status: Pending
     C.) Time Spent:
     D.) Remarks:
 
-4. Valmores (Backend)
+3. Valmores (Backend)
     A.) Task/Feature: Backend Logic of Each Pages for finance
     B.) Status: Pending
     C.) Time Spent:
     D.) Remarks:
 
-5. Valmores (Payroll)
+4. Valmores (Payroll)
     A.) Task/Feature:
     B.) Status: Pending
     C.) Time Spent:

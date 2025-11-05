@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is the owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             (request.auth.token.email == 'balayginhawaAdmin123@gmail.com' ||
+              request.auth.token.email == 'admin@hotel.com' ||
+              request.auth.token.email == 'manager@hotel.com');
+    }
+    
+    // Users collection - users can read/update their own document
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Guest profiles collection - users can read/update their own document
+    // This collection now contains ALL guest data including booking preferences
+    match /guestprofiles/{guestId} {
+      allow read: if isOwner(guestId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(guestId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Bookings collection - users can read their own bookings
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.guestId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                      (resource.data.guestId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Rooms collection - read only for authenticated users, write for admin
+    match /rooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Room types collection - read only for authenticated users, write for admin
+    match /roomTypes/{typeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Payments collection - users can read their own payments
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.guestId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Reviews collection - users can read all, write their own
+    match /reviews/{reviewId} {
+      allow read: if true; // Public read
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                      (resource.data.guestId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Staff collection - admin only
+    match /staff/{staffId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Analytics and reports - admin only
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /reports/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
