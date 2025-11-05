@@ -315,31 +315,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Check if this is an admin session
-      const isAdminAuthenticated = sessionStorage.getItem('isAdminAuthenticated');
+      // Clear all session storage first to prevent auto-login on refresh
+      sessionStorage.removeItem('isAdminAuthenticated');
+      sessionStorage.removeItem('adminUser');
       
-      if (isAdminAuthenticated === 'true') {
-        // Admin logout - clear sessionStorage
-        sessionStorage.removeItem('isAdminAuthenticated');
-        sessionStorage.removeItem('adminUser');
-        setState({
-          user: null,
-          isLoading: false,
-          error: null
-        });
-      } else {
-        // Regular user logout
-        await signOut(auth);
-      }
+      // Sign out from Firebase Auth
+      await signOut(auth);
       
+      // Clear user state
+      setState({
+        user: null,
+        isLoading: false,
+        error: null
+      });
+      
+      // Navigate to home page
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
-      setState(prev => ({
-        ...prev,
-        error: 'Failed to logout'
-      }));
-      throw error;
+      // Even if Firebase signOut fails, clear session storage
+      sessionStorage.removeItem('isAdminAuthenticated');
+      sessionStorage.removeItem('adminUser');
+      setState({
+        user: null,
+        isLoading: false,
+        error: null
+      });
+      navigate('/');
     }
   };
 

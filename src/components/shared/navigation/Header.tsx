@@ -18,7 +18,7 @@ export const Header = () => {
   ];
 
   // Pages where header should always be solid (not transparent)
-  const solidHeaderPages = ['/booking', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities'];
+  const solidHeaderPages = ['/booking', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
 
 

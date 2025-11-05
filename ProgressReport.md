@@ -66,8 +66,8 @@ Maintenance
 4.
 5.
 
-Finance
-Completed:
+## Finance
+## Completed:
 1. Valmores (Payments Page)
     A.) Task/Feature: Design of The List and Activity
     B.) Status: Completed
@@ -104,7 +104,16 @@ Completed:
     C.) Time Spent: 2 Hours
     D.) Remarks: Back-end not done yet
 
-Pending:
+
+## On-Going:
+1. Valmores (User Guest Page)
+    A.) Task/Feature: Add Pages For FAQs | Terms and Conditions | Privacy Policy | Contact Us
+    B.) Status: On-Going
+    C.) Time Spent: 5 Hours
+    D.) Remarks: No Backend for Contact Us | Subject for redesign
+
+
+## Pending:
 1. Valmores (MyBookingsPage)
     A.) Task/Feature: Redesign MyBookingsPage
     B.) Status: Pending
@@ -113,34 +122,24 @@ Pending:
 
 2. Valmores (Financial Reports)
     A.) Task/Feature:
-    B.) Status:
+    B.) Status: Pending
     C.) Time Spent:
     D.) Remarks:
 
 3. Valmores (Expense Management)
     A.) Task/Feature:
-    B.) Status:
+    B.) Status: Pending
     C.) Time Spent:
     D.) Remarks:
 
-4. Valmores (User Guest Page)
-    A.) Task/Feature: Add Pages For FAQs | Terms and Conditions | Privacy Policy | Contact Us
-    B.) Status: On-Going
-    C.) Time Spent: 0 Hours
-    D.) Remarks: Nov 04, 2025 Starting 
+4. Valmores (Backend)
+    A.) Task/Feature: Backend Logic of Each Pages for finance
+    B.) Status: Pending
+    C.) Time Spent:
+    D.) Remarks:
 
 5. Valmores (Payroll)
     A.) Task/Feature:
-    B.) Status:
+    B.) Status: Pending
     C.) Time Spent:
     D.) Remarks:
-
-6. Valmores (Profit Overview)
-    A.) Task/Feature:
-    B.) Status:
-    C.) Time Spent:
-    D.) Remarks:
-
-
-On-Going:
-1. 

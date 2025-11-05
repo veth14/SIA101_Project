@@ -12,6 +12,7 @@ import { AuthPage } from './pages/auth/AuthPage'
 import { NewProfilePage } from './pages/guest/NewProfilePage'
 import { PaymentPage } from './pages/guest/PaymentPage'
 import { MyBookingsPage } from './pages/guest/MyBookingsPage'
+import { HelpCenterPage } from './pages/guest/HelpCenter/HelpCenterPage'
 import { AdminDashboardPage } from './pages/admin/Dashboard/AdminDashboardPage'
 import AdminRoomsPage from './pages/admin/Front-Desk/AdminRoomsPage'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -65,6 +66,12 @@ function LoadingSpinner() {
             <Route path="/" element={<><Header /><LandingPage /><Footer /></>} />
             <Route path="/rooms" element={<><Header /><RoomsPage /><Footer /></>} />
             <Route path="/amenities" element={<><Header /><AmenitiesPage /><Footer /></>} />
+            <Route path="/help" element={<><Header /><HelpCenterPage /><Footer /></>} />
+            <Route path="/faqs" element={<><Header /><HelpCenterPage /><Footer /></>} />
+            <Route path="/privacy-policy" element={<><Header /><HelpCenterPage /><Footer /></>} />
+            <Route path="/terms-conditions" element={<><Header /><HelpCenterPage /><Footer /></>} />
+            <Route path="/contact" element={<><Header /><HelpCenterPage /><Footer /></>} />
+            <Route path="/about" element={<><Header /><HelpCenterPage /><Footer /></>} />
             <Route 
               path="/profile" 
               element={
