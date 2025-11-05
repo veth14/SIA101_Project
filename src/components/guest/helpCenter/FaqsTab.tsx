@@ -1,70 +1,14 @@
 import React, { useState } from 'react';
-import { Search, ChevronDown, ChevronUp } from 'lucide-react';
-
-interface FAQItem {
-  id: number;
-  question: string;
-  answer: string;
-  category: string;
-}
+import { Search, ChevronDown } from 'lucide-react';
+import { FAQS_DATA, FAQ_CATEGORIES } from '../../../data/faqsData';
 
 export const FaqsTab: React.FC = () => {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
-  const faqs: FAQItem[] = [
-    {
-      id: 1,
-      category: 'Booking',
-      question: 'How do I make a reservation?',
-      answer: 'You can make a reservation through our website by clicking the "Book Now" button, selecting your preferred room type, check-in and check-out dates, and completing the booking form. You can also call us directly at +63 912 345 6789.'
-    },
-    {
-      id: 2,
-      category: 'Booking',
-      question: 'What is your cancellation policy?',
-      answer: 'Free cancellation is available up to 48 hours before check-in. Cancellations within 48 hours will incur a one night charge. No-shows will be charged the full reservation amount.'
-    },
-    {
-      id: 3,
-      category: 'Check-in',
-      question: 'What time is check-in and check-out?',
-      answer: 'Check-in is at 2:00 PM and check-out is at 12:00 PM. Early check-in and late check-out may be available upon request (additional charges may apply).'
-    },
-    {
-      id: 4,
-      category: 'Check-in',
-      question: 'What documents do I need?',
-      answer: 'Please bring a valid government-issued ID (passport, driver\'s license, or national ID) and the credit card used for booking.'
-    },
-    {
-      id: 5,
-      category: 'Rooms',
-      question: 'What amenities are included?',
-      answer: 'All rooms include free Wi-Fi, air conditioning, flat-screen TV, mini-fridge, coffee/tea maker, complimentary toiletries, and safe deposit box.'
-    },
-    {
-      id: 6,
-      category: 'Facilities',
-      question: 'Is parking available?',
-      answer: 'Yes, we offer complimentary parking for all guests. Our secure parking area is monitored 24/7.'
-    },
-    {
-      id: 7,
-      category: 'Dining',
-      question: 'Do you serve breakfast?',
-      answer: 'Yes, we serve a complimentary Filipino-inspired breakfast buffet from 6:30 AM to 10:30 AM daily.'
-    },
-    {
-      id: 8,
-      category: 'Payment',
-      question: 'What payment methods do you accept?',
-      answer: 'We accept cash (PHP), all major credit cards (Visa, Mastercard, American Express, JCB), debit cards, and bank transfers.'
-    },
-  ];
-
-  const categories = ['All', 'Booking', 'Check-in', 'Rooms', 'Facilities', 'Dining', 'Payment'];
+  const faqs = FAQS_DATA;
+  const categories = FAQ_CATEGORIES;
 
   const filteredFaqs = faqs.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||

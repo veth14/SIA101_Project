@@ -13,8 +13,9 @@ export const HelpCenterPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('faqs');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Set active tab based on URL path
+  // Set active tab based on URL path and scroll to top
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('privacy')) {
@@ -28,22 +29,36 @@ export const HelpCenterPage: React.FC = () => {
     } else {
       setActiveTab('faqs');
     }
+    
+    // Scroll to top when URL changes (e.g., from footer navigation)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
 
   const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
+    // Start transition animation
+    setIsTransitioning(true);
     
-    // Update URL based on tab
-    const urlMap: Record<TabType, string> = {
-      faqs: '/faqs',
-      privacy: '/privacy-policy',
-      terms: '/terms-conditions',
-      about: '/about',
-      contact: '/contact'
-    };
-    
-    navigate(urlMap[tab]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Small delay to show fade out effect
+    setTimeout(() => {
+      setActiveTab(tab);
+      
+      // Update URL based on tab
+      const urlMap: Record<TabType, string> = {
+        faqs: '/faqs',
+        privacy: '/privacy-policy',
+        terms: '/terms-conditions',
+        about: '/about',
+        contact: '/contact'
+      };
+      
+      navigate(urlMap[tab]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // End transition after content loads
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 100);
+    }, 150);
   };
 
   const tabs = [
@@ -111,14 +126,20 @@ export const HelpCenterPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Tab Content with Animation */}
+        {/* Tab Content with Smooth Animation */}
         <div className="max-w-6xl mx-auto">
-          <div className="animate-fadeIn">
-            {activeTab === 'faqs' && <FaqsTab />}
-            {activeTab === 'privacy' && <PrivacyTab />}
-            {activeTab === 'terms' && <TermsTab />}
-            {activeTab === 'about' && <AboutTab />}
-            {activeTab === 'contact' && <ContactTab onNavigateToTab={handleTabChange} />}
+          <div 
+            className={`transition-all duration-300 ${
+              isTransitioning 
+                ? 'opacity-0 transform translate-y-4' 
+                : 'opacity-100 transform translate-y-0'
+            }`}
+          >
+            {activeTab === 'faqs' && <FaqsTab key="faqs" />}
+            {activeTab === 'privacy' && <PrivacyTab key="privacy" />}
+            {activeTab === 'terms' && <TermsTab key="terms" />}
+            {activeTab === 'about' && <AboutTab key="about" />}
+            {activeTab === 'contact' && <ContactTab key="contact" onNavigateToTab={handleTabChange} />}
           </div>
         </div>
       </div>
