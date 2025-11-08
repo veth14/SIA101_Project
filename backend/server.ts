@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import dashboardRoute from "./routes/invDashboard.js";
+import procurementRoute from "./routes/invProcurement.js";
 
 const app = express();
 const PORT = 3000;
@@ -11,9 +13,12 @@ app.use(
 );
 
 app.use(express.json());
+app.use("/api/inventory-dashboard", dashboardRoute);
+app.use("/api/inventory-procurement", procurementRoute);
+
 
 app.get("/", (req, res) => {
-  res.send("dsadas");
+  res.send("dsadasa");
 });
 
 app.listen(PORT, (error) => {
