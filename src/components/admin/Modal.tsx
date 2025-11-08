@@ -93,7 +93,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="p-6 overflow-y-auto max-h-[calc(100vh-150px)]">
           {children}
         </div>
       </div>
