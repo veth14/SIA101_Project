@@ -153,7 +153,7 @@ export const getRequisitions = (req: Request, res: Response) => {
   if (requisitions.length <= 0) {
     return res
       .status(500)
-      .json({ success: false, message: "Missing Stats Items" });
+      .json({ success: false, message: "Missing Requisitions" });
   }
 
   res.status(200).json({ success: true, data: requisitions });
