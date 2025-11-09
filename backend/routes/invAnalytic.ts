@@ -8,5 +8,16 @@ router.get(
   "/get-analytics-bottom-section",
   analyticController.getAnalyticsBottomSection
 );
+router.get(
+  "/get-procurement-metrics",
+  analyticController.getProcurementMetrics
+);
+router.get(
+  "/get-procurement-analytics",
+  analyticController.getProcurementAnalytics
+);
+
+router.get("/get-department-metrics", analyticController.getDepartmentMetrics);
+router.get("/get-department-charts", analyticController.getDepartmentCharts);
 
 export default router;
