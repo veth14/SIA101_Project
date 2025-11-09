@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dashboardRoute from "./routes/invDashboard.js";
 import procurementRoute from "./routes/invProcurement.js";
+import inventoryRoute from "./routes/invInventory.js";
+import requisitionRoute from "./routes/invRequisition.js";
 
 const app = express();
 const PORT = 3000;
@@ -15,7 +17,8 @@ app.use(
 app.use(express.json());
 app.use("/api/inventory-dashboard", dashboardRoute);
 app.use("/api/inventory-procurement", procurementRoute);
-
+app.use("/api/inventory-inventory", inventoryRoute);
+app.use("/api/inventory-requisition", requisitionRoute);
 
 app.get("/", (req, res) => {
   res.send("dsadasa");

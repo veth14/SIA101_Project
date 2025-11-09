@@ -1,31 +1,25 @@
-import React, { useState } from 'react';
-import InventoryItemsHeader from './InventoryItemsHeader';
-import { ItemsBackground } from './ItemsBackground';
-import { ItemsStats } from './ItemsStats';
-import { ItemsTableContainer } from './ItemsTableContainer';
-import { ItemsEmptyState } from './ItemsEmptyState';
-import { useInventoryManagement } from './items-backendLogic/useInventoryManagement';
-import ItemDetailsModal from './ItemDetailsModal';
-import AddItemModal from './AddItemModal';
-import type { InventoryItem } from './items-backendLogic/inventoryService';
+import React, { useState } from "react";
+import InventoryItemsHeader from "./InventoryItemsHeader";
+import { ItemsBackground } from "./ItemsBackground";
+import { ItemsStats } from "./ItemsStats";
+import { ItemsTableContainer } from "./ItemsTableContainer";
+import { ItemsEmptyState } from "./ItemsEmptyState";
+import { useInventoryManagement } from "./items-backendLogic/useInventoryManagement";
+import ItemDetailsModal from "./ItemDetailsModal";
+import AddItemModal from "./AddItemModal";
+import type { InventoryItem } from "./items-backendLogic/inventoryService";
 
 // Import the dropdown components from ItemsTableContainer
-import { CategoryDropdown, StockStatusDropdown } from './ItemsTableContainer';
+import { CategoryDropdown, StockStatusDropdown } from "./ItemsTableContainer";
 
 const ItemsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
-  
-  const {
-    filteredItems,
-    filterOptions,
-    loading,
-    error,
-    filters,
-    setFilters
-  } = useInventoryManagement();
+
+  const { filteredItems, filterOptions, loading, error, filters, setFilters } =
+    useInventoryManagement();
 
   // Reset to page 1 when filters change
   const handleSearchChange = (value: string) => {
@@ -39,7 +33,9 @@ const ItemsPage: React.FC = () => {
   };
 
   const handleStockStatusChange = (status: string) => {
-    setFilters({ stockStatus: status as 'all' | 'in-stock' | 'low-stock' | 'out-of-stock' });
+    setFilters({
+      stockStatus: status as "all" | "in-stock" | "low-stock" | "out-of-stock",
+    });
     setCurrentPage(1);
   };
 
@@ -62,9 +58,9 @@ const ItemsPage: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -89,11 +85,15 @@ const ItemsPage: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green"></div>
-            <span className="ml-3 text-gray-600">Loading inventory items...</span>
+            <span className="ml-3 text-gray-600">
+              Loading inventory items...
+            </span>
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <div className="text-red-600 font-semibold mb-2">Error Loading Inventory</div>
+            <div className="text-red-600 font-semibold mb-2">
+              Error Loading Inventory
+            </div>
             <div className="text-red-500 text-sm">{error}</div>
           </div>
         ) : (
@@ -106,22 +106,48 @@ const ItemsPage: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                          />
                         </svg>
                       </div>
                       <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-gray-900">Inventory Items</h3>
+                      <h3 className="text-xl font-black text-gray-900">
+                        Inventory Items
+                      </h3>
                       <p className="text-sm text-gray-500 font-medium">
                         {hasResults ? (
-                          <>Showing {filteredItems.length} of {filteredItems.length} items</>
+                          <>
+                            Showing {filteredItems.length} of{" "}
+                            {filteredItems.length} items
+                          </>
                         ) : (
-                          <>No items found • Try adjusting your search or filters</>
+                          <>
+                            No items found • Try adjusting your search or
+                            filters
+                          </>
                         )}
-                        {filters.searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{filters.searchTerm}"</span>}
-                        {filters.selectedCategory !== 'All Categories' && <span className="ml-2 text-blue-600">• Category: {filters.selectedCategory}</span>}
+                        {filters.searchTerm && (
+                          <span className="ml-2 text-heritage-green">
+                            • Searching: "{filters.searchTerm}"
+                          </span>
+                        )}
+                        {filters.selectedCategory !== "All Categories" && (
+                          <span className="ml-2 text-blue-600">
+                            • Category: {filters.selectedCategory}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -129,8 +155,18 @@ const ItemsPage: React.FC = () => {
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="relative flex items-center">
-                        <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
                         </svg>
                         <input
                           type="text"
@@ -151,19 +187,29 @@ const ItemsPage: React.FC = () => {
                       onStockStatusChange={handleStockStatusChange}
                       stockStatusOptions={filterOptions.stockStatusOptions}
                     />
-                    <button 
+                    <button
                       onClick={handleAddItem}
                       className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                     >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
                       </svg>
                       Add Item
                     </button>
                   </div>
                 </div>
               </div>
-              
+
               {/* Content Area */}
               {hasResults ? (
                 <ItemsTableContainer
