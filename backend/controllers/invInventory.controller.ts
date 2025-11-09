@@ -41,11 +41,7 @@ export const getItemStats = (req: Request, res: Response) => {
 };
 
 export const getInventoryItems = async (req: Request, res: Response) => {
-  if (stats.length <= 0) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Missing Stats Items" });
-  }
+
 
   res.status(200).json({ success: true, data: stats });
 };

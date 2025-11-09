@@ -59,7 +59,7 @@ const chartData = [
 const summaryStats: SummaryStat[] = [
   {
     title: "Total Items",
-    value: "38,247",
+    value: "38,347",
     change: "+12.5%",
     changeType: "positive" as const,
     icon: "Package",

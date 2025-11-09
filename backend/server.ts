@@ -6,6 +6,7 @@ import inventoryRoute from "./routes/invInventory.js";
 import requisitionRoute from "./routes/invRequisition.js";
 import supplierRoute from "./routes/invSupplier.js";
 import analyticRoute from "./routes/invAnalytic.js";
+import departmentRoute from "./routes/invDepartment.js";
 
 const app = express();
 const PORT = 3000;
@@ -23,6 +24,7 @@ app.use("/api/inventory-inventory", inventoryRoute);
 app.use("/api/inventory-requisition", requisitionRoute);
 app.use("/api/inventory-supplier", supplierRoute);
 app.use("/api/inventory-analytic", analyticRoute);
+app.use("/api/inventory-department", departmentRoute);
 
 app.get("/", (req, res) => {
   res.send("dsadasa");
