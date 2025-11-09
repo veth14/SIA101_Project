@@ -4,13 +4,9 @@ import dashboardRoute from "./routes/invDashboard.js";
 import procurementRoute from "./routes/invProcurement.js";
 import inventoryRoute from "./routes/invInventory.js";
 import requisitionRoute from "./routes/invRequisition.js";
-<<<<<<< HEAD
 import supplierRoute from "./routes/invSupplier.js";
 import analyticRoute from "./routes/invAnalytic.js";
 
-=======
-import departmentRoute from "./routes/invDepartment.js";
->>>>>>> yaji
 const app = express();
 const PORT = 3000;
 app.use(
@@ -25,12 +21,8 @@ app.use("/api/inventory-dashboard", dashboardRoute);
 app.use("/api/inventory-procurement", procurementRoute);
 app.use("/api/inventory-inventory", inventoryRoute);
 app.use("/api/inventory-requisition", requisitionRoute);
-<<<<<<< HEAD
 app.use("/api/inventory-supplier", supplierRoute);
 app.use("/api/inventory-analytic", analyticRoute);
-=======
-app.use("/api/inventory-department", departmentRoute);
->>>>>>> yaji
 
 app.get("/", (req, res) => {
   res.send("dsadasa");
