@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.get("/get-stats", inventoryController.getItemStats);
 router.get("/get-items", inventoryController.getInventoryItems);
+router.post("/post-item", inventoryController.postInventoryItem);
 
 export default router;

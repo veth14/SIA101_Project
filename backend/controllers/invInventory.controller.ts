@@ -61,3 +61,85 @@ export const getInventoryItems = async (req: Request, res: Response) => {
 
   res.status(200).json({ success: true, data: inventoryItems });
 };
+
+export const postInventoryItem = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+
+    const categoryMap: Record<string, string> = {
+      "Food & Beverage": "FB",
+      "Front Office": "FO",
+      "Guest Amenities": "GA",
+      Housekeeping: "HK",
+      Laundry: "LD",
+      Maintenance: "MT",
+      Security: "SC",
+    };
+
+    const categoryCode = categoryMap[data.category];
+    if (!categoryCode) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category" });
+    }
+
+    // Step 1: Query latest requisition in this category
+    const snapshot = await db
+      .collection("inventory_items")
+      .orderBy("id", "desc")
+      .get();
+
+    let nextNumber = 1;
+
+    if (!snapshot.empty) {
+      // Filter only documents with matching category code
+      const categoryDocs = snapshot.docs.filter((doc) =>
+        doc.id.startsWith(categoryCode)
+      );
+
+      if (categoryDocs.length > 0 && categoryDocs[0]) {
+        const lastId = categoryDocs[0].id; // highest ID
+        const match = lastId.match(/\d+$/); // get trailing number
+        if (match) {
+          nextNumber = parseInt(match[0], 10) + 1;
+        }
+      }
+    }
+
+    // Step 2: Generate new ID
+    const newId = `${categoryCode}${String(nextNumber).padStart(3, "0")}`;
+
+    const formatDate = (date: string | Date) => {
+      const d = typeof date === "string" ? new Date(date) : date;
+
+      return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short",
+      }).format(d);
+    };
+    // Step 3: Insert the new requisition
+    const docRef = db.collection("inventory_items").doc(newId);
+    await docRef.set({
+      ...data,
+      id: newId,
+      createdAt: formatDate(new Date().toISOString()),
+      status: "pending",
+      category: data.category,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Inventory item added successfully",
+      requestNumber: newId,
+    });
+  } catch (error) {
+    console.error("❌ Error adding Inventory item:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

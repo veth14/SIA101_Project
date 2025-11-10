@@ -25,69 +25,69 @@ interface Requisition {
   notes?: string;
 }
 
-const requisitions: Requisition[] = [
-  {
-    id: "REQ003",
-    requestNumber: "REQ-2024-003",
-    department: "Maintenance",
-    requestedBy: "Robert Garcia",
-    items: [
-      {
-        name: "LED Light Bulbs",
-        quantity: 30,
-        unit: "pieces",
-        estimatedCost: 4500,
-        reason: "Replace burnt bulbs",
-      },
-      {
-        name: "Electrical Wire",
-        quantity: 100,
-        unit: "meters",
-        estimatedCost: 2000,
-        reason: "Repair work",
-      },
-    ],
-    totalEstimatedCost: 6500,
-    status: "fulfilled",
-    priority: "urgent",
-    requestDate: "2024-09-15",
-    requiredDate: "2024-09-20",
-    justification:
-      "Critical maintenance items needed for guest room repairs and safety compliance.",
-    approvedBy: "Supervisor",
-    approvedDate: "2024-09-16",
-  },
-  {
-    id: "REQ004",
-    requestNumber: "REQ-2024-004",
-    department: "Front Office",
-    requestedBy: "Anna Reyes",
-    items: [
-      {
-        name: "Printer Paper",
-        quantity: 20,
-        unit: "reams",
-        estimatedCost: 1000,
-        reason: "Office supplies",
-      },
-      {
-        name: "Ink Cartridges",
-        quantity: 5,
-        unit: "pieces",
-        estimatedCost: 2500,
-        reason: "Printer maintenance",
-      },
-    ],
-    totalEstimatedCost: 3500,
-    status: "rejected",
-    priority: "low",
-    requestDate: "2024-09-22",
-    requiredDate: "2024-10-01",
-    justification:
-      "Office supplies for daily operations and guest service documentation.",
-    notes: "Budget constraints - defer to next month",
-  },
-];
+// const requisitions: Requisition[] = [
+//   {
+//     id: "REQ003",
+//     requestNumber: "REQ-2024-003",
+//     department: "Maintenance",
+//     requestedBy: "Robert Garcia",
+//     items: [
+//       {
+//         name: "LED Light Bulbs",
+//         quantity: 30,
+//         unit: "pieces",
+//         estimatedCost: 4500,
+//         reason: "Replace burnt bulbs",
+//       },
+//       {
+//         name: "Electrical Wire",
+//         quantity: 100,
+//         unit: "meters",
+//         estimatedCost: 2000,
+//         reason: "Repair work",
+//       },
+//     ],
+//     totalEstimatedCost: 6500,
+//     status: "fulfilled",
+//     priority: "urgent",
+//     requestDate: "2024-09-15",
+//     requiredDate: "2024-09-20",
+//     justification:
+//       "Critical maintenance items needed for guest room repairs and safety compliance.",
+//     approvedBy: "Supervisor",
+//     approvedDate: "2024-09-16",
+//   },
+//   {
+//     id: "REQ004",
+//     requestNumber: "REQ-2024-004",
+//     department: "Front Office",
+//     requestedBy: "Anna Reyes",
+//     items: [
+//       {
+//         name: "Printer Paper",
+//         quantity: 20,
+//         unit: "reams",
+//         estimatedCost: 1000,
+//         reason: "Office supplies",
+//       },
+//       {
+//         name: "Ink Cartridges",
+//         quantity: 5,
+//         unit: "pieces",
+//         estimatedCost: 2500,
+//         reason: "Printer maintenance",
+//       },
+//     ],
+//     totalEstimatedCost: 3500,
+//     status: "rejected",
+//     priority: "low",
+//     requestDate: "2024-09-22",
+//     requiredDate: "2024-10-01",
+//     justification:
+//       "Office supplies for daily operations and guest service documentation.",
+//     notes: "Budget constraints - defer to next month",
+//   },
+// ];
 
 export const postRequisition = async (req: Request, res: Response) => {
   try {

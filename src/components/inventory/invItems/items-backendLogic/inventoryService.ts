@@ -86,8 +86,8 @@ export const fetchInventoryItems = async (): Promise<InventoryItem[]> => {
         image: data.image || undefined,
         unit: data.unit || "pieces",
         location: data.location || "",
-        createdAt: data.createdAt?.toDate() || undefined,
-        updatedAt: data.updatedAt?.toDate() || undefined,
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : undefined, // ← FIXED
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : undefined,
       });
     });
 
