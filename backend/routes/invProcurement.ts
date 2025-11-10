@@ -5,5 +5,5 @@ const router = express.Router();
 
 router.get("/get-procurement-orders", procurementController.getInvProcurementOrder);
 router.get("/get-procurement-stats", procurementController.getInvProcurementStats);
-
+router.post("/post-procurement-order", procurementController.postInvProcurementOrder);
 export default router;
