@@ -33,21 +33,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const adminUserData = sessionStorage.getItem('adminUser');
       
       if (isAdminAuthenticated === 'true' && adminUserData) {
-        console.log('Admin session found, authenticating with Firebase...');
         try {
           const adminUser = JSON.parse(adminUserData);
-          console.log('Admin user found:', adminUser);
           
           // Authenticate with Firebase Auth using admin credentials
           if (adminUser.email === 'balayginhawaAdmin123@gmail.com') {
             try {
               // Try to sign in with Firebase Auth
               await signInWithEmailAndPassword(auth, adminUser.email, 'Admin12345');
-              console.log('Admin authenticated with Firebase Auth successfully');
-              // The onAuthStateChanged listener will handle setting the user state
               return true;
             } catch (firebaseError) {
-              console.log('Firebase Auth failed, using session data:', firebaseError);
               // Fallback to session data if Firebase Auth fails
               setState({
                 user: {
@@ -59,7 +54,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 isLoading: false,
                 error: null
               });
-              console.log('Admin session restored from sessionStorage');
               
               // Redirect admin to dashboard
               navigate('/admin/dashboard');
@@ -97,13 +91,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       // Don't update state if currently in registration process
       if (isRegisteringRef.current) {
-        console.log('Registration in progress, skipping auth state update');
         return;
       }
       
       // Don't update state if currently resending verification email
       if (isResendingVerificationRef.current) {
-        console.log('Resending verification in progress, skipping auth state update');
         return;
       }
       
@@ -148,11 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           // Auto-redirect based on user role
           if (userRole === 'admin') {
-            console.log('Admin user detected, redirecting to admin dashboard');
             navigate('/admin/dashboard');
-          } else if (userRole === 'guest') {
-            console.log('Guest user detected, staying on current page or redirecting to guest area');
-            // Guests can stay on current page or be redirected to guest dashboard if needed
           }
         } catch (error) {
           console.error('Error setting user data:', error);
@@ -203,10 +191,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Email not verified. Please check your inbox and verify your email address before logging in.');
       }
       
-      if (isAdmin) {
-        console.log('Admin login detected, will redirect to admin dashboard');
-        // The onAuthStateChanged listener will handle the redirect
-      }
+      // The onAuthStateChanged listener will handle the redirect for admin users
       
       // Update Firestore emailVerified field if it was just verified
       if (userCredential.user.emailVerified) {
@@ -216,7 +201,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             emailVerified: true,
             lastLogin: new Date()
           }, { merge: true });
-          console.log('Email verification status synced to Firestore');
         } catch (firestoreError) {
           console.error('Failed to update Firestore verification status:', firestoreError);
           // Don't throw - user can still log in
@@ -278,12 +262,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       
       await setDoc(doc(db, 'users', userCredential.user.uid), userData);
-      console.log('User data saved to Firestore:', userData);
       
       // Send email verification
       try {
         await sendEmailVerification(userCredential.user);
-        console.log('Verification email sent to:', email);
       } catch (emailError) {
         console.error('Failed to send verification email:', emailError);
         // Don't throw error - allow registration to continue even if email fails
@@ -347,14 +329,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         
         await setDoc(doc(db, 'guestprofiles', userCredential.user.uid), guestProfileData);
-        console.log('Guest profile data saved to Firestore:', guestProfileData);
       }
       
       // IMPORTANT: Sign out the user immediately after registration
       // User must verify their email before they can log in
       // This prevents auto-login and forces the verification flow
       await signOut(auth);
-      console.log('User signed out after registration - verification required before login');
       
       // Clear registration flag and set loading to false
       isRegisteringRef.current = false;

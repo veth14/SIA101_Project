@@ -160,9 +160,9 @@ export const ReservationsPage = () => {
     };
 
     if (user) {
+      // Run auto-checkout once on page load only (removed 5-minute interval to save Firebase reads)
       autoCheckoutAndCleanRooms();
-      const iv = setInterval(autoCheckoutAndCleanRooms, 5 * 60 * 1000);
-      return () => { mounted = false; clearInterval(iv); };
+      return () => { mounted = false; };
     }
     return () => { mounted = false; };
   }, [user]);
