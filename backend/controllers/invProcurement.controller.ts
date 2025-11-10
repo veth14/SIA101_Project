@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { db } from "../config/firebaseAdmin.js";
 
 type PurchaseOrderItem = {
   name: string;
@@ -140,13 +141,71 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-export const getInvProcurementOrder = (req: Request, res: Response) => {
-  if (purchaseOrders.length <= 0) {
+export const postInvProcurementOrder = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const currentYear = new Date().getFullYear();
+
+    // Step 1: Get the most recent requisition
+    const snapshot = await db
+      //             table name (collection)
+      .collection("purchaseOrders")
+      //        document id
+      .orderBy("orderNumber", "desc")
+      .limit(1)
+      .get();
+
+    let nextNumber = 1;
+
+    if (!snapshot.empty && snapshot.docs[0]) {
+      const lastReq = snapshot.docs[0].data();
+      // Match something like REQ-2024-003
+      const match = lastReq.orderNumber.match(/PO-\d{4}-(\d+)/);
+
+      if (match) {
+        const lastNumber = parseInt(match[1], 10);
+        nextNumber = lastNumber + 1;
+      }
+    }
+
+    //                        PO
+    const newOrderNumber = `PO-${currentYear}-${String(nextNumber).padStart(
+      3,
+      "0"
+    )}`;
+
+    //                             table name (collection)
+    const docRef = db.collection("purchaseOrders").doc(newOrderNumber);
+    await docRef.set({
+      ...data,
+      id: newOrderNumber,
+      orderNumber: newOrderNumber,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: " Purchase Order added successfully",
+      orderNumber: newOrderNumber,
+    });
+  } catch (error) {
+    console.error("❌ Error adding order purchase:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getInvProcurementOrder  =async (req: Request, res: Response) => {
+  const snapshot = await db.collection("purchaseOrders").get();
+  if (snapshot.empty) {
     return res
-      .status(500)
+      .status(404)
       .json({ success: false, message: "Missing Purchase Order Data " });
   }
-
+  const purchaseOrders: PurchaseOrder[] = snapshot.docs.map((doc) => ({
+    id: doc.id, // use the document ID
+    ...doc.data(), // spread the rest of the fields
+  })) as PurchaseOrder[];
   res.status(200).json({ success: true, data: purchaseOrders });
 };
 
