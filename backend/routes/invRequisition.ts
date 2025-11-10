@@ -4,5 +4,5 @@ import * as requisitionController from "../controllers/invRequisition.controller
 const router = express.Router();
 
 router.get("/get-requisitions", requisitionController.getRequisitions);
-
+router.post("/post-requisition", requisitionController.postRequisition);
 export default router;

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-
+import { db } from "../config/firebaseAdmin.js";
 interface RequisitionItem {
   name: string;
   quantity: number;
@@ -26,66 +26,6 @@ interface Requisition {
 }
 
 const requisitions: Requisition[] = [
-  {
-    id: "REQ001",
-    requestNumber: "REQ-2024-001",
-    department: "Housekeeping",
-    requestedBy: "Maria Santos",
-    items: [
-      {
-        name: "Vacuum Cleaner Bags",
-        quantity: 50,
-        unit: "pieces",
-        estimatedCost: 2500,
-        reason: "Current stock depleted",
-      },
-      {
-        name: "Floor Cleaner",
-        quantity: 10,
-        unit: "bottles",
-        estimatedCost: 1200,
-        reason: "Monthly restocking",
-      },
-    ],
-    totalEstimatedCost: 3700,
-    status: "pending",
-    priority: "high",
-    requestDate: "2024-09-20",
-    requiredDate: "2024-09-25",
-    justification:
-      "Essential cleaning supplies needed for daily operations. Current stock is running low and may affect service quality.",
-  },
-  {
-    id: "REQ002",
-    requestNumber: "REQ-2024-002",
-    department: "Food & Beverage",
-    requestedBy: "Carlos Rivera",
-    items: [
-      {
-        name: "Coffee Beans",
-        quantity: 20,
-        unit: "kg",
-        estimatedCost: 8000,
-        reason: "Premium blend for restaurant",
-      },
-      {
-        name: "Sugar Packets",
-        quantity: 500,
-        unit: "pieces",
-        estimatedCost: 1500,
-        reason: "Guest room amenities",
-      },
-    ],
-    totalEstimatedCost: 9500,
-    status: "approved",
-    priority: "medium",
-    requestDate: "2024-09-18",
-    requiredDate: "2024-09-28",
-    justification:
-      "Quality ingredients needed to maintain restaurant standards and guest satisfaction.",
-    approvedBy: "Manager",
-    approvedDate: "2024-09-19",
-  },
   {
     id: "REQ003",
     requestNumber: "REQ-2024-003",
@@ -149,12 +89,73 @@ const requisitions: Requisition[] = [
   },
 ];
 
-export const getRequisitions = (req: Request, res: Response) => {
-  if (requisitions.length <= 0) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Missing Requisitions" });
+export const postRequisition = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const currentYear = new Date().getFullYear();
+
+    // Step 1: Get the most recent requisition
+    const snapshot = await db
+      //             table name (collection)
+      .collection("requisitions")
+      //        document id
+      .orderBy("requestNumber", "desc")
+      .limit(1)
+      .get();
+
+    let nextNumber = 1;
+
+    if (!snapshot.empty && snapshot.docs[0]) {
+      const lastReq = snapshot.docs[0].data();
+      // Match something like REQ-2024-003
+      const match = lastReq.requestNumber.match(/REQ-\d{4}-(\d+)/);
+
+      if (match) {
+        const lastNumber = parseInt(match[1], 10);
+        nextNumber = lastNumber + 1;
+      }
+    }
+
+    //                        PO
+    const newRequestNumber = `REQ-${currentYear}-${String(nextNumber).padStart(
+      3,
+      "0"
+    )}`;
+
+    //                             table name (collection)
+    const docRef = db.collection("requisitions").doc(newRequestNumber);
+    await docRef.set({
+      ...data,
+      id: newRequestNumber,
+      requestNumber: newRequestNumber,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Requisition added successfully",
+      requestNumber: newRequestNumber,
+    });
+  } catch (error) {
+    console.error("❌ Error adding requisition:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
+};
+
+export const getRequisitions = async (req: Request, res: Response) => {
+  const snapshot = await db.collection("requisitions").get();
+
+  if (snapshot.empty) {
+    return res
+      .status(404)
+      .json({ success: false, message: "No Requisitons Found" });
+  }
+
+  const requisitions: Requisition[] = snapshot.docs.map((doc) => ({
+    id: doc.id, // use the document ID
+    ...doc.data(), // spread the rest of the fields
+  })) as Requisition[];
 
   res.status(200).json({ success: true, data: requisitions });
 };
