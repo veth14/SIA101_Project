@@ -1,5 +1,4 @@
 import React from 'react';
-import InventoryDashboardHeader from './InventoryDashboardHeader';
 import { DashboardBackground } from './DashboardBackground';
 import { DashboardStats } from './DashboardStats';
 import { DashboardCharts } from './DashboardCharts';
@@ -13,8 +12,6 @@ const InventoryDashboardPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header - Keep Original */}
-        <InventoryDashboardHeader />
 
         {/* Stats Cards */}
         <DashboardStats />

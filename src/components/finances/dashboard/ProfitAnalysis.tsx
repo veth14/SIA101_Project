@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,25 +6,11 @@ import {
   calculateChartMetrics, 
   formatCurrency 
 } from './chartsLogic/revenueAnalyticsLogic';
-import { SkeletonMetrics } from '../../universalLoader/SkeletonLoader';
 
 const ProfitAnalysis: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const revenueData = useMemo(() => getRevenueData('monthly'), []);
   const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
-
-  // Simulate loading - synchronized with all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SkeletonMetrics />;
-  }
 
   return (
     <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">

@@ -1,6 +1,4 @@
 // Financial Reports Components - Centralized exports
-
-export { ReportsHeader } from './ReportsHeader';
 export { default as ReportsFilter } from './ReportsFilter';
 export { default as ReportFoldersGrid } from './ReportFoldersGrid';
 export { default as FolderView } from './FolderView';

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import React from 'react';
 import type { Invoice } from './InvoiceList';
 
 interface InvoiceDetailsProps {
@@ -9,45 +8,6 @@ interface InvoiceDetailsProps {
 }
 
 const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPrint }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Loading simulation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2200);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <>
-        <style>{`
-          @keyframes slide-in-right {
-            0% {
-              opacity: 0;
-              transform: translateX(30px) scale(0.98);
-            }
-            100% {
-              opacity: 1;
-              transform: translateX(0) scale(1);
-            }
-          }
-          
-          .animate-slide-in-right {
-            animation: slide-in-right 0.7s ease-out;
-          }
-        `}</style>
-        <div className="h-[900px] p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20">
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <Skeleton className="w-16 h-16 mb-4 rounded-full" />
-            <Skeleton className="w-48 h-6 mb-2" />
-            <Skeleton className="w-40 h-4" />
-          </div>
-        </div>
-      </>
-    );
-  }
 
   if (!invoice) {
     return (

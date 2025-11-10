@@ -1,5 +1,4 @@
 import React from 'react';
-import RoomHeader from './RoomHeader';
 import RoomStats from './RoomStats';
 import RoomFilters from './RoomFilters';
 import RoomGrid from './RoomGrid';
@@ -50,7 +49,6 @@ const RoomManagementPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        <RoomHeader />
         <RoomStats roomStats={roomStats} loading={loading} />
         <RoomFilters
           searchTerm={filters.searchTerm}

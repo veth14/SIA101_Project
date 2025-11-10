@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, query, limit } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, getCountFromServer } from 'firebase/firestore';
 import { db, auth } from '../../../config/firebase';
 import RevenueTrendsCard from '../../../components/admin/RevenueTrendsCard';
 import SmartInsightsCard from '../../../components/admin/SmartInsightsCard';
@@ -48,101 +48,176 @@ export const AdminDashboardPage = () => {
     totalRooms: 0,
     availableRooms: 0,
   });
-  
+
+  // Keep bookingsData empty — charts can render gracefully without it.
   const [bookingsData, setBookingsData] = useState<BookingRecord[]>([]);
 
-
   const fetchDashboardData = useCallback(async () => {
-    try {
-      if (!auth.currentUser) {
-        return;
-      }
-      
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-
-      // Fetch Firebase collections with limits to optimize reads
-      const [bookingsSnapshot, roomsSnapshot, inventorySnapshot, staffSnapshot] = await Promise.all([
-        getDocs(query(collection(db, 'bookings'), limit(100))),
-        getDocs(query(collection(db, 'rooms'), limit(100))),
-        getDocs(query(collection(db, 'inventory'), limit(100))),
-        getDocs(query(collection(db, 'staff'), limit(50)))
-      ]);
-
-      const bookings = bookingsSnapshot.docs.map(d => ({ 
-        ...(d.data() as unknown as Omit<BookingRecord, 'id'>), 
-        id: d.id 
-      })) as BookingRecord[];
-      
-      const totalBookings = bookings.length;
-
-      const todayArrivals = bookings.filter(booking => {
-        const raw = booking.checkInDate;
-        if (!raw) return false;
-
         try {
-          let checkInDate: Date | null = null;
-          if (typeof raw === 'object' && raw !== null && 'toDate' in raw) {
-            checkInDate = (raw as { toDate: () => Date }).toDate();
-          } else if (typeof raw === 'string') {
-            checkInDate = new Date(raw);
-          } else if (raw instanceof Date) {
-            checkInDate = raw;
+          if (!auth.currentUser) return;
+          const statsDocRef = doc(db, 'stats', 'dashboard');
+
+          const unsubscribe = onSnapshot(statsDocRef, (snapshot) => {
+        const statsData = snapshot.data() ?? {};
+        
+        // Debug: Check if stats/dashboard exists
+        console.log('📊 stats/dashboard exists:', snapshot.exists());
+        console.log('📊 stats/dashboard data:', statsData);
+
+        // compute date keys
+        const nowDate = new Date();
+        const yyyy = nowDate.getFullYear();
+        const mm = String(nowDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(nowDate.getDate()).padStart(2, '0');
+        const todayKey = `${yyyy}-${mm}-${dd}`;
+        const monthKey = `${yyyy}-${mm}`;
+
+  // Use overall total bookings (not monthly) for Admin dashboard's Total Bookings
+  const totalBookings = Number(statsData.totalBookings ?? 0);
+        const totalRevenue = Number(statsData.totalRevenue ?? 0);
+        const arrivals = statsData.arrivals ?? {};
+        const arrivalsHasToday = Object.prototype.hasOwnProperty.call(arrivals, todayKey);
+        let todayArrivals = arrivals[todayKey] ?? 0;
+
+        const totalRoomsFromStats = typeof statsData.totalRooms === 'number' ? Number(statsData.totalRooms) : null;
+        const availableRoomsFromStats = typeof statsData.availableRooms === 'number' ? Number(statsData.availableRooms) : null;
+
+        const lowStockItems = Number(statsData.lowStockItems ?? 0);
+        const activeStaffFromStats = typeof statsData.activeStaff === 'number' ? Number(statsData.activeStaff) : null;
+        const activeStaff = activeStaffFromStats ?? 0;
+
+        // start with values from stats.dashboard when present
+        let totalRooms = totalRoomsFromStats ?? 0;
+        let availableRooms = availableRoomsFromStats ?? 0;
+
+        const needRoomCounts = totalRoomsFromStats === null || availableRoomsFromStats === null;
+        const needStaffCount = activeStaffFromStats === null;
+
+        const applyCountsIfNeeded = async () => {
+          try {
+            if (needRoomCounts) {
+              const totalRoomsSnap = await getCountFromServer(collection(db, 'rooms'));
+              const availableRoomsSnap = await getCountFromServer(
+                query(collection(db, 'rooms'), where('status', '==', 'available'))
+              );
+              totalRooms = Number(totalRoomsSnap.data().count || 0);
+              availableRooms = Number(availableRoomsSnap.data().count || 0);
+            }
+
+            let currentGuests = typeof statsData.currentGuests === 'number' ? Number(statsData.currentGuests) : null;
+            if (currentGuests === null) {
+              const checkedInSnap = await getCountFromServer(
+                query(collection(db, 'bookings'), where('status', '==', 'checked-in'))
+              );
+              currentGuests = Number(checkedInSnap.data().count || 0);
+            }
+
+            if (!arrivalsHasToday) {
+              try {
+                const arrivalsSnap = await getCountFromServer(
+                  query(collection(db, 'bookings'), where('checkIn', '==', todayKey))
+                );
+                todayArrivals = Number(arrivalsSnap.data().count || 0);
+              } catch (err) {
+                console.error('Error counting today arrivals fallback:', err);
+                todayArrivals = 0;
+              }
+            }
+
+            let resolvedActiveStaff = typeof statsData.activeStaff === 'number' ? Number(statsData.activeStaff) : null;
+            if (resolvedActiveStaff === null) {
+              try {
+                const activeByFlag = await getCountFromServer(query(collection(db, 'staff'), where('isActive', '==', true)));
+                resolvedActiveStaff = Number(activeByFlag.data().count || 0);
+                if (resolvedActiveStaff === 0) {
+                  const activeByStatus = await getCountFromServer(query(collection(db, 'staff'), where('status', '==', 'active')));
+                  resolvedActiveStaff = Number(activeByStatus.data().count || 0);
+                }
+              } catch (err) {
+                resolvedActiveStaff = 0;
+              }
+            }
+
+            const finalActiveStaff = resolvedActiveStaff ?? activeStaff;
+
+            const occupiedRooms = totalRooms > 0 ? Math.min(totalRooms, currentGuests) : Math.max(0, totalRooms - availableRooms);
+            const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+
+            setStats({
+              totalBookings,
+              todayArrivals,
+              totalRevenue,
+              occupancyRate,
+              lowStockItems,
+              activeStaff: finalActiveStaff,
+              totalRooms,
+              availableRooms,
+            });
+          } catch (err) {
+            console.error('Error running fallback aggregation counts:', err);
+            const occupiedRooms = totalRooms > 0 ? Math.max(0, totalRooms - availableRooms) : 0;
+            const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+            setStats({
+              totalBookings,
+              todayArrivals,
+              totalRevenue,
+              occupancyRate,
+              lowStockItems,
+              activeStaff,
+              totalRooms,
+              availableRooms,
+            });
           }
-          if (!checkInDate) return false;
-          return checkInDate >= todayStart && checkInDate < todayEnd;
-        } catch {
-          return false;
+        };
+
+        // Set immediate stats using aggregated fields we have so dashboard isn't empty
+        const occupiedRoomsNow = totalRooms > 0 ? Math.max(0, totalRooms - availableRooms) : 0;
+        const occupancyRateNow = totalRooms > 0 ? Math.round((occupiedRoomsNow / totalRooms) * 100) : 0;
+        setStats({
+          totalBookings,
+          todayArrivals,
+          totalRevenue,
+          occupancyRate: occupancyRateNow,
+          lowStockItems,
+          activeStaff,
+          totalRooms,
+          availableRooms,
+        });
+
+        // Rate-limit fallback aggregation calls so a client won't trigger repeated getCountFromServer requests on every mount/refresh
+        try {
+          const lastRun = sessionStorage.getItem('dashboardCountsLastRun');
+          const now = Date.now();
+          const tenMinutes = 1000 * 60 * 10;
+          const shouldRun = (needRoomCounts || !arrivalsHasToday || needStaffCount) && (!lastRun || now - Number(lastRun) > tenMinutes);
+
+          if (shouldRun) {
+            sessionStorage.setItem('dashboardCountsLastRun', String(now));
+            void applyCountsIfNeeded();
+          }
+        } catch (err) {
+          // sessionStorage may throw in some environments — run counts once
+          void applyCountsIfNeeded();
         }
-      }).length;
 
-      const validBookingsForRevenue = bookings.filter(booking => booking.status !== 'cancelled');
-      const totalRevenue = validBookingsForRevenue.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
-
-      const rooms = roomsSnapshot.docs.map(d => ({ 
-        ...(d.data() as Record<string, unknown>), 
-        id: d.id 
-      }));
-      
-      const totalRooms = Math.max(rooms.length, 50);
-      
-      const occupiedRooms = bookings.filter(booking => 
-        booking.status === 'confirmed' || 
-        booking.status === 'checked-in' ||
-        booking.status === 'active' ||
-        !booking.status
-      ).length;
-      
-      const availableRooms = totalRooms - occupiedRooms;
-      const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
-
-      const inventory = inventorySnapshot.docs.map(d => ({ 
-        ...(d.data() as unknown as InventoryRecord), 
-        id: d.id 
-      })) as InventoryRecord[];
-      const lowStockItems = inventory.filter(item => 
-        (item.currentStock ?? 0) <= (item.reorderLevel ?? 0)
-      ).length;
-
-      const staff = staffSnapshot.docs.map(d => ({ 
-        ...(d.data() as unknown as StaffRecord), 
-        id: d.id 
-      })) as StaffRecord[];
-      const activeStaff = staff.filter(member => member.status === 'active').length;
-
-      setStats({
-        totalBookings,
-        todayArrivals,
-        totalRevenue,
-        occupancyRate,
-        lowStockItems,
-        activeStaff,
-        totalRooms,
-        availableRooms,
+        setBookingsData([]);
+      }, (error) => {
+        console.error('Error fetching stats/dashboard:', error);
+        // Fallback to safe defaults
+        setStats({
+          totalBookings: 0,
+          todayArrivals: 0,
+          totalRevenue: 0,
+          occupancyRate: 0,
+          lowStockItems: 0,
+          activeStaff: 0,
+          totalRooms: 0,
+          availableRooms: 0,
+        });
+        setBookingsData([]);
       });
-
-      setBookingsData(bookings);
+      // Clean up subscription on unmount
+      return unsubscribe;
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       setStats({
@@ -160,7 +235,14 @@ export const AdminDashboardPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchDashboardData();
+    let unsubscribe: (() => void) | undefined;
+    fetchDashboardData().then((unsub) => {
+      if (unsub) unsubscribe = unsub;
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [fetchDashboardData]);
 
   return (

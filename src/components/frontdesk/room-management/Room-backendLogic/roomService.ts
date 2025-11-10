@@ -35,9 +35,19 @@ export interface RoomFilters {
 
 /**
  * Fetch all rooms from Firebase with sorting (available first)
+ * OPTIMIZED: Cache results for 2 minutes to reduce Firestore reads
  */
-export const fetchRooms = async (): Promise<Room[]> => {
+let roomsCache: { data: Room[]; timestamp: number } | null = null;
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+export const fetchRooms = async (forceRefresh = false): Promise<Room[]> => {
   try {
+    // Return cached data if still valid
+    if (!forceRefresh && roomsCache !== null && (Date.now() - roomsCache.timestamp) < CACHE_TTL) {
+      console.log('📦 Using cached rooms data');
+      return roomsCache.data;
+    }
+    
     console.log('🔄 Fetching rooms from Firebase...');
     
     const roomsQuery = query(
@@ -77,6 +87,9 @@ export const fetchRooms = async (): Promise<Room[]> => {
       // Then sort by room number
       return a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true });
     });
+    
+    // Cache the results
+    roomsCache = { data: sortedRooms, timestamp: Date.now() };
     
     console.log(`✅ Loaded ${sortedRooms.length} rooms from Firebase`);
     return sortedRooms;

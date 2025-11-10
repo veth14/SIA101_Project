@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 // Timestamp is needed for the new data structure
 import { 
   collection, getDocs, doc, updateDoc, addDoc, deleteDoc, 
-  serverTimestamp, setDoc, query, where, Timestamp 
+  serverTimestamp, setDoc, query, where, Timestamp, onSnapshot, orderBy, limit
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -15,6 +15,7 @@ import { EditReservationModal } from './EditReservationModal';
 import { ConfirmDialog } from '../../admin/ConfirmDialog';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
 import ModernReservationsTable from './ModernReservationsTable';
+import { updateBookingCount, updateRevenue, updateArrivals, updateCurrentGuests } from '../../../lib/statsHelpers';
 
 // --- UPDATED ---
 // This is our new "source of truth" interface.
@@ -72,6 +73,11 @@ export const ReservationsPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [reservationToDelete, setReservationToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Subscribe to aggregated stats to avoid client-side scans for counts
+  const [dashboardStats, setDashboardStats] = useState<{
+    totalBookings?: number;
+    monthlyCount?: number;
+  } | null>(null);
 
   // Fetch reservations from Firebase
   useEffect(() => {
@@ -83,17 +89,57 @@ export const ReservationsPage = () => {
     }
   }, [user]);
 
+  // Subscribe to stats/dashboard for aggregated numbers (lightweight single doc)
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const statsRef = doc(db, 'stats', 'dashboard');
+      const unsub = onSnapshot(statsRef, (snap) => {
+        const data = snap.data() ?? {};
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const monthKey = `${yyyy}-${mm}`;
+        const monthlyMap = data.monthly ?? {};
+        const monthlyCount = typeof monthlyMap[monthKey] === 'number' ? Number(monthlyMap[monthKey]) : undefined;
+        setDashboardStats({
+          totalBookings: typeof data.totalBookings === 'number' ? Number(data.totalBookings) : undefined,
+          monthlyCount,
+        });
+      }, (err) => {
+        console.warn('Failed to subscribe to stats/dashboard:', err);
+        setDashboardStats(null);
+      });
+      return () => unsub();
+    } catch (err) {
+      console.warn('Error setting up stats/dashboard listener', err);
+    }
+  }, [user]);
+
 // --- UPDATED ---
   // Auto-checkout: Now also sets isActive: false
+  // OPTIMIZED: Only run once per session to reduce Firestore reads
   useEffect(() => {
     let mounted = true;
     const autoCheckoutAndCleanRooms = async () => {
+      // Check if auto-checkout already ran in this session
+      const lastRun = sessionStorage.getItem('autoCheckoutLastRun');
+      const now = Date.now();
+      const FIVE_MINUTES = 5 * 60 * 1000;
+      
+      if (lastRun && (now - parseInt(lastRun)) < FIVE_MINUTES) {
+        console.log('⏭️ Skipping auto-checkout (ran recently)');
+        return;
+      }
+      
       try {
         const bookingsCol = collection(db, 'bookings');
         const q = query(bookingsCol, where('status', 'in', ['confirmed', 'checked-in']));
         const snap = await getDocs(q);
         const today = new Date();
         today.setHours(0,0,0,0);
+        
+        sessionStorage.setItem('autoCheckoutLastRun', now.toString());
 
         for (const d of snap.docs) {
           const data: any = d.data();
@@ -174,7 +220,9 @@ export const ReservationsPage = () => {
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
+      // Limit initial fetch to 20 documents to avoid scanning entire collection
+      const bookingsQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(20));
+      const bookingsSnapshot = await getDocs(bookingsQuery);
       
       const bookingsData = bookingsSnapshot.docs.map(doc => {
         const data = doc.data();
@@ -316,6 +364,11 @@ export const ReservationsPage = () => {
             : r
         )
       );
+
+      // Update aggregated stats: decrement currentGuests if was checked-in
+      if (reservation.status === 'checked-in') {
+        await updateCurrentGuests(-1);
+      }
     } catch (error) {
       console.error('Error checking out reservation:', error);
       alert('Failed to check out reservation. Please try again.');
@@ -339,6 +392,14 @@ export const ReservationsPage = () => {
         updatedAt: Timestamp.now()
       };
       setReservations(prev => [...prev, bookingWithId]);
+
+      // Update aggregated stats
+      await updateBookingCount(1, newBooking.checkIn);
+      await updateRevenue(newBooking.totalAmount);
+      await updateArrivals(1, newBooking.checkIn);
+      if (newBooking.status === 'checked-in') {
+        await updateCurrentGuests(1);
+      }
 
       if (newBooking.roomNumber) {
         try {
@@ -430,8 +491,20 @@ export const ReservationsPage = () => {
   const confirmDeleteReservation = async () => {
     if (reservationToDelete) {
       try {
+        const reservation = reservations.find(r => r.bookingId === reservationToDelete);
+        
         // Delete from Firebase
         await deleteDoc(doc(db, 'bookings', reservationToDelete));
+
+        // Update aggregated stats
+        if (reservation) {
+          await updateBookingCount(-1, reservation.checkIn);
+          await updateRevenue(-reservation.totalAmount);
+          await updateArrivals(-1, reservation.checkIn);
+          if (reservation.status === 'checked-in') {
+            await updateCurrentGuests(-1);
+          }
+        }
 
         // Update local state
         setReservations(prev =>
@@ -451,7 +524,8 @@ export const ReservationsPage = () => {
   // --- UPDATED ---
   // Stats cards logic is now correct
   const statusCounts = {
-    all: reservations.length,
+    // show current month totals when available
+    all: dashboardStats?.monthlyCount ?? reservations.length,
     confirmed: reservations.filter(r => r.status === 'confirmed').length,
     'checked-in': reservations.filter(r => r.status === 'checked-in').length,
     'checked-out': reservations.filter(r => r.status === 'checked-out').length,
@@ -474,30 +548,7 @@ export const ReservationsPage = () => {
       </div>
 
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header (no change) */}
-        <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
-          {/* ... header visual elements ... */}
-          <div className="relative p-10">
-            <div className="flex items-center justify-between">
-              {/* ... header content ... */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  {/* ... icon ... */}
-                  <div className="space-y-2">
-                    <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                      Front Desk Operations
-                    </h1>
-                    <p className="text-xl text-gray-700 font-medium tracking-wide">
-                      Manage reservations and guest services
-                    </p>
-                    {/* ... status pills ... */}
-                  </div>
-                </div>
-              </div>
-              {/* ... time display ... */}
-            </div>
-          </div>
-        </div>
+      
         
         {/* Stats Cards Grid (no change) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -567,6 +618,8 @@ export const ReservationsPage = () => {
           reservation={selectedReservation} // Prop is now BookingData
           onCheckIn={async (updatedReservation) => { // Receives BookingData
             try {
+              const wasStatus = reservations.find(r => r.bookingId === updatedReservation.bookingId)?.status;
+
               await updateDoc(doc(db, 'bookings', updatedReservation.bookingId), {
                 ...updatedReservation, 
                 updatedAt: serverTimestamp() 
@@ -577,6 +630,11 @@ export const ReservationsPage = () => {
                   r.bookingId === updatedReservation.bookingId ? updatedReservation : r
                 )
               );
+
+              // Update aggregated stats: increment currentGuests if transitioning to checked-in
+              if (wasStatus !== 'checked-in' && updatedReservation.status === 'checked-in') {
+                await updateCurrentGuests(1);
+              }
               
               // Update rooms collection
               try {

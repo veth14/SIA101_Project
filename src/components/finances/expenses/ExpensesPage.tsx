@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import ExpensesHeader from '@/components/finances/expenses/ExpensesHeader';
 import ExpenseList from '@/components/finances/expenses/ExpenseList';
 import type { Expense } from '@/components/finances/expenses/types';
 import ExpensesStats from '@/components/finances/expenses/ExpensesStats';
@@ -92,8 +91,6 @@ export const ExpensesPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
-        {/* Header */}
-        <ExpensesHeader />
         
   {/* Stats Section */}
   <ExpensesStats expenses={expenses} />

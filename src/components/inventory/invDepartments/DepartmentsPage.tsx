@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import DepartmentsHeader from './DepartmentsHeader';
 import { DepartmentBackground } from './DepartmentBackground';
 import { UltraPremiumDepartmentCards } from './DepartmentCards';
 import { UltraPremiumRequestTable } from './DepartmentRequestTracking';
@@ -217,8 +216,6 @@ const DepartmentsPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <DepartmentsHeader />
 
         {/* Ultra Premium Department Cards Grid */}
         <UltraPremiumDepartmentCards departments={departments} formatCurrency={formatCurrency} />

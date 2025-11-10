@@ -3,7 +3,6 @@ import {
   getRevenueData, 
   calculateChartMetrics
 } from '../dashboard/chartsLogic/revenueAnalyticsLogic';
-import { ProfitAnalysisHeader } from './ProfitAnalysisHeader';
 import { ProfitAnalysisCharts } from './ProfitAnalysisCharts';
 
 const ProfitAnalysisPage: React.FC = () => {
@@ -117,8 +116,6 @@ const ProfitAnalysisPage: React.FC = () => {
 
       {/* Main Content Container - Matching Financial Dashboard */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <ProfitAnalysisHeader />
 
         {/* Enhanced Dashboard Content */}
         <ProfitAnalysisCharts 
