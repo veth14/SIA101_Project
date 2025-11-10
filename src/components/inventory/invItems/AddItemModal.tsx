@@ -1,3 +1,4 @@
+import usePostInvInventoryItem from "@/api/postInvInventory";
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -30,8 +31,9 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
     reorderLevel: 0,
     initialStock: 0,
   });
-
-  const handleSave = () => {
+  const { postInvInventoryItem, loadingForPostInvInventoryItem } =
+    usePostInvInventoryItem();
+  const handleSave = async () => {
     // Validation
     if (
       !newItem.name.trim() ||
@@ -65,6 +67,16 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
       timestamp: new Date().toISOString(),
     });
 
+    const itemToBeInserted = {
+      id: newId,
+      ...newItem,
+      currentStock: newItem.initialStock,
+      lastRestocked: new Date().toISOString().split("T")[0],
+      timestamp: new Date().toISOString(),
+    };
+    const response = await postInvInventoryItem(itemToBeInserted);
+
+    console.log(response);
     console.log(`Item created successfully: ${newItem.name}`);
 
     // Reset form and close modal
