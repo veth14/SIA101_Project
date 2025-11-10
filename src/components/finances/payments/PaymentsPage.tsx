@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import PaymentsHeader from './PaymentsHeader';
+import React, { useState } from 'react';
 import PaymentList from './PaymentList';
 import PaymentDetails from './PaymentDetails';
 import type { Payment } from './PaymentList';
@@ -8,15 +7,7 @@ import PaymentsActivity from './PaymentsActivity';
 
 export const PaymentsPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Centralized loading state - synchronized for all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Unified 2-second loading time
-    return () => clearTimeout(timer);
-  }, []);
+  // NOTE: removed artificial loading/skeletons so components render immediately
 
   // Sample payment data (moved from PaymentList)
   const payments: Payment[] = [
@@ -110,12 +101,10 @@ export const PaymentsPage: React.FC = () => {
 
       {/* Main Content Container */}
   <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
-        {/* Header */}
-        <PaymentsHeader isLoading={isLoading} />
 
         {/* Stats */}
         <div className="w-full">
-          <PaymentsStats payments={payments} isLoading={isLoading} />
+          <PaymentsStats payments={payments} />
         </div>
 
         {/* Main Grid */}
@@ -126,20 +115,15 @@ export const PaymentsPage: React.FC = () => {
                     payments={payments}
                     onPaymentSelect={handlePaymentSelect}
                     selectedPayment={selectedPayment}
-                    isLoading={isLoading}
                   />
                 </div>
                 <div className="col-span-1 h-full">
-                  <PaymentsActivity payments={payments} isLoading={isLoading} />
+                  <PaymentsActivity payments={payments} />
                 </div>
               </div>
 
               {/* Page-level shimmer overlay for the grid while loading */}
-              {isLoading && (
-                <div className="absolute inset-0 z-20 pointer-events-none flex items-start">
-                  <div className="w-full h-full bg-gradient-to-r from-white/60 via-white/40 to-white/60 animate-pulse backdrop-blur-sm rounded-3xl"></div>
-                </div>
-              )}
+              {/* loading overlay removed */}
             </div>
       </div>
 

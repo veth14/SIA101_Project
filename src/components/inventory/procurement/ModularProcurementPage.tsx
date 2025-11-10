@@ -1,5 +1,4 @@
 import React from 'react';
-import ProcurementHeader from './ProcurementHeader';
 import { ProcurementBackground } from './ProcurementBackground';
 import { ProcurementStats } from './ProcurementStats';
 import { ProcurementGrid } from './ProcurementGrid';
@@ -173,8 +172,6 @@ const ModularProcurementPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <ProcurementHeader />
 
         {/* Stats Cards */}
         <ProcurementStats stats={stats} formatCurrency={formatCurrency} />

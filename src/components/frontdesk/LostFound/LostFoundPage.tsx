@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import LostFoundHeader from './LostFoundHeader';
 import LostFoundStats from './LostFoundStats';
 import LostFoundGrid from './LostFoundGrid';
 import type { LostFoundItem, LostFoundStats as StatsType } from './types';
@@ -93,8 +92,22 @@ const LostFoundPage: React.FC = () => {
   };
 
   // Helper: fetch from Firestore and cache results
+  // OPTIMIZED: Check sessionStorage cache first to reduce reads
   const fetchAndCacheFromFirestore = useCallback(async () => {
     try {
+      // Check cache first (5-minute TTL)
+      const cached = sessionStorage.getItem('lostFoundCache');
+      const cacheTime = sessionStorage.getItem('lostFoundCacheTime');
+      const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+      
+      if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < CACHE_TTL) {
+        console.log('📦 Using cached lost & found data');
+        const parsedData = JSON.parse(cached);
+        setLostFoundItems(dedupeItemsById(parsedData.items));
+        setDocMap(parsedData.docMap);
+        return;
+      }
+      
       const snapshot = await getDocs(collection(db, 'lostFoundItems'));
       const items: LostFoundItem[] = snapshot.docs.map(d => {
         const data = d.data() as FirestoreLostFound;
@@ -122,6 +135,10 @@ const LostFoundPage: React.FC = () => {
 
   setLostFoundItems(dedupeItemsById(items));
   setDocMap(map);
+  
+  // Cache the results
+  sessionStorage.setItem('lostFoundCache', JSON.stringify({ items, docMap: map }));
+  sessionStorage.setItem('lostFoundCacheTime', Date.now().toString());
     } catch (err) {
       console.warn('Failed to fetch lostFoundItems from firestore:', err);
     }
@@ -309,8 +326,6 @@ const LostFoundPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <LostFoundHeader />
 
         {/* Stats Cards Grid */}
         <LostFoundStats stats={statusCounts} />

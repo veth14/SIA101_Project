@@ -1,10 +1,8 @@
 import React from 'react';
 import type { Payment } from './PaymentList';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 interface PaymentsActivityProps {
   payments: Payment[];
-  isLoading: boolean;
 }
 
 const statusColor = (status: Payment['status']) => {
@@ -37,7 +35,7 @@ const statusText = (p: Payment) => {
   }
 };
 
-const PaymentsActivity: React.FC<PaymentsActivityProps> = ({ payments, isLoading }) => {
+const PaymentsActivity: React.FC<PaymentsActivityProps> = ({ payments }) => {
   // Sort by most recent first (descending order)
   const recent = [...payments].sort((a, b) => {
     const dateTimeA = new Date(`${a.transactionDate} ${a.transactionTime}`);
@@ -47,67 +45,7 @@ const PaymentsActivity: React.FC<PaymentsActivityProps> = ({ payments, isLoading
 
   const totalItems = recent.length;
 
-  if (isLoading) {
-    return (
-      <div className="relative flex flex-col w-full h-full overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 animate-fade-in">
-        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}} .skeleton-shimmer{background:linear-gradient(90deg,#ececec 0%,#f5f5f5 50%,#ececec 100%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;border-radius:6px}`}</style>
-        {/* Header Skeleton - left icon, title, subtitle, search on the right */}
-        <div className="flex-shrink-0 p-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="w-10 h-10 rounded-xl skeleton-shimmer" />
-              <div>
-                <Skeleton className="h-6 mb-2 rounded-md w-44 skeleton-shimmer" />
-                <Skeleton className="h-3 rounded-md w-28 skeleton-shimmer" />
-              </div>
-            </div>
-
-            <div className="hidden sm:block">
-              <Skeleton className="w-56 rounded-full h-9 skeleton-shimmer" />
-            </div>
-          </div>
-        </div>
-
-  {/* Activity List Skeleton (mirrors final Recent Activity card) */}
-  <div className="relative z-10 flex-1 px-6 py-6 space-y-4 overflow-auto">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="relative p-3 bg-white border border-gray-200 rounded-xl">
-              {/* Accent bar to the left */}
-              <div className="absolute left-0 w-1 bg-gray-100 top-3 bottom-3 rounded-l-xl" />
-
-              <div className="flex items-center gap-3 pl-3">
-                {/* Icon */}
-                <Skeleton className="w-10 h-10 rounded-lg skeleton-shimmer" />
-
-                {/* Main content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="w-20 h-3 rounded-md skeleton-shimmer" />
-                      <Skeleton className="w-28 h-2.5 rounded-md skeleton-shimmer" />
-                    </div>
-                    {/* Right side small ID */}
-                    <Skeleton className="w-16 h-3 rounded-md skeleton-shimmer" />
-                  </div>
-
-                  <div className="flex items-center gap-3 mt-2">
-                    <Skeleton className="h-3 rounded-md w-36 skeleton-shimmer" />
-                    <Skeleton className="w-20 h-3 rounded-md skeleton-shimmer" />
-                  </div>
-                </div>
-
-                {/* Amount & time column */}
-                <div className="flex flex-col items-end flex-shrink-0 gap-2">
-                  <Skeleton className="w-16 h-4 rounded-md skeleton-shimmer" />
-                  <Skeleton className="w-12 h-3 rounded-md skeleton-shimmer" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Render immediately without skeletons
 
   return (
     <>

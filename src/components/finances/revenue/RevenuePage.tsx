@@ -1,6 +1,4 @@
 import React, { useState, Suspense, useMemo } from 'react';
-import RevenueHeader from './RevenueHeader';
-import { ProfitAnalysisHeader } from '../profitAnalytics/ProfitAnalysisHeader';
 import RevenueDashboard from './RevenueDashboard';
 
 // OverviewCards is a named export — map it to default for React.lazy
@@ -122,12 +120,6 @@ export const RevenuePage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
-        {/* Header: switch header based on active tab so Profit shows its own header */}
-        {activeTab === 'revenue' ? (
-          <RevenueHeader />
-        ) : (
-          <ProfitAnalysisHeader />
-        )}
 
         {/* Tabs - segmented control matching page header style */}
         <div className="relative flex justify-center mb-6">

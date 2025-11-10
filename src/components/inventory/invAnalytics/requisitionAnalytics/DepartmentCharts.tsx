@@ -127,9 +127,7 @@ const DepartmentCharts: React.FC = () => {
         <div className="p-8">
           {/* Chart Container */}
           <div className="w-full h-80">
-            {/* @ts-expect-error - Recharts typing issue */}
             <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts typing issue */}
               <AreaChart 
                 data={departmentData} 
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
@@ -159,7 +157,6 @@ const DepartmentCharts: React.FC = () => {
                 
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <XAxis 
                   dataKey="month" 
                   axisLine={false}
@@ -168,7 +165,6 @@ const DepartmentCharts: React.FC = () => {
                   dy={10}
                 />
                 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <YAxis 
                   axisLine={false}
                   tickLine={false}
@@ -180,7 +176,6 @@ const DepartmentCharts: React.FC = () => {
                 <Tooltip content={CustomTooltip} />
                 
                 {/* Department Areas */}
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="housekeeping"
@@ -190,7 +185,6 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="frontoffice"
@@ -200,7 +194,6 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="fnb"
@@ -210,7 +203,6 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="maintenance"
@@ -220,7 +212,6 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#EF4444', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="security"
