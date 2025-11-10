@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InventoryItemsHeader from "./InventoryItemsHeader";
 import { ItemsBackground } from "./ItemsBackground";
 import { ItemsStats } from "./ItemsStats";
@@ -11,6 +11,7 @@ import type { InventoryItem } from "./items-backendLogic/inventoryService";
 
 // Import the dropdown components from ItemsTableContainer
 import { CategoryDropdown, StockStatusDropdown } from "./ItemsTableContainer";
+import useGetInvInventory from "@/api/getInvInventory";
 
 const ItemsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,8 +19,29 @@ const ItemsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
 
-  const { filteredItems, filterOptions, loading, error, filters, setFilters } =
+  // Use the inventory management hook for filtering logic
+  const { filterOptions, loading, error, filters, setFilters, filteredItems } =
     useInventoryManagement();
+
+  // Separate state for raw items from API
+  const [rawItems, setRawItems] = useState([]);
+  const { getInvInventoryItems, loadingForGetInvInventoryItems } =
+    useGetInvInventory();
+
+  // Fetch items from API on mount
+  useEffect(() => {
+    const fetchInventoryItems = async () => {
+      const response = await getInvInventoryItems();
+      if (!response.success) {
+        alert(response.message);
+        return;
+      }
+      console.log(response);
+      setRawItems(response.data);
+    };
+
+    fetchInventoryItems();
+  }, []);
 
   // Reset to page 1 when filters change
   const handleSearchChange = (value: string) => {
@@ -67,6 +89,7 @@ const ItemsPage: React.FC = () => {
 
   // Calculate if we have filtered results
   const hasResults = filteredItems.length > 0;
+  const isLoading = loading || loadingForGetInvInventoryItems;
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
@@ -82,7 +105,7 @@ const ItemsPage: React.FC = () => {
         <ItemsStats items={filteredItems} formatCurrency={formatCurrency} />
 
         {/* Loading State */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green"></div>
             <span className="ml-3 text-gray-600">
@@ -129,8 +152,8 @@ const ItemsPage: React.FC = () => {
                       <p className="text-sm text-gray-500 font-medium">
                         {hasResults ? (
                           <>
-                            Showing {filteredItems.length} of{" "}
-                            {filteredItems.length} items
+                            Showing {filteredItems.length} of {rawItems.length}{" "}
+                            items
                           </>
                         ) : (
                           <>
