@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { db } from "../config/firebaseAdmin.js";
 const stats: any = [
   {
     title: "Total Inventory Items",
@@ -41,7 +42,22 @@ export const getItemStats = (req: Request, res: Response) => {
 };
 
 export const getInventoryItems = async (req: Request, res: Response) => {
+  const snapshot = await db.collection("inventory_items").get();
+  if (snapshot.empty) {
+    res
+      .status(404)
+      .send({ success: false, message: "No Inventory Items Found" });
+    return;
+  }
 
+  const inventoryItems: any = [];
 
-  res.status(200).json({ success: true, data: stats });
+  snapshot.forEach((doc) => {
+    inventoryItems.push({
+      id: doc.id,
+      ...doc.data(),
+    });
+  });
+
+  res.status(200).json({ success: true, data: inventoryItems });
 };
