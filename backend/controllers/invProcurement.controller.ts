@@ -30,7 +30,7 @@ const purchaseOrders: PurchaseOrder[] = [
       { name: 'Bath Towels', quantity: 50, unitPrice: 450, total: 22501 },
       { name: 'Bed Sheets', quantity: 30, unitPrice: 800, total: 24000 }
     ],
-    totalAmount: 46500,
+    totalAmount: 22500,
     status: 'approved',
     orderDate: '2024-09-15',
     expectedDelivery: '2024-09-25',
@@ -46,7 +46,7 @@ const purchaseOrders: PurchaseOrder[] = [
       { name: 'Coffee Beans', quantity: 20, unitPrice: 1200, total: 24000 },
       { name: 'Tea Bags', quantity: 100, unitPrice: 80, total: 8000 }
     ],
-    totalAmount: 32000,
+    totalAmount: 22000,
     status: 'pending',
     orderDate: '2024-09-20',
     expectedDelivery: '2024-09-30'
@@ -173,7 +173,7 @@ export const getInvProcurementStats = (req: Request, res: Response) => {
     {
       title: 'Vendor Performance',
       value: approvedOrders > 0 ? Math.round((receivedOrders / approvedOrders) * 100) + '%' : '0%',
-      change: '+8% delivery reliability',
+      change: '+1% delivery reliability',
       changeType: 'positive',
     },
     {
