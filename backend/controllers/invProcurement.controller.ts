@@ -209,54 +209,77 @@ export const getInvProcurementOrder  =async (req: Request, res: Response) => {
   res.status(200).json({ success: true, data: purchaseOrders });
 };
 
-export const getInvProcurementStats = (req: Request, res: Response) => {
-  const totalOrders = purchaseOrders.length;
-  const pendingOrders = purchaseOrders.filter(
-    (po) => po.status === "pending"
-  ).length;
-  const approvedOrders = purchaseOrders.filter(
-    (po) => po.status === "approved"
-  ).length;
-  const receivedOrders = purchaseOrders.filter(
-    (po) => po.status === "received"
-  ).length;
-  const totalValue = purchaseOrders.reduce(
-    (sum, po) => sum + po.totalAmount,
-    0
-  );
+export const getInvProcurementStats = async (req: Request, res: Response) => {
+  try {
+    const snapshot = await db.collection("purchaseOrders").get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "No purchase orders found" 
+      });
+    }
 
-  const statCards: StatCard[] = [
-    {
-      title: "Monthly Revenue Impact",
-      value: formatCurrency(totalValue * 0.85),
-      change: "+11% cost savings achieved",
-      changeType: "positive",
-    },
-    {
-      title: "Smart Procurement Score",
-      value:
-        totalOrders > 0
-          ? Math.round((approvedOrders / totalOrders) * 100) + "%"
-          : "0%",
-      change: "+12% efficiency boost",
-      changeType: "positive",
-    },
-    {
-      title: "Vendor Performance",
-      value:
-        approvedOrders > 0
-          ? Math.round((receivedOrders / approvedOrders) * 100) + "%"
-          : "0%",
-      change: "+1% delivery reliability",
-      changeType: "positive",
-    },
-    {
-      title: "Cost Optimization",
-      value: formatCurrency(totalValue * 0.15),
-      change: "22% below budget target",
-      changeType: "positive",
-    },
-  ];
+    const purchaseOrders: PurchaseOrder[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as PurchaseOrder[];
 
-  res.status(200).json({ success: true, data: statCards });
+    const totalOrders = purchaseOrders.length;
+    const pendingOrders = purchaseOrders.filter(
+      (po) => po.status === "pending"
+    ).length;
+    const approvedOrders = purchaseOrders.filter(
+      (po) => po.status === "approved"
+    ).length;
+    const receivedOrders = purchaseOrders.filter(
+      (po) => po.status === "received"
+    ).length;
+    const totalValue = purchaseOrders.reduce(
+      (sum, po) => sum + po.totalAmount,
+      0
+    );
+
+    const statCards: StatCard[] = [
+      {
+        title: "Total Purchase Value",
+        value: formatCurrency(totalValue),
+        change: `${totalOrders} orders processed`,
+        changeType: "neutral",
+      },
+      {
+        title: "Approval Rate",
+        value:
+          totalOrders > 0
+            ? Math.round(((approvedOrders + receivedOrders) / totalOrders) * 100) + "%"
+            : "0%",
+        change: `${approvedOrders + receivedOrders} of ${totalOrders} orders`,
+        changeType: approvedOrders + receivedOrders > totalOrders * 0.7 ? "positive" : "neutral",
+      },
+      {
+        title: "Fulfillment Rate",
+        value:
+          approvedOrders + receivedOrders > 0
+            ? Math.round((receivedOrders / (approvedOrders + receivedOrders)) * 100) + "%"
+            : "0%",
+        change: `${receivedOrders} received`,
+        changeType: receivedOrders > 0 ? "positive" : "neutral",
+      },
+      {
+        title: "Pending Orders",
+        value: pendingOrders.toString(),
+        change: formatCurrency(
+          purchaseOrders
+            .filter(po => po.status === "pending")
+            .reduce((sum, po) => sum + po.totalAmount, 0)
+        ),
+        changeType: pendingOrders > totalOrders * 0.5 ? "negative" : "neutral",
+      },
+    ];
+
+    res.status(200).json({ success: true, data: statCards });
+  } catch (error) {
+    console.error("❌ Error fetching procurement stats:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
