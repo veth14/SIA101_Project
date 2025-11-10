@@ -180,7 +180,6 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) 
           <div className="h-[360px] w-full">
             {/* Recharts types compatibility: intentional mismatch handled at runtime */}
             <ResponsiveContainer width="100%" height="100%">
-              {/* Recharts types compatibility: intentional mismatch handled at runtime */}
               <BarChart data={sortedData} margin={{ top: 12, right: 24, left: 24, bottom: 12 }} barCategoryGap={24}>
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
