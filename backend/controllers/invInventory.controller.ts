@@ -3,7 +3,7 @@ import { db } from "../config/firebaseAdmin.js";
 const stats: any = [
   {
     title: "Total Inventory Items",
-    value: "140",
+    value: "12",
     change: "+23% from last month",
     changeType: "positive" as const,
     iconBg: "bg-green-100",

@@ -55,7 +55,7 @@ const useGetInvDashboard = () => {
   const getInvDashboardActivity = async () => {
     try {
       setLoadingForGetInvDashboardActivity(true);
-      const response = await axios.get("/inventory-dashboard/get-dashboard-Activity");
+      const response = await axios.get("/inventory-dashboard/get-dashboard-activity");
       return response.data;
     } catch (error: any) {
       console.log(error);
