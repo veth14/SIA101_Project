@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { navigation } from './Sidebar';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
@@ -56,6 +57,82 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     return 'Dashboard';
   };
 
+  // Get a context-aware icon for the current page — reuse the same icons declared in Sidebar's navigation
+  const getPageIcon = () => {
+    // Try to match subItems first (exact href match), then top-level items by href or name
+    const path = location.pathname;
+
+    for (const item of navigation) {
+      // check subItems
+      if (item.subItems) {
+        for (const sub of item.subItems) {
+          if (sub.href && path === sub.href) return sub.icon;
+        }
+      }
+      // check main item href
+      if (item.href && path === item.href) return item.icon;
+      // fallback: match by path segments or keywords
+      if (item.name && path.toLowerCase().includes(item.name.toLowerCase().split(' ')[0])) return item.icon;
+    }
+
+    // Last resort: return dashboard icon from navigation if present
+    const dash = navigation.find(n => n.name === 'Dashboard');
+    return dash ? dash.icon : (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5v4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 5v4" />
+      </svg>
+    );
+  };
+
+  // Return styling variants for the icon container and title depending on current page
+  const getPageStyles = () => {
+    const path = location.pathname;
+    // defaults
+    let bgClass = 'bg-heritage-light/20 border border-heritage-light/30';
+    let iconColorClass = 'text-heritage-green';
+    let titleClass = 'text-2xl font-bold text-heritage-green';
+
+    // Finances -> green gradient, white icon
+    if (path.includes('/finances') || path === '/admin/income' || path === '/admin/expenses' || path === '/admin/payroll' || path === '/admin/reports') {
+      bgClass = 'bg-gradient-to-br from-heritage-green to-heritage-green/80 border border-heritage-green/30';
+      iconColorClass = 'text-white';
+      titleClass = 'text-2xl font-bold text-heritage-green';
+    }
+
+    // Inventory -> neutral darker bg, white icon
+    if (path.startsWith('/admin/inventory')) {
+      bgClass = 'bg-heritage-neutral/80 border border-heritage-neutral/30';
+      iconColorClass = 'text-white';
+      titleClass = 'text-2xl font-bold text-heritage-green';
+    }
+
+    // Front desk -> light background, green icon
+    if (path.startsWith('/admin/frontdesk') || path === '/admin/rooms' || path === '/admin/lostfound' || path.includes('/frontdesk')) {
+      bgClass = 'bg-heritage-light/30 border border-heritage-light/30';
+      iconColorClass = 'text-heritage-green';
+      titleClass = 'text-2xl font-bold text-heritage-green';
+    }
+
+    // Maintenance -> accent (amber) with white icon
+    if (path.startsWith('/admin/maintenance') || path.includes('/manage-staff') || path.includes('/tickets-tasks')) {
+      bgClass = 'bg-amber-500 border border-amber-400';
+      iconColorClass = 'text-white';
+      titleClass = 'text-2xl font-bold text-heritage-green';
+    }
+
+    // Analytics / Profit Analysis -> indigo accent
+    if (path.includes('/profit-analysis') || path.includes('/analytics')) {
+      bgClass = 'bg-indigo-600 border border-indigo-500';
+      iconColorClass = 'text-white';
+      titleClass = 'text-2xl font-bold text-heritage-green';
+    }
+
+    return { bgClass, iconColorClass, titleClass };
+  };
+
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -84,111 +161,22 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
 
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b shadow-sm backdrop-blur-xl border-heritage-green/20">
+    <header className="sticky top-0 z-40 bg-white border-b shadow-sm backdrop-blur-xl border-heritage-green/20">
       <div className="flex items-center justify-between h-[79px] px-8">
-        {/* Left side - Mobile menu button and Breadcrumbs */}
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={onSidebarToggle}
-            className="p-2.5 rounded-xl text-gray-500 hover:text-heritage-green hover:bg-heritage-green/5 focus:outline-none focus:ring-2 focus:ring-heritage-green/20 transition-all duration-300 md:hidden group"
-          >
-            <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          
-          {/* Breadcrumb Navigation */}
-          <div className="flex items-center space-x-2 text-sm">
-            <button 
-              onClick={() => navigate('/admin/dashboard')}
-              className="flex items-center space-x-1 transition-colors duration-200 text-heritage-neutral/70 hover:text-heritage-green"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span>Admin</span>
-            </button>
-            
-            {/* Finances Section */}
-            {(location.pathname.includes('/finances') || 
-              location.pathname === '/admin/reports' || 
-              location.pathname === '/admin/expenses' || 
-              location.pathname === '/admin/income' || 
-              location.pathname === '/admin/payroll') && (
+
+        {/* Page Title */}
+        <div className="flex items-center space-x-3">
+          {(() => {
+            const { bgClass, iconColorClass, titleClass } = getPageStyles();
+            return (
               <>
-                <span className="text-heritage-neutral/40">/</span>
-                <button 
-                  onClick={() => navigate('/admin/finances/dashboard')}
-                  className="flex items-center space-x-1 transition-colors duration-200 text-heritage-neutral/70 hover:text-heritage-green"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <span>Finances</span>
-                </button>
+                <div className={`w-9 h-9 flex items-center justify-center rounded-lg ${bgClass}`}>
+                  <div className={`${iconColorClass}`}>{getPageIcon()}</div>
+                </div>
+                <h1 className={titleClass}>{getPageTitle()}</h1>
               </>
-            )}
-            
-            {/* Front Desk Section */}
-            {(location.pathname === '/admin/frontdesk' || 
-              location.pathname === '/admin/rooms' || 
-              location.pathname === '/admin/lostfound' || 
-              location.pathname === '/admin/guest-services') && (
-              <>
-                <span className="text-heritage-neutral/40">/</span>
-                <button 
-                  onClick={() => navigate('/admin/frontdesk')}
-                  className="flex items-center space-x-1 transition-colors duration-200 text-heritage-neutral/70 hover:text-heritage-green"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  <span>Front Desk</span>
-                </button>
-              </>
-            )}
-            
-            {/* Inventory Section */}
-            {location.pathname.includes('/inventory') && (
-              <>
-                <span className="text-heritage-neutral/40">/</span>
-                <button 
-                  onClick={() => navigate('/admin/inventory')}
-                  className="flex items-center space-x-1 transition-colors duration-200 text-heritage-neutral/70 hover:text-heritage-green"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  <span>Inventory</span>
-                </button>
-              </>
-            )}
-            
-            {/* Maintenance Section */}
-            {(location.pathname.includes('/maintenance') || 
-              location.pathname.includes('/manage-staff') || 
-              location.pathname.includes('/staff-schedules') || 
-              location.pathname.includes('/on-duty-staff') || 
-              location.pathname.includes('/tickets-tasks') || 
-              location.pathname.includes('/archive')) && (
-              <>
-                <span className="text-heritage-neutral/40">/</span>
-                <button 
-                  onClick={() => navigate('/admin/maintenance')}
-                  className="flex items-center space-x-1 transition-colors duration-200 text-heritage-neutral/70 hover:text-heritage-green"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>Maintenance</span>
-                </button>
-              </>
-            )}
-            
-            <span className="text-heritage-neutral/40">/</span>
-            <span className="font-medium text-heritage-green">{getPageTitle()}</span>
-          </div>
+            );
+          })()}
         </div>
 
         {/* Enhanced Right side */}
@@ -259,58 +247,44 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
           <div className="relative user-menu-container">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center p-3 space-x-3 transition-all duration-300 rounded-2xl hover:bg-heritage-light/30 group"
+              className="flex items-center gap-3 px-2 py-1 transition-all duration-200 rounded-xl hover:bg-heritage-light/30 group"
             >
-              <div className="relative">
-                <div className="flex items-center justify-center transition-all duration-300 shadow-lg w-11 h-11 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl shadow-heritage-green/25 group-hover:shadow-xl">
-                  <span className="text-sm font-bold text-white">
-                    {userData?.email?.charAt(0).toUpperCase() || 'A'}
-                  </span>
+              <div className="relative flex items-center">
+                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-heritage-green to-heritage-green/80 rounded-full shadow-sm border border-white text-white">
+                  <span className="text-sm font-bold">{userData?.email?.charAt(0).toUpperCase() || 'A'}</span>
                 </div>
-                <div className="absolute w-4 h-4 border-2 border-white rounded-full shadow-lg -bottom-1 -right-1 bg-heritage-green animate-pulse"></div>
+                <span className="absolute w-3 h-3 bg-heritage-green rounded-full border-2 border-white -bottom-0.5 -right-0.5 shadow-md"></span>
               </div>
-              <div className="hidden text-left lg:block">
-                <p className="text-sm font-bold transition-colors text-heritage-green group-hover:text-heritage-green/80">
-                  {userData?.email?.split('@')[0] || 'Admin User'}
-                </p>
-                <p className="text-xs font-medium text-heritage-neutral">
-                  {userData?.role || 'Administrator'}
-                </p>
+              <div className="hidden sm:flex flex-col leading-tight text-left min-w-0">
+                <span className="text-sm font-semibold text-heritage-green truncate">{userData?.email?.split('@')[0] || 'Admin User'}</span>
+                <span className="mt-1 text-xs text-heritage-neutral truncate">{userData?.role || 'admin'}</span>
               </div>
-              <svg className="hidden w-4 h-4 transition-colors text-heritage-neutral lg:block group-hover:text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="hidden w-4 h-4 text-heritage-neutral sm:block group-hover:text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-3 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-heritage-light/40 z-[9999]">
-                <div className="p-4">
-                  {/* Enhanced User Info Header */}
-                  <div className="px-4 py-4 mb-4 border bg-heritage-light/30 rounded-xl border-heritage-green/20">
-                    <div className="flex items-center space-x-4">
+              <div className="absolute right-0 mt-3 w-72 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-heritage-light/40 z-[9999]">
+                  <div className="p-3">
+                    {/* Compact User Header */}
+                    <div className="flex items-center gap-3 mb-3">
                       <div className="relative">
-                        <div className="flex items-center justify-center shadow-lg w-14 h-14 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl">
-                          <span className="text-lg font-bold text-white">
-                            {userData?.email?.charAt(0).toUpperCase() || 'A'}
-                          </span>
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-heritage-green to-heritage-green/80 shadow-sm border border-white text-white">
+                          <span className="text-sm font-bold">{userData?.email?.charAt(0).toUpperCase() || 'A'}</span>
                         </div>
-                        <div className="absolute w-5 h-5 border-white rounded-full shadow-lg -bottom-1 -right-1 bg-heritage-green border-3 animate-pulse"></div>
+                        <span className="absolute w-3 h-3 bg-heritage-green rounded-full border-2 border-white -bottom-0.5 -right-0.5 shadow-md"></span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-lg font-bold text-heritage-green">
-                          {userData?.email?.split('@')[0] || 'Admin User'}
-                        </p>
-                        <p className="text-sm truncate text-heritage-neutral">{userData?.email || 'admin@hotel.com'}</p>
-                        <div className="flex items-center mt-2 space-x-2">
-                          <div className="w-2 h-2 rounded-full bg-heritage-green animate-pulse"></div>
-                          <span className="text-xs font-semibold text-heritage-green">Online</span>
-                        </div>
+                      <div className="min-w-0 text-left">
+                        <p className="text-sm font-semibold text-heritage-green truncate">{userData?.email?.split('@')[0] || 'Admin User'}</p>
+                        <p className="text-xs text-heritage-neutral mt-1 truncate">{userData?.role || 'admin'}</p>
+                        <p className="text-xs text-heritage-neutral/70 mt-1 truncate">{userData?.email || 'admin@hotel.com'}</p>
                       </div>
                     </div>
-                  </div>
+                    <div className="-mx-3 mb-2 border-t border-heritage-light/40"></div>
 
-                  {/* Enhanced Menu Items */}
-                  <div className="space-y-2">
+                    {/* Enhanced Menu Items */}
+                    <div className="space-y-2">
                     <button className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-heritage-neutral hover:bg-heritage-light/40 hover:text-heritage-green rounded-xl group">
                       <div className="flex items-center justify-center w-8 h-8 mr-3 transition-colors bg-heritage-light/50 rounded-xl group-hover:bg-heritage-green/20">
                         <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
