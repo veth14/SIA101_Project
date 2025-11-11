@@ -74,7 +74,7 @@ export const getInvDashboardStats = async (req: Request, res: Response) => {
       id: doc.id,
       ...doc.data(),
     }));
-
+    // calcute the total number of inventory items
     const totalItems = inventoryItems.length;
 
     const lowStockItems = inventoryItems.filter(
