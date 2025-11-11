@@ -30,33 +30,31 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* Topbar spanning full width */}
-      <Topbar onSidebarToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
+    <div className="flex h-screen overflow-hidden bg-heritage-light/30">
+      {/* Fixed Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      {/* Content row: sidebar + main */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="hidden md:flex md:flex-shrink-0">
-          <Sidebar />
-        </div>
-
-        {/* Mobile sidebar overlay */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setMobileMenuOpen(false)}></div>
-            <div className="relative flex flex-col flex-1 w-full max-w-xs bg-white">
-              <Sidebar />
-            </div>
+      {/* Mobile sidebar overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setMobileMenuOpen(false)}></div>
+          <div className="relative flex flex-col flex-1 w-full max-w-xs bg-white">
+            <Sidebar />
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Main content area - shifted right on desktop */}
+      <div className="flex flex-col flex-1 w-0 overflow-hidden md:ml-72">
+        {/* Topbar */}
+        <Topbar onSidebarToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
 
         {/* Main content */}
-        <div className="flex flex-col flex-1 w-0 overflow-hidden">
-          <main className="relative z-0 flex-1 overflow-y-auto focus:outline-none">
-            {children}
-          </main>
-        </div>
+        <main className="relative z-0 flex-1 overflow-y-auto focus:outline-none">
+          {children}
+        </main>
       </div>
     </div>
   );
