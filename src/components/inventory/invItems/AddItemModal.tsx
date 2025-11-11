@@ -99,17 +99,6 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
   };
 
   if (!isOpen) return null;
-  const item = {
-    category: "Front Office",
-    currentStock: 50,
-    description: "White A4 copy paper, 80gsm, 500 sheets per ream",
-    location: "Front Office Storage",
-    name: "New Name from Postman",
-    reorderLevel: 20,
-    supplier: "Office Supplies Co.",
-    unit: "reams",
-    unitPrice: 180,
-  };
 
   const modalContent = (
     <div

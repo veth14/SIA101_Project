@@ -1,8 +1,13 @@
 import express, { Router } from "express";
-import * as dashboardController from "../controllers/invDepartment.controller.js";
+import * as departmentController from "../controllers/invDepartment.controller.js";
 
 const router = express.Router();
 
-router.get("/get-department", dashboardController.getInvDepartment);
+router.get("/get-department", departmentController.getInvDepartment);
+router.post("/post-department", departmentController.postInvDepartment);
+router.post(
+  "/post-maintenance-request",
+  departmentController.postInvMaintenanceRequest
+);
 
 export default router;
