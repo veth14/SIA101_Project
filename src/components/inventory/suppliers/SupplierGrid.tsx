@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { SupplierCard } from './SupplierCard';
+import NewSupplierModal from './NewSupplierModal';
 
 // Simple Category Dropdown Component
 const CategoryDropdown: React.FC<{
@@ -131,6 +132,7 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [isNewSupplierModalOpen, setIsNewSupplierModalOpen] = useState(false);
   const itemsPerPage = 3;
 
   // Filter suppliers based on search term and selected category
@@ -191,6 +193,10 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
       range.push(i);
     }
     return range;
+  };
+
+  const handleNewSupplierSuccess = () => {
+    console.log('New supplier created successfully');
   };
 
   if (suppliers.length === 0) {
@@ -265,7 +271,10 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
             />
-            <button className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <button 
+              onClick={() => setIsNewSupplierModalOpen(true)}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -363,6 +372,13 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
           </div>
         )}
       </div>
+
+      {/* New Supplier Modal */}
+      <NewSupplierModal
+        isOpen={isNewSupplierModalOpen}
+        onClose={() => setIsNewSupplierModalOpen(false)}
+        onSuccess={handleNewSupplierSuccess}
+      />
     </div>
   );
 };

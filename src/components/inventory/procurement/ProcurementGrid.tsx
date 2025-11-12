@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ProcurementCard } from './ProcurementCard';
+import NewOrderModal from './NewOrderModal';
 
 // Status Dropdown Component
 const StatusDropdown: React.FC<{
@@ -130,6 +131,7 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   const itemsPerPage = 3;
 
   // Reset to page 1 when orders change (e.g., after filtering)
@@ -204,6 +206,11 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
     return pages;
   };
 
+  const handleNewOrderSuccess = () => {
+    // Refresh orders or handle success
+    console.log('New order created successfully');
+  };
+
   // Show empty state if no orders
   if (orders.length === 0) {
     return (
@@ -260,7 +267,10 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
               selectedStatus={selectedStatus}
               onStatusChange={setSelectedStatus}
             />
-            <button className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105">
+            <button 
+              onClick={() => setIsNewOrderModalOpen(true)}
+              className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105"
+            >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -360,6 +370,13 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
           </div>
         )}
       </div>
+
+      {/* New Order Modal */}
+      <NewOrderModal
+        isOpen={isNewOrderModalOpen}
+        onClose={() => setIsNewOrderModalOpen(false)}
+        onSuccess={handleNewOrderSuccess}
+      />
     </div>
   );
 };

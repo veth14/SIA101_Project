@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { RequisitionCard } from "./RequisitionCard";
+import NewRequisitionModal from "./NewRequisitionModal";
 
 // Status Dropdown Component
 const StatusDropdown: React.FC<{
@@ -159,6 +160,7 @@ export const RequisitionGrid: React.FC<RequisitionGridProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [isNewRequisitionModalOpen, setIsNewRequisitionModalOpen] = useState(false);
   const itemsPerPage = 3;
 
   // Filter requisitions based on search term and selected status
@@ -229,6 +231,10 @@ export const RequisitionGrid: React.FC<RequisitionGridProps> = ({
       range.push(i);
     }
     return range;
+  };
+
+  const handleNewRequisitionSuccess = () => {
+    console.log('New requisition created successfully');
   };
 
   if (requisitions.length === 0) {
@@ -346,7 +352,10 @@ export const RequisitionGrid: React.FC<RequisitionGridProps> = ({
               selectedStatus={selectedStatus}
               onStatusChange={setSelectedStatus}
             />
-            <button className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <button 
+              onClick={() => setIsNewRequisitionModalOpen(true)}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -474,6 +483,13 @@ export const RequisitionGrid: React.FC<RequisitionGridProps> = ({
           </div>
         )}
       </div>
+
+      {/* New Requisition Modal */}
+      <NewRequisitionModal
+        isOpen={isNewRequisitionModalOpen}
+        onClose={() => setIsNewRequisitionModalOpen(false)}
+        onSuccess={handleNewRequisitionSuccess}
+      />
     </div>
   );
 };
