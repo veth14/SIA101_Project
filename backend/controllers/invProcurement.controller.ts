@@ -283,3 +283,42 @@ export const getInvProcurementStats = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const patchInvProcurementOrder = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Purchase Order ID is required" 
+      });
+    }
+    
+    const dataToUpdate = req.body;
+
+    const docRef = db.collection("purchaseOrders").doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Purchase Order not found" 
+      });
+    }
+
+    await docRef.update({
+      ...dataToUpdate,
+      updatedAt: new Date().toISOString(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Purchase Order updated successfully",
+      id: id,
+    });
+  } catch (error) {
+    console.error("❌ Error updating purchase order:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
