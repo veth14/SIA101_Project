@@ -214,7 +214,6 @@ const AnalyticsBottomSections: React.FC = () => {
 
   const {
     getInvAnalyticsBottomSection,
-    setLoadingForGetInvAnalyticsBottomSection,
   } = useGetInvAnalytic();
   useEffect(() => {
     const useGetInvAnalyticFunc = async () => {

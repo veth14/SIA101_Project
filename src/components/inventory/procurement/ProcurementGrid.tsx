@@ -144,6 +144,7 @@ interface ProcurementGridProps {
   formatCurrency: (amount: number) => string;
   getStatusBadge: (status: string) => React.ReactNode;
   setOrders: React.Dispatch<React.SetStateAction<any[]>>;
+  onSuccess?: () => void;
 }
 
 export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
@@ -151,6 +152,7 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
   formatCurrency,
   getStatusBadge,
   setOrders,
+  onSuccess,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -368,9 +370,9 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
             >
               <ProcurementCard
                 order={order}
-                setOrders={setOrders}
                 formatCurrency={formatCurrency}
                 getStatusBadge={getStatusBadge}
+                onSuccess={onSuccess}
               />
             </div>
           ))}
