@@ -159,3 +159,51 @@ export const getRequisitions = async (req: Request, res: Response) => {
 
   res.status(200).json({ success: true, data: requisitions });
 };
+
+export const patchInvRequisition = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Requisition ID is required",
+      });
+    }
+
+    const dataToUpdate = req.body;
+
+    const docRef = db.collection("requisitions").doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Requisition order not found",
+      });
+    }
+
+    await docRef.update({
+      ...dataToUpdate,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const snapshot = await db.collection("requisitions").get();
+
+    // Transform the snapshot into an array of purchase orders
+    const requisitionORders = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "Requisition Order updated successfully",
+      id: id,
+      updatedData: requisitionORders,
+    });
+  } catch (error) {
+    console.error("❌ Error updating purchase order:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

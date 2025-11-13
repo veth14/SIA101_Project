@@ -143,6 +143,7 @@ const RequisitionsPage: React.FC = () => {
           formatCurrency={formatCurrency}
           getStatusBadge={getStatusBadge}
           getPriorityBadge={getPriorityBadge}
+          setRequisitions={setRequisitions}
         />
       </div>
     </div>
