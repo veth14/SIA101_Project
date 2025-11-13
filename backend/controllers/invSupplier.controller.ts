@@ -129,10 +129,7 @@ export const postSuppliers = async (req: Request, res: Response) => {
     }
 
     //                        PO
-    const newId = `SUP-${currentYear}-${String(nextNumber).padStart(
-      3,
-      "0"
-    )}`;
+    const newId = `SUP-${currentYear}-${String(nextNumber).padStart(3, "0")}`;
 
     //                             table name (collection)
     const docRef = db.collection("suppliers").doc(newId);
@@ -168,4 +165,52 @@ export const getSuppliers = async (req: Request, res: Response) => {
   })) as Supplier[];
 
   res.status(200).json({ success: true, data: suppliers });
+};
+
+export const patchInvSupplier = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Supplier ID is required",
+      });
+    }
+
+    const dataToUpdate = req.body;
+
+    const docRef = db.collection("suppliers").doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Supplier not found",
+      });
+    }
+
+    await docRef.update({
+      ...dataToUpdate,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const snapshot = await db.collection("suppliers").get();
+
+    // Transform the snapshot into an array of purchase orders
+    const suppliers = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "Supplier updated successfully",
+      id: id,
+      updatedData: suppliers,
+    });
+  } catch (error) {
+    console.error("❌ Error updating Supplier:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };

@@ -161,6 +161,7 @@ const SuppliersPage: React.FC = () => {
           formatCurrency={formatCurrency}
           getStatusBadge={getStatusBadge}
           getRatingStars={getRatingStars}
+          setSuppliers={setSuppliers}
         />
       </div>
     </div>
