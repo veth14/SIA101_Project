@@ -1,4 +1,5 @@
 import type { Response, Request } from "express";
+import { db } from "../config/firebaseAdmin.js";
 
 // ============= INTERFACES =============
 interface SummaryStat {
@@ -50,165 +51,16 @@ interface ProcurementStat {
   iconBg: string;
 }
 
-// ============= DATA =============
-const chartData = [
-  { month: "Jan", linens: 2400, cleaning: 1400, food: 2400, maintenance: 800 },
-  { month: "Feb", linens: 1398, cleaning: 2210, food: 2290, maintenance: 1200 },
-  { month: "Mar", linens: 2800, cleaning: 2290, food: 2000, maintenance: 1500 },
-  { month: "Apr", linens: 3908, cleaning: 2000, food: 2181, maintenance: 900 },
-  { month: "May", linens: 4800, cleaning: 2181, food: 2500, maintenance: 1100 },
-  { month: "Jun", linens: 3800, cleaning: 2500, food: 2100, maintenance: 1300 },
-  { month: "Jul", linens: 4300, cleaning: 2100, food: 2800, maintenance: 1000 },
-  { month: "Aug", linens: 4100, cleaning: 2350, food: 2650, maintenance: 1150 },
-  { month: "Sep", linens: 3600, cleaning: 2400, food: 2300, maintenance: 1250 },
-  { month: "Oct", linens: 3200, cleaning: 2150, food: 2450, maintenance: 950 },
-  { month: "Nov", linens: 2900, cleaning: 1950, food: 2200, maintenance: 1050 },
-  { month: "Dec", linens: 3500, cleaning: 2300, food: 2600, maintenance: 1200 },
-];
+interface DepartmentStatCard {
+  title: string;
+  value: string;
+  change: string;
+  changeType: "positive" | "negative" | "neutral";
+  icon: string;
+  iconBg: string;
+}
 
-const summaryStats: SummaryStat[] = [
-  {
-    title: "Total Items",
-    value: "38,347",
-    change: "+12.5%",
-    changeType: "positive",
-    icon: "Package",
-    iconBg: "bg-blue-100",
-  },
-  {
-    title: "Categories",
-    value: "4",
-    change: "Active",
-    changeType: "neutral",
-    icon: "Sparkles",
-    iconBg: "bg-emerald-100",
-  },
-  {
-    title: "Peak Usage",
-    value: "4.8K",
-    change: "May",
-    changeType: "neutral",
-    icon: "TrendingUp",
-    iconBg: "bg-violet-100",
-  },
-  {
-    title: "Avg. Monthly",
-    value: "2.9K",
-    change: "+8.2%",
-    changeType: "positive",
-    icon: "Utensils",
-    iconBg: "bg-amber-100",
-  },
-];
 
-const topMovingItems: TopMovingItem[] = [
-  {
-    name: "Bath Towels",
-    department: "Housekeeping",
-    units: "2,450 units",
-    trend: "+15%",
-    color: "from-green-50 to-emerald-50",
-    border: "border-green-100",
-  },
-  {
-    name: "Toiletries Kit",
-    department: "Housekeeping",
-    units: "1,890 units",
-    trend: "+8%",
-    color: "from-blue-50 to-indigo-50",
-    border: "border-blue-100",
-  },
-  {
-    name: "Bed Linens",
-    department: "Housekeeping",
-    units: "1,240 units",
-    trend: "+12%",
-    color: "from-purple-50 to-pink-50",
-    border: "border-purple-100",
-  },
-  {
-    name: "Mini Bar Items",
-    department: "F&B",
-    units: "985 units",
-    trend: "-3%",
-    color: "from-red-50 to-orange-50",
-    border: "border-red-100",
-    trendColor: "text-red-600",
-  },
-];
-
-const criticalStocks: CriticalStock[] = [
-  {
-    name: "Cleaning Supplies",
-    department: "Maintenance",
-    status: "Low",
-    statusColor: "from-red-100 to-red-200",
-    textColor: "text-red-800",
-    emoji: "🔴",
-    color: "from-red-50 to-pink-50",
-    border: "border-red-100",
-  },
-  {
-    name: "Paper Products",
-    department: "Housekeeping",
-    status: "Medium",
-    statusColor: "from-yellow-100 to-orange-100",
-    textColor: "text-yellow-800",
-    emoji: "🟡",
-    color: "from-yellow-50 to-orange-50",
-    border: "border-yellow-100",
-  },
-  {
-    name: "Guest Amenities",
-    department: "Front Office",
-    status: "Good",
-    statusColor: "from-green-100 to-emerald-100",
-    textColor: "text-green-800",
-    emoji: "🟢",
-    color: "from-green-50 to-emerald-50",
-    border: "border-green-100",
-  },
-  {
-    name: "Maintenance Tools",
-    department: "Maintenance",
-    status: "Good",
-    statusColor: "from-green-100 to-emerald-100",
-    textColor: "text-green-800",
-    emoji: "🟢",
-    color: "from-blue-50 to-indigo-50",
-    border: "border-blue-100",
-  },
-];
-
-const wastageItems: WastageItem[] = [
-  {
-    name: "Food Items",
-    department: "F&B Department",
-    amount: "₱12,450",
-    percentage: "2.3% waste",
-    color: "from-red-50 to-orange-50",
-    border: "border-red-100",
-    textColor: "text-red-600",
-  },
-  {
-    name: "Damaged Linens",
-    department: "Housekeeping",
-    amount: "₱8,200",
-    percentage: "1.8% waste",
-    color: "from-yellow-50 to-orange-50",
-    border: "border-yellow-100",
-    textColor: "text-yellow-600",
-  },
-  {
-    name: "Expired Products",
-    department: "All Departments",
-    amount: "₱5,970",
-    percentage: "1.2% waste",
-    color: "from-amber-50 to-yellow-50",
-    border: "border-amber-100",
-    textColor: "text-yellow-600",
-  },
-];
 
 // ============= UTILITY FUNCTIONS =============
 const formatCurrency = (amount: number) => {
@@ -220,341 +72,698 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-// ============= PROCUREMENT DATA =============
-const stats = {
-  totalOrders: 347,
-  pendingOrders: 45,
-  approvedOrders: 289,
-  receivedOrders: 267,
-  totalValue: 3100000,
-};
-
-const procurementStats: ProcurementStat[] = [
-  {
-    title: "Monthly Revenue Impact",
-    value: formatCurrency(stats.totalValue * 0.85),
-    change: "+18% cost savings achieved",
-    changeType: "positive",
-    icon: "DollarSign",
-    iconBg: "bg-emerald-100",
-  },
-  {
-    title: "Smart Procurement Score",
-    value: Math.round((stats.approvedOrders / stats.totalOrders) * 100) + "%",
-    change: "+12% efficiency boost",
-    changeType: "positive",
-    icon: "Lightbulb",
-    iconBg: "bg-blue-100",
-  },
-  {
-    title: "Vendor Performance",
-    value:
-      Math.round((stats.receivedOrders / stats.approvedOrders) * 100) + "%",
-    change: "+8% delivery reliability",
-    changeType: "positive",
-    icon: "Zap",
-    iconBg: "bg-purple-100",
-  },
-  {
-    title: "Cost Optimization",
-    value: formatCurrency(stats.totalValue * 0.15),
-    change: "22% below budget target",
-    changeType: "positive",
-    icon: "BarChart",
-    iconBg: "bg-amber-100",
-  },
-];
-
-const procurementData = [
-  { month: "Jan", orders: 45, value: 2800, suppliers: 12, onTime: 94 },
-  { month: "Feb", orders: 52, value: 3200, suppliers: 14, onTime: 96 },
-  { month: "Mar", orders: 38, value: 2400, suppliers: 11, onTime: 89 },
-  { month: "Apr", orders: 61, value: 3800, suppliers: 16, onTime: 92 },
-  { month: "May", orders: 47, value: 2900, suppliers: 13, onTime: 97 },
-  { month: "Jun", orders: 55, value: 3400, suppliers: 15, onTime: 91 },
-  { month: "Jul", orders: 49, value: 3100, suppliers: 14, onTime: 95 },
-  { month: "Aug", orders: 53, value: 3300, suppliers: 15, onTime: 93 },
-  { month: "Sep", orders: 41, value: 2600, suppliers: 12, onTime: 96 },
-  { month: "Oct", orders: 58, value: 3600, suppliers: 16, onTime: 94 },
-  { month: "Nov", orders: 46, value: 2800, suppliers: 13, onTime: 92 },
-  { month: "Dec", orders: 51, value: 3200, suppliers: 14, onTime: 95 },
-];
-
 // ============= ROUTE HANDLERS =============
-export const getAnalyticsChart = (req: Request, res: Response) => {
-  if (chartData.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Chart Data" });
-  }
-  if (summaryStats.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Summary Stats" });
-  }
+export const getDepartmentMetrics = async (req: Request, res: Response) => {
+  try {
+    const deptSnapshot = await db.collection("departments").get();
+    const reqSnapshot = await db.collection("requisitions").get();
+    
+    if (deptSnapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: "No departments found"
+      });
+    }
 
-  res.status(200).json({ success: true, data: [summaryStats, chartData] });
+    const departments = deptSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const requisitions = reqSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Calculate real statistics
+    const totalDepartments = departments.length;
+    const totalRequests = requisitions.length;
+    
+    // Calculate approval rate
+    const approvedRequests = requisitions.filter((req: any) => 
+      req.status === "approved" || req.status === "fulfilled"
+    ).length;
+    const approvalRate = totalRequests > 0 
+      ? (approvedRequests / totalRequests) * 100 
+      : 0;
+
+    // Calculate average response time (simulated based on date differences)
+    const avgResponseTime = requisitions
+      .filter((req: any) => req.approvedDate && req.requestDate)
+      .reduce((sum: number, req: any) => {
+        const requestDate = new Date(req.requestDate);
+        const approvedDate = new Date(req.approvedDate);
+        const hoursDiff = (approvedDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60);
+        return sum + hoursDiff;
+      }, 0) / approvedRequests || 2.4;
+
+    // Calculate total value
+    const totalValue = requisitions.reduce((sum: number, req: any) => 
+      sum + (req.totalEstimatedCost || 0), 0
+    );
+
+    const departmentStatCards: DepartmentStatCard[] = [
+      {
+        title: "Department Efficiency",
+        value: totalDepartments > 0
+          ? Math.round(totalRequests / totalDepartments) + " req/dept"
+          : "0 req/dept",
+        change: "+18% productivity increase",
+        changeType: "positive",
+        iconBg: "bg-heritage-green/10",
+        icon: "Building",
+      },
+      {
+        title: "Service Excellence Score",
+        value: Math.round(approvalRate) + "%",
+        change: "+12% satisfaction boost",
+        changeType: "positive",
+        iconBg: "bg-emerald-100",
+        icon: "Star",
+      },
+      {
+        title: "Response Performance",
+        value: avgResponseTime.toFixed(1) + "h avg",
+        change: "-15% faster processing",
+        changeType: "positive",
+        iconBg: "bg-blue-100",
+        icon: "Clock",
+      },
+      {
+        title: "Resource Optimization",
+        value: formatCurrency(totalValue),
+        change: "25% cost efficiency gained",
+        changeType: "positive",
+        iconBg: "bg-amber-100",
+        icon: "TrendingUp",
+      },
+    ];
+
+    res.status(200).json({ success: true, data: departmentStatCards });
+  } catch (error: any) {
+    console.error("❌ Error fetching department metrics:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
+  }
 };
 
-export const getAnalyticsBottomSection = (req: Request, res: Response) => {
-  if (topMovingItems.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Top Moving Items" });
-  }
+export const getDepartmentCharts = async (req: Request, res: Response) => {
+  try {
+    const deptSnapshot = await db.collection("departments").get();
+    const reqSnapshot = await db.collection("requisitions").get();
+    
+    if (deptSnapshot.empty || reqSnapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: "No data found for department charts"
+      });
+    }
 
-  if (criticalStocks.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Critical Stocks" });
-  }
+    const departments = deptSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
-  if (wastageItems.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Wastage Items" });
-  }
+    const requisitions = reqSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
-  res.status(200).json({
-    success: true,
-    data: [topMovingItems, criticalStocks, wastageItems],
-  });
+    // Group requisitions by department and month
+    const monthlyData: Record<string, any> = {};
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    // Initialize all months
+    months.forEach(month => {
+      monthlyData[month] = {
+        month,
+        housekeeping: 0,
+        frontoffice: 0,
+        fnb: 0,
+        maintenance: 0,
+        security: 0
+      };
+    });
+
+    // Process requisitions and group by month and department
+    requisitions.forEach((req: any) => {
+      if (!req.requestDate) return;
+      
+      const requestDate = new Date(req.requestDate);
+      const monthIndex = requestDate.getMonth();
+      const monthName = months[monthIndex];
+      
+      if (!monthName || !monthlyData[monthName]) return;
+      
+      // Map department names to chart keys
+      const deptKey = req.department?.toLowerCase().replace(/\s+/g, '').replace(/&/g, '') || '';
+      
+      if (deptKey.includes('housekeeping')) {
+        monthlyData[monthName].housekeeping += 1;
+      } else if (deptKey.includes('front') || deptKey.includes('office')) {
+        monthlyData[monthName].frontoffice += 1;
+      } else if (deptKey.includes('food') || deptKey.includes('beverage') || deptKey.includes('fb')) {
+        monthlyData[monthName].fnb += 1;
+      } else if (deptKey.includes('maintenance')) {
+        monthlyData[monthName].maintenance += 1;
+      } else if (deptKey.includes('security')) {
+        monthlyData[monthName].security += 1;
+      }
+    });
+
+    // Convert to array format
+    const departmentData = months.map(month => monthlyData[month]);
+
+    // Calculate department performance metrics
+    const deptPerformance: Record<string, any> = {};
+    
+    // Initialize department performance
+    departments.forEach((dept: any) => {
+      const deptName = dept.name || "Unknown";
+      deptPerformance[deptName] = {
+        name: deptName,
+        requests: 0,
+        totalResponseTime: 0,
+        approvedRequests: 0,
+        color: "bg-gray-500"
+      };
+    });
+
+    // Color mapping for departments
+    const colorMap: Record<string, string> = {
+      "Housekeeping": "bg-blue-500",
+      "Front Office": "bg-green-500",
+      "Front Desk": "bg-green-500",
+      "Food & Beverage": "bg-orange-500",
+      "Food & Beverages": "bg-orange-500",
+      "Maintenance": "bg-red-500",
+      "Security": "bg-purple-500"
+    };
+
+    // Process requisitions for performance metrics
+    requisitions.forEach((req: any) => {
+      const deptName = req.department;
+      if (!deptName || !deptPerformance[deptName]) return;
+      
+      deptPerformance[deptName].requests += 1;
+      
+      // Calculate response time if available
+      if (req.approvedDate && req.requestDate) {
+        const requestDate = new Date(req.requestDate);
+        const approvedDate = new Date(req.approvedDate);
+        const hoursDiff = (approvedDate.getTime() - requestDate.getTime()) / (1000 * 60 * 60);
+        deptPerformance[deptName].totalResponseTime += hoursDiff;
+      }
+      
+      // Count approved requests
+      if (req.status === "approved" || req.status === "fulfilled") {
+        deptPerformance[deptName].approvedRequests += 1;
+      }
+    });
+
+    // Format department performance data
+    const departmentPerformance = Object.values(deptPerformance)
+      .filter((dept: any) => dept.requests > 0)
+      .map((dept: any) => ({
+        name: dept.name,
+        requests: dept.requests,
+        avgTime: dept.requests > 0 
+          ? (dept.totalResponseTime / dept.requests).toFixed(1) + "h"
+          : "0h",
+        approval: dept.requests > 0 
+          ? Math.round((dept.approvedRequests / dept.requests) * 100)
+          : 0,
+        color: colorMap[dept.name] || "bg-gray-500"
+      }))
+      .sort((a, b) => b.requests - a.requests)
+      .slice(0, 5);
+
+    res.status(200).json({ 
+      success: true, 
+      data: [departmentData, departmentPerformance] 
+    });
+  } catch (error: any) {
+    console.error("❌ Error fetching department charts:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
+  }
 };
 
-export const getProcurementMetrics = (req: Request, res: Response) => {
-  if (procurementStats.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Procurement Stats" });
-  }
+export const getAnalyticsChart = async (req: Request, res: Response) => {
+  try {
+    // Fetch inventory items from Firebase
+    const snapshot = await db.collection("inventory_items").get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: "No inventory items found"
+      });
+    }
 
-  res.status(200).json({ success: true, data: procurementStats });
+    // Get all items
+    const items = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Calculate totals for summary stats
+    const totalItems = items.length;
+    const categories = new Set(items.map((item: any) => item.category || "Unknown")).size;
+    
+    // Group items by category for analysis
+    const categoryGroups: Record<string, any[]> = {};
+    items.forEach((item: any) => {
+      const category = item.category || "Unknown";
+      if (!categoryGroups[category]) {
+        categoryGroups[category] = [];
+      }
+      categoryGroups[category].push(item);
+    });
+
+    // Generate chart data based on actual inventory
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const chartData = months.map((month, index) => {
+      const data: any = { month };
+      
+      // Calculate values for each category based on current stock
+      Object.keys(categoryGroups).forEach(category => {
+        const categoryItems = categoryGroups[category];
+        if (!categoryItems) return;
+        const totalStock = categoryItems.reduce((sum: number, item: any) => 
+          sum + (parseInt(String(item.currentStock)) || 0), 0
+        );
+        
+        // Simulate monthly variation (±20%)
+        const variation = 0.8 + (Math.random() * 0.4);
+        const monthlyValue = Math.round(totalStock * variation * (1 + index * 0.05));
+        
+        // Map category names to chart keys (lowercase, no spaces)
+        const categoryKey = category.toLowerCase().replace(/\s+/g, '').replace(/&/g, '');
+        data[categoryKey] = monthlyValue;
+      });
+      
+      return data;
+    });
+
+    // Calculate summary statistics safely
+    const currentMonth = new Date().getMonth();
+    const lastMonthData = chartData[currentMonth] || chartData[chartData.length - 1];
+    const prevMonthData = chartData[Math.max(0, currentMonth - 1)];
+    
+    const totalCurrentMonth = Object.keys(lastMonthData)
+      .filter(key => key !== 'month')
+      .reduce((sum, key) => sum + (lastMonthData[key] || 0), 0);
+    
+    const totalPrevMonth = Object.keys(prevMonthData)
+      .filter(key => key !== 'month')
+      .reduce((sum, key) => sum + (prevMonthData[key] || 0), 0);
+    
+    const monthlyChange = totalPrevMonth > 0 
+      ? (((totalCurrentMonth - totalPrevMonth) / totalPrevMonth) * 100).toFixed(1)
+      : "0";
+
+    // Find peak usage month safely
+    const peakMonth = chartData.reduce((peak, current) => {
+      const currentTotal = Object.keys(current)
+        .filter(key => key !== 'month')
+        .reduce((sum, key) => sum + (current[key] || 0), 0);
+      const peakTotal = Object.keys(peak)
+        .filter(key => key !== 'month')
+        .reduce((sum, key) => sum + (peak[key] || 0), 0);
+      return currentTotal > peakTotal ? current : peak;
+    });
+
+    const peakValue = Object.keys(peakMonth)
+      .filter(key => key !== 'month')
+      .reduce((sum, key) => sum + (peakMonth[key] || 0), 0);
+
+    const avgMonthly = Math.round(
+      chartData.reduce((sum, month) => {
+        const monthTotal = Object.keys(month)
+          .filter(key => key !== 'month')
+          .reduce((total, key) => total + (month[key] || 0), 0);
+        return sum + monthTotal;
+      }, 0) / chartData.length / 1000
+    );
+
+    const summaryStats = [
+      {
+        title: "Total Items",
+        value: totalItems.toLocaleString(),
+        change: `+${monthlyChange}%`,
+        changeType: parseFloat(monthlyChange) >= 0 ? "positive" : "negative",
+        icon: "Package",
+        iconBg: "bg-blue-100",
+      },
+      {
+        title: "Categories",
+        value: categories.toString(),
+        change: "Active",
+        changeType: "neutral",
+        icon: "Sparkles",
+        iconBg: "bg-emerald-100",
+      },
+      {
+        title: "Peak Usage",
+        value: `${(peakValue / 1000).toFixed(1)}K`,
+        change: peakMonth.month,
+        changeType: "neutral",
+        icon: "TrendingUp",
+        iconBg: "bg-violet-100",
+      },
+      {
+        title: "Avg. Monthly",
+        value: `${avgMonthly.toFixed(1)}K`,
+        change: `+${monthlyChange}%`,
+        changeType: parseFloat(monthlyChange) >= 0 ? "positive" : "negative",
+        icon: "Utensils",
+        iconBg: "bg-amber-100",
+      },
+    ];
+
+    res.status(200).json({ success: true, data: [summaryStats, chartData] });
+  } catch (error: any) {
+    console.error("❌ Error fetching analytics chart:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
+  }
 };
 
-export const getProcurementAnalytics = (req: Request, res: Response) => {
-  if (procurementData.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Procurement Stats" });
-  }
+export const getAnalyticsBottomSection = async (req: Request, res: Response) => {
+  try {
+    // Fetch inventory items from Firebase
+    const snapshot = await db.collection("inventory_items").get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: "No inventory items found"
+      });
+    }
 
-  res.status(200).json({ success: true, data: procurementData });
+    const items = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Calculate Top Moving Items (items with highest stock levels)
+    const topMovingItems = items
+      .sort((a: any, b: any) => (parseInt(String(b.currentStock)) || 0) - (parseInt(String(a.currentStock)) || 0))
+      .slice(0, 4)
+      .map((item: any, index: number) => {
+        const colors = [
+          { color: "from-green-50 to-emerald-50", border: "border-green-100" },
+          { color: "from-blue-50 to-indigo-50", border: "border-blue-100" },
+          { color: "from-purple-50 to-pink-50", border: "border-purple-100" },
+          { color: "from-red-50 to-orange-50", border: "border-red-100" }
+        ];
+        
+        const trend = Math.random() > 0.3 ? Math.floor(Math.random() * 20) + 5 : -Math.floor(Math.random() * 5);
+        
+        return {
+          name: item.name || "Unknown Item",
+          department: item.category || "N/A",
+          units: `${parseInt(String(item.currentStock)) || 0} units`,
+          trend: trend > 0 ? `+${trend}%` : `${trend}%`,
+          trendColor: trend > 0 ? "text-green-600" : "text-red-600",
+          ...colors[index]
+        };
+      });
+
+    // Calculate Critical Stocks (low stock items)
+    const criticalStocks = items
+      .filter((item: any) => {
+        const current = parseInt(String(item.currentStock)) || 0;
+        const reorder = parseInt(String(item.reorderPoint)) || 0;
+        return reorder > 0 && current <= reorder * 1.5;
+      })
+      .slice(0, 4)
+      .map((item: any) => {
+        const current = parseInt(String(item.currentStock)) || 0;
+        const reorder = parseInt(String(item.reorderPoint)) || 0;
+        
+        let status, statusColor, textColor, emoji, color, border;
+        
+        if (current <= reorder * 0.5) {
+          status = "Critical";
+          statusColor = "from-red-100 to-red-200";
+          textColor = "text-red-800";
+          emoji = "🔴";
+          color = "from-red-50 to-pink-50";
+          border = "border-red-100";
+        } else if (current <= reorder) {
+          status = "Low";
+          statusColor = "from-yellow-100 to-orange-100";
+          textColor = "text-yellow-800";
+          emoji = "🟡";
+          color = "from-yellow-50 to-orange-50";
+          border = "border-yellow-100";
+        } else {
+          status = "Medium";
+          statusColor = "from-green-100 to-emerald-100";
+          textColor = "text-green-800";
+          emoji = "🟢";
+          color = "from-green-50 to-emerald-50";
+          border = "border-green-100";
+        }
+
+        return {
+          name: item.name || "Unknown Item",
+          department: item.category || "N/A",
+          status,
+          statusColor,
+          textColor,
+          emoji,
+          color,
+          border
+        };
+      });
+
+    // If not enough critical stocks, fill with good stock items
+    if (criticalStocks.length < 4) {
+      const goodStockItems = items
+        .filter((item: any) => {
+          const current = parseInt(String(item.currentStock)) || 0;
+          const reorder = parseInt(String(item.reorderPoint)) || 0;
+          return reorder > 0 && current > reorder * 1.5;
+        })
+        .slice(0, 4 - criticalStocks.length)
+        .map((item: any) => ({
+          name: item.name || "Unknown Item",
+          department: item.category || "N/A",
+          status: "Good",
+          statusColor: "from-green-100 to-emerald-100",
+          textColor: "text-green-800",
+          emoji: "🟢",
+          color: "from-blue-50 to-indigo-50",
+          border: "border-blue-100"
+        }));
+      
+      criticalStocks.push(...goodStockItems);
+    }
+
+    // Calculate Wastage Items (simulated based on stock value)
+    const wastageItems = items
+      .sort((a: any, b: any) => {
+        const aValue = (parseFloat(String(a.unitCost)) || 0) * (parseInt(String(a.currentStock)) || 0);
+        const bValue = (parseFloat(String(b.unitCost)) || 0) * (parseInt(String(b.currentStock)) || 0);
+        return bValue - aValue;
+      })
+      .slice(0, 3)
+      .map((item: any, index: number) => {
+        const colors = [
+          { color: "from-red-50 to-orange-50", border: "border-red-100", textColor: "text-red-600" },
+          { color: "from-yellow-50 to-orange-50", border: "border-yellow-100", textColor: "text-yellow-600" },
+          { color: "from-amber-50 to-yellow-50", border: "border-amber-100", textColor: "text-yellow-600" }
+        ];
+        
+        const wastageAmount = (parseFloat(String(item.unitCost)) || 0) * Math.floor((parseInt(String(item.currentStock)) || 0) * 0.02);
+        const wastagePercentage = (Math.random() * 2 + 0.5).toFixed(1);
+        
+        return {
+          name: item.name || "Unknown Item",
+          department: item.category || "N/A",
+          amount: `₱${wastageAmount.toLocaleString()}`,
+          percentage: `${wastagePercentage}% waste`,
+          ...colors[index]
+        };
+      });
+
+    res.status(200).json({
+      success: true,
+      data: [topMovingItems, criticalStocks, wastageItems],
+    });
+  } catch (error: any) {
+    console.error("❌ Error fetching analytics bottom section:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
+  }
 };
 
-// Add this interface with the other interfaces at the top
-interface DepartmentStatCard {
-  title: string;
-  value: string;
-  change: string;
-  changeType: "positive" | "negative" | "neutral";
-  icon: string;
-  iconBg: string;
-}
+export const getProcurementMetrics = async (req: Request, res: Response) => {
+  try {
+    const snapshot = await db.collection("purchaseOrders").get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: "No purchase orders found"
+      });
+    }
 
-// Add this data with the other data sections
-const departmentStats = {
-  totalDepartments: 8,
-  totalRequests: 346,
-  avgResponseTime: 2.4,
-  approvalRate: 92.3,
-  totalValue: 850000,
+    const purchaseOrders = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Calculate real statistics
+    const totalOrders = purchaseOrders.length;
+    const pendingOrders = purchaseOrders.filter((po: any) => po.status === "pending").length;
+    const approvedOrders = purchaseOrders.filter((po: any) => po.status === "approved").length;
+    const receivedOrders = purchaseOrders.filter((po: any) => po.status === "received").length;
+    const totalValue = purchaseOrders.reduce((sum: number, po: any) => sum + (po.totalAmount || 0), 0);
+
+    const procurementStats = [
+      {
+        title: "Monthly Revenue Impact",
+        value: formatCurrency(totalValue * 0.85),
+        change: "+18% cost savings achieved",
+        changeType: "positive",
+        icon: "DollarSign",
+        iconBg: "bg-emerald-100",
+      },
+      {
+        title: "Smart Procurement Score",
+        value: totalOrders > 0 
+          ? Math.round((approvedOrders / totalOrders) * 100) + "%"
+          : "0%",
+        change: "+12% efficiency boost",
+        changeType: "positive",
+        icon: "Lightbulb",
+        iconBg: "bg-blue-100",
+      },
+      {
+        title: "Vendor Performance",
+        value: (approvedOrders + receivedOrders) > 0
+          ? Math.round((receivedOrders / (approvedOrders + receivedOrders)) * 100) + "%"
+          : "0%",
+        change: "+8% delivery reliability",
+        changeType: "positive",
+        icon: "Zap",
+        iconBg: "bg-purple-100",
+      },
+      {
+        title: "Cost Optimization",
+        value: formatCurrency(totalValue * 0.15),
+        change: "22% below budget target",
+        changeType: "positive",
+        icon: "BarChart",
+        iconBg: "bg-amber-100",
+      },
+    ];
+
+    res.status(200).json({ success: true, data: procurementStats });
+  } catch (error: any) {
+    console.error("❌ Error fetching procurement metrics:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
+  }
 };
 
-const departmentStatCards: DepartmentStatCard[] = [
-  {
-    title: "Department Efficiency",
-    value:
-      Math.round(
-        departmentStats.totalRequests / departmentStats.totalDepartments
-      ) + " req/dept",
-    change: "+18% productivity increase",
-    changeType: "positive",
-    iconBg: "bg-heritage-green/10",
-    icon: "Building",
-  },
-  {
-    title: "Service Excellence Score",
-    value: Math.round(departmentStats.approvalRate) + "%",
-    change: "+12% satisfaction boost",
-    changeType: "positive",
-    iconBg: "bg-emerald-100",
-    icon: "Star",
-  },
-  {
-    title: "Response Performance",
-    value: departmentStats.avgResponseTime + "h avg",
-    change: "-15% faster processing",
-    changeType: "positive",
-    iconBg: "bg-blue-100",
-    icon: "Clock",
-  },
-  {
-    title: "Resource Optimization",
-    value: formatCurrency(departmentStats.totalValue),
-    change: "25% cost efficiency gained",
-    changeType: "positive",
-    iconBg: "bg-amber-100",
-    icon: "TrendingUp",
-  },
-];
+export const getProcurementAnalytics = async (req: Request, res: Response) => {
+  try {
+    const snapshot = await db.collection("purchaseOrders").get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({
+        success: false,
+        message: "No purchase orders found"
+      });
+    }
 
-// Add this route handler with the other route handlers
-export const getDepartmentMetrics = (req: Request, res: Response) => {
-  if (departmentStatCards.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Department Stats" });
+    const purchaseOrders = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Group orders by month
+    const monthlyData: Record<string, any> = {};
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    // Initialize all months
+    months.forEach(month => {
+      monthlyData[month] = {
+        month,
+        orders: 0,
+        value: 0,
+        suppliers: new Set<string>(),
+        onTimeDeliveries: 0,
+        totalDeliveries: 0
+      };
+    });
+
+    // Process purchase orders
+    purchaseOrders.forEach((po: any) => {
+      if (!po.orderDate) return;
+      
+      const orderDate = new Date(po.orderDate);
+      const monthIndex = orderDate.getMonth();
+      const monthName = months[monthIndex];
+      
+      if (!monthName || !monthlyData[monthName]) return;
+      
+      monthlyData[monthName].orders += 1;
+      monthlyData[monthName].value += (po.totalAmount || 0) / 1000; // Convert to thousands
+      
+      if (po.supplier) {
+        monthlyData[monthName].suppliers.add(po.supplier);
+      }
+      
+      // Calculate on-time delivery (if received or approved)
+      if (po.status === 'received' || po.status === 'approved') {
+        monthlyData[monthName].totalDeliveries += 1;
+        
+        // Simulate on-time delivery (in real app, compare delivery date with expected)
+        const isOnTime = Math.random() > 0.1; // 90% on-time rate simulation
+        if (isOnTime) {
+          monthlyData[monthName].onTimeDeliveries += 1;
+        }
+      }
+    });
+
+    // Convert to array format and calculate on-time percentage
+    const procurementData = months.map(month => {
+      const data = monthlyData[month];
+      const onTimePercentage = data.totalDeliveries > 0
+        ? Math.round((data.onTimeDeliveries / data.totalDeliveries) * 100)
+        : 95; // Default 95% if no deliveries yet
+      
+      return {
+        month: data.month,
+        orders: data.orders,
+        value: Math.round(data.value),
+        suppliers: data.suppliers.size,
+        onTime: onTimePercentage
+      };
+    });
+
+    res.status(200).json({ success: true, data: procurementData });
+  } catch (error: any) {
+    console.error("❌ Error fetching procurement analytics:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
   }
-
-  res.status(200).json({ success: true, data: departmentStatCards });
-};
-
-const departmentData = [
-  {
-    month: "Jan",
-    housekeeping: 45,
-    frontoffice: 28,
-    fnb: 35,
-    maintenance: 22,
-    security: 15,
-  },
-  {
-    month: "Feb",
-    housekeeping: 52,
-    frontoffice: 32,
-    fnb: 41,
-    maintenance: 28,
-    security: 18,
-  },
-  {
-    month: "Mar",
-    housekeeping: 38,
-    frontoffice: 25,
-    fnb: 29,
-    maintenance: 19,
-    security: 12,
-  },
-  {
-    month: "Apr",
-    housekeeping: 61,
-    frontoffice: 38,
-    fnb: 47,
-    maintenance: 31,
-    security: 21,
-  },
-  {
-    month: "May",
-    housekeeping: 47,
-    frontoffice: 29,
-    fnb: 36,
-    maintenance: 24,
-    security: 16,
-  },
-  {
-    month: "Jun",
-    housekeeping: 55,
-    frontoffice: 34,
-    fnb: 42,
-    maintenance: 28,
-    security: 19,
-  },
-  {
-    month: "Jul",
-    housekeeping: 49,
-    frontoffice: 31,
-    fnb: 38,
-    maintenance: 25,
-    security: 17,
-  },
-  {
-    month: "Aug",
-    housekeeping: 53,
-    frontoffice: 33,
-    fnb: 40,
-    maintenance: 27,
-    security: 18,
-  },
-  {
-    month: "Sep",
-    housekeeping: 41,
-    frontoffice: 26,
-    fnb: 32,
-    maintenance: 21,
-    security: 14,
-  },
-  {
-    month: "Oct",
-    housekeeping: 58,
-    frontoffice: 36,
-    fnb: 44,
-    maintenance: 29,
-    security: 20,
-  },
-  {
-    month: "Nov",
-    housekeeping: 46,
-    frontoffice: 28,
-    fnb: 35,
-    maintenance: 23,
-    security: 16,
-  },
-  {
-    month: "Dec",
-    housekeeping: 51,
-    frontoffice: 32,
-    fnb: 39,
-    maintenance: 26,
-    security: 18,
-  },
-];
-
-// Department performance data
-const departmentPerformance = [
-  {
-    name: "Housekeeping",
-    requests: 156,
-    avgTime: "2.1h",
-    approval: 94,
-    color: "bg-blue-500",
-  },
-  {
-    name: "Front Office",
-    requests: 89,
-    avgTime: "1.8h",
-    approval: 97,
-    color: "bg-green-500",
-  },
-  {
-    name: "Food & Beverage",
-    requests: 134,
-    avgTime: "2.5h",
-    approval: 91,
-    color: "bg-orange-500",
-  },
-  {
-    name: "Maintenance",
-    requests: 78,
-    avgTime: "3.2h",
-    approval: 88,
-    color: "bg-red-500",
-  },
-  {
-    name: "Security",
-    requests: 45,
-    avgTime: "1.5h",
-    approval: 98,
-    color: "bg-purple-500",
-  },
-];
-
-export const getDepartmentCharts = (req: Request, res: Response) => {
-  if (departmentStatCards.length <= 0) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing Department Charts" });
-  }
-
-  res
-    .status(200)
-    .json({ success: true, data: [departmentData, departmentPerformance] });
 };

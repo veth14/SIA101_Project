@@ -14,9 +14,9 @@ const usePatchInvRequisition = () => {
 
       // router.patch("/update-procurement-order/:id", ...)
       const response = await axios.patch(
-        `/inventory-requisition/patch-requisition/${id}`,
-        dataToUpdate
-      );
+          `/inventory-requisition/patch-requisition/${id}`,
+          dataToUpdate
+        );
 
       return response.data;
     } catch (error: any) {
