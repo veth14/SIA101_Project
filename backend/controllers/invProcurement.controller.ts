@@ -195,7 +195,7 @@ export const postInvProcurementOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const getInvProcurementOrder  =async (req: Request, res: Response) => {
+export const getInvProcurementOrder = async (req: Request, res: Response) => {
   const snapshot = await db.collection("purchaseOrders").get();
   if (snapshot.empty) {
     return res
@@ -212,11 +212,11 @@ export const getInvProcurementOrder  =async (req: Request, res: Response) => {
 export const getInvProcurementStats = async (req: Request, res: Response) => {
   try {
     const snapshot = await db.collection("purchaseOrders").get();
-    
+
     if (snapshot.empty) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "No purchase orders found" 
+      return res.status(404).json({
+        success: false,
+        message: "No purchase orders found",
       });
     }
 
@@ -251,16 +251,23 @@ export const getInvProcurementStats = async (req: Request, res: Response) => {
         title: "Approval Rate",
         value:
           totalOrders > 0
-            ? Math.round(((approvedOrders + receivedOrders) / totalOrders) * 100) + "%"
+            ? Math.round(
+                ((approvedOrders + receivedOrders) / totalOrders) * 100
+              ) + "%"
             : "0%",
         change: `${approvedOrders + receivedOrders} of ${totalOrders} orders`,
-        changeType: approvedOrders + receivedOrders > totalOrders * 0.7 ? "positive" : "neutral",
+        changeType:
+          approvedOrders + receivedOrders > totalOrders * 0.7
+            ? "positive"
+            : "neutral",
       },
       {
         title: "Fulfillment Rate",
         value:
           approvedOrders + receivedOrders > 0
-            ? Math.round((receivedOrders / (approvedOrders + receivedOrders)) * 100) + "%"
+            ? Math.round(
+                (receivedOrders / (approvedOrders + receivedOrders)) * 100
+              ) + "%"
             : "0%",
         change: `${receivedOrders} received`,
         changeType: receivedOrders > 0 ? "positive" : "neutral",
@@ -270,7 +277,7 @@ export const getInvProcurementStats = async (req: Request, res: Response) => {
         value: pendingOrders.toString(),
         change: formatCurrency(
           purchaseOrders
-            .filter(po => po.status === "pending")
+            .filter((po) => po.status === "pending")
             .reduce((sum, po) => sum + po.totalAmount, 0)
         ),
         changeType: pendingOrders > totalOrders * 0.5 ? "negative" : "neutral",
@@ -287,23 +294,23 @@ export const getInvProcurementStats = async (req: Request, res: Response) => {
 export const patchInvProcurementOrder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     if (!id) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Purchase Order ID is required" 
+      return res.status(400).json({
+        success: false,
+        message: "Purchase Order ID is required",
       });
     }
-    
+
     const dataToUpdate = req.body;
 
     const docRef = db.collection("purchaseOrders").doc(id);
 
     const doc = await docRef.get();
     if (!doc.exists) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Purchase Order not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Purchase Order not found",
       });
     }
 
@@ -312,10 +319,20 @@ export const patchInvProcurementOrder = async (req: Request, res: Response) => {
       updatedAt: new Date().toISOString(),
     });
 
+    const snapshot = await db.collection("purchaseOrders").get();
+
+    // Transform the snapshot into an array of purchase orders
+    const purchaseOrders = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log(purchaseOrders);
     res.status(200).json({
       success: true,
       message: "Purchase Order updated successfully",
       id: id,
+      updatedData: purchaseOrders,
     });
   } catch (error) {
     console.error("❌ Error updating purchase order:", error);
