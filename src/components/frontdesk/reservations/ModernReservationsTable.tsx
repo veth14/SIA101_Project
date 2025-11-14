@@ -1,12 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { db } from '../../../config/firebase';
-// --- UPDATED ---
-// Added Timestamp for the new interface
+import { Modal } from '../../admin/Modal';
 import { doc, getDoc, updateDoc, setDoc, Timestamp } from 'firebase/firestore';
 
-// --- UPDATED ---
 // This is our new "source of truth" interface.
-// The old 'Reservation' interface is removed.
 interface BookingData {
   additionalGuestPrice: number;
   baseGuests: number;
@@ -40,11 +37,9 @@ interface BookingData {
   userId: string;
   userName: string;
 }
-// --- END UPDATED ---
 
 import { WalkInModal } from './WalkInModal';
 
-// --- UPDATED ---
 // Props now all use the new BookingData interface
 interface ModernReservationsTableProps {
   reservations: BookingData[];
@@ -54,9 +49,7 @@ interface ModernReservationsTableProps {
   onEdit: (reservation: BookingData) => void;
   onCancel: (reservation: BookingData) => void;
   onAddReservation?: (booking: any) => void;
-  onDelete: (reservation: BookingData) => void; // <-- ADD THIS LINE
 }
-// --- END UPDATED ---
 
 
 const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
@@ -67,15 +60,8 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   onEdit,
   onCancel,
   onAddReservation,
-  onDelete
 }) => {
   const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
-  
-  // --- REMOVED ---
-  // The 'getRoomTypeDisplay' function is no longer needed.
-  // We will use 'reservation.roomName' directly.
-  // --- END REMOVED ---
-
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -84,7 +70,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const processedCheckedOut = useRef<Set<string>>(new Set());
 
-// --- UPDATED ---
   // useEffect now uses 'bookingId' and sets 'isActive: false'
   useEffect(() => {
     let mounted = true;
@@ -99,14 +84,12 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
               const currentStatus = roomData?.status || 'available';
               if (currentStatus !== 'cleaning') {
                 try {
-                  // --- FIX ---
                   await updateDoc(roomRef, { 
                     status: 'cleaning', 
                     isActive: false, // Add this
                     currentReservation: null 
                   });
                 } catch (e) {
-                  // --- FIX ---
                   await setDoc(roomRef, { 
                     roomNumber: res.roomNumber, 
                     status: 'cleaning', 
@@ -129,7 +112,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
     if (reservations && reservations.length > 0) markRoomsCleaning();
     return () => { mounted = false; };
   }, [reservations]);
-  // --- END UPDATED ---
 
   // useEffect for click outside (remains the same)
   useEffect(() => {
@@ -144,28 +126,19 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
     };
   }, []);
 
-// --- UPDATED ---
   // Filter logic now sorts by "Active" vs "Inactive", then by newest
   const filteredReservations = useMemo(() => {
     if (!reservations || reservations.length === 0) {
       return [];
     }
-
-    // --- NEW SORTING LOGIC ---
-    // 1. Define the priority for "Active" vs "Inactive"
     const getStatusPriority = (status: string) => {
-      // Priority 1: Active bookings
       if (status === 'checked-in' || status === 'confirmed') {
         return 1;
       }
-      // Priority 2: Inactive bookings
       return 2;
     };
-    // --- END NEW SORTING LOGIC ---
-
     return reservations
       .filter(reservation => {
-        // Search filter (logic is unchanged)
         const searchLower = (searchTerm || '').toLowerCase().trim();
         const matchesSearch = searchLower === '' || 
           (reservation.userName && reservation.userName.toLowerCase().includes(searchLower)) ||
@@ -174,7 +147,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           (reservation.roomNumber && reservation.roomNumber.toLowerCase().includes(searchLower)) ||
           (reservation.bookingId && reservation.bookingId.toLowerCase().includes(searchLower));
         
-        // Status filter (logic is unchanged)
         const matchesStatus = !selectedStatus || 
           selectedStatus === 'All Status' || 
           (selectedStatus === 'Confirmed' && reservation.status === 'confirmed') ||
@@ -184,29 +156,20 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         
         return matchesSearch && matchesStatus;
       })
-      // --- NEW SORTING LOGIC ---
-      // 2. Apply the sort
       .sort((a, b) => {
-        // Level 1: Sort by Active (1) vs. Inactive (2)
         const priorityA = getStatusPriority(a.status);
         const priorityB = getStatusPriority(b.status);
         
         if (priorityA !== priorityB) {
-          // Sorts Active (1) before Inactive (2)
           return priorityA - priorityB; 
         }
 
-        // Level 2: If priority is the same (e.g., both are Active),
-        // sort by creation date (newest first).
         const timeA = a.createdAt?.toMillis() || 0;
         const timeB = b.createdAt?.toMillis() || 0;
         
-        // Sorts in descending order (newest date comes first)
         return timeB - timeA; 
       });
-      // --- END NEW SORTING LOGIC ---
   }, [reservations, searchTerm, selectedStatus]);
-  // --- END UPDATED ---
 
   // Pagination calculations (remains the same)
   const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
@@ -272,8 +235,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
     );
   };
 
-// --- UPDATED ---
-  // getActionButtons now receives 'onDelete' and shows new buttons
+  // --- UPDATED: Modified Cancel and Check-Out button logic ---
   const getActionButtons = (reservation: BookingData) => (
     <div className="flex items-center justify-center space-x-2">
       {/* --- Active Booking Buttons --- */}
@@ -292,7 +254,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCheckOut(reservation);
+            onCheckOut(reservation); // Call prop directly
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
@@ -314,7 +276,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCancel(reservation);
+            onCancel(reservation); // Call prop directly
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
@@ -322,9 +284,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </button>
       )}
       
-      {/* --- NEW INACTIVE BOOKING BUTTONS --- */}
-
-      {/* 1. "View Details" button (for both) */}
+      {/* --- INACTIVE BOOKING BUTTONS (REMAINS THE SAME) --- */}
       {(reservation.status === 'checked-out' || reservation.status === 'cancelled') && (
         <button
           onClick={(e) => {
@@ -336,20 +296,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           View
         </button>
       )}
-
-      {/* 2. "Delete" button (only for cancelled) */}
-      {reservation.status === 'cancelled' && (
-         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(reservation);
-          }}
-          className="px-3 py-1.5 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
-        >
-          Delete
-        </button>
-      )}
-      {/* --- END NEW BUTTONS --- */}
     </div>
   );
   // --- END UPDATED ---
@@ -359,7 +305,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
       {/* Header (remains the same) */}
       <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200/50">
         <div className="flex items-center justify-between">
-          {/* ... Header content ... */}
           <div className="flex items-center space-x-4">
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
@@ -485,48 +430,44 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
       />
       
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto h-[580px]">
+        <table className="w-full table-fixed">
           <thead>
             <tr className="bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-200/50">
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Guest</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Room</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Dates</th>
-              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Payment</th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[25%]">Guest</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[15%]">Room</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-[10%]">Dates</th>
+              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[10%]">Status</th>
+              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[10%]">Payment</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase tracking-wider w-[10%]">Amount</th>
+              <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-[20%]">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200/50">
-            {/* --- UPDATED --- */}
-            {/* This whole section is updated to use the new fields */}
             {paginatedReservations.map((reservation, index) => (
               <tr
                 key={reservation.bookingId} // Use bookingId
                 onClick={() => onRowClick(reservation)}
-                className="group hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-emerald-50/50 cursor-pointer transition-all duration-200"
+                className="group h-20 hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-emerald-50/50 cursor-pointer transition-all duration-200"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
                       <span className="text-white font-bold text-sm">
-                        {/* Use userName */}
                         {reservation.userName.split(' ').map(n => n[0]).join('').toUpperCase()}
                       </span>
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900 group-hover:text-heritage-green transition-colors">
-                        {reservation.userName} {/* Use userName */}
+                        {reservation.userName}
                       </div>
-                      <div className="text-sm text-gray-500">{reservation.userEmail}</div> {/* Use userEmail */}
+                      <div className="text-sm text-gray-500">{reservation.userEmail}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    {/* Use roomName, which is the display name */}
                     <div className="font-semibold text-gray-900">{reservation.roomName}</div>
                     {reservation.roomNumber && (
                       <div className="text-sm text-gray-500">Room {reservation.roomNumber}</div>
@@ -542,7 +483,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                 <td className="px-6 py-4">
                   <div className="space-y-1">
                     <div className="text-sm font-semibold text-gray-900">
-                      {/* Date logic is fine, but we can simplify nights */}
                       {(() => {
                         try {
                           if (!reservation.checkIn || !reservation.checkOut) return 'Invalid Date - Invalid Date';
@@ -564,7 +504,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                         }
                       })()}
                     </div>
-                    {/* Use the 'nights' field directly */}
                     <div className="text-xs text-gray-500">
                       {reservation.nights} night{reservation.nights !== 1 ? 's' : ''}
                     </div>
@@ -574,7 +513,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                   {getStatusBadge(reservation.status)}
                 </td>
                 <td className="px-6 py-4 text-center">
-                  {/* --- THIS IS THE BUG FIX --- */}
                   {getPaymentBadge(reservation.paymentDetails.paymentStatus)}
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -587,7 +525,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                 </td>
               </tr>
             ))}
-            {/* --- END UPDATED --- */}
           </tbody>
         </table>
       </div>
@@ -666,6 +603,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </div>
       )}
 
+      {/* ... (Empty state JSX remains the same) ... */}
       {reservations.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -673,10 +611,10 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h4 className="text-lg font-semibold text-gray-900 mb-2">No reservations found</h4>
           <p className="text-gray-500">Reservations will appear here when available</p>
         </div>
       )}
+
     </div>
   );
 };
