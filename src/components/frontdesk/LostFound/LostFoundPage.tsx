@@ -6,6 +6,7 @@ import type { LostFoundItem, LostFoundStats as StatsType } from './types';
 import { Modal } from '../../admin/Modal';
 import { db } from '../../../config/firebase';
 import { collection, getDocs, updateDoc, doc, setDoc, runTransaction } from 'firebase/firestore';
+import type { DocumentData } from 'firebase/firestore';
 
 const LostFoundPage: React.FC = () => {
   // Use sample data from external file (make stateful so we can add/update items)
@@ -112,7 +113,7 @@ const LostFoundPage: React.FC = () => {
   // returns null so caller can fallback.
   const createAndReserveDoc = async (
     collectionName: 'found' | 'lost',
-    payload: Record<string, unknown>,
+    payload: DocumentData,
     maxRetries = 5
   ): Promise<string | null> => {
     const targetCol = collectionName === 'found' ? 'found' : 'lost';
@@ -321,7 +322,7 @@ const LostFoundPage: React.FC = () => {
         try {
               const targetCol = collectionName === 'found' ? 'found' : 'lost';
               // write field names depending on collection: found => dateFound/foundBy, lost => dateLost/lostBy
-              const writePayload: Record<string, unknown> = {
+              const writePayload: DocumentData = {
             itemName: savedItem.itemName,
             description: savedItem.description,
             category: savedItem.category,
@@ -390,7 +391,7 @@ const LostFoundPage: React.FC = () => {
       const targetCol = collectionName === 'found' ? 'found' : 'lost';
       (async () => {
         try {
-          const payload: Record<string, unknown> = {
+          const payload: DocumentData = {
             itemName: updated.itemName,
             description: updated.description,
             category: updated.category,
