@@ -1,5 +1,4 @@
 import React from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 export interface Transaction {
   id: string;
@@ -52,68 +51,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
     }).format(amount);
   };
 
-  // Loading state is now managed by parent component
-
-  if (isLoading) {
-    return (
-      <>
-        <style>{`
-          @keyframes table-slide-in {
-            0% {
-              opacity: 0;
-              transform: translateX(-30px) scale(0.98);
-            }
-            100% {
-              opacity: 1;
-              transform: translateX(0) scale(1);
-            }
-          }
-          
-          .animate-table-slide-in {
-            animation: table-slide-in 0.7s ease-out;
-          }
-        `}</style>
-        <div className="flex flex-col h-full p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20">
-          <div className="flex items-center justify-between mb-6">
-            <Skeleton className="w-40 h-6" />
-            <Skeleton className="w-64 h-10 rounded-xl" />
-          </div>
-
-          <div className="flex-1 overflow-hidden border rounded-2xl border-heritage-neutral/20">
-            <table className="w-full">
-              <thead className="bg-heritage-light/30">
-                <tr>
-                  <th className="px-6 py-4"><Skeleton className="w-20 h-4" /></th>
-                  <th className="px-6 py-4"><Skeleton className="w-16 h-4" /></th>
-                  <th className="px-6 py-4"><Skeleton className="w-12 h-4" /></th>
-                  <th className="px-6 py-4"><Skeleton className="w-10 h-4" /></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-heritage-neutral/20">
-                {Array.from({ length: 8 }, (_, index) => (
-                  <tr key={index} className="h-14">
-                    <td className="px-6 py-3"><Skeleton className="w-32 h-4" /></td>
-                    <td className="px-6 py-3"><Skeleton className="w-20 h-4" /></td>
-                    <td className="px-6 py-3"><Skeleton className="w-16 h-6 rounded-full" /></td>
-                    <td className="px-6 py-3"><Skeleton className="h-4 w-18" /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex items-center justify-between mt-6">
-            <Skeleton className="w-48 h-4" />
-            <div className="flex gap-2">
-              <Skeleton className="w-20 h-8 rounded-lg" />
-              <Skeleton className="w-8 h-8 rounded-lg" />
-              <Skeleton className="w-16 h-8 rounded-lg" />
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+  // Loading state is managed by parent component (skeleton removed)
 
   return (
     <>

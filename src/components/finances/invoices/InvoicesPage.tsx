@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import InvoicesHeader from './InvoicesHeader';
 import InvoiceList from './InvoiceList';
 import InvoiceStats from './InvoiceStats';
 import InvoiceDetails from './InvoiceDetails';
 import InvoiceSuccessModal from './InvoiceSuccessModal';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
 import type { Invoice } from './InvoiceList';
 
 export const InvoicesPage: React.FC = () => {
@@ -12,7 +10,7 @@ export const InvoicesPage: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [newlyCreatedInvoice, setNewlyCreatedInvoice] = useState<Invoice | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
   const [invoices, setInvoices] = useState<Invoice[]>([
     {
       id: 'INV-2024-001',
@@ -159,12 +157,7 @@ export const InvoicesPage: React.FC = () => {
     }
   ]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Loading simulation removed for immediate rendering
 
   // Auto-select first invoice for testing
   useEffect(() => {
@@ -307,49 +300,9 @@ export const InvoicesPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
-        {/* Header */}
-        {isLoading ? (
-          <div className="relative overflow-hidden border shadow-2xl bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl border-green-500/10">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
-            <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 rounded-full w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 delay-1000 -translate-x-1/2 translate-y-1/2 rounded-full w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent animate-pulse"></div>
-            <div className="absolute w-40 h-40 rounded-full top-1/3 right-1/3 bg-green-500/5 animate-spin opacity-30" style={{animationDuration: '25s'}}></div>
-            <div className="absolute w-24 h-24 rounded-full bottom-1/4 left-1/4 bg-green-500/10 animate-bounce opacity-40" style={{animationDuration: '3s'}}></div>
-            <div className="relative p-10">
-              <div className="flex items-center justify-between">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-4">
-                    <Skeleton className="w-16 h-16 rounded-2xl" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-12 w-80" />
-                      <Skeleton className="h-6 w-64" />
-                      <div className="flex items-center mt-4 space-x-4">
-                        <Skeleton className="h-8 w-40 rounded-full" />
-                        <Skeleton className="h-8 w-32 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="p-8 border shadow-xl bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-3xl border-green-500/20">
-                    <Skeleton className="h-10 w-24 mb-2" />
-                    <Skeleton className="h-4 w-20 mb-3" />
-                    <div className="flex items-center justify-center space-x-2">
-                      <Skeleton className="w-1 h-1 rounded-full" />
-                      <Skeleton className="w-1 h-1 rounded-full" />
-                      <Skeleton className="w-1 h-1 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <InvoicesHeader />
-        )}
         
-        {/* Invoice Stats */}
-  <InvoiceStats invoices={invoices} isLoading={isLoading} />
+    {/* Invoice Stats */}
+  <InvoiceStats invoices={invoices} />
         
         {/* Full Width Layout */}
         <div className="w-full">
@@ -357,54 +310,12 @@ export const InvoicesPage: React.FC = () => {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left Side - Invoice List */}
             <div className="lg:col-span-2">
-              {isLoading ? (
-                <div className="relative overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 h-[900px]">
-                  <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-green/5 rounded-3xl opacity-80"></div>
-                  <div className="absolute top-0 right-0 w-32 h-32 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-bl from-heritage-green/15 to-transparent"></div>
-                  <div className="absolute w-24 h-24 rounded-full -bottom-8 -left-8 bg-gradient-to-tr from-heritage-light/40 to-transparent"></div>
-                  <div className="absolute inset-0 flex flex-col">
-                    <div className="relative z-10 flex-shrink-0 p-6 border-b border-heritage-neutral/10">
-                      <div className="flex items-center space-x-4">
-                        <Skeleton className="w-14 h-14 rounded-2xl" />
-                        <div>
-                          <Skeleton className="w-48 h-6 mb-2" />
-                          <Skeleton className="w-64 h-4 mb-1" />
-                          <Skeleton className="w-40 h-3" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-1 p-6 overflow-y-auto">
-                      <div className="space-y-4">
-                        {[...Array(8)].map((_, i) => (
-                          <div key={i} className="p-4 border rounded-xl border-heritage-neutral/10">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex-1">
-                                <Skeleton className="w-32 h-5 mb-2" />
-                                <Skeleton className="w-24 h-4" />
-                              </div>
-                              <div className="text-right">
-                                <Skeleton className="w-20 h-5 mb-2" />
-                                <Skeleton className="w-16 h-4" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <Skeleton className="w-28 h-4" />
-                              <Skeleton className="w-16 h-6 rounded-full" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <InvoiceList 
-                  invoices={invoices}
-                  onInvoiceSelect={handleInvoiceSelect}
-                  selectedInvoice={selectedInvoice}
-                  onInvoiceCreated={handleInvoiceCreated}
-                />
-              )}
+              <InvoiceList 
+                invoices={invoices}
+                onInvoiceSelect={handleInvoiceSelect}
+                selectedInvoice={selectedInvoice}
+                onInvoiceCreated={handleInvoiceCreated}
+              />
             </div>
 
             {/* Right Side - Invoice Details Panel */}

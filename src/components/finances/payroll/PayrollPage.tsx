@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import PayrollHeader from './PayrollHeader';
 import { PayrollStats } from './PayrollStats';
 import { PayrollTable, type EmployeePayroll } from './PayrollTable';
 import PayrollDetailsPanel from './PayrollDetailsPanel';
@@ -131,8 +130,6 @@ export const PayrollPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <PayrollHeader />
         
         {/* Stats Cards */}
         <PayrollStats

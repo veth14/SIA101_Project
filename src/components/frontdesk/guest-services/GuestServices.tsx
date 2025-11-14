@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { GuestServicesHeader } from './GuestServicesHeader';
 import { GuestServicesStats } from './GuestServicesStats';
 import { GuestServicesNavigation } from './GuestServicesNavigation';
 import { GuestFeedback } from './GuestFeedback';
@@ -19,8 +18,6 @@ export const GuestServices: React.FC = () => {
       </div>
 
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <GuestServicesHeader />
 
         {/* Stats */}
         <GuestServicesStats />

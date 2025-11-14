@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CreditCard, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, MoreHorizontal, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { SkeletonCard } from '../../universalLoader/SkeletonLoader';
 
 // Sample transaction data with hotel-specific transactions
 const transactionData = [
@@ -69,19 +68,6 @@ const transactionData = [
 
 const RecentTransactions: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading - synchronized with all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SkeletonCard />;
-  }
 
   return (
     <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">

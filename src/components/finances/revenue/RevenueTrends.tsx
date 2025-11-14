@@ -125,9 +125,7 @@ const RevenueTrends: React.FC = () => {
         {/* Chart Area */}
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
-            {/* @ts-expect-error - Recharts types are complex */}
             <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts types are complex */}
               <AreaChart
                 data={chartData}
                 margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
@@ -138,7 +136,6 @@ const RevenueTrends: React.FC = () => {
                     <stop offset="95%" stopColor="#ABAD8A" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                {/* @ts-expect-error - Recharts types are complex */}
                 <XAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 12 }}
@@ -147,7 +144,6 @@ const RevenueTrends: React.FC = () => {
                   interval={0}
                   padding={{ left: 0, right: 0 }}
                 />
-                {/* @ts-expect-error - Recharts types are complex */}
                 <YAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
@@ -161,7 +157,6 @@ const RevenueTrends: React.FC = () => {
                 />
                 {/* @ts-expect-error - Recharts types are complex */}
                 <Tooltip content={<CustomTooltip />} />
-                {/* @ts-expect-error - Recharts types are complex */}
                 <Area 
                   type="linear" 
                   dataKey="revenue" 

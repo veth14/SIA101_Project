@@ -1,6 +1,6 @@
 import React from 'react';
 import { AdminLayout } from '../../../layouts/AdminLayout';
-import FinancialReportsPage from './Reports/FinancialReportsPage';
+import FinancialReportsPage from '../../../components/finances/reports/FinancialReportsPage';
 
 const AdminReportsPage: React.FC = () => {
   return (

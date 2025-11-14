@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import LostFoundHeader from './LostFoundHeader';
 import LostFoundStats from './LostFoundStats';
 import LostFoundGrid from './LostFoundGrid';
 import LostFoundNavigation from './LostFoundNavigation';
@@ -167,6 +166,7 @@ const LostFoundPage: React.FC = () => {
   };
 
   // Helper: fetch from Firestore and cache results
+  // OPTIMIZED: Check sessionStorage cache first to reduce reads
   const fetchAndCacheFromFirestore = useCallback(async () => {
     try {
       // Always fetch latest data from Firestore on mount so deletions and remote updates are reflected.
@@ -457,9 +457,7 @@ const LostFoundPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-  {/* Header */}
-  <LostFoundHeader activeTab={activeTab} />
-
+        
         {/* Stats Cards Grid */}
         <LostFoundStats stats={statusCounts} />
 

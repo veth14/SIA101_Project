@@ -1,5 +1,4 @@
 import React from 'react';
-import SuppliersHeader from './SuppliersHeader';
 import { SupplierBackground } from './SupplierBackground';
 import { SupplierStats } from './SupplierStats';
 import { SupplierGrid } from './SupplierGrid';
@@ -192,8 +191,6 @@ const SuppliersPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <SuppliersHeader />
 
         {/* Stats */}
         <SupplierStats stats={stats} formatCurrency={formatCurrency} />
