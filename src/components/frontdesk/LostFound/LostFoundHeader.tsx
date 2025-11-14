@@ -1,6 +1,10 @@
 import React from 'react';
 
-const LostFoundHeader: React.FC = () => {
+interface LostFoundHeaderProps {
+  activeTab?: 'found' | 'lost';
+}
+
+const LostFoundHeader: React.FC<LostFoundHeaderProps> = ({ activeTab = 'found' }) => {
   return (
     <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
       {/* Animated Background Elements */}
@@ -27,11 +31,16 @@ const LostFoundHeader: React.FC = () => {
               {/* Title and Description */}
               <div className="space-y-2">
                 <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                  Lost & Found
+                  Lost & Found — {activeTab === 'found' ? 'Found Items' : 'Lost Items'}
                 </h1>
                 <p className="text-xl text-gray-700 font-medium tracking-wide">
                   Manage lost and found items efficiently
                 </p>
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-white/60 border border-emerald-100">
+                    Viewing: {activeTab === 'found' ? 'Found Items' : 'Lost Items'}
+                  </span>
+                </div>
                 
                 {/* Status Indicators */}
                 <div className="flex items-center space-x-4 mt-4">
