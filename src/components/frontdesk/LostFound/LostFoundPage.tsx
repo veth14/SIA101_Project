@@ -1,12 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import LostFoundStats from './LostFoundStats';
 import LostFoundGrid from './LostFoundGrid';
 import LostFoundNavigation from './LostFoundNavigation';
 import type { LostFoundItem, LostFoundStats as StatsType } from './types';
 import { Modal } from '../../admin/Modal';
 import { db } from '../../../config/firebase';
-import { collection, getDocs, updateDoc, doc, setDoc, runTransaction } from 'firebase/firestore';
-import type { DocumentData } from 'firebase/firestore';
+import { updateDoc, doc, setDoc } from 'firebase/firestore';
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
+  startListeners,
+  stopListeners,
+  createAndReserveDoc as svcCreateAndReserveDoc,
+  allocateSequentialId as svcAllocateSequentialId,
+  fetchPage
+} from './lostFoundService';
 
 const LostFoundPage: React.FC = () => {
   // Use sample data from external file (make stateful so we can add/update items)
@@ -21,227 +28,83 @@ const LostFoundPage: React.FC = () => {
   const [formItem, setFormItem] = useState<LostFoundItem | null>(null);
   const [docMapFound, setDocMapFound] = useState<Record<string, string>>({}); // maps itemId -> firestore docId for found collection
   const [docMapLost, setDocMapLost] = useState<Record<string, string>>({}); // maps for lost collection
+  const [lastFoundDocs, setLastFoundDocs] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
+  const [lastLostDocs, setLastLostDocs] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
+  const [hasMoreFound, setHasMoreFound] = useState(true);
+  const [hasMoreLost, setHasMoreLost] = useState(true);
 
   const [activeTab, setActiveTab] = useState<'found' | 'lost'>('found');
 
   // Firestore document shape for lost/found collections (partial)
-  type FirestoreLostFound = Partial<{
-    itemId: string;
-    itemName: string;
-    description: string;
-    category: LostFoundItem['category'];
-    location: string;
-    dateFound: string;
-    foundBy: string;
-    // for lost collection
-    dateLost: string;
-    lostBy: string;
-    status: LostFoundItem['status'];
-    guestInfo: LostFoundItem['guestInfo'];
-    claimedDate: string;
-    claimedBy: string;
-  }>;
+  
 
   // (No localStorage cache in simplified Option A)
 
-  // Helper: remove duplicate items by id while preserving first occurrence order
-  const dedupeItemsById = (arr: LostFoundItem[]) => {
+  // Helper: remove duplicate items by a stable key. Prefer docId (via docMap)
+  // when available to avoid collisions when itemId can change (temp ids).
+  const dedupeItemsById = (arr: LostFoundItem[], docMap?: Record<string, string>) => {
     const seen = new Set<string>();
     const out: LostFoundItem[] = [];
     for (const it of arr) {
       if (!it || typeof it.id === 'undefined' || it.id === null) continue;
-      const key = String(it.id);
-      if (seen.has(key)) continue;
-      seen.add(key);
+      const idStr = String(it.id);
+      // prefer docId from mapping when present
+      const stableKey = (docMap && docMap[idStr]) ? docMap[idStr] : idStr;
+      if (seen.has(stableKey)) continue;
+      seen.add(stableKey);
       out.push(it);
     }
     return out;
   };
+  // Start service listeners on mount so clients receive deltas rather than re-reading collections.
+  useEffect(() => {
+    const onFoundUpdate = (items: LostFoundItem[], map: Record<string, string>) => {
+      setFoundItems(dedupeItemsById(items, map));
+      setDocMapFound(map);
+    };
+    const onLostUpdate = (items: LostFoundItem[], map: Record<string, string>) => {
+      setLostItems(dedupeItemsById(items, map));
+      setDocMapLost(map);
+    };
 
-  // (No session caching — always read fresh data on mount)
-
-  // Helper: compute next sequential ID for a collection using a given prefix (e.g., FND/LST)
-  // It looks for trailing digits in existing ids and returns prefix + zero-padded number.
-  const getNextSequentialId = (items: LostFoundItem[], prefix: string) => {
-    let max = 0;
-    for (const it of items) {
-      if (!it || !it.id) continue;
-      const idStr = String(it.id).toUpperCase();
-      const m = idStr.match(/(\d+)$/);
-      if (m) {
-        const n = parseInt(m[1], 10);
-        if (!Number.isNaN(n) && n > max) max = n;
-      }
-    }
-    const next = max + 1;
-    return `${prefix}${String(next).padStart(3, '0')}`;
-  };
-
-  // Allocate a sequential ID by scanning the target collection for the highest numeric suffix
-  // and returning the next number. This keeps logic simple and avoids maintaining a
-  // separate counters document. Note: this is still subject to race conditions if multiple
-  // clients create items at the exact same time. For stronger guarantees, consider a
-  // server-side generator or a transaction-based counter.
-  const allocateSequentialId = async (collectionName: 'found' | 'lost') => {
-    const prefix = collectionName === 'found' ? 'FND' : 'LST';
-    try {
-      const snap = await getDocs(collection(db, collectionName));
-      let max = 0;
-      snap.docs.forEach(d => {
-        const data = d.data() as FirestoreLostFound;
-        // prefer explicit itemId field, otherwise use Firestore doc id
-        const itemId = String(data.itemId ?? d.id).toUpperCase();
-        const m = itemId.match(/(\d+)$/);
-        if (m) {
-          const n = parseInt(m[1], 10);
-          if (!Number.isNaN(n) && n > max) max = n;
-        }
-      });
-      const next = max + 1; // 1 when empty
-      return `${prefix}${String(next).padStart(3, '0')}`;
-    } catch (err) {
-      console.warn('Failed to compute next sequential id from collection, falling back to local items', err);
-      const fallbackItems = collectionName === 'found' ? foundItems : lostItems;
-      return getNextSequentialId(fallbackItems, prefix);
-    }
-  };
-
-  // Create a document with a reserved sequential id using a transaction.
-  // Tries up to `maxRetries` times: compute next id, then atomically create the doc only
-  // if it doesn't already exist. This avoids a separate counters doc and reduces
-  // collisions without needing Cloud Functions (works on Spark). If all retries fail,
-  // returns null so caller can fallback.
-  const createAndReserveDoc = async (
-    collectionName: 'found' | 'lost',
-    payload: DocumentData,
-    maxRetries = 5
-  ): Promise<string | null> => {
-    const targetCol = collectionName === 'found' ? 'found' : 'lost';
-    // Read the collection once to compute the current max numeric suffix.
-    // This prevents repeated full-collection reads on each retry.
-    try {
-      const snap = await getDocs(collection(db, collectionName));
-      let max = 0;
-      snap.docs.forEach(d => {
-        const data = d.data() as FirestoreLostFound;
-        const itemId = String(data.itemId ?? d.id).toUpperCase();
-        const m = itemId.match(/(\d+)$/);
-        if (m) {
-          const n = parseInt(m[1], 10);
-          if (!Number.isNaN(n) && n > max) max = n;
-        }
-      });
-
-      const prefix = collectionName === 'found' ? 'FND' : 'LST';
-      // Try candidate ids incrementally without re-scanning the whole collection.
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const candidateNum = max + 1 + attempt;
-        const candidateId = `${prefix}${String(candidateNum).padStart(3, '0')}`;
-        const docRef = doc(db, targetCol, candidateId);
-        try {
-          await runTransaction(db, async (tx) => {
-            const snapDoc = await tx.get(docRef);
-            if (snapDoc.exists()) {
-              // someone else already wrote this id — abort this transaction so we can retry with next candidate
-              throw new Error('DOC_EXISTS');
-            }
-            tx.set(docRef, payload);
-          });
-          return candidateId; // success
-        } catch (txErr) {
-          const msg = (txErr && typeof txErr === 'object' && 'message' in txErr) ? String((txErr as { message?: unknown }).message ?? '') : '';
-          if (msg === 'DOC_EXISTS') {
-            // try next candidate without re-reading the whole collection
-            continue;
-          }
-          // transient error: back off and retry
-          console.warn('[LostFound] createAndReserveDoc transaction failed for', candidateId, txErr);
-          await new Promise((res) => setTimeout(res, 200 * (attempt + 1)));
-        }
-      }
-    } catch (err) {
-      console.warn('[LostFound] Failed to scan collection for base id', err);
-    }
-    // all attempts failed
-    return null;
-  };
-
-  // Helper: fetch from Firestore and cache results
-  // OPTIMIZED: Check sessionStorage cache first to reduce reads
-  const fetchAndCacheFromFirestore = useCallback(async () => {
-    try {
-      // Always fetch latest data from Firestore on mount so deletions and remote updates are reflected.
-      console.debug('[LostFoundPage] fetching collections: found, lost (no session cache read)');
-      // Fetch found items
-      const snapFound = await getDocs(collection(db, 'found'));
-      const found: LostFoundItem[] = snapFound.docs.map(d => {
-        const data = d.data() as FirestoreLostFound;
-        return {
-          id: data.itemId ?? d.id,
-          itemName: data.itemName ?? '',
-          description: data.description ?? '',
-          category: (data.category ?? 'other') as LostFoundItem['category'],
-          location: data.location ?? '',
-          dateFound: data.dateFound ?? new Date().toISOString(),
-          foundBy: data.foundBy ?? '',
-          status: (data.status ?? 'unclaimed') as LostFoundItem['status'],
-          guestInfo: data.guestInfo,
-          claimedDate: data.claimedDate,
-          claimedBy: data.claimedBy
-        } as LostFoundItem;
-      });
-
-      const mapFound: Record<string, string> = {};
-      snapFound.docs.forEach(d => {
-        const data = d.data() as FirestoreLostFound;
-        const itemId = data.itemId ?? d.id;
-        mapFound[itemId] = d.id;
-      });
-
-      // Fetch lost items (fields use dateLost / lostBy)
-      const snapLost = await getDocs(collection(db, 'lost'));
-      const lost: LostFoundItem[] = snapLost.docs.map(d => {
-        const data = d.data() as FirestoreLostFound;
-        return {
-          id: data.itemId ?? d.id,
-          itemName: data.itemName ?? '',
-          description: data.description ?? '',
-          category: (data.category ?? 'other') as LostFoundItem['category'],
-          location: data.location ?? '',
-          // normalize to the UI model: use dateFound/foundBy fields for display but they come from dateLost/lostBy
-          dateFound: (data.dateLost as string) ?? new Date().toISOString(),
-          foundBy: (data.lostBy as string) ?? '',
-          status: (data.status ?? 'unclaimed') as LostFoundItem['status'],
-          guestInfo: data.guestInfo,
-          claimedDate: data.claimedDate,
-          claimedBy: data.claimedBy
-        } as LostFoundItem;
-      });
-
-      const mapLost: Record<string, string> = {};
-      snapLost.docs.forEach(d => {
-        const data = d.data() as FirestoreLostFound;
-        const itemId = data.itemId ?? d.id;
-        mapLost[itemId] = d.id;
-      });
-
-      setFoundItems(dedupeItemsById(found));
-      setLostItems(dedupeItemsById(lost));
-      setDocMapFound(mapFound);
-      setDocMapLost(mapLost);
-
-      // No session cache writes — keep UI data fresh from Firestore on mount
-
-      // no-op: counters are initialized during allocation based on actual collection contents
-    } catch (err) {
-      console.warn('Failed to fetch lost/found items from firestore:', err);
-    }
+    // Start listeners but subscribe to only the first page to avoid full-collection reads.
+    startListeners(onFoundUpdate, onLostUpdate, 20);
+    return () => {
+      stopListeners();
+    };
   }, []);
 
-  // Fetch items from Firestore on mount. (No localStorage cache in Option A)
-  useEffect(() => {
-    fetchAndCacheFromFirestore();
-  }, [fetchAndCacheFromFirestore]);
+  // Load more pages on demand. Uses service.fetchPage to get next results.
+  const loadMore = async (collectionName: 'found' | 'lost') => {
+    try {
+      if (collectionName === 'found') {
+      const lastDoc = lastFoundDocs.length ? lastFoundDocs[lastFoundDocs.length - 1] : null;
+      const res = await fetchPage('found', 20, lastDoc);
+        if (!res || !res.docs || res.docs.length === 0) {
+          setHasMoreFound(false);
+          return;
+        }
+        // append items and update last docs
+        setFoundItems(prev => dedupeItemsById([...prev, ...res.items], { ...docMapFound, ...res.map }));
+        setDocMapFound(prev => ({ ...prev, ...res.map }));
+        setLastFoundDocs(prev => [...prev, ...res.docs]);
+        if (res.docs.length < 20) setHasMoreFound(false);
+      } else {
+        const lastDoc = lastLostDocs.length ? lastLostDocs[lastLostDocs.length - 1] : null;
+        const res = await fetchPage('lost', 20, lastDoc);
+        if (!res || !res.docs || res.docs.length === 0) {
+          setHasMoreLost(false);
+          return;
+        }
+        setLostItems(prev => dedupeItemsById([...prev, ...res.items], { ...docMapLost, ...res.map }));
+        setDocMapLost(prev => ({ ...prev, ...res.map }));
+        setLastLostDocs(prev => [...prev, ...res.docs]);
+        if (res.docs.length < 20) setHasMoreLost(false);
+      }
+    } catch (err) {
+      console.warn('Failed to load more lost/found items', err);
+    }
+  };
 
   // (Refresh handled by reloading the page or calling fetchAndCacheFromFirestore manually if needed)
 
@@ -259,7 +122,8 @@ const LostFoundPage: React.FC = () => {
     // Open shared Modal with item data (remember which collection is active)
     setSelectedCollection(activeTab);
     setSelectedItem(item);
-    setFormItem({ ...item });
+    // deep clone to avoid accidental mutation
+    try { setFormItem(JSON.parse(JSON.stringify(item))); } catch { setFormItem({ ...item }); }
     setIsModalOpen(true);
   };
 
@@ -268,7 +132,7 @@ const LostFoundPage: React.FC = () => {
     const updated: LostFoundItem = { ...item, status: 'claimed' as LostFoundItem['status'], claimedDate: new Date().toISOString() };
     // update local state
     if (collectionName === 'found') {
-  setFoundItems(prev => dedupeItemsById(prev.map(i => i.id === updated.id ? updated : i)));
+  setFoundItems(prev => dedupeItemsById(prev.map(i => i.id === updated.id ? updated : i), docMapFound));
       const docId = docMapFound[item.id];
       if (docId) {
         updateDoc(doc(db, 'found', docId), {
@@ -277,7 +141,7 @@ const LostFoundPage: React.FC = () => {
         }).catch(err => console.warn('Failed to update claim status (found):', err));
       }
     } else {
-  setLostItems(prev => dedupeItemsById(prev.map(i => i.id === updated.id ? updated : i)));
+  setLostItems(prev => dedupeItemsById(prev.map(i => i.id === updated.id ? updated : i), docMapLost));
       const docId = docMapLost[item.id];
       if (docId) {
         updateDoc(doc(db, 'lost', docId), {
@@ -304,11 +168,11 @@ const LostFoundPage: React.FC = () => {
 
       // optimistic local update with temp id
       if (collectionName === 'found') {
-        setFoundItems(prev => dedupeItemsById([savedItem, ...prev]));
+        setFoundItems(prev => dedupeItemsById([savedItem, ...prev], docMapFound));
         // tentatively map tempId -> tempId so updates during the short window work
         setDocMapFound(prev => ({ ...prev, [tempId]: tempId }));
       } else {
-        setLostItems(prev => dedupeItemsById([savedItem, ...prev]));
+        setLostItems(prev => dedupeItemsById([savedItem, ...prev], docMapLost));
         setDocMapLost(prev => ({ ...prev, [tempId]: tempId }));
       }
 
@@ -336,19 +200,34 @@ const LostFoundPage: React.FC = () => {
             writePayload.dateFound = savedItem.dateFound;
             writePayload.foundBy = savedItem.foundBy;
           } else {
-            writePayload.dateLost = savedItem.dateFound; // normalized field
-            writePayload.lostBy = savedItem.foundBy;
+            // For lost items, prefer explicit dateLost/lostBy fields if the form provides them.
+            writePayload.dateLost = savedItem.dateLost ?? savedItem.dateFound;
+            writePayload.lostBy = savedItem.lostBy ?? savedItem.foundBy;
           }
               // Attempt transactional reservation to avoid collisions
               try {
-                const reservedId = await createAndReserveDoc(collectionName, writePayload);
-                const finalIdToUse = reservedId ?? (await allocateSequentialId(collectionName));
-                // If reservedId was null we fall back to a best-effort setDoc (may overwrite in rare race)
-                await setDoc(doc(db, targetCol, finalIdToUse), { ...writePayload, itemId: finalIdToUse });
+                const reservedId = await svcCreateAndReserveDoc(collectionName, writePayload);
+                const finalIdToUse = reservedId ?? (await svcAllocateSequentialId(collectionName));
+                if (!finalIdToUse) {
+                  console.warn('[LostFound] failed to allocate final id for new item');
+                  return;
+                }
+
+                // If the service already reserved the doc (created it inside the transaction), prefer a lightweight update
+                if (reservedId) {
+                  // add the itemId field to the reserved doc without overwriting other fields
+                  await updateDoc(doc(db, targetCol, finalIdToUse), { itemId: finalIdToUse }).catch(err => {
+                    // if update fails (rare), fall back to setDoc
+                    console.warn('[LostFound] update after reserve failed, falling back to setDoc', err);
+                    return setDoc(doc(db, targetCol, finalIdToUse), { ...writePayload, itemId: finalIdToUse });
+                  });
+                } else {
+                  await setDoc(doc(db, targetCol, finalIdToUse), { ...writePayload, itemId: finalIdToUse });
+                }
 
                 // reconcile local state: replace tempId with finalIdToUse
                 if (collectionName === 'found') {
-                  setFoundItems(prev => dedupeItemsById(prev.map(i => i.id === tempId ? { ...i, id: finalIdToUse } : i)));
+                  setFoundItems(prev => dedupeItemsById(prev.map(i => i.id === tempId ? { ...i, id: finalIdToUse } : i), docMapFound));
                   setDocMapFound(prev => {
                     const next = { ...prev };
                     delete next[tempId as string];
@@ -356,7 +235,7 @@ const LostFoundPage: React.FC = () => {
                     return next;
                   });
                 } else {
-                  setLostItems(prev => dedupeItemsById(prev.map(i => i.id === tempId ? { ...i, id: finalIdToUse } : i)));
+                  setLostItems(prev => dedupeItemsById(prev.map(i => i.id === tempId ? { ...i, id: finalIdToUse } : i), docMapLost));
                   setDocMapLost(prev => {
                     const next = { ...prev };
                     delete next[tempId as string];
@@ -378,16 +257,16 @@ const LostFoundPage: React.FC = () => {
       // updating existing item: optimistic local update and background updateDoc
       savedItem = updated;
         if (collectionName === 'found') {
-        setFoundItems(prev => dedupeItemsById(prev.map(i => i.id === savedItem.id ? savedItem : i)));
+          setFoundItems(prev => dedupeItemsById(prev.map(i => i.id === savedItem.id ? savedItem : i), docMapFound));
       } else {
-        setLostItems(prev => dedupeItemsById(prev.map(i => i.id === savedItem.id ? savedItem : i)));
+          setLostItems(prev => dedupeItemsById(prev.map(i => i.id === savedItem.id ? savedItem : i), docMapLost));
       }
 
       setIsModalOpen(false);
       setSelectedItem(null);
       setFormItem(null);
 
-      const docId = collectionName === 'found' ? (docMapFound[updated.id] ?? updated.id) : (docMapLost[updated.id] ?? updated.id);
+      const docId = String(collectionName === 'found' ? (docMapFound[updated.id] ?? updated.id) : (docMapLost[updated.id] ?? updated.id));
       const targetCol = collectionName === 'found' ? 'found' : 'lost';
       (async () => {
         try {
@@ -405,8 +284,8 @@ const LostFoundPage: React.FC = () => {
             payload.dateFound = updated.dateFound;
             payload.foundBy = updated.foundBy;
           } else {
-            payload.dateLost = updated.dateFound; // normalized
-            payload.lostBy = updated.foundBy;
+            payload.dateLost = (updated as LostFoundItem).dateLost ?? updated.dateFound; // prefer explicit lost fields
+            payload.lostBy = (updated as LostFoundItem).lostBy ?? updated.foundBy;
           }
           await updateDoc(doc(db, targetCol, docId), payload);
         } catch (err) {
@@ -425,14 +304,41 @@ const LostFoundPage: React.FC = () => {
 
   // keep formItem synced when selectedItem changes
   useEffect(() => {
-    if (selectedItem) setFormItem({ ...selectedItem });
+    if (selectedItem) {
+      try {
+        // deep-clone to avoid accidental mutation of nested fields (guestInfo etc.)
+        setFormItem(JSON.parse(JSON.stringify(selectedItem)));
+      } catch {
+        // fallback to shallow copy
+        setFormItem({ ...selectedItem });
+      }
+    }
   }, [selectedItem]);
+
+  // helper to update nested guestInfo safely
+  const updateGuestInfo = (field: keyof NonNullable<LostFoundItem['guestInfo']>, value: string) => {
+    setFormItem(prev => {
+      const p = prev!;
+      const prevGi = p.guestInfo ?? { name: '', room: '', contact: '' };
+      return {
+        ...p,
+        guestInfo: {
+          name: field === 'name' ? value : (prevGi.name ?? ''),
+          room: field === 'room' ? value : (prevGi.room ?? ''),
+          contact: field === 'contact' ? value : (prevGi.contact ?? '')
+        }
+      };
+    });
+  };
 
   // Validation helper for Add Item (all required fields)
   const isFormNew = !!formItem && String(formItem.id ?? '').startsWith('new-');
   const isAddFormValid = () => {
     if (!formItem) return false;
-    const required = [formItem.itemName, formItem.category, formItem.location, formItem.dateFound, formItem.foundBy, formItem.description];
+    // Use `selectedCollection` (the modal's collection) to validate the form fields
+    const dateField = selectedCollection === 'lost' ? (formItem.dateLost ?? formItem.dateFound) : formItem.dateFound;
+    const byField = selectedCollection === 'lost' ? (formItem.lostBy ?? formItem.foundBy) : formItem.foundBy;
+    const required = [formItem.itemName, formItem.category, formItem.location, dateField, byField, formItem.description];
     return required.every(f => typeof f === 'string' && f.trim().length > 0);
   };
   const saveDisabled = isFormNew && !isAddFormValid();
@@ -472,6 +378,15 @@ const LostFoundPage: React.FC = () => {
             onViewDetails={(item) => handleViewDetails(item)}
             onMarkClaimed={(item) => handleMarkClaimed(item, activeTab)}
           />
+        </div>
+        {/* Load more button for pagination (fetches next page) */}
+        <div className="mt-4 flex justify-center">
+          {activeTab === 'found' && hasMoreFound && (
+            <button onClick={() => loadMore('found')} className="px-4 py-2 bg-heritage-green text-white rounded-md">Load more found</button>
+          )}
+          {activeTab === 'lost' && hasMoreLost && (
+            <button onClick={() => loadMore('lost')} className="px-4 py-2 bg-heritage-green text-white rounded-md">Load more lost</button>
+          )}
         </div>
   {/* Reuse shared Modal wrapper but render invoice-style header and content inside */}
         <Modal
@@ -579,11 +494,22 @@ const LostFoundPage: React.FC = () => {
                   <label className="block mb-2 text-sm font-medium text-heritage-neutral">{selectedCollection === 'found' ? 'Date Found' : 'Date Lost'}</label>
                   <input
                     type="date"
-                    value={new Date(formItem.dateFound).toISOString().slice(0, 10)}
-                    onChange={(e) => setFormItem({ ...formItem, dateFound: new Date(e.target.value).toISOString() })}
+                    value={
+                      selectedCollection === 'found'
+                        ? (formItem.dateFound ? new Date(formItem.dateFound).toISOString().slice(0, 10) : '')
+                        : (formItem.dateLost ? new Date(formItem.dateLost).toISOString().slice(0, 10) : (formItem.dateFound ? new Date(formItem.dateFound).toISOString().slice(0,10) : ''))
+                    }
+                    onChange={(e) => {
+                      const iso = e.target.value ? new Date(e.target.value).toISOString() : '';
+                      setFormItem({
+                        ...formItem,
+                        dateFound: selectedCollection === 'found' ? iso : formItem.dateFound,
+                        dateLost: selectedCollection === 'lost' ? iso : formItem.dateLost
+                      });
+                    }}
                     className="w-48 px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                   />
-                  {isFormNew && (!formItem.dateFound || String(formItem.dateFound).trim() === '') && (
+                  {isFormNew && ((selectedCollection === 'found' && (!formItem.dateFound || String(formItem.dateFound).trim() === '')) || (selectedCollection === 'lost' && !((formItem.dateLost ?? formItem.dateFound)))) && (
                     <p className="text-xs text-red-500 mt-1">{selectedCollection === 'found' ? 'Date found is required.' : 'Date lost is required.'}</p>
                   )}
                 </div>
@@ -643,7 +569,7 @@ const LostFoundPage: React.FC = () => {
                           <label className="block mb-2 text-sm font-medium text-heritage-neutral">Name</label>
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.name) ?? ''}
-                            onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: e.target.value, room: formItem.guestInfo?.room ?? '', contact: formItem.guestInfo?.contact ?? '' } })}
+                            onChange={(e) => updateGuestInfo('name', e.target.value)}
                             className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             placeholder="Guest full name"
                           />
@@ -653,7 +579,7 @@ const LostFoundPage: React.FC = () => {
                           <label className="block mb-2 text-sm font-medium text-heritage-neutral">Room</label>
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.room) ?? ''}
-                            onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: formItem.guestInfo?.name ?? '', room: e.target.value, contact: formItem.guestInfo?.contact ?? '' } })}
+                            onChange={(e) => updateGuestInfo('room', e.target.value)}
                             className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             placeholder="Room number"
                           />
@@ -663,7 +589,7 @@ const LostFoundPage: React.FC = () => {
                           <label className="block mb-2 text-sm font-medium text-heritage-neutral">Contact</label>
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.contact) ?? ''}
-                            onChange={(e) => setFormItem({ ...formItem, guestInfo: { name: formItem.guestInfo?.name ?? '', room: formItem.guestInfo?.room ?? '', contact: e.target.value } })}
+                            onChange={(e) => updateGuestInfo('contact', e.target.value)}
                             className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             placeholder="Contact number or email"
                           />
