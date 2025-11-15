@@ -1,5 +1,8 @@
+// Add these to your invDepartment.controller.ts file
+
 import type { Request, Response } from "express";
 import { db } from "../config/firebaseAdmin.js";
+
 type Department = {
   id: string;
   name: string;
@@ -8,6 +11,26 @@ type Department = {
   totalUsage: number;
   monthlyConsumption: number;
 };
+
+type InventoryItem = {
+  id: string;
+  name: string;
+  category: string;
+  currentStock: number;
+  unitPrice: number;
+  department?: string; // Department this item is assigned to
+  monthlyUsage?: number; // Monthly usage quantity
+  totalUsageCount?: number; // Total times this item has been used
+  unit: string;
+  location: string;
+};
+
+// ... (keep your existing functions: getInvDepartment, getNextDepartmentId, etc.)
+
+/**
+ * Gets department-like data grouped by inventory item categories
+ * This creates a dynamic list based on categories in inventory_items
+ */
 
 type MaintenanceRequest = {
   id: string;
@@ -18,172 +41,309 @@ type MaintenanceRequest = {
   status: "Pending" | "Approved" | "Rejected" | "Completed";
 };
 
-export const getInvDepartment = async (req: Request, res: Response) => {
-  const snapshot = await db.collection("departments").get();
-  const snapshot1 = await db.collection("maintenance_requests").get();
-  if (snapshot.empty || snapshot1.empty) {
-    res
-      .status(404)
-      .send({ success: false, message: "No Departments Items Found" });
-    return;
+export const getDepartmentsByCategory = async (req: Request, res: Response) => {
+  try {
+    const itemsSnapshot = await db.collection("inventory_items").get();
+
+    const snapshot1 = await db.collection("maintenance_requests").get();
+
+    if (itemsSnapshot.empty) {
+      res.status(404).json({
+        success: false,
+        message: "No inventory items found",
+      });
+      return;
+    }
+
+    if (snapshot1.empty) {
+      res.status(404).json({
+        success: false,
+        message: "No maintenance requests found",
+      });
+      return;
+    }
+
+    // Group items by category
+    const categoryGroups: Record<
+      string,
+      {
+        name: string;
+        count: number;
+        items: any[];
+        totalValue: number;
+        monthlyConsumption: number;
+      }
+    > = {};
+
+    const maintenanceRequests: MaintenanceRequest[] = [];
+    snapshot1.forEach((doc) => {
+      maintenanceRequests.push({
+        id: doc.id,
+        ...doc.data(),
+      } as MaintenanceRequest);
+    });
+
+    itemsSnapshot.forEach((doc) => {
+      const item = doc.data();
+      const category = item.category || "Uncategorized";
+
+      if (!categoryGroups[category]) {
+        categoryGroups[category] = {
+          name: category,
+          count: 0,
+          items: [],
+          totalValue: 0,
+          monthlyConsumption: 0,
+        };
+      }
+
+      categoryGroups[category].count += 1;
+      categoryGroups[category].items.push({
+        id: doc.id,
+        ...item,
+      });
+
+      // Calculate total inventory value
+      if (item.currentStock && item.unitPrice) {
+        categoryGroups[category].totalValue +=
+          item.currentStock * item.unitPrice;
+      }
+
+      // Calculate monthly consumption
+      if (item.monthlyUsage && item.unitPrice) {
+        categoryGroups[category].monthlyConsumption +=
+          item.monthlyUsage * item.unitPrice;
+      }
+    });
+
+    // Convert to Department format
+    const categories = Object.entries(categoryGroups).map(([key, data]) => ({
+      id: key.replace(/\s+/g, "_").toUpperCase(),
+      name: data.name,
+      manager: "", // You can set default managers or leave empty
+      itemsAssigned: data.count,
+      totalUsage: data.items.reduce(
+        (sum, item) => sum + (item.totalUsageCount || 0),
+        0
+      ),
+      monthlyConsumption: Math.round(data.monthlyConsumption),
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: { departments: categories, maintenanceRequests },
+    });
+  } catch (error) {
+    console.error("Error getting categories:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
-
-  const departments: Department[] = [];
-  const maintenanceRequests: MaintenanceRequest[] = [];
-  snapshot.forEach((doc) => {
-    departments.push({
-      id: doc.id,
-      ...doc.data(),
-    } as Department);
-  });
-  snapshot1.forEach((doc) => {
-    maintenanceRequests.push({
-      id: doc.id,
-      ...doc.data(),
-    } as MaintenanceRequest);
-  });
-
-  res
-    .status(200)
-    .json({ success: true, data: { departments, maintenanceRequests } });
 };
 
-export async function getNextDepartmentId(): Promise<string> {
+/**
+ * Aggregates inventory data and updates department metrics
+ * Call this function periodically or when inventory changes
+ */
+export const aggregateDepartmentData = async (req: Request, res: Response) => {
   try {
-    const departmentsRef = db.collection("departments");
+    // Get all inventory items
+    const itemsSnapshot = await db.collection("inventory_items").get();
 
-    // Query to get the last department by ID (sorted descending)
-    const snapshot = await departmentsRef.orderBy("id", "desc").limit(1).get();
-
-    if (snapshot.empty || !snapshot.docs[0]) {
-      // No departments exist yet, start with DEPT001
-      return "DEPT001";
+    if (itemsSnapshot.empty) {
+      res.status(404).json({
+        success: false,
+        message: "No inventory items found to aggregate",
+      });
+      return;
     }
 
-    // Get the last department ID
-    const lastDept = snapshot.docs[0].data() as Department;
-    const lastId = lastDept.id;
+    // Initialize department aggregation map
+    const departmentMetrics: Record<
+      string,
+      {
+        itemsAssigned: number;
+        totalUsage: number;
+        monthlyConsumption: number;
+      }
+    > = {};
 
-    // Extract the numeric part and increment
-    const numericPart = parseInt(lastId.replace("DEPT", ""));
-    const nextNumber = numericPart + 1;
+    // Aggregate data from all inventory items
+    itemsSnapshot.forEach((doc) => {
+      const item = doc.data() as InventoryItem;
+      const deptId = item.department;
 
-    // Format back to DEPT### format with leading zeros
-    const nextId = `DEPT${nextNumber.toString().padStart(3, "0")}`;
+      // Skip items without department assignment
+      if (!deptId) return;
 
-    return nextId;
+      // Initialize department metrics if not exists
+      if (!departmentMetrics[deptId]) {
+        departmentMetrics[deptId] = {
+          itemsAssigned: 0,
+          totalUsage: 0,
+          monthlyConsumption: 0,
+        };
+      }
+
+      // Count items assigned to this department
+      departmentMetrics[deptId].itemsAssigned += 1;
+
+      // Sum up total usage count
+      if (item.totalUsageCount) {
+        departmentMetrics[deptId].totalUsage += item.totalUsageCount;
+      }
+
+      // Calculate monthly consumption in monetary value
+      if (item.monthlyUsage && item.unitPrice) {
+        departmentMetrics[deptId].monthlyConsumption +=
+          item.monthlyUsage * item.unitPrice;
+      }
+    });
+
+    // Update each department document with aggregated metrics
+    const batch = db.batch();
+    let updatedCount = 0;
+
+    for (const [deptId, metrics] of Object.entries(departmentMetrics)) {
+      const deptRef = db.collection("departments").doc(deptId);
+
+      // Check if department exists
+      const deptDoc = await deptRef.get();
+      if (!deptDoc.exists) {
+        console.warn(`Department ${deptId} not found, skipping...`);
+        continue;
+      }
+
+      batch.update(deptRef, {
+        itemsAssigned: metrics.itemsAssigned,
+        totalUsage: metrics.totalUsage,
+        monthlyConsumption: Math.round(metrics.monthlyConsumption), // Round to nearest peso
+        lastAggregated: new Date().toISOString(),
+      });
+
+      updatedCount++;
+    }
+
+    await batch.commit();
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully aggregated data for ${updatedCount} departments`,
+      data: departmentMetrics,
+    });
   } catch (error) {
-    console.error("Error getting next department ID:", error);
-    throw error;
+    console.error("Error aggregating department data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error during aggregation",
+    });
   }
-}
-export async function getNextMaintenanceRequestId(): Promise<string> {
-  try {
-    const maintenanceRequestsRef = db.collection("maintenance_requests");
+};
 
-    // Query to get the last maintenance request by ID (sorted descending)
-    const snapshot = await maintenanceRequestsRef
-      .orderBy("id", "desc")
-      .limit(1)
+/**
+ * Updates a specific department's metrics based on its inventory items
+ */
+export const updateDepartmentMetrics = async (departmentId: string) => {
+  try {
+    // Get all items assigned to this department
+    const itemsSnapshot = await db
+      .collection("inventory_items")
+      .where("department", "==", departmentId)
       .get();
 
-    if (snapshot.empty || !snapshot.docs[0]) {
-      // No maintenance requests exist yet, start with #00001
-      return "#00000";
-    }
+    let itemsAssigned = 0;
+    let totalUsage = 0;
+    let monthlyConsumption = 0;
 
-    // Get the last maintenance request ID
-    const lastRequest = snapshot.docs[0].data() as MaintenanceRequest;
-    const lastId = lastRequest.id;
+    itemsSnapshot.forEach((doc) => {
+      const item = doc.data() as InventoryItem;
 
-    // Check if lastId exists and has the correct format
-    if (!lastId || typeof lastId !== "string" || !lastId.startsWith("#")) {
-      console.warn("Invalid last ID format:", lastId);
-      return "#00001";
-    }
+      itemsAssigned += 1;
 
-    // Extract the numeric part and increment
-    const numericString = lastId.replace("#", "");
-    const numericPart = parseInt(numericString, 10);
+      if (item.totalUsageCount) {
+        totalUsage += item.totalUsageCount;
+      }
 
-    // Check if parsing was successful
-    if (isNaN(numericPart)) {
-      console.warn("Could not parse numeric part from:", lastId);
-      return "#00001";
-    }
+      if (item.monthlyUsage && item.unitPrice) {
+        monthlyConsumption += item.monthlyUsage * item.unitPrice;
+      }
+    });
 
-    const nextNumber = numericPart + 1;
+    // Update the department document
+    await db
+      .collection("departments")
+      .doc(departmentId)
+      .update({
+        itemsAssigned,
+        totalUsage,
+        monthlyConsumption: Math.round(monthlyConsumption),
+        lastAggregated: new Date().toISOString(),
+      });
 
-    // Format back to ###### format with leading zeros
-    const nextId = `#${nextNumber.toString().padStart(5, "0")}`;
-
-    return nextId;
+    return {
+      success: true,
+      departmentId,
+      metrics: { itemsAssigned, totalUsage, monthlyConsumption },
+    };
   } catch (error) {
-    console.error("Error getting next Maintenance Request ID:", error);
+    console.error(
+      `Error updating metrics for department ${departmentId}:`,
+      error
+    );
     throw error;
   }
-}
+};
 
-export const postInvMaintenanceRequest = async (
+/**
+ * Assigns an inventory item to a department
+ */
+export const assignItemToDepartment = async (req: Request, res: Response) => {
+  try {
+    const { itemId, departmentId } = req.body;
+
+    if (!itemId || !departmentId) {
+      res.status(400).json({
+        success: false,
+        message: "itemId and departmentId are required",
+      });
+      return;
+    }
+
+    // Verify department exists
+    const deptDoc = await db.collection("departments").doc(departmentId).get();
+    if (!deptDoc.exists) {
+      res.status(404).json({
+        success: false,
+        message: "Department not found",
+      });
+      return;
+    }
+
+    // Update the inventory item
+    await db.collection("inventory_items").doc(itemId).update({
+      department: departmentId,
+    });
+
+    // Recalculate department metrics
+    await updateDepartmentMetrics(departmentId);
+
+    res.status(200).json({
+      success: true,
+      message: "Item assigned to department successfully",
+    });
+  } catch (error) {
+    console.error("Error assigning item to department:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+export const patchInvMaintenanceRequest = async (
   req: Request,
   res: Response
 ) => {
-  try {
-    const nextId = await getNextMaintenanceRequestId();
-    const maintenanceRequest = req.body;
-
-    const newMaintenanceRequest: MaintenanceRequest = {
-      id: nextId,
-      ...maintenanceRequest,
-    };
-
-    // Add the document with the generated ID as the document ID
-    await db
-      .collection("maintenance_requests")
-      .doc(nextId)
-      .set(newMaintenanceRequest);
-
-    res.status(200).json({
-      success: true,
-      message: "Successfully added",
-      data: newMaintenanceRequest,
-    });
-  } catch (error) {
-    console.error("Error creating department:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-
-export const postInvDepartment = async (req: Request, res: Response) => {
-  try {
-    const nextId = await getNextDepartmentId();
-    const departmentData = req.body;
-
-    const newDepartment: Department = {
-      id: nextId,
-      ...departmentData,
-    };
-
-    // Add the document with the generated ID as the document ID
-    await db.collection("departments").doc(nextId).set(newDepartment);
-
-    res.status(200).json({
-      success: true,
-      message: "Successfully added",
-      data: newDepartment,
-    });
-  } catch (error) {
-    console.error("Error creating department:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-export const patchInvMaintenanceRequest = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -206,9 +366,9 @@ export const patchInvMaintenanceRequest = async (req: Request, res: Response) =>
     const docRef = db.collection("maintenance_requests").doc(cleanId);
 
     const doc = await docRef.get();
-    
+
     console.log("Document exists:", doc.exists);
-    
+
     if (!doc.exists) {
       console.log("Document not found with ID:", cleanId);
       return res.status(404).json({
@@ -236,16 +396,16 @@ export const patchInvMaintenanceRequest = async (req: Request, res: Response) =>
       id: cleanId,
       data: {
         id: updatedDoc.id,
-        ...updatedDoc.data()
-      }
+        ...updatedDoc.data(),
+      },
     });
   } catch (error: any) {
     console.error("❌ Error updating maintenance request:", error);
     console.error("Error stack:", error.stack);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: "Server error: " + (error.message || "Unknown error"),
-      error: error.toString()
+      error: error.toString(),
     });
   }
 };

@@ -3,9 +3,25 @@ import * as departmentController from "../controllers/invDepartment.controller.j
 
 const router = express.Router();
 
-router.get("/get-department", departmentController.getInvDepartment);
-router.post("/post-department", departmentController.postInvDepartment);
-router.post("/post-maintenance-request", departmentController.postInvMaintenanceRequest);
-router.patch("/update-maintenance-request/:id", departmentController.patchInvMaintenanceRequest);
+// Existing routes
+// router.get("/get-department", departmentController.getInvDepartment);
+// router.post("/post-department", departmentController.postInvDepartment);
+// router.post(
+//   "/post-maintenance-request",
+//   departmentController.postInvMaintenanceRequest
+// );
+
+// Category-based department routes (NEW - for your dropdown)
+router.get("/get-department", departmentController.getDepartmentsByCategory);
+
+// Aggregation routes
+router.post(
+  "/aggregate-departments",
+  departmentController.aggregateDepartmentData
+);
+router.post(
+  "/assign-item-to-department",
+  departmentController.assignItemToDepartment
+);
 
 export default router;

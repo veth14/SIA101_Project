@@ -1,9 +1,9 @@
-import React, { useState, useEffect} from 'react';
-import DepartmentsHeader from './DepartmentsHeader';
-import { DepartmentBackground } from './DepartmentBackground';
-import { UltraPremiumDepartmentCards } from './DepartmentCards';
-import { UltraPremiumRequestTable } from './DepartmentRequestTracking';
-import useGetInvDepartment from '../../../api/getInvDepartment';
+import React, { useState, useEffect } from "react";
+import DepartmentsHeader from "./DepartmentsHeader";
+import { DepartmentBackground } from "./DepartmentBackground";
+import { UltraPremiumDepartmentCards } from "./DepartmentCards";
+import { UltraPremiumRequestTable } from "./DepartmentRequestTracking";
+import useGetInvDepartment from "../../../api/getInvDepartment";
 interface Department {
   id: string;
   name: string;
@@ -19,30 +19,30 @@ interface MaintenanceRequest {
   itemService: string;
   requestedBy: string;
   date: string;
-  status: 'Pending' | 'Approved' | 'Rejected' | 'Completed';
+  status: "Pending" | "Approved" | "Rejected" | "Completed";
 }
 
 const DepartmentsPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("All Departments");
 
   // Sample departments data matching the image layout
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
       minimumFractionDigits: 0,
     }).format(amount);
   };
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
+  const [maintenanceRequests, setMaintenanceRequests] = useState<
+    MaintenanceRequest[]
+  >([]);
 
-
-  const {
-    getInvDepartment,
-    loadingForGetInvDepartment,
-  } = useGetInvDepartment();
+  const { getInvDepartment, loadingForGetInvDepartment } =
+    useGetInvDepartment();
 
   useEffect(() => {
     const useGetInvDepartmentFunc = async () => {
@@ -55,7 +55,6 @@ const DepartmentsPage: React.FC = () => {
 
       setDepartments(response.data.departments);
       setMaintenanceRequests(response.data.maintenanceRequests);
-
     };
     useGetInvDepartmentFunc();
   }, []);
@@ -70,7 +69,11 @@ const DepartmentsPage: React.FC = () => {
         <DepartmentsHeader />
 
         {/* Ultra Premium Department Cards Grid */}
-        <UltraPremiumDepartmentCards departments={departments} formatCurrency={formatCurrency} />
+        <UltraPremiumDepartmentCards
+          departments={departments}
+          formatCurrency={formatCurrency}
+          setDepartments={setDepartments}
+        />
 
         {/* Ultra Premium Request Tracking Table */}
         <UltraPremiumRequestTable
@@ -79,6 +82,7 @@ const DepartmentsPage: React.FC = () => {
           selectedDepartment={selectedDepartment}
           onDepartmentChange={setSelectedDepartment}
           requests={maintenanceRequests}
+          setRequests={setMaintenanceRequests}
         />
       </div>
     </div>
