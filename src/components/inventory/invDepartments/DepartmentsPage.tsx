@@ -53,7 +53,7 @@ const DepartmentsPage: React.FC = () => {
         return;
       }
 
-      setDepartments(response.data.categories);
+      setDepartments(response.data.departments);
       setMaintenanceRequests(response.data.maintenanceRequests);
     };
     useGetInvDepartmentFunc();

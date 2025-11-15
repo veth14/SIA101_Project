@@ -131,7 +131,7 @@ export const getDepartmentsByCategory = async (req: Request, res: Response) => {
 
     res.status(200).json({
       success: true,
-      data: { categories, maintenanceRequests },
+      data: { departments: categories, maintenanceRequests },
     });
   } catch (error) {
     console.error("Error getting categories:", error);
