@@ -30,6 +30,14 @@ export interface LostFoundItem {
   /** Staff member who found the item */
   foundBy: string;
   
+  /**
+   * Optional: Date when the item was lost (ISO string). Some UI/forms treat lost items
+   * with their own fields; keep both to avoid field-mapping confusion.
+   */
+  dateLost?: string;
+  /** Optional: Staff member who recorded the lost item */
+  lostBy?: string;
+  
   /** Current status of the item */
   status: 'unclaimed' | 'claimed' | 'disposed';
   

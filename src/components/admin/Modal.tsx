@@ -72,7 +72,7 @@ export const Modal: React.FC<ModalProps> = ({
           <div className="h-2 bg-gradient-to-r from-heritage-green/5 via-heritage-neutral/10 to-heritage-green/5 rounded-t-2xl" />
         )}
 
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-heritage-neutral/10 bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 backdrop-blur-sm">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-heritage-neutral/10 bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 backdrop-blur-sm">
           {headerContent ? (
             headerContent
           ) : (
