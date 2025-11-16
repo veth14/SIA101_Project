@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from '../../../config/firebase';
 import { Staff, StaffFormData } from './types';
@@ -31,39 +32,60 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
   const [showDuplicateModal, setShowDuplicateModal] = useState(false)
   const isEditMode = !!editStaff
 
-  useEffect(() => {
-    if (isOpen) {
-      if (editStaff) {
-        // Edit mode: populate form with existing staff data
-        setFormData({
-          adminId: editStaff.adminId || '',
-          fullName: editStaff.fullName,
-          age: editStaff.age.toString(),
-          gender: editStaff.gender,
-          classification: editStaff.classification,
-          email: editStaff.email,
-          phoneNumber: editStaff.phoneNumber,
-          rfid: editStaff.rfid || '',
-        })
-      } else {
-        // Add mode: reset form
-        setFormData({
-          adminId: `Admin: ${adminName}`,
-          fullName: "",
-          age: "",
-          gender: "Male",
-          classification: "Maintenance",
-          email: "",
-          phoneNumber: "",
-          rfid: "",
-        })
-        // Focus RFID input when modal opens in add mode
-        setTimeout(() => rfidInputRef.current?.focus(), 100)
+useEffect(() => {
+  if (!isOpen) return;
+
+  let buffer = "";
+  let lastKeyTime = 0;
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    const now = Date.now();
+    const timeDiff = now - lastKeyTime;
+
+    // If typing is slow (>100ms between keys), reset (human typing)
+    if (timeDiff > 100) buffer = "";
+
+    lastKeyTime = now;
+
+    if (e.key === "Enter") {
+      if (buffer.length > 0) {
+        // Update form data with the scanned RFID
+        setFormData(prev => ({ ...prev, rfid: buffer }));
+
+        // Trigger duplicate check manually (like handleRfidChange)
+        checkDuplicateRFID(buffer);
+
+        buffer = "";
       }
-      setRfidExists(false)
-      setShowDuplicateModal(false)
+    } else if (/^[a-zA-Z0-9]$/.test(e.key)) {
+      buffer += e.key;
     }
-  }, [isOpen, adminName, editStaff])
+
+    // Prevent any manual typing
+    e.preventDefault();
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [isOpen]);
+const checkDuplicateRFID = async (value: string) => {
+  if (!value.trim() || isEditMode) return;
+
+  try {
+    const q = query(collection(db, "staff"), where("rfid", "==", value));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      setRfidExists(true);
+      setShowDuplicateModal(true);
+    } else {
+      setRfidExists(false);
+    }
+  } catch (error) {
+    console.error("Error querying RFID:", error);
+    setRfidExists(false);
+  }
+};
+
 
   const handleRfidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -147,46 +169,50 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-            <h2 className="text-gray-900 text-2xl font-bold">{isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-900 transition-colors" type="button">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur">
+
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+          <div className="sticky top-0 bg-white px-8 py-6 flex items-center justify-between rounded-t-2xl border-b border-gray-200">
+            <div>
+              <h2 className="text-2xl font-bold text-[#82A33D]">{isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}</h2>
+              <p className="text-base text-[#82A33D]">Staff Management System</p>
+            </div>
+            <button onClick={onClose} className="p-3 transition-colors hover:bg-gray-100 rounded-xl" type="button">
+              <svg className="w-7 h-7 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">Admin ID</label>
+              <label className="block text-[#82A33D] text-base font-medium mb-3">Admin ID</label>
               <input
                 type="text"
                 value={formData.adminId}
                 readOnly
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-gray-100 cursor-not-allowed"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-gray-100 cursor-not-allowed text-base"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">Full name</label>
+              <label className="block text-[#82A33D] text-base font-medium mb-3">Full name</label>
               <input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">Age</label>
+              <label className="block text-[#82A33D] text-base font-medium mb-3">Age</label>
               <input
                 type="number"
                 value={formData.age}
@@ -194,17 +220,17 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
                 required
                 min="18"
                 max="100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-gray-700 text-sm font-medium mb-2">Gender</label>
+                <label className="block text-[#82A33D] text-base font-medium mb-3">Gender</label>
                 <select
                   value={formData.gender}
                   onChange={(e) => setFormData({ ...formData, gender: e.target.value as "Male" | "Female" })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
@@ -212,11 +238,11 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
               </div>
 
               <div>
-                <label className="block text-gray-700 text-sm font-medium mb-2">Classification</label>
+                <label className="block text-[#82A33D] text-base font-medium mb-3">Classification</label>
                 <select
                   value={formData.classification}
                   onChange={(e) => setFormData({ ...formData, classification: e.target.value as "Housekeeping" | "Maintenance" })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
                 >
                   <option value="Maintenance">Maintenance</option>
                   <option value="Housekeeping">Housekeeping</option>
@@ -225,54 +251,54 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">Email</label>
+              <label className="block text-[#82A33D] text-base font-medium mb-3">Email</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">Phone Number</label>
+              <label className="block text-[#82A33D] text-base font-medium mb-3">Phone Number</label>
               <input
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">RFID ID (Tap card to auto-fill)</label>
+              <label className="block text-[#82A33D] text-base font-medium mb-3">RFID ID (Tap card to auto-fill)</label>
               <input
                 ref={rfidInputRef}
                 type="text"
                 value={formData.rfid}
-                onChange={handleRfidChange}
+                readOnly={true}
                 placeholder="Tap RFID card here"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#889D65] focus:border-transparent text-gray-900 bg-white text-base"
               />
               {rfidExists && (
-                <p className="text-red-500 text-sm mt-1">RFID already exists.</p>
+                <p className="text-red-500 text-base mt-2">RFID already exists.</p>
               )}
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-6 pt-6">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-[#889D65] to-[#adc28b] text-white py-3 px-4 rounded-lg hover:from-[#7a8f5a] hover:to-[#9bb075] transition-colors duration-200 disabled:opacity-50"
+                className="flex-1 bg-[#82A33D] text-white py-4 px-6 rounded-lg hover:bg-[#6d8a33] transition-colors duration-200 disabled:opacity-50 text-lg font-medium"
               >
                 {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Staff" : "Add New Staff")}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors duration-200"
+                className="flex-1 bg-gray-300 text-gray-700 py-4 px-6 rounded-lg hover:bg-gray-400 transition-colors duration-200 text-lg font-medium"
               >
                 Cancel
               </button>
@@ -286,8 +312,9 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
         onClose={() => setShowDuplicateModal(false)}
         onConfirm={handleDuplicateConfirm}
       />
-    </>
-  )
+    </>,
+    document.body
+  );
 }
 
 export default AddStaffModal;

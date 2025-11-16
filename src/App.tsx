@@ -42,6 +42,7 @@ import AdminStaffSchedulesPage from './pages/admin/Maintenance/staff-schedules'
 import AdminOnDutyStaffPage from './pages/admin/Maintenance/on-duty-staff'
 import AdminTicketsTasksPage from './pages/admin/Maintenance/tickets-tasks'
 import AdminArchivePage from './pages/admin/Maintenance/archive'
+import StaffLoginPage from './pages/admin/Maintenance/staff-login'
 
 // Import shared components
 import { Header } from './components/shared/navigation/Header'
@@ -325,15 +326,21 @@ function LoadingSpinner() {
                     </ProtectedRoute>
                   } 
                 />
-                <Route 
-                  path="/admin/archive" 
+                <Route
+                  path="/admin/archive"
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <AdminArchivePage />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
-                
+
+                {/* Staff Login Route - Public Access */}
+                <Route
+                  path="/staff-login"
+                  element={<StaffLoginPage />}
+                />
+
                 <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

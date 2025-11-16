@@ -43,9 +43,16 @@ Maintenance
     B.) Status: Complete
     C.) Time Spent: 2hrs
     D.) Remarks: Naka connect sa database ko pero working na yung crud, can also add staff using rfid but no authentication
-2.
-
-3.
+2. Mamaril (Manage Staff)
+    A.) Task/Feature: Staff-login
+    B.) Status: Pending
+    C.) Time Spent: 2hrs
+    D.) Remarks: hindi pa connected sa database
+3.Mamaril (Staff task)
+    A.) Task/Feature: Staff-task table
+    B.) Status: Pending
+    C.) Time Spent: 2hrs
+    D.) Remarks: hindi pa connected sa database
 4.
 5.
 

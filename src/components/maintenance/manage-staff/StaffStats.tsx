@@ -32,21 +32,21 @@ const StaffStats: React.FC<StaffStatsProps> = ({ staff }) => {
       value: totalStaff,
       badge: "All Departments",
       icon: <UsersIcon />,
-      iconBg: 'bg-green-100'
+      iconBg: 'bg-green-600'
     },
     {
       title: "Housekeeping",
       value: housekeepingCount,
       badge: "Active",
       icon: <HousekeepingIcon />,
-      iconBg: 'bg-blue-100'
+      iconBg: 'bg-blue-600'
     },
     {
       title: "Maintenance",
       value: maintenanceCount,
       badge: "On Duty",
       icon: <MaintenanceIcon />,
-      iconBg: 'bg-purple-100'
+      iconBg: 'bg-orange-600'
     }
   ];
 

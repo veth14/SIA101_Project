@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface StaffFiltersProps {
   onAddStaff: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  filterClassification: string;
+  onFilterChange: (classification: string) => void;
 }
 
-const StaffFilters: React.FC<StaffFiltersProps> = ({ onAddStaff }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterClassification, setFilterClassification] = useState("");
+const StaffFilters: React.FC<StaffFiltersProps> = ({
+  onAddStaff,
+  searchQuery,
+  onSearchChange,
+  filterClassification,
+  onFilterChange
+}) => {
 
   return (
     <div className="relative mb-8">
@@ -42,7 +50,7 @@ const StaffFilters: React.FC<StaffFiltersProps> = ({ onAddStaff }) => {
                 type="text"
                 placeholder="Search by name or task..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => onSearchChange(e.target.value)}
                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/80 backdrop-blur-sm placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-[#82A33D] focus:border-transparent transition-all duration-300"
               />
             </div>
@@ -51,7 +59,7 @@ const StaffFilters: React.FC<StaffFiltersProps> = ({ onAddStaff }) => {
             <div className="relative">
               <select
                 value={filterClassification}
-                onChange={(e) => setFilterClassification(e.target.value)}
+                onChange={(e) => onFilterChange(e.target.value)}
                 className="appearance-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent transition-all duration-300 cursor-pointer"
               >
                 <option value="">Filter by classification</option>
@@ -68,8 +76,8 @@ const StaffFilters: React.FC<StaffFiltersProps> = ({ onAddStaff }) => {
             {/* Clear Filters Button */}
             <button
               onClick={() => {
-                setSearchQuery("");
-                setFilterClassification("");
+                onSearchChange("");
+                onFilterChange("");
               }}
               className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap"
             >
