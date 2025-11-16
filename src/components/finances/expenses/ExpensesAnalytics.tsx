@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import type { Expense } from './types';
 import { TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
@@ -52,7 +53,12 @@ const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<st
 const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
 const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
 
-const ExpenseAnalytics: React.FC = () => {
+interface ExpenseAnalyticsProps {
+  expenses?: Expense[];
+  staffFromPayroll?: number;
+}
+
+const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFromPayroll }) => {
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
   
   // Get data and metrics
