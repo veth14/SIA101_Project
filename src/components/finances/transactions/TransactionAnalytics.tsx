@@ -1,6 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Recharts JSX typing aliases to avoid strict return-type JSX errors
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 // Type definitions
 interface TransactionDataPoint {
   day: string;
@@ -255,9 +264,9 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
             
-            <ResponsiveContainer width="100%" height="100%">
-             
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+
+              <RAreaChart
                 data={chartData}
                 margin={{ top: 20, right: 40, left: 10, bottom: 40 }}
               >
@@ -268,7 +277,7 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   </linearGradient>
                 </defs>
                 
-                <XAxis 
+                <RXAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 11 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
@@ -278,21 +287,21 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   padding={{ left: 20, right: 20 }}
                 />
                 
-                <YAxis 
+                <RYAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <CartesianGrid 
+                <RCartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
                 
-                <Tooltip content={<CustomTooltip />} />
-                
-                <Area 
+                <RTooltip content={<CustomTooltip />} />
+
+                <RArea 
                   type="linear" 
                   dataKey="transactions" 
                   stroke="#82A33D" 
@@ -308,8 +317,8 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                     fill: 'white'
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AdminLayout } from '../../../layouts/AdminLayout';
-import ProfitAnalysisComponent from '../../../components/finances/profitAnalytics/ProfitAnalysisPage';
+// Use the new ProfitAnalysis dashboard component
+import ProfitAnalysisComponent from '../../../components/finances/dashboard/ProfitAnalysis';
 
 const AdminProfitAnalysisPage: React.FC = () => {
   return (
