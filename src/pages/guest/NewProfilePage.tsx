@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../../config/firebase';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc } from 'firebase/firestore';
 
 interface UserProfile {
   firstName: string;
@@ -18,6 +20,12 @@ export const NewProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [userStats, setUserStats] = useState({
+    memberSince: new Date().getFullYear(),
+    totalBookings: 0,
+    loyaltyPoints: 0,
+    membershipTier: 'Bronze'
+  });
 
   const [profile, setProfile] = useState<UserProfile>({
     firstName: '',
@@ -31,6 +39,46 @@ export const NewProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (userData) {
+      // Fetch user stats and profile data from Firestore
+      fetchUserStats();
+      fetchProfileData();
+    }
+  }, [userData]);
+
+  const fetchProfileData = async () => {
+    if (!userData?.uid) return;
+    
+    try {
+      // Try to get data from guestprofiles first
+      const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
+      const guestProfileSnap = await getDoc(guestProfileRef);
+      
+      if (guestProfileSnap.exists()) {
+        const data = guestProfileSnap.data();
+        setProfile({
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: userData.email || '',
+          phone: data.phone || '',
+          dateOfBirth: data.dateOfBirth || '',
+          nationality: data.nationality || '',
+          address: data.address || ''
+        });
+      } else {
+        // Fallback to displayName from userData
+        const displayName = userData.displayName || '';
+        const nameParts = displayName.split(' ');
+        
+        setProfile(prev => ({
+          ...prev,
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          email: userData.email || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      // Fallback to displayName
       const displayName = userData.displayName || '';
       const nameParts = displayName.split(' ');
       
@@ -41,16 +89,93 @@ export const NewProfilePage: React.FC = () => {
         email: userData.email || ''
       }));
     }
-  }, [userData]);
+  };
+
+  const fetchUserStats = async () => {
+    if (!userData?.uid) return;
+    
+    try {
+      // Get user creation date from users collection
+      const userDocRef = doc(db, 'users', userData.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userFirestoreData = userDocSnap.data();
+        const createdAt = userFirestoreData.createdAt?.toDate() || new Date();
+        const memberYear = createdAt.getFullYear();
+        
+        setUserStats(prev => ({
+          ...prev,
+          memberSince: memberYear
+        }));
+      }
+      
+      // Get guest profile stats if user is a guest
+      if (userData.role === 'guest') {
+        const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
+        const guestProfileSnap = await getDoc(guestProfileRef);
+        
+        if (guestProfileSnap.exists()) {
+          const guestData = guestProfileSnap.data();
+          setUserStats(prev => ({
+            ...prev,
+            loyaltyPoints: guestData.loyaltyPoints || 0,
+            totalBookings: guestData.totalBookings || 0,
+            membershipTier: guestData.membershipTier || 'Bronze'
+          }));
+        }
+        
+        // Also count actual bookings from bookings collection
+        const bookingsQuery = query(
+          collection(db, 'bookings'),
+          where('guestId', '==', userData.uid)
+        );
+        const bookingsSnapshot = await getDocs(bookingsQuery);
+        const bookingCount = bookingsSnapshot.size;
+        
+        setUserStats(prev => ({
+          ...prev,
+          totalBookings: bookingCount
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  };
 
   const handleInputChange = (field: keyof UserProfile, value: string) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
+    if (!userData?.uid) return;
+    
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Update guestprofiles collection
+      const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
+      const guestProfileData = {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        fullName: `${profile.firstName} ${profile.lastName}`,
+        phone: profile.phone || '',
+        dateOfBirth: profile.dateOfBirth || null,
+        nationality: profile.nationality || '',
+        address: profile.address || '',
+        updatedAt: new Date()
+      };
+      
+      await setDoc(guestProfileRef, guestProfileData, { merge: true });
+      
+      // Also update users collection for consistency
+      const userRef = doc(db, 'users', userData.uid);
+      await updateDoc(userRef, {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        displayName: `${profile.firstName} ${profile.lastName}`,
+        lastLogin: new Date()
+      });
+      
       setMessage('Profile updated successfully!');
       setIsEditing(false);
       setTimeout(() => setMessage(''), 3000);
@@ -100,7 +225,7 @@ export const NewProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-heritage-light via-white to-heritage-green/10 py-12 pt-32 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-heritage-light via-white to-heritage-green/10 py-8 sm:py-12 pt-24 sm:pt-28 md:pt-36 relative overflow-hidden">
       {/* Heritage Floating Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 w-96 h-96 bg-heritage-green/15 rounded-full blur-3xl animate-pulse"></div>
@@ -117,79 +242,95 @@ export const NewProfilePage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Heritage Header with Glassmorphism */}
-        <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+        {/* Heritage Header with Enhanced Design - MOBILE RESPONSIVE */}
+        <div className="relative bg-gradient-to-br from-white via-heritage-light/10 to-white backdrop-blur-2xl rounded-3xl border-2 border-heritage-green/30 shadow-2xl overflow-hidden mb-8 sm:mb-10 md:mb-12 transform hover:shadow-3xl transition-shadow duration-500">
+          {/* Decorative Background Pattern */}
+          <div className="absolute inset-0 opacity-[0.03]">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-heritage-green rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-heritage-neutral rounded-full blur-3xl"></div>
+          </div>
+          
+          {/* Top Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-heritage-green to-transparent"></div>
+          
+          {/* Content */}
+          <div className="relative p-6 sm:p-8 md:p-10 lg:p-12">
+            <div className="flex items-center gap-5 sm:gap-6 md:gap-8">
+              {/* Enhanced Icon with Ring and Glow */}
+              <div className="relative flex-shrink-0 group">
+                {/* Outer Glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/40 to-heritage-neutral/40 rounded-3xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+                {/* Icon Container */}
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-heritage-green via-heritage-green/90 to-heritage-neutral rounded-3xl flex items-center justify-center shadow-2xl ring-4 ring-white/60 group-hover:ring-heritage-green/30 transform group-hover:scale-105 group-hover:rotate-3 transition-all duration-500">
+                  <svg className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-white drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  {/* Corner Accent */}
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-heritage-light rounded-full border-2 border-white shadow-lg"></div>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-heritage-green to-heritage-neutral bg-clip-text text-transparent drop-shadow-sm">
-                  My Profile
-                </h1>
-                <p className="text-heritage-neutral/80 mt-1 text-lg">Manage your account settings and preferences</p>
+              
+              {/* Text Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-heritage-green via-heritage-green to-heritage-neutral bg-clip-text text-transparent drop-shadow-sm leading-tight">
+                    My Profile
+                  </h1>
+                  {/* Verified Badge */}
+                  {userData?.emailVerified && (
+                    <div className="hidden sm:flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-full shadow-lg ring-2 ring-white/50 animate-pulse">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <p className="text-heritage-neutral/70 text-sm sm:text-base md:text-lg lg:text-xl font-medium mb-3 sm:mb-4">
+                  Manage your account settings and preferences
+                </p>
+                
+                {/* Enhanced Status Bar */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                  {/* Active Status */}
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-heritage-green/10 rounded-full border border-heritage-green/20">
+                    <div className="relative">
+                      <div className="w-2 h-2 bg-heritage-green rounded-full animate-pulse"></div>
+                      <div className="absolute inset-0 w-2 h-2 bg-heritage-green rounded-full animate-ping"></div>
+                    </div>
+                    <span className="text-xs sm:text-sm text-heritage-green font-bold">Active Now</span>
+                  </div>
+                  
+                  {/* Divider */}
+                  <div className="hidden sm:block w-px h-4 bg-heritage-neutral/20"></div>
+                  
+                  {/* Last Updated */}
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-heritage-neutral/60">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">Updated today</span>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            {!isEditing ? (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-8 py-4 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-2xl font-semibold hover:shadow-2xl hover:scale-105 transform transition-all duration-300 shadow-xl"
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit Profile
-                </div>
-              </button>
-            ) : (
-              <div className="flex gap-4">
-                <button
-                  onClick={handleCancel}
-                  className="px-6 py-3 text-heritage-neutral/80 hover:text-heritage-neutral hover:bg-heritage-light/20 rounded-xl transition-all duration-300 font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={loading}
-                  className="px-8 py-4 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-2xl font-semibold hover:shadow-2xl hover:scale-105 transform transition-all duration-300 shadow-xl disabled:opacity-50 disabled:hover:scale-100"
-                >
-                  <div className="flex items-center gap-3">
-                    {loading ? (
-                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </div>
-                </button>
-              </div>
-            )}
           </div>
+          
+          {/* Bottom Accent */}
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-heritage-green/20 to-transparent"></div>
         </div>
 
-        {/* Heritage Success/Error Message */}
+        {/* Heritage Success/Error Message - MOBILE RESPONSIVE */}
         {message && (
-          <div className={`mb-8 p-6 rounded-3xl backdrop-blur-xl border shadow-2xl ${
+          <div className={`mb-6 sm:mb-8 p-4 sm:p-6 rounded-2xl sm:rounded-3xl backdrop-blur-xl border shadow-2xl ${
             message.includes('successfully') 
               ? 'bg-heritage-green/20 border-heritage-green/30 text-heritage-green' 
               : 'bg-red-50/80 border-red-200/50 text-red-700'
           }`}>
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
                 message.includes('successfully') ? 'bg-heritage-green/30' : 'bg-red-100'
               }`}>
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                   {message.includes('successfully') ? (
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   ) : (
@@ -197,84 +338,148 @@ export const NewProfilePage: React.FC = () => {
                   )}
                 </svg>
               </div>
-              <span className="font-semibold text-xl">{message}</span>
+              <span className="font-semibold text-sm sm:text-base md:text-xl">{message}</span>
             </div>
           </div>
         )}
 
 
-        {/* Main Content Layout with Glassmorphism */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Sidebar - Heritage User Info */}
+        {/* Main Content Layout with Glassmorphism - MOBILE RESPONSIVE */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Left Sidebar - Heritage User Info - MOBILE RESPONSIVE */}
           <div className="lg:col-span-1">
-            <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700">
+            <div className="bg-white/70 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 sm:p-8 sm:hover:shadow-3xl sm:hover:-translate-y-2 transition-all duration-700 h-full flex flex-col">
               <div className="text-center">
-                {/* Heritage User Avatar */}
-                <div className="relative mb-8">
-                  <div className="w-32 h-32 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-3xl flex items-center justify-center mx-auto shadow-2xl ring-4 ring-heritage-light/30 hover:scale-110 hover:rotate-3 transition-all duration-500">
-                    <span className="text-white font-bold text-4xl drop-shadow-lg">
+                {/* Heritage User Avatar - MOBILE RESPONSIVE */}
+                <div className="relative mb-6 sm:mb-8">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto shadow-2xl ring-4 ring-heritage-light/30 sm:hover:scale-110 sm:hover:rotate-3 transition-all duration-500">
+                    <span className="text-white font-bold text-3xl sm:text-4xl drop-shadow-lg">
                       {profile.firstName ? profile.firstName.charAt(0).toUpperCase() : userData.email?.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  {/* Heritage Online indicator */}
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-full border-4 border-white shadow-xl flex items-center justify-center animate-pulse">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  {/* Heritage Online indicator - MOBILE RESPONSIVE */}
+                  <div className="absolute -bottom-1 sm:-bottom-2 -right-1 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-full border-2 sm:border-4 border-white shadow-xl flex items-center justify-center animate-pulse">
+                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
                 </div>
                 
-                {/* Heritage User Name and Email */}
-                <div className="mb-8">
-                  <h3 className="font-bold text-heritage-green text-2xl mb-2 drop-shadow-sm">
+                {/* Heritage User Name and Email - MOBILE RESPONSIVE */}
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="font-bold text-heritage-green text-xl sm:text-2xl mb-2 drop-shadow-sm">
                     {profile.firstName && profile.lastName 
                       ? `${profile.firstName} ${profile.lastName}`
                       : userData.displayName || 'Welcome, Guest'
                     }
                   </h3>
-                  <p className="text-heritage-neutral/80 text-lg mb-4">{profile.email}</p>
+                  <p className="text-heritage-neutral/80 text-sm sm:text-base md:text-lg mb-4">{profile.email}</p>
                   
-                  {/* Heritage Verification Status */}
-                  <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 backdrop-blur-xl text-heritage-green rounded-2xl text-sm font-semibold shadow-xl border border-heritage-green/30">
-                    <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified Member
-                  </div>
+                  {/* Heritage Verification Status - MOBILE RESPONSIVE */}
+                  {userData?.emailVerified ? (
+                    <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 backdrop-blur-xl text-heritage-green rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold shadow-xl border border-heritage-green/30">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Verified Member
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-100/80 to-amber-50/80 backdrop-blur-xl text-amber-700 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold shadow-xl border border-amber-300/50">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      Email Not Verified
+                    </div>
+                  )}
                 </div>
 
-                {/* Heritage User Stats */}
-                <div className="space-y-4 pt-6 border-t border-heritage-neutral/20">
-                  <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
-                    <span className="text-heritage-neutral font-medium">Member since</span>
-                    <span className="font-bold text-heritage-green text-lg">2024</span>
+                {/* Heritage User Stats - MOBILE RESPONSIVE */}
+                <div className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 border-t border-heritage-neutral/20 flex-grow">
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-heritage-light/20 rounded-xl sm:rounded-2xl backdrop-blur-sm">
+                    <span className="text-heritage-neutral text-sm sm:text-base font-medium">Member since</span>
+                    <span className="font-bold text-heritage-green text-base sm:text-lg">{userStats.memberSince}</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
-                    <span className="text-heritage-neutral font-medium">Total bookings</span>
-                    <span className="font-bold text-heritage-green text-lg">0</span>
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-heritage-light/20 rounded-xl sm:rounded-2xl backdrop-blur-sm">
+                    <span className="text-heritage-neutral text-sm sm:text-base font-medium">Total bookings</span>
+                    <span className="font-bold text-heritage-green text-base sm:text-lg">{userStats.totalBookings}</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-heritage-light/20 rounded-2xl backdrop-blur-sm">
-                    <span className="text-heritage-neutral font-medium">Loyalty Points</span>
-                    <span className="font-bold text-heritage-green text-lg">250</span>
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-heritage-light/20 rounded-xl sm:rounded-2xl backdrop-blur-sm">
+                    <span className="text-heritage-neutral text-sm sm:text-base font-medium">Loyalty Points</span>
+                    <span className="font-bold text-heritage-green text-base sm:text-lg">{userStats.loyaltyPoints.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 sm:p-4 bg-heritage-light/20 rounded-xl sm:rounded-2xl backdrop-blur-sm">
+                    <span className="text-heritage-neutral text-sm sm:text-base font-medium">Membership Tier</span>
+                    <span className={`font-bold text-sm sm:text-base md:text-lg px-2 sm:px-3 py-1 rounded-lg ${
+                      userStats.membershipTier === 'Platinum' ? 'bg-gradient-to-r from-gray-400 to-gray-200 text-gray-900' :
+                      userStats.membershipTier === 'Gold' ? 'bg-gradient-to-r from-yellow-400 to-yellow-200 text-yellow-900' :
+                      userStats.membershipTier === 'Silver' ? 'bg-gradient-to-r from-gray-300 to-gray-100 text-gray-700' :
+                      'bg-gradient-to-r from-amber-600 to-amber-400 text-white'
+                    }`}>
+                      {userStats.membershipTier}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Side - Heritage Form Fields */}
+          {/* Right Side - Heritage Form Fields - MOBILE RESPONSIVE */}
           <div className="lg:col-span-2">
-            <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-heritage-green mb-2">Personal Information</h2>
-                <p className="text-heritage-neutral/80">Update your profile details and preferences</p>
+            <div className="bg-white/70 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 sm:p-8 sm:hover:shadow-3xl sm:hover:-translate-y-1 transition-all duration-500">
+              <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-heritage-green mb-2">Personal Information</h2>
+                  <p className="text-heritage-neutral/80 text-sm sm:text-base">Update your profile details and preferences</p>
+                </div>
+                
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="w-full sm:w-auto px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:shadow-2xl active:scale-95 sm:hover:scale-105 transform transition-all duration-300 shadow-xl flex-shrink-0"
+                  >
+                    <div className="flex items-center justify-center gap-2 sm:gap-3">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Profile
+                    </div>
+                  </button>
+                ) : (
+                  <div className="flex gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto flex-shrink-0">
+                    <button
+                      onClick={handleCancel}
+                      className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base text-heritage-neutral/80 hover:text-heritage-neutral hover:bg-heritage-light/20 rounded-lg sm:rounded-xl transition-all duration-300 font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      disabled={loading}
+                      className="flex-1 sm:flex-none px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:shadow-2xl active:scale-95 sm:hover:scale-105 transform transition-all duration-300 shadow-xl disabled:opacity-50 disabled:hover:scale-100"
+                    >
+                      <div className="flex items-center justify-center gap-2 sm:gap-3">
+                        {loading ? (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        {loading ? 'Saving...' : 'Save Changes'}
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Heritage Form Fields Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Heritage Form Fields Grid - MOBILE RESPONSIVE */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* First Name */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     First Name
                   </label>
                   <div className="relative group">
@@ -283,7 +488,7 @@ export const NewProfilePage: React.FC = () => {
                       value={profile.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       disabled={!isEditing}
-                      className={`w-full px-6 py-4 rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
+                      className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
                         !isEditing 
                           ? 'bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 cursor-not-allowed' 
                           : 'bg-white/80 border-heritage-neutral/40 text-heritage-green hover:border-heritage-green/70 focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/20 focus:bg-white'
@@ -294,8 +499,8 @@ export const NewProfilePage: React.FC = () => {
                 </div>
 
                 {/* Last Name */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     Last Name
                   </label>
                   <input
@@ -303,7 +508,7 @@ export const NewProfilePage: React.FC = () => {
                     value={profile.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-6 py-4 rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
+                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
                       !isEditing 
                         ? 'bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 cursor-not-allowed' 
                         : 'bg-white/80 border-heritage-neutral/40 text-heritage-green hover:border-heritage-green/70 focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/20 focus:bg-white'
@@ -313,8 +518,8 @@ export const NewProfilePage: React.FC = () => {
                 </div>
 
                 {/* Email */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     Email Address
                   </label>
                   <div className="relative">
@@ -322,10 +527,10 @@ export const NewProfilePage: React.FC = () => {
                       type="email"
                       value={profile.email}
                       disabled={true}
-                      className="w-full px-6 py-4 rounded-2xl border-2 bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 backdrop-blur-sm font-medium cursor-not-allowed"
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 backdrop-blur-sm font-medium cursor-not-allowed"
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-6">
-                      <svg className="w-5 h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-4 sm:pr-6">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
@@ -334,8 +539,8 @@ export const NewProfilePage: React.FC = () => {
                 </div>
 
                 {/* Phone */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     Phone Number
                   </label>
                   <input
@@ -343,7 +548,7 @@ export const NewProfilePage: React.FC = () => {
                     value={profile.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-6 py-4 rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
+                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
                       !isEditing 
                         ? 'bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 cursor-not-allowed' 
                         : 'bg-white/80 border-heritage-neutral/40 text-heritage-green hover:border-heritage-green/70 focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/20 focus:bg-white'
@@ -353,8 +558,8 @@ export const NewProfilePage: React.FC = () => {
                 </div>
 
                 {/* Date of Birth */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     Date of Birth
                   </label>
                   <input
@@ -362,7 +567,7 @@ export const NewProfilePage: React.FC = () => {
                     value={profile.dateOfBirth}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-6 py-4 rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
+                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
                       !isEditing 
                         ? 'bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 cursor-not-allowed' 
                         : 'bg-white/80 border-heritage-neutral/40 text-heritage-green hover:border-heritage-green/70 focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/20 focus:bg-white'
@@ -371,8 +576,8 @@ export const NewProfilePage: React.FC = () => {
                 </div>
 
                 {/* Nationality */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     Nationality
                   </label>
                   <input
@@ -380,7 +585,7 @@ export const NewProfilePage: React.FC = () => {
                     value={profile.nationality}
                     onChange={(e) => handleInputChange('nationality', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-6 py-4 rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
+                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm ${
                       !isEditing 
                         ? 'bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 cursor-not-allowed' 
                         : 'bg-white/80 border-heritage-neutral/40 text-heritage-green hover:border-heritage-green/70 focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/20 focus:bg-white'
@@ -390,8 +595,8 @@ export const NewProfilePage: React.FC = () => {
                 </div>
 
                 {/* Address */}
-                <div className="md:col-span-2 space-y-3">
-                  <label className="block text-sm font-bold text-heritage-green">
+                <div className="md:col-span-2 space-y-2 sm:space-y-3">
+                  <label className="block text-xs sm:text-sm font-bold text-heritage-green">
                     Address
                   </label>
                   <textarea
@@ -399,7 +604,7 @@ export const NewProfilePage: React.FC = () => {
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     disabled={!isEditing}
                     rows={4}
-                    className={`w-full px-6 py-4 rounded-2xl border-2 transition-all duration-300 resize-none backdrop-blur-sm ${
+                    className={`w-full px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 transition-all duration-300 resize-none backdrop-blur-sm ${
                       !isEditing 
                         ? 'bg-heritage-light/20 border-heritage-neutral/30 text-heritage-neutral/60 cursor-not-allowed' 
                         : 'bg-white/80 border-heritage-neutral/40 text-heritage-green hover:border-heritage-green/70 focus:border-heritage-green focus:ring-4 focus:ring-heritage-green/20 focus:bg-white'
@@ -412,85 +617,85 @@ export const NewProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Heritage Quick Actions & Security Section */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Heritage Quick Actions */}
-          <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
+        {/* Heritage Quick Actions & Security Section - MOBILE RESPONSIVE */}
+        <div className="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+          {/* Heritage Quick Actions - MOBILE RESPONSIVE */}
+          <div className="bg-white/70 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 sm:p-8 sm:hover:shadow-3xl sm:hover:-translate-y-1 transition-all duration-500">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-heritage-green mb-2">Quick Actions</h3>
-              <p className="text-heritage-neutral/80">Manage your bookings and reservations</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-heritage-green mb-2">Quick Actions</h3>
+              <p className="text-heritage-neutral/80 text-sm sm:text-base">Manage your bookings and reservations</p>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <button
                 onClick={() => navigate('/my-bookings')}
-                className="w-full p-6 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 backdrop-blur-xl rounded-2xl hover:from-heritage-green/30 hover:to-heritage-neutral/30 transition-all duration-300 group border border-heritage-green/30 hover:border-heritage-green/50 hover:scale-105 hover:shadow-2xl"
+                className="w-full p-4 sm:p-6 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 backdrop-blur-xl rounded-xl sm:rounded-2xl hover:from-heritage-green/30 hover:to-heritage-neutral/30 transition-all duration-300 group border border-heritage-green/30 hover:border-heritage-green/50 active:scale-95 sm:hover:scale-105 hover:shadow-2xl"
               >
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-heritage-green/30 to-heritage-neutral/30 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl">
-                    <svg className="w-8 h-8 text-heritage-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-heritage-green/30 to-heritage-neutral/30 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl flex-shrink-0">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-heritage-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-bold text-heritage-green text-xl">My Bookings</div>
-                    <div className="text-heritage-neutral/70 text-lg">View and manage reservations</div>
+                    <div className="font-bold text-heritage-green text-base sm:text-lg md:text-xl">My Bookings</div>
+                    <div className="text-heritage-neutral/70 text-sm sm:text-base md:text-lg">View and manage reservations</div>
                   </div>
                 </div>
               </button>
 
               <button
                 onClick={() => navigate('/booking')}
-                className="w-full p-6 bg-gradient-to-r from-heritage-neutral/20 to-heritage-light/30 backdrop-blur-xl rounded-2xl hover:from-heritage-neutral/30 hover:to-heritage-light/40 transition-all duration-300 group border border-heritage-neutral/30 hover:border-heritage-neutral/50 hover:scale-105 hover:shadow-2xl"
+                className="w-full p-4 sm:p-6 bg-gradient-to-r from-heritage-neutral/20 to-heritage-light/30 backdrop-blur-xl rounded-xl sm:rounded-2xl hover:from-heritage-neutral/30 hover:to-heritage-light/40 transition-all duration-300 group border border-heritage-neutral/30 hover:border-heritage-neutral/50 active:scale-95 sm:hover:scale-105 hover:shadow-2xl"
               >
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-heritage-neutral/30 to-heritage-light/40 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl">
-                    <svg className="w-8 h-8 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-heritage-neutral/30 to-heritage-light/40 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl flex-shrink-0">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-bold text-heritage-green text-xl">New Booking</div>
-                    <div className="text-heritage-neutral/70 text-lg">Reserve a room today</div>
+                    <div className="font-bold text-heritage-green text-base sm:text-lg md:text-xl">New Booking</div>
+                    <div className="text-heritage-neutral/70 text-sm sm:text-base md:text-lg">Reserve a room today</div>
                   </div>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Heritage Account Security */}
-          <div className="bg-white/70 backdrop-blur-2xl rounded-3xl border border-heritage-neutral/20 shadow-2xl p-8 hover:shadow-3xl hover:-translate-y-1 transition-all duration-500">
+          {/* Heritage Account Security - MOBILE RESPONSIVE */}
+          <div className="bg-white/70 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-heritage-neutral/20 shadow-2xl p-6 sm:p-8 sm:hover:shadow-3xl sm:hover:-translate-y-1 transition-all duration-500">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-heritage-green mb-2">Account Security</h3>
-              <p className="text-heritage-neutral/80">Your account status and security settings</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-heritage-green mb-2">Account Security</h3>
+              <p className="text-heritage-neutral/80 text-sm sm:text-base">Your account status and security settings</p>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-6 bg-heritage-green/20 backdrop-blur-xl rounded-2xl border border-heritage-green/30 shadow-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-heritage-green/30 rounded-2xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-heritage-green" fill="currentColor" viewBox="0 0 20 20">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center justify-between p-4 sm:p-6 bg-heritage-green/20 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-heritage-green/30 shadow-xl">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-heritage-green/30 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-heritage-green" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div>
-                    <div className="font-bold text-heritage-green text-lg">Email Verified</div>
-                    <div className="text-heritage-neutral/70">Your email is confirmed and secure</div>
+                    <div className="font-bold text-heritage-green text-sm sm:text-base md:text-lg">Email Verified</div>
+                    <div className="text-heritage-neutral/70 text-xs sm:text-sm">Your email is confirmed and secure</div>
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={logout}
-                className="w-full p-6 bg-gradient-to-r from-red-50/80 to-red-100/80 backdrop-blur-xl rounded-2xl hover:from-red-100/80 hover:to-red-200/80 transition-all duration-300 group border border-red-200/50 hover:border-red-300/50 hover:scale-105 hover:shadow-2xl"
+                className="w-full p-4 sm:p-6 bg-gradient-to-r from-red-50/80 to-red-100/80 backdrop-blur-xl rounded-xl sm:rounded-2xl hover:from-red-100/80 hover:to-red-200/80 transition-all duration-300 group border border-red-200/50 hover:border-red-300/50 active:scale-95 sm:hover:scale-105 hover:shadow-2xl"
               >
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-red-100/80 to-red-200/80 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl">
-                    <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-red-100/80 to-red-200/80 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl flex-shrink-0">
+                    <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-bold text-red-700 text-xl">Sign Out</div>
-                    <div className="text-red-600 text-lg">Logout securely from your account</div>
+                    <div className="font-bold text-red-700 text-base sm:text-lg md:text-xl">Sign Out</div>
+                    <div className="text-red-600 text-sm sm:text-base md:text-lg">Logout securely from your account</div>
                   </div>
                 </div>
               </button>

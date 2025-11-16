@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Calendar, CreditCard, ArrowLeft, Bell, Clock, User } from 'lucide-react';
-import { SkeletonCard } from '../../universalLoader/SkeletonLoader';
 
 // Sample activity data with hotel-specific activities
 const activityData = [
@@ -72,20 +71,6 @@ const activityData = [
 ];
 
 const RecentActivities: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading - synchronized with all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SkeletonCard />;
-  }
-
   return (
     <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">
       {/* Background Elements */}

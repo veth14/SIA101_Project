@@ -42,26 +42,6 @@ const RevenueTrendsCard: React.FC<RevenueTrendsProps> = ({
       const validBookings = weekBookings.filter(booking => booking.status !== 'cancelled');
       const weekRevenue = validBookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
       
-      const weekNumber = 4 - i;
-      
-      // Debug logging for ALL weeks
-      console.log(`💰 Week ${weekNumber} Revenue Breakdown:`);
-      console.log(`- Date range: ${weekStart.toLocaleDateString()} to ${weekEnd.toLocaleDateString()}`);
-      console.log(`- Total bookings in week: ${weekBookings.length}`);
-      console.log(`- Valid bookings (not cancelled): ${validBookings.length}`);
-      
-      if (validBookings.length > 0) {
-        validBookings.forEach((booking, index) => {
-          const createdDate = booking.createdAt?.toDate?.() || new Date(booking.createdAt) || 'Unknown';
-          console.log(`  ${index + 1}. ${booking.guestName || booking.userName || 'Guest'}: ₱${booking.totalAmount?.toLocaleString() || 0} (${createdDate instanceof Date ? createdDate.toLocaleDateString() : createdDate})`);
-        });
-      } else {
-        console.log(`  No bookings found in Week ${weekNumber}`);
-      }
-      
-      console.log(`- Week ${weekNumber} Total Revenue: ₱${weekRevenue.toLocaleString()}`);
-      console.log('---');
-      
       weeks.push({
         week: `Week ${4 - i}`,
         revenue: weekRevenue,

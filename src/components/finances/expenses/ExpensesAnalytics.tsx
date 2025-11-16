@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import type { Expense } from './types';
-import { Skeleton } from '@/components/universalLoader/SkeletonLoader';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Category totals within current filters
@@ -28,13 +27,10 @@ const formatShortCurrency = (amount: number) => {
 // Removed ChartPoint (no longer used with bar data shape)
 
 const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  // immediate render; skeleton removed
   // Filters removed per request; demo toggle removed
 
-  useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(t);
-  }, []);
+  // no artificial loading delay
 
   const filtered = useMemo(() => expenses, [expenses]);
 
@@ -136,51 +132,7 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) 
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="relative overflow-hidden shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
-        <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60"></div>
-        <div className="relative z-10">
-          <div className="px-8 border-b py-7 bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-5">
-                <Skeleton className="w-12 h-12 rounded-2xl" />
-                <div>
-                  <Skeleton className="w-48 h-8 mb-2" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="w-32 h-4" />
-                    <Skeleton className="w-1 h-1 rounded-full" />
-                    <Skeleton className="w-24 h-4" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex space-x-4">
-                <div className="flex p-1.5 bg-gradient-to-r from-heritage-light/40 to-heritage-light/60 rounded-2xl">
-                  <Skeleton className="w-20 h-10 mr-2 rounded-xl" />
-                  <Skeleton className="w-20 h-10 mr-2 rounded-xl" />
-                  <Skeleton className="w-20 h-10 rounded-xl" />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="px-8 py-4 border-b bg-gradient-to-r from-heritage-light/20 to-heritage-light/30 border-gray-200/30">
-            <div className="flex items-center gap-4">
-              <Skeleton className="w-12 h-4" />
-              <Skeleton className="w-40 h-10 rounded-xl" />
-            </div>
-          </div>
-          <div className="px-4 py-6">
-            <div className="h-[320px] w-full">
-              <Skeleton className="w-full h-full rounded-2xl" />
-            </div>
-            <div className="flex items-center justify-center pb-2 mt-2">
-              <Skeleton className="w-32 h-4" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // render analytics immediately (skeleton removed)
 
   return (
     <div className="relative overflow-hidden shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
@@ -226,9 +178,8 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) 
             </div>
           ) : (
           <div className="h-[360px] w-full">
-            {/* @ts-expect-error - Recharts types compatibility issue */}
+            {/* Recharts types compatibility: intentional mismatch handled at runtime */}
             <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts types compatibility issue */}
               <BarChart data={sortedData} margin={{ top: 12, right: 24, left: 24, bottom: 12 }} barCategoryGap={24}>
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -236,12 +187,12 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) 
                     <stop offset="100%" stopColor="#82A33D" stopOpacity={0.75} />
                   </linearGradient>
                 </defs>
-                {/* @ts-expect-error - Recharts types compatibility issue */}
+                {/* Recharts types compatibility: intentional mismatch handled at runtime */}
                 <XAxis dataKey="category" tick={{ fill: '#374151', fontSize: 12, fontWeight: 700 }} axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }} tickLine={false} />
-                {/* @ts-expect-error - Recharts types compatibility issue */}
+                {/* Recharts types compatibility: intentional mismatch handled at runtime */}
                 <YAxis tickFormatter={formatShortCurrency} tick={{ fill: '#374151', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} domain={[0, (dataMax: number) => dataMax * 1.18]} />
                 <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="#E5E7EB" />
-                {/* @ts-expect-error - Recharts types compatibility issue */}
+                {/* Recharts types compatibility: intentional mismatch handled at runtime */}
                 <Tooltip content={({ active, payload }) => {
                   if (!active || !payload || !payload.length) return null;
                   const p = payload[0];
@@ -256,7 +207,7 @@ const ExpensesAnalytics: React.FC<Props> = ({ expenses, staffFromPayroll = 0 }) 
                   );
                 }} />
                 {/* Single Bar with premium gradient */}
-                {/* @ts-expect-error - Recharts types compatibility issue */}
+                {/* Recharts types compatibility: intentional mismatch handled at runtime */}
                 <Bar dataKey="amount" radius={[12,12,0,0]} fill="url(#barGradient)" isAnimationActive animationDuration={700} />
               </BarChart>
             </ResponsiveContainer>

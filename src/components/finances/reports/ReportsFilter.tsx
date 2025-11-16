@@ -19,6 +19,7 @@ interface ReportsFilterProps {
   sortBy?: string;
   onSortChange?: (sortBy: string) => void;
   onGenerateClick?: () => void;
+  isLoading?: boolean;
 }
 
 const ReportsFilter: React.FC<ReportsFilterProps> = ({
@@ -38,10 +39,27 @@ const ReportsFilter: React.FC<ReportsFilterProps> = ({
   onPreparedByChange = () => {},
   sortBy = 'date-desc',
   onSortChange = () => {},
-  onGenerateClick = () => {}
+  onGenerateClick = () => {},
+  isLoading = false
 }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
+
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-4">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-200 shadow-lg p-6 animate-pulse">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
+            <div className="flex-1 h-14 bg-gray-200 rounded-xl"></div>
+            <div className="min-w-[220px] h-14 bg-gray-200 rounded-xl"></div>
+            <div className="min-w-[150px] h-14 bg-gray-200 rounded-xl"></div>
+            <div className="min-w-[160px] h-14 bg-gray-200 rounded-xl"></div>
+            <div className="min-w-[180px] h-14 bg-gray-300 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const years = [2025, 2024, 2023, 2022, 2021];
   

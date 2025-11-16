@@ -1,12 +1,11 @@
 import React from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
+import { formatCurrencyPH } from '../../../lib/utils';
 
 interface PaymentsStatsProps {
   payments: Array<{
     status: string;
     amount: number;
   }>;
-  isLoading: boolean;
 }
 
 const statsConfig = [
@@ -52,7 +51,7 @@ const statsConfig = [
   }
 ];
 
-const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments, isLoading }) => {
+const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments }) => {
 
   const totalCount = payments.length || 1;
   const stats = statsConfig.map((cfg) => {
@@ -65,37 +64,13 @@ const PaymentsStats: React.FC<PaymentsStatsProps> = ({ payments, isLoading }) =>
     // Pending and refunded are neutral
     return {
       ...cfg,
-      value: `$${valueAmount.toFixed(2)}`,
+      value: formatCurrencyPH(valueAmount),
       change: `${percent}% of payments`,
       changeType,
     };
   });
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}} .skeleton-shimmer{background:linear-gradient(90deg,#ececec 0%,#f5f5f5 50%,#ececec 100%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;border-radius:6px}`}</style>
-        {[...Array(4)].map((_, index) => (
-          <div key={index} className="relative p-8 overflow-hidden border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 mr-5">
-                <div className="flex items-center mb-3">
-                  <Skeleton className="w-1 h-5 mr-2 rounded-full skeleton-shimmer" />
-                  <Skeleton className="w-24 h-4 skeleton-shimmer" />
-                </div>
-                <Skeleton className="h-10 mb-3 w-28 skeleton-shimmer" />
-                <Skeleton className="w-32 h-6 rounded-full skeleton-shimmer" />
-              </div>
-              <Skeleton className="w-16 h-16 rounded-xl skeleton-shimmer" />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1">
-              <Skeleton className="w-full h-full skeleton-shimmer" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // Render stats immediately; skeletons removed
 
   return (
     <>

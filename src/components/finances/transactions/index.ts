@@ -1,5 +1,4 @@
 export { TransactionsPage } from './TransactionsPage';
-export { TransactionsHeader } from './TransactionsHeader';
 export { default as RecentTransactions } from './RecentTransactions';
 export { default as TransactionDetails } from './TransactionDetails';
 export { default as TransactionDetailsModal } from './TransactionDetailsModal';

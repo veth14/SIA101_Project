@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -7,6 +8,8 @@ interface ModalProps {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showCloseButton?: boolean;
+  showHeaderBar?: boolean;
+  headerContent?: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -16,67 +19,65 @@ const sizeClasses = {
   xl: 'max-w-5xl',
 };
 
-export const Modal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
+export const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
   size = 'md',
-  showCloseButton = true 
-}: ModalProps) => {
+  showCloseButton = true,
+  showHeaderBar = true,
+  headerContent
+}) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
-      // Add blur to root element
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.filter = 'blur(8px)';
-      }
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
-      // Remove blur from root element
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.filter = 'none';
-      }
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 py-8">
-        {/* Backdrop - Dark overlay */}
-        <div
-          className="fixed inset-0 transition-opacity bg-black/70 backdrop-blur-sm"
-          onClick={onClose}
-          aria-hidden="true"
-        />
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onClose();
+  };
 
-        {/* Modal container with animation */}
-        <div
-          className={`relative bg-white rounded-3xl shadow-2xl w-full ${sizeClasses[size]} transform transition-all animate-in fade-in zoom-in-95 duration-200`}
-        >
-          {/* Decorative header bar */}
-          <div className="h-2 bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green rounded-t-3xl" />
-          
-          {/* Header */}
-          <div className="px-8 py-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold tracking-tight text-gray-900">
-                {title}
-              </h3>
+  return createPortal(
+    <>
+      <style>{`
+        @keyframes slideInUp {
+          0% { opacity: 0; transform: translateY(20px) scale(0.98); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slideOutDown {
+          0% { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(20px) scale(0.98); }
+        }
+        .animate-slideInUp { animation: slideInUp 0.3s ease-out; }
+        .animate-slideOutDown { animation: slideOutDown 0.28s ease-in forwards; }
+      `}</style>
+
+      <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={handleBackdropClick}>
+        <div className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden transform animate-slideInUp`}>
+        {showHeaderBar && (
+          <div className="h-2 bg-gradient-to-r from-heritage-green/5 via-heritage-neutral/10 to-heritage-green/5 rounded-t-2xl" />
+        )}
+
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-heritage-neutral/10 bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 backdrop-blur-sm">
+          {headerContent ? (
+            headerContent
+          ) : (
+            <>
+              <h3 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h3>
               {showCloseButton && (
                 <button
                   onClick={onClose}
@@ -88,15 +89,18 @@ export const Modal = ({
                   </svg>
                 </button>
               )}
-            </div>
-          </div>
+            </>
+          )}
+        </div>
 
-          {/* Content */}
-          <div className="px-8 py-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
-            {children}
-          </div>
+        <div className="p-6 overflow-y-auto max-h-[calc(100vh-150px)]">
+          {children}
         </div>
       </div>
-    </div>
+      </div>
+    </>,
+    document.body
   );
 };
+
+export default Modal;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
@@ -7,7 +7,6 @@ import {
   formatCurrency, 
   formatShortCurrency
 } from './chartsLogic/revenueAnalyticsLogic';
-import { SkeletonChart } from '../../universalLoader/SkeletonLoader';
 
 // Define types for tooltip data
 interface TooltipPayload {
@@ -44,29 +43,18 @@ const CustomTooltip = ({ active, payload, label }: { active: boolean, payload: T
 
 const RevenueTrends: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  const [isLoading, setIsLoading] = useState(true);
   
   // Get data and metrics
   const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
   const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
 
-  // Initial loading only
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-  
   // Transform data for recharts
   const chartData = revenueData.map((item) => ({
     day: item.day,
     revenue: item.revenue
   }));
 
-  if (isLoading) {
-    return <SkeletonChart />;
-  }
+  
 
   return (
     <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">
@@ -137,9 +125,7 @@ const RevenueTrends: React.FC = () => {
         {/* Chart Area */}
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
-            {/* @ts-expect-error - Recharts types are complex */}
             <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts types are complex */}
               <AreaChart
                 data={chartData}
                 margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
@@ -150,7 +136,6 @@ const RevenueTrends: React.FC = () => {
                     <stop offset="95%" stopColor="#ABAD8A" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                {/* @ts-expect-error - Recharts types are complex */}
                 <XAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 12 }}
@@ -159,7 +144,6 @@ const RevenueTrends: React.FC = () => {
                   interval={0}
                   padding={{ left: 0, right: 0 }}
                 />
-                {/* @ts-expect-error - Recharts types are complex */}
                 <YAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
@@ -173,7 +157,6 @@ const RevenueTrends: React.FC = () => {
                 />
                 {/* @ts-expect-error - Recharts types are complex */}
                 <Tooltip content={<CustomTooltip />} />
-                {/* @ts-expect-error - Recharts types are complex */}
                 <Area 
                   type="linear" 
                   dataKey="revenue" 

@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { GuestLayout } from './components/layouts/GuestLayout'
 
 // Import pages
 import { LandingPage } from './pages/guest/landing/LandingPage'
@@ -12,6 +13,9 @@ import { AuthPage } from './pages/auth/AuthPage'
 import { NewProfilePage } from './pages/guest/NewProfilePage'
 import { PaymentPage } from './pages/guest/PaymentPage'
 import { MyBookingsPage } from './pages/guest/MyBookingsPage'
+import { MyRequestsPage } from './pages/guest/MyRequests'
+import { HelpCenterPage } from './pages/guest/HelpCenter/HelpCenterPage'
+import { SubmitReviewPage } from './pages/guest/SubmitReviewPage'
 import { AdminDashboardPage } from './pages/admin/Dashboard/AdminDashboardPage'
 import AdminRoomsPage from './pages/admin/Front-Desk/AdminRoomsPage'
 import { AdminLayout } from './layouts/AdminLayout'
@@ -44,10 +48,6 @@ import AdminTicketsTasksPage from './pages/admin/Maintenance/tickets-tasks'
 import AdminArchivePage from './pages/admin/Maintenance/archive'
 import StaffLoginPage from './pages/admin/Maintenance/staff-login'
 
-// Import shared components
-import { Header } from './components/shared/navigation/Header'
-import { Footer } from './components/shared/navigation/Footer'
-
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center h-screen">
@@ -56,56 +56,78 @@ function LoadingSpinner() {
   )
 }
 
-  function App() {
-    return (
-      <AuthProvider>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="/login" element={<Navigate to="/auth" replace />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/" element={<><Header /><LandingPage /><Footer /></>} />
-            <Route path="/rooms" element={<><Header /><RoomsPage /><Footer /></>} />
-            <Route path="/amenities" element={<><Header /><AmenitiesPage /><Footer /></>} />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute allowedRoles={['guest']}>
-                  <><Header /><NewProfilePage /><Footer /></>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/booking" 
-              element={
-                <ProtectedRoute allowedRoles={['guest']}>
-                  <><Header /><BookingPage /><Footer /></>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/payment/:bookingId" 
-              element={
-                <ProtectedRoute allowedRoles={['guest']}>
-                  <><Header /><PaymentPage /><Footer /></>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/payment" 
-              element={
-                <ProtectedRoute allowedRoles={['guest']}>
-                  <><Header /><PaymentPage /><Footer /></>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/my-bookings" 
-              element={
-                <ProtectedRoute allowedRoles={['guest']}>
-                  <><Header /><MyBookingsPage /><Footer /></>
-                </ProtectedRoute>
-              } 
-            />
+function App() {
+  return (
+    <AuthProvider>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/login" element={<Navigate to="/auth" replace />} />
+          <Route path="/auth" element={<AuthPage />} />
+          
+          {/* Guest routes with GuestLayout wrapper - eliminates Header/Footer duplication */}
+          <Route path="/" element={<GuestLayout><LandingPage /></GuestLayout>} />
+          <Route path="/rooms" element={<GuestLayout><RoomsPage /></GuestLayout>} />
+          <Route path="/amenities" element={<GuestLayout><AmenitiesPage /></GuestLayout>} />
+          
+          {/* Consolidated Help Center routes - all render HelpCenterPage with URL-based tab selection */}
+          <Route path="/help" element={<GuestLayout><HelpCenterPage /></GuestLayout>} />
+          <Route path="/faqs" element={<GuestLayout><HelpCenterPage /></GuestLayout>} />
+          <Route path="/privacy-policy" element={<GuestLayout><HelpCenterPage /></GuestLayout>} />
+          <Route path="/terms-conditions" element={<GuestLayout><HelpCenterPage /></GuestLayout>} />
+          <Route path="/contact" element={<GuestLayout><HelpCenterPage /></GuestLayout>} />
+          <Route path="/about" element={<GuestLayout><HelpCenterPage /></GuestLayout>} />
+          
+          {/* Protected guest routes */}
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><NewProfilePage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/booking"
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><BookingPage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/payment"
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><PaymentPage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/mybookings"
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><MyBookingsPage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/myrequests"
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><MyRequestsPage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/submit-review/:bookingId"
+            element={
+              <ProtectedRoute allowedRoles={['guest']}>
+                <GuestLayout><SubmitReviewPage /></GuestLayout>
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Admin routes */}
                 <Route 
                   path="/admin" 
                   element={
@@ -124,6 +146,7 @@ function LoadingSpinner() {
                     </ProtectedRoute>
                   } 
                 />
+                
                 <Route 
                   path="/admin/rooms" 
                   element={

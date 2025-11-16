@@ -1,5 +1,4 @@
  import React, { useState } from 'react';
-import InventoryAnalyticsHeader from './InventoryAnalyticsHeader';
 import AnalyticsTabs from './AnalyticsTabs';
 import AnalyticsChart from './AnalyticsChartWorking';
 import AnalyticsBottomSections from './AnalyticsBottomSections';
@@ -40,8 +39,6 @@ const InventoryAnalyticsPage: React.FC = () => {
       </div>
 
       <div className="relative z-10 px-6 py-6 space-y-6">
-        {/* Header */}
-        <InventoryAnalyticsHeader />
 
         {/* Tabs */}
         <AnalyticsTabs 

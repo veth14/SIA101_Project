@@ -49,9 +49,19 @@ export interface InventoryFilters {
 
 /**
  * Fetch all inventory items from Firebase
+ * OPTIMIZED: Cache results for 5 minutes to reduce Firestore reads
  */
-export const fetchInventoryItems = async (): Promise<InventoryItem[]> => {
+let inventoryCache: { data: InventoryItem[]; timestamp: number } | null = null;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export const fetchInventoryItems = async (forceRefresh = false): Promise<InventoryItem[]> => {
   try {
+    // Return cached data if still valid
+    if (!forceRefresh && inventoryCache !== null && (Date.now() - inventoryCache.timestamp) < CACHE_TTL) {
+      console.log('📦 Using cached inventory data');
+      return inventoryCache.data;
+    }
+    
     console.log('🔄 Fetching inventory items from Firebase...');
     
     const inventoryQuery = query(
@@ -81,6 +91,9 @@ export const fetchInventoryItems = async (): Promise<InventoryItem[]> => {
         updatedAt: data.updatedAt?.toDate() || undefined
       });
     });
+    
+    // Cache the results
+    inventoryCache = { data: inventoryData, timestamp: Date.now() };
     
     console.log(`✅ Loaded ${inventoryData.length} inventory items from Firebase`);
     return inventoryData;
@@ -125,7 +138,7 @@ export const calculateInventoryStats = (items: InventoryItem[]): InventoryStats 
  * Filter inventory items based on search term, category, and stock status
  */
 export const filterInventoryItems = (items: InventoryItem[], filters: InventoryFilters): InventoryItem[] => {
-  let filteredItems = items.filter(item => {
+  const filteredItems = items.filter(item => {
     // Search filter
     const matchesSearch = filters.searchTerm === '' || 
       item.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||

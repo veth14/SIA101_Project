@@ -1,10 +1,8 @@
 import React from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
 import type { Invoice } from './InvoiceList';
 
 interface InvoiceStatsProps {
   invoices: Invoice[];
-  isLoading: boolean;
 }
 
 interface StatCard {
@@ -16,7 +14,7 @@ interface StatCard {
   iconBg: string;
 }
 
-const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices, isLoading }) => {
+const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
 
   // Calculate stats
   const paidInvoices = invoices.filter(inv => inv.status === 'paid');
@@ -75,30 +73,7 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices, isLoading }) => {
     }
   ];
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, index) => (
-          <div key={index} className="relative p-8 overflow-hidden border shadow-lg rounded-2xl backdrop-blur-xl bg-white/95 border-white/50">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 mr-5">
-                <div className="flex items-center mb-3">
-                  <Skeleton className="w-1 h-5 mr-2 rounded-full" />
-                  <Skeleton className="w-24 h-4" />
-                </div>
-                <Skeleton className="h-10 mb-3 w-28" />
-                <Skeleton className="w-32 h-6 rounded-full" />
-              </div>
-              <Skeleton className="w-16 h-16 rounded-xl" />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1">
-              <Skeleton className="w-full h-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // No loading state: render stats immediately
 
   return (
     <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">

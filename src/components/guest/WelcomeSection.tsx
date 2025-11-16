@@ -22,13 +22,13 @@ export const WelcomeSection: React.FC = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative w-full py-20 overflow-hidden bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
+    <section ref={sectionRef} className="relative w-full py-12 sm:py-16 md:py-20 overflow-hidden bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 rounded-full w-96 h-96 bg-heritage-green/5 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 rounded-full w-80 h-80 bg-heritage-light/10 blur-2xl"></div>
       
       <div className="relative z-10 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="grid items-center gap-16 lg:grid-cols-2">
+        <div className="grid items-center gap-8 sm:gap-12 lg:gap-16 lg:grid-cols-2">
           {/* Content */}
           <div className={`space-y-8 transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
@@ -39,13 +39,13 @@ export const WelcomeSection: React.FC = () => {
                   Our Story
                 </span>
               </div>
-              <h2 className="text-4xl font-bold leading-tight text-gray-900 md:text-5xl lg:text-6xl">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-gray-900">
                 Welcome to 
                 <span className="block mt-2 text-transparent bg-gradient-to-r from-heritage-green via-heritage-neutral to-heritage-green bg-clip-text animate-pulse"> Balay Ginhawa</span>
               </h2>
             </div>
             
-            <div className={`space-y-6 text-lg md:text-xl text-gray-700 leading-relaxed transition-all duration-1000 delay-300 ${
+            <div className={`space-y-4 sm:space-y-6 text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed transition-all duration-1000 delay-300 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}>
               <p className="relative">
@@ -65,30 +65,30 @@ export const WelcomeSection: React.FC = () => {
               </p>
             </div>
 
-            {/* Enhanced Stats */}
-            <div className={`grid grid-cols-3 gap-6 pt-8 border-t-2 border-gradient-to-r from-heritage-green/20 via-heritage-neutral/20 to-heritage-light/20 transition-all duration-1000 delay-500 ${
+            {/* Enhanced Stats - MOBILE RESPONSIVE */}
+            <div className={`grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 pt-6 sm:pt-8 border-t-2 border-gradient-to-r from-heritage-green/20 via-heritage-neutral/20 to-heritage-light/20 transition-all duration-1000 delay-500 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}>
               <div className="text-center group">
-                <div className="mb-2 text-3xl font-bold transition-transform duration-300 md:text-4xl text-heritage-green group-hover:scale-110">50+</div>
-                <div className="text-sm font-medium md:text-base text-heritage-neutral">Luxury Rooms</div>
+                <div className="mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl font-bold transition-transform duration-300 text-heritage-green group-hover:scale-110">50+</div>
+                <div className="text-xs sm:text-sm md:text-base font-medium text-heritage-neutral">Luxury Rooms</div>
               </div>
               <div className="text-center group">
-                <div className="mb-2 text-3xl font-bold transition-transform duration-300 md:text-4xl text-heritage-green group-hover:scale-110">15+</div>
-                <div className="text-sm font-medium md:text-base text-heritage-neutral">Years Experience</div>
+                <div className="mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl font-bold transition-transform duration-300 text-heritage-green group-hover:scale-110">15+</div>
+                <div className="text-xs sm:text-sm md:text-base font-medium text-heritage-neutral">Years Experience</div>
               </div>
               <div className="text-center group">
-                <div className="mb-2 text-3xl font-bold transition-transform duration-300 md:text-4xl text-heritage-green group-hover:scale-110">98%</div>
-                <div className="text-sm font-medium md:text-base text-heritage-neutral">Guest Satisfaction</div>
+                <div className="mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl font-bold transition-transform duration-300 text-heritage-green group-hover:scale-110">98%</div>
+                <div className="text-xs sm:text-sm md:text-base font-medium text-heritage-neutral">Guest Satisfaction</div>
               </div>
             </div>
           </div>
 
-          {/* Enhanced Images */}
-          <div className={`relative transition-all duration-1000 delay-200 ${
+          {/* Enhanced Images - MOBILE RESPONSIVE */}
+          <div className={`relative transition-all duration-1000 delay-200 mt-8 lg:mt-0 ${
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
           }`}>
-            <div className="grid grid-cols-2 gap-4 h-[600px]">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 h-[400px] sm:h-[500px] md:h-[600px]">
               {/* Main large image */}
               <div className="relative col-span-2 overflow-hidden shadow-2xl rounded-2xl group">
                 <img
@@ -97,9 +97,9 @@ export const WelcomeSection: React.FC = () => {
                   className="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 transition-all duration-500 bg-gradient-to-t from-heritage-green/25 via-transparent to-transparent group-hover:from-heritage-green/40"></div>
-                <div className="absolute text-white bottom-4 left-4">
-                  <div className="text-lg font-semibold">Grand Lobby</div>
-                  <div className="text-sm text-white/80">Filipino Heritage Design</div>
+                <div className="absolute text-white bottom-2 sm:bottom-4 left-2 sm:left-4">
+                  <div className="text-sm sm:text-base md:text-lg font-semibold">Grand Lobby</div>
+                  <div className="text-xs sm:text-sm text-white/80">Filipino Heritage Design</div>
                 </div>
               </div>
               
@@ -112,7 +112,7 @@ export const WelcomeSection: React.FC = () => {
                 />
                 <div className="absolute inset-0 transition-all duration-500 bg-gradient-to-t from-heritage-neutral/40 via-transparent to-transparent group-hover:from-heritage-neutral/60"></div>
                 <div className="absolute text-white bottom-2 left-2">
-                  <div className="text-sm font-semibold">Restaurant</div>
+                  <div className="text-xs sm:text-sm font-semibold">Restaurant</div>
                 </div>
               </div>
               
@@ -124,15 +124,15 @@ export const WelcomeSection: React.FC = () => {
                 />
                 <div className="absolute inset-0 transition-all duration-500 bg-gradient-to-t from-heritage-light/40 via-transparent to-transparent group-hover:from-heritage-light/60"></div>
                 <div className="absolute text-white bottom-2 left-2">
-                  <div className="text-sm font-semibold">Pool Area</div>
+                  <div className="text-xs sm:text-sm font-semibold">Pool Area</div>
                 </div>
               </div>
             </div>
 
-            {/* Enhanced floating badge */}
-            <div className="absolute p-4 bg-white border-4 rounded-full shadow-2xl -top-4 -right-4 border-heritage-light animate-pulse">
-              <div className="flex items-center justify-center w-16 h-16 transition-transform duration-500 rounded-full bg-gradient-to-br from-heritage-green via-heritage-neutral to-heritage-light group-hover:rotate-12">
-                <span className="text-lg font-bold text-white">★</span>
+            {/* Enhanced floating badge - MOBILE RESPONSIVE */}
+            <div className="absolute p-2 sm:p-3 md:p-4 bg-white border-2 sm:border-4 rounded-full shadow-2xl -top-2 sm:-top-4 -right-2 sm:-right-4 border-heritage-light animate-pulse">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 transition-transform duration-500 rounded-full bg-gradient-to-br from-heritage-green via-heritage-neutral to-heritage-light group-hover:rotate-12">
+                <span className="text-sm sm:text-base md:text-lg font-bold text-white">★</span>
               </div>
             </div>
 

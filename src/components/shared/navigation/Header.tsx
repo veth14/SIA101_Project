@@ -18,8 +18,11 @@ export const Header = () => {
   ];
 
   // Pages where header should always be solid (not transparent)
-  const solidHeaderPages = ['/booking', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities'];
+  const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
+  
+  // Mobile menu should be solid on auth pages for better visibility
+  const shouldMobileMenuBeSolid = isScrolled || shouldUseSolidHeader || location.pathname.startsWith('/auth');
 
 
   const handleScrollTo = (sectionId: string) => {
@@ -63,6 +66,12 @@ export const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setShowUserDropdown(false);
+  }, [location.pathname]);
+
   return (
     <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
       isScrolled || shouldUseSolidHeader
@@ -77,14 +86,14 @@ export const Header = () => {
             <Link 
               to="/" 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center space-x-4"
+              className="flex items-center space-x-2 sm:space-x-3 md:space-x-4"
             >
               <img 
                 src="/BalayGinhawa/balaylogopng.png" 
                 alt="Balay Ginhawa Logo" 
-                className="w-16 h-16 object-contain transition-all duration-300"
+                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain transition-all duration-300 flex-shrink-0"
               />
-              <span className={`text-2xl font-bold transition-colors duration-300 ${
+              <span className={`text-lg sm:text-xl md:text-2xl font-bold transition-colors duration-300 whitespace-nowrap ${
                 isScrolled || shouldUseSolidHeader ? 'text-heritage-green' : 'text-white'
               }`}>
                 Balay Ginhawa
@@ -148,14 +157,15 @@ export const Header = () => {
               ))}
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {userData ? (
               <>
                 {userData.role === 'guest' ? (
                   <>
+                    {/* Book Now - Hidden on very small screens, shows on sm+ */}
                     <Link
                       to="/booking"
-                      className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                      className={`hidden sm:inline-flex px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 ${
                         isScrolled || shouldUseSolidHeader
                           ? 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-md'
                           : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
@@ -167,23 +177,26 @@ export const Header = () => {
                     {/* User Profile Dropdown */}
                     <div className="relative">
                       <button
-                        onClick={() => setShowUserDropdown(!showUserDropdown)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 ${
+                        onClick={() => {
+                          setShowUserDropdown(!showUserDropdown);
+                          setIsMobileMenuOpen(false); // Close mobile menu when opening user dropdown
+                        }}
+                        className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 ${
                           isScrolled || shouldUseSolidHeader
                             ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                             : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
                         }`}
                       >
-                        <div className="w-8 h-8 bg-heritage-green rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold text-sm">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-heritage-green rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-semibold text-xs sm:text-sm">
                             {userData.displayName ? userData.displayName.charAt(0).toUpperCase() : userData.email?.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <span className="hidden md:block font-medium">
+                        <span className="hidden md:block font-medium text-sm">
                           {userData.displayName || userData.email?.split('@')[0]}
                         </span>
                         <svg 
-                          className={`w-4 h-4 transition-transform ${showUserDropdown ? 'rotate-180' : ''}`}
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform flex-shrink-0 ${showUserDropdown ? 'rotate-180' : ''}`}
                           fill="none" 
                           stroke="currentColor" 
                           viewBox="0 0 24 24"
@@ -233,7 +246,7 @@ export const Header = () => {
                             <button
                               onClick={() => {
                                 setShowUserDropdown(false);
-                                navigate('/my-bookings');
+                                navigate('/mybookings');
                               }}
                               className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
@@ -243,6 +256,22 @@ export const Header = () => {
                               <div className="text-left">
                                 <div className="font-medium">My Bookings</div>
                                 <div className="text-sm text-gray-500">View your reservations</div>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setShowUserDropdown(false);
+                                navigate('/myrequests');
+                              }}
+                              className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                              </svg>
+                              <div className="text-left">
+                                <div className="font-medium">My Requests</div>
+                                <div className="text-sm text-gray-500">Track support requests</div>
                               </div>
                             </button>
 
@@ -291,9 +320,10 @@ export const Header = () => {
               </>
             ) : (
               <>
+                {/* Sign In - Hidden on extra small, visible on sm+ */}
                 <Link
                   to="/auth"
-                  className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                  className={`hidden sm:inline-flex px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 ${
                     isScrolled || shouldUseSolidHeader
                       ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                       : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 border border-white/30'
@@ -301,9 +331,10 @@ export const Header = () => {
                 >
                   Sign in
                 </Link>
+                {/* Register - Always visible, responsive sizing */}
                 <Link
                   to="/auth?mode=register"
-                  className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:scale-105 ${
+                  className={`px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 ${
                     isScrolled || shouldUseSolidHeader
                       ? 'bg-heritage-green text-white hover:bg-heritage-green/90 shadow-md'
                       : 'bg-heritage-green text-white hover:bg-heritage-green/90'
@@ -317,12 +348,16 @@ export const Header = () => {
             {/* Mobile menu button */}
             <button
               type="button"
-              className={`lg:hidden p-2 rounded-full transition-all duration-300 ${
-                isScrolled
+              className={`lg:hidden p-2 rounded-lg transition-all duration-300 ${
+                isScrolled || shouldUseSolidHeader
                   ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
                   : 'text-white hover:text-white/80 hover:bg-white/20'
               }`}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => {
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+                setShowUserDropdown(false); // Close user dropdown when opening mobile menu
+              }}
+              aria-label="Toggle menu"
             >
               <span className="sr-only">Open menu</span>
               {isMobileMenuOpen ? (
@@ -340,12 +375,12 @@ export const Header = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className={`lg:hidden transition-all duration-300 ${
-            isScrolled 
-              ? 'bg-white/95 backdrop-blur-md border-t border-heritage-light/20' 
-              : 'bg-black/20 backdrop-blur-md border-t border-white/20'
+          <div className={`lg:hidden transition-all duration-500 ease-in-out rounded-b-3xl shadow-2xl overflow-hidden animate-in slide-in-from-top-5 fade-in mb-6 ${
+            shouldMobileMenuBeSolid
+              ? 'bg-gradient-to-b from-white via-white to-gray-50/50 backdrop-blur-xl border-t border-gray-200'
+              : 'bg-slate-900/98 backdrop-blur-xl border-t border-white/10'
           }`}>
-            <div className="px-4 py-6 space-y-4">
+            <div className="px-4 pt-5 pb-8 space-y-2">
               {navigation.map((link) => (
                 link.type === 'link' ? (
                   <Link
@@ -355,14 +390,14 @@ export const Header = () => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                    className={`block w-full text-left px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 transform hover:scale-[1.02] ${
                       location.pathname === link.href
-                        ? isScrolled
-                          ? 'text-heritage-green bg-heritage-light/20'
-                          : 'text-white bg-white/20'
-                        : isScrolled
-                          ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
-                          : 'text-white/90 hover:text-white hover:bg-white/20'
+                        ? shouldMobileMenuBeSolid
+                          ? 'text-heritage-green bg-gradient-to-r from-heritage-light/40 to-heritage-light/20 shadow-sm'
+                          : 'text-heritage-light bg-white/20 shadow-sm'
+                        : shouldMobileMenuBeSolid
+                          ? 'text-gray-700 hover:text-heritage-green hover:bg-gradient-to-r hover:from-heritage-light/30 hover:to-heritage-light/10'
+                          : 'text-white hover:text-heritage-light hover:bg-white/20'
                     }`}
                   >
                     {link.name}
@@ -374,10 +409,10 @@ export const Header = () => {
                       handleScrollTo(link.scrollTo);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
-                      isScrolled
-                        ? 'text-gray-700 hover:text-heritage-green hover:bg-heritage-light/20'
-                        : 'text-white/90 hover:text-white hover:bg-white/20'
+                    className={`block w-full text-left px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 transform hover:scale-[1.02] ${
+                      shouldMobileMenuBeSolid
+                        ? 'text-gray-700 hover:text-heritage-green hover:bg-gradient-to-r hover:from-heritage-light/30 hover:to-heritage-light/10'
+                        : 'text-white hover:text-heritage-light hover:bg-white/20'
                     }`}
                   >
                     {link.name}
@@ -386,18 +421,16 @@ export const Header = () => {
               ))}
               
               {/* Mobile Auth Buttons */}
-              <div className="pt-4 border-t border-current/20 space-y-3">
+              <div className={`pt-5 pb-2 space-y-3 transition-colors duration-300 ${
+                shouldMobileMenuBeSolid ? 'border-t border-gray-200' : 'border-t border-white/20'
+              }`}>
                 {userData ? (
                   <>
                     {userData.role === 'guest' ? (
                       <>
                         <Link
                           to="/booking"
-                          className={`block w-full text-center px-4 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                            isScrolled
-                              ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30'
-                              : 'bg-white/20 text-white hover:bg-white/30'
-                          }`}
+                          className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-all duration-300 shadow-md transform hover:scale-[1.02]"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Book Now
@@ -407,7 +440,11 @@ export const Header = () => {
                             logout();
                             setIsMobileMenuOpen(false);
                           }}
-                          className="block w-full px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                          className={`block w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${
+                            shouldMobileMenuBeSolid
+                              ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                              : 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
+                          }`}
                         >
                           Sign Out
                         </button>
@@ -415,7 +452,7 @@ export const Header = () => {
                     ) : (
                       <Link
                         to="/account"
-                        className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                        className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-all duration-300 shadow-md transform hover:scale-[1.02]"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         My Account
@@ -425,11 +462,11 @@ export const Header = () => {
                 ) : (
                   <>
                     <Link
-                      to="/login"
-                      className={`block w-full text-center px-4 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                        isScrolled
-                          ? 'bg-heritage-light/20 text-heritage-green hover:bg-heritage-light/30'
-                          : 'bg-white/20 text-white hover:bg-white/30'
+                      to="/auth"
+                      className={`block w-full text-center px-4 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] ${
+                        shouldMobileMenuBeSolid
+                          ? 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'
+                          : 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -437,7 +474,7 @@ export const Header = () => {
                     </Link>
                     <Link
                       to="/auth?mode=register"
-                      className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-300"
+                      className="block w-full text-center px-4 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-all duration-300 shadow-md transform hover:scale-[1.02]"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Register

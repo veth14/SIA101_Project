@@ -23,15 +23,16 @@ export const Footer = () => {
 
   const navigation = {
     hotel: [
-      { name: 'About Us', href: '/about', scrollTo: 'about' },
-      { name: 'Rooms', href: '/rooms', scrollTo: 'rooms' },
-      { name: 'Amenities', href: '/amenities', scrollTo: 'amenities' },
-      { name: 'Contact', href: '/contact', scrollTo: 'contact' },
+      { name: 'About Us', href: '/about' },
+      { name: 'Rooms', href: '/rooms' },
+      { name: 'Amenities', href: '/amenities' },
+      { name: 'Contact', href: '/contact' },
     ],
     support: [
+      { name: 'Help Center', href: '/help' },
       { name: 'FAQs', href: '/faqs' },
-      { name: 'Terms & Conditions', href: '/terms' },
-      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Privacy Policy', href: '/privacy-policy' },
+      { name: 'Terms & Conditions', href: '/terms-conditions' },
     ],
     social: [
       {
@@ -103,27 +104,15 @@ export const Footer = () => {
               <ul role="list" className="space-y-4">
                 {navigation.hotel.map((item) => (
                   <li key={item.name}>
-                    {item.scrollTo ? (
-                      <button
-                        onClick={() => handleScrollTo(item.scrollTo)}
-                        className="text-base text-gray-600 hover:text-heritage-green transition-all duration-300 hover:translate-x-2 block w-full text-left group"
-                      >
-                        <span className="flex items-center">
-                          <span className="w-0 h-0.5 bg-heritage-green transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
-                          {item.name}
-                        </span>
-                      </button>
-                    ) : (
-                      <Link
-                        to={item.href}
-                        className="text-base text-gray-600 hover:text-heritage-green transition-all duration-300 hover:translate-x-2 block group"
-                      >
-                        <span className="flex items-center">
-                          <span className="w-0 h-0.5 bg-heritage-green transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
-                          {item.name}
-                        </span>
-                      </Link>
-                    )}
+                    <Link
+                      to={item.href}
+                      className="text-base text-gray-600 hover:text-heritage-green transition-all duration-300 hover:translate-x-2 block group"
+                    >
+                      <span className="flex items-center">
+                        <span className="w-0 h-0.5 bg-heritage-green transition-all duration-300 group-hover:w-4 mr-0 group-hover:mr-2"></span>
+                        {item.name}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>

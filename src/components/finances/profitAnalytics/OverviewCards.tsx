@@ -4,30 +4,28 @@ interface OverviewCardsProps {
   totalRevenue: number;
   totalExpenses: number;
   netProfit: number;
-  monthlyTarget: number;
 }
 
 export const OverviewCards: React.FC<OverviewCardsProps> = ({
   totalRevenue,
   totalExpenses,
-  netProfit,
-  monthlyTarget
+  netProfit
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'PHP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
   };
 
-  const achievementPercentage = (netProfit / monthlyTarget) * 100;
   const profitMargin = ((netProfit / totalRevenue) * 100);
-  const isPositiveGrowth = netProfit > monthlyTarget * 0.8;
+
+  // No skeleton loader: render immediately with provided metrics
 
   return (
-    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2 lg:grid-cols-4">
         
         {/* Total Revenue Card */}
         <div className="overflow-hidden relative p-6 rounded-2xl border shadow-lg backdrop-blur-xl transition-all duration-500 bg-white/95 border-white/50 hover:shadow-2xl hover:-translate-y-1 group">
@@ -40,15 +38,15 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({
                 <p className="text-sm font-bold tracking-wide text-gray-700">Total Revenue</p>
               </div>
               
-              <p className="mb-2 text-3xl font-extrabold text-[#82A33D] group-hover:scale-105 transition-transform duration-300">
+              <p className="mb-3 text-4xl font-black text-[#82A33D] group-hover:scale-105 transition-transform duration-300">
                 {formatCurrency(totalRevenue)}
               </p>
               
-              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                <svg className="mr-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+              <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100/80 text-emerald-700 border border-emerald-300/60 shadow-sm">
+                <svg className="mr-1.5 w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                 </svg>
-                +12.3% from last month
+                <span className="font-extrabold">+12.3%</span>
               </div>
             </div>
             
@@ -71,15 +69,15 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({
                 <p className="text-sm font-bold tracking-wide text-gray-700">Net Profit</p>
               </div>
               
-              <p className="mb-2 text-3xl font-extrabold text-[#82A33D] group-hover:scale-105 transition-transform duration-300">
+              <p className="mb-3 text-4xl font-black text-[#82A33D] group-hover:scale-105 transition-transform duration-300">
                 {formatCurrency(netProfit)}
               </p>
               
-              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                <svg className="mr-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+              <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100/80 text-emerald-700 border border-emerald-300/60 shadow-sm">
+                <svg className="mr-1.5 w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                 </svg>
-                +8.7% growth
+                <span className="font-extrabold">+8.7%</span>
               </div>
             </div>
             
@@ -102,15 +100,15 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({
                 <p className="text-sm font-bold tracking-wide text-gray-700">Total Expenses</p>
               </div>
               
-              <p className="mb-2 text-3xl font-extrabold text-[#82A33D] group-hover:scale-105 transition-transform duration-300">
+              <p className="mb-3 text-4xl font-black text-orange-600 group-hover:scale-105 transition-transform duration-300">
                 {formatCurrency(totalExpenses)}
               </p>
               
-              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200/50">
-                <svg className="mr-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
+              <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-orange-100/80 text-orange-700 border border-orange-300/60 shadow-sm">
+                <svg className="mr-1.5 w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
                 </svg>
-                +5.2% increase
+                <span className="font-extrabold">+5.2%</span>
               </div>
             </div>
             
@@ -133,15 +131,15 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({
                 <p className="text-sm font-bold tracking-wide text-gray-700">Profit Margin</p>
               </div>
               
-              <p className="mb-2 text-3xl font-extrabold text-[#82A33D] group-hover:scale-105 transition-transform duration-300">
+              <p className="mb-3 text-4xl font-black text-purple-600 group-hover:scale-105 transition-transform duration-300">
                 {profitMargin.toFixed(1)}%
               </p>
               
-              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                <svg className="mr-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+              <div className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-purple-100/80 text-purple-700 border border-purple-300/60 shadow-sm">
+                <svg className="mr-1.5 w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                 </svg>
-                +2.1% improvement
+                <span className="font-extrabold">+2.1%</span>
               </div>
             </div>
             

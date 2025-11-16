@@ -1,5 +1,4 @@
 import React from 'react';
-import { DashboardHeader } from './DashboardHeader';
 import DashboardStats from './DashboardStats';
 import DashboardCharts from './DashboardCharts';
 
@@ -24,8 +23,6 @@ export const DashboardPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <DashboardHeader />
 
         {/* Dashboard Stats */}
         <DashboardStats />

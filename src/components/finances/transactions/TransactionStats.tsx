@@ -1,5 +1,4 @@
 import React from 'react';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
 
 interface TransactionStatsProps {
   totalTransactions: number;
@@ -71,32 +70,7 @@ const TransactionStats: React.FC<TransactionStatsProps> = ({
     }
   ];
 
-  // Loading state is now managed by parent component
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
-        {[...Array(3)].map((_, index) => (
-          <div key={index} className="overflow-hidden relative p-8 rounded-2xl border shadow-lg backdrop-blur-xl bg-white/95 border-white/50">
-            <div className="flex justify-between items-start">
-              <div className="flex-1 mr-5">
-                <div className="flex items-center mb-3">
-                  <Skeleton className="w-1 h-5 mr-2 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <Skeleton className="h-10 w-28 mb-3" />
-                <Skeleton className="h-6 w-32 rounded-full" />
-              </div>
-              <Skeleton className="w-16 h-16 rounded-xl" />
-            </div>
-            <div className="absolute right-0 bottom-0 left-0 h-1">
-              <Skeleton className="h-full w-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  // Loading state is managed by parent component (placeholder removed)
 
   return (
     <>

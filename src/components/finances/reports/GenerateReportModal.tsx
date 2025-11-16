@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, FileText, Calendar, CheckCircle, AlertCircle, Download } from 'lucide-react';
 
 interface GenerateReportModalProps {
@@ -13,8 +14,6 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [reportExists, setReportExists] = useState(false);
-
-  if (!isOpen) return null;
 
   const categories = [
     { value: 'income', label: 'Income Report', icon: '💰' },
@@ -77,8 +76,10 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl animate-scale-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-heritage-green/5 to-heritage-neutral/5">
@@ -270,7 +271,8 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

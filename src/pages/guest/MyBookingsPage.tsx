@@ -21,7 +21,7 @@ interface Booking {
   tax: number;
   taxRate: number;
   totalAmount: number;
-  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'Confirmed' | 'Checkout';
   paymentStatus: string;
   userId: string;
   userEmail: string;
@@ -206,7 +206,7 @@ export const MyBookingsPage: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 pt-20 sm:pt-24">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute rounded-full -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 blur-3xl animate-pulse"></div>
@@ -214,40 +214,40 @@ export const MyBookingsPage: React.FC = () => {
         <div className="absolute w-64 h-64 transform -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2 bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
-      <div className="relative z-10 pt-32 pb-12">
+      <div className="relative z-10 py-8 sm:py-12">
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          {/* Hero Header Section */}
-          <div className="mb-16 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Hero Header Section - MOBILE RESPONSIVE */}
+          <div className="mb-8 sm:mb-12 md:mb-16 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 mb-6 sm:mb-8 transition-transform duration-300 transform shadow-2xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl hover:scale-110">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
             
-            <div className="space-y-4">
-              <h1 className="text-5xl font-black leading-tight text-transparent md:text-6xl bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-transparent bg-gradient-to-r from-slate-900 via-heritage-green to-emerald-600 bg-clip-text px-4">
                 My Reservations
               </h1>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-slate-600">
+              <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl leading-relaxed text-slate-600 px-4">
                 Manage and track your luxury stays at <span className="font-semibold text-heritage-green">Balay Ginhawa</span>
               </p>
             </div>
 
-            {/* Status Indicators */}
-            <div className="flex items-center justify-center mt-8 space-x-8">
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-sm font-semibold text-slate-700">Live Sync</span>
+            {/* Status Indicators - MOBILE RESPONSIVE */}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-8 mt-6 sm:mt-8 px-4">
+              <div className="flex items-center px-3 sm:px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Live Sync</span>
               </div>
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <span className="text-sm font-semibold text-slate-700">Real-time Updates</span>
+              <div className="flex items-center px-3 sm:px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0" style={{ animationDelay: '1s' }}></div>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Real-time Updates</span>
               </div>
-              <div className="flex items-center px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
-                <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center px-3 sm:px-4 py-2 space-x-2 border rounded-full shadow-lg bg-white/80 backdrop-blur-sm border-white/20">
+                <svg className="w-4 h-4 text-heritage-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-sm font-semibold text-slate-700">Secure</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">Secure</span>
               </div>
             </div>
           </div>
@@ -258,12 +258,12 @@ export const MyBookingsPage: React.FC = () => {
           </div>
         )}
 
-          {/* Streamlined Controls Panel */}
-          <div className="mb-8 overflow-hidden border shadow-xl bg-white/95 backdrop-blur-xl rounded-2xl border-white/50">
-            <div className="px-6 py-5">
+          {/* Streamlined Controls Panel - MOBILE RESPONSIVE */}
+          <div className="mb-6 sm:mb-8 overflow-hidden border shadow-xl bg-white/95 backdrop-blur-xl rounded-2xl border-white/50">
+            <div className="px-4 sm:px-6 py-4 sm:py-5">
               <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
-                {/* Compact Search */}
-                <div className="flex-1 max-w-md">
+                {/* Compact Search - MOBILE RESPONSIVE */}
+                <div className="w-full lg:flex-1 lg:max-w-md">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,7 +275,7 @@ export const MyBookingsPage: React.FC = () => {
                       placeholder="Search bookings..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full py-3 pl-10 pr-4 text-sm font-medium transition-all duration-200 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green placeholder-slate-400"
+                      className="w-full py-2.5 sm:py-3 pl-10 pr-4 text-sm font-medium transition-all duration-200 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green placeholder-slate-400"
                     />
                     {searchTerm && (
                       <button
@@ -290,9 +290,10 @@ export const MyBookingsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Enhanced Filter Tabs */}
-                <div className="flex gap-2 p-2 shadow-inner bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl">
-                  {(() => {
+                {/* Enhanced Filter Tabs - MOBILE RESPONSIVE */}
+                <div className="w-full lg:w-auto">
+                  <div className="grid grid-cols-2 lg:flex gap-2 p-2 shadow-inner bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl">
+                    {(() => {
                     const counts = getFilterCounts();
                     return [
                       { 
@@ -327,7 +328,7 @@ export const MyBookingsPage: React.FC = () => {
                       <button
                         key={tab.key}
                         onClick={() => setFilter(tab.key as any)}
-                        className={`relative px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                        className={`relative px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 ${
                           filter === tab.key
                             ? `${tab.activeClass} scale-105 ring-2 ring-white/30`
                             : `text-slate-600 bg-white/70 backdrop-blur-sm border border-slate-200/50 ${tab.hoverClass} hover:shadow-md hover:border-transparent`
@@ -337,10 +338,10 @@ export const MyBookingsPage: React.FC = () => {
                           <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-xl"></div>
                         )}
                         
-                        <div className="relative flex items-center space-x-2">
-                          <span>{tab.label}</span>
+                        <div className="relative flex items-center space-x-1 sm:space-x-2">
+                          <span className="whitespace-nowrap">{tab.label}</span>
                           {tab.count > 0 && (
-                            <span className={`px-2 py-1 rounded-full text-xs font-black ${
+                            <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-black ${
                               filter === tab.key 
                                 ? 'bg-white/25 text-white backdrop-blur-sm' 
                                 : 'bg-slate-100 text-slate-600 group-hover:bg-white/20 group-hover:text-white'
@@ -352,11 +353,12 @@ export const MyBookingsPage: React.FC = () => {
                       </button>
                     ));
                   })()}
+                  </div>
                 </div>
               </div>
 
-              {/* Results Info */}
-              <div className="flex items-center justify-between mt-4 text-sm text-slate-500">
+              {/* Results Info - MOBILE RESPONSIVE */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-4 text-xs sm:text-sm text-slate-500">
                 <div>
                   Showing <span className="font-semibold text-slate-700">{startIndex + 1}–{Math.min(endIndex, filteredBookings.length)}</span> of <span className="font-semibold text-slate-700">{filteredBookings.length}</span> bookings
                 </div>
@@ -375,54 +377,54 @@ export const MyBookingsPage: React.FC = () => {
           {/* Modern Card-Based Layout */}
           <div className="overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-xl rounded-3xl border-white/50">
             {filteredBookings.length === 0 ? (
-              <div className="py-24 text-center">
-                <div className="flex items-center justify-center w-24 h-24 mx-auto mb-6 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl">
-                  <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="py-16 sm:py-20 md:py-24 text-center px-4">
+                <div className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl">
+                  <svg className="w-10 h-10 sm:w-12 sm:h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="mb-3 text-2xl font-bold text-slate-900">
+                <h3 className="mb-2 sm:mb-3 text-xl sm:text-2xl font-bold text-slate-900">
                   {filter === 'upcoming' ? 'No upcoming reservations' : 
                    filter === 'past' ? 'No past reservations' :
                    filter === 'cancelled' ? 'No cancelled reservations' :
                    'No reservations found'}
                 </h3>
-                <p className="text-lg text-slate-500">
+                <p className="text-base sm:text-lg text-slate-500 px-4">
                   {filter === 'upcoming' ? 'You don\'t have any upcoming bookings. Book a new stay to see future reservations here.' :
                    filter === 'past' ? 'You don\'t have any completed or past bookings yet.' :
                    filter === 'cancelled' ? 'You don\'t have any cancelled bookings.' :
                    'Try adjusting your search criteria or create a new booking.'}
                 </p>
-                <button className="px-6 py-3 mt-6 font-semibold text-white transition-all duration-300 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-2xl hover:shadow-xl hover:scale-105">
+                <button className="px-5 sm:px-6 py-2.5 sm:py-3 mt-4 sm:mt-6 text-sm sm:text-base font-semibold text-white transition-all duration-300 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl sm:rounded-2xl hover:shadow-xl hover:scale-105">
                   Book New Stay
                 </button>
               </div>
             ) : (
-              <div className="p-8">
-                {/* Compact Header */}
-                <div className="flex items-center justify-between pb-4 mb-8 border-b border-slate-200">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-heritage-green to-emerald-600">
+              <div className="p-4 sm:p-6 md:p-8">
+                {/* Compact Header - MOBILE RESPONSIVE */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 pb-4 mb-6 sm:mb-8 border-b border-slate-200">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-heritage-green to-emerald-600 flex-shrink-0">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-slate-900">Your Reservations</h3>
-                      <p className="text-sm text-slate-500">{filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''} found</p>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">Your Reservations</h3>
+                      <p className="text-xs sm:text-sm text-slate-500">{filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''} found</p>
                     </div>
                   </div>
-                  <div className="text-sm text-slate-500">
+                  <div className="text-xs sm:text-sm text-slate-500">
                     Page {currentPage} of {totalPages}
                   </div>
                 </div>
 
                 {/* Responsive Card Grid */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
                   {currentItems.map((booking, index) => (
                     <div 
                       key={booking.id} 
-                      className="relative p-6 transition-all duration-300 border group bg-gradient-to-br from-white to-slate-50/50 rounded-2xl border-slate-200/50 hover:shadow-xl hover:-translate-y-1"
+                      className="relative p-4 sm:p-6 transition-all duration-300 border group bg-gradient-to-br from-white to-slate-50/50 rounded-xl sm:rounded-2xl border-slate-200/50 hover:shadow-xl hover:-translate-y-1"
                     >
                       {/* Status Strip */}
                       <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl ${
@@ -432,26 +434,26 @@ export const MyBookingsPage: React.FC = () => {
                         'bg-gradient-to-r from-slate-400 to-slate-500'
                       }`}></div>
 
-                      {/* Header Row */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center justify-center w-12 h-12 transition-transform duration-300 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-xl group-hover:scale-110">
-                            <svg className="w-6 h-6 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {/* Header Row - MOBILE RESPONSIVE */}
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                          <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 transition-transform duration-300 bg-gradient-to-br from-heritage-green/10 to-emerald-500/10 rounded-xl group-hover:scale-110 flex-shrink-0">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
                             </svg>
                           </div>
-                          <div>
-                            <h4 className="text-lg font-bold leading-tight text-slate-900">
+                          <div className="min-w-0">
+                            <h4 className="text-base sm:text-lg font-bold leading-tight text-slate-900 truncate">
                               {booking.roomName || getRoomDisplayName(booking.roomType)}
                             </h4>
-                            <p className="font-mono text-sm text-slate-500">
+                            <p className="font-mono text-xs sm:text-sm text-slate-500 truncate">
                               ID: {booking.bookingId || booking.id.slice(-8)}
                             </p>
                           </div>
                         </div>
                         
-                        <div className="text-right">
-                          <div className="text-2xl font-black text-heritage-green">
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-lg sm:text-xl md:text-2xl font-black text-heritage-green">
                             ₱{booking.totalAmount.toLocaleString()}
                           </div>
                           {booking.nights && (
@@ -460,8 +462,8 @@ export const MyBookingsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Info Grid */}
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                      {/* Info Grid - MOBILE RESPONSIVE */}
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
                         <div className="space-y-3">
                           <div>
                             <div className="flex items-center mb-1 space-x-2">
@@ -505,17 +507,17 @@ export const MyBookingsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Bottom Row */}
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-2">
+                      {/* Bottom Row - MOBILE RESPONSIVE */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-slate-200">
+                        <div className="flex items-center flex-wrap gap-2 sm:gap-4">
+                          <div className="flex items-center space-x-1 sm:space-x-2">
                             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                             </svg>
-                            <span className="text-sm font-semibold text-slate-600">{booking.guests} guest{booking.guests > 1 ? 's' : ''}</span>
+                            <span className="text-xs sm:text-sm font-semibold text-slate-600">{booking.guests} guest{booking.guests > 1 ? 's' : ''}</span>
                           </div>
                           
-                          <span className={`inline-flex items-center px-3 py-1 text-xs font-bold rounded-full ${
+                          <span className={`inline-flex items-center px-2 sm:px-3 py-1 text-xs font-bold rounded-full ${
                             booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
                             booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                             booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
@@ -530,25 +532,40 @@ export const MyBookingsPage: React.FC = () => {
                           </span>
                         </div>
 
-                        <button
-                          onClick={() => setSelectedBooking(booking)}
-                          className="inline-flex items-center px-4 py-2 text-sm font-bold text-white transition-all duration-200 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:shadow-lg hover:scale-105"
-                        >
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          View Details
-                        </button>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          <button
+                            onClick={() => setSelectedBooking(booking)}
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white transition-all duration-200 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-lg sm:rounded-xl hover:shadow-lg active:scale-95 sm:hover:scale-105"
+                          >
+                            <svg className="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View Details
+                          </button>
+                          
+                          {/* Review Button - Show for checkout status OR confirmed/completed after checkout date */}
+                          {(booking.status === 'Checkout' || ((booking.status === 'completed' || booking.status === 'confirmed' || booking.status === 'Confirmed') && new Date(booking.checkOut) < new Date())) && (
+                            <button
+                              onClick={() => window.location.href = `/submit-review/${booking.bookingId}`}
+                              className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-heritage-green bg-white border-2 border-heritage-green transition-all duration-200 transform rounded-lg sm:rounded-xl hover:bg-heritage-green hover:text-white hover:shadow-lg active:scale-95 sm:hover:scale-105"
+                            >
+                              <svg className="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                              </svg>
+                              Write Review
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Enhanced Pagination */}
+                {/* Enhanced Pagination - MOBILE RESPONSIVE */}
                 {totalPages > 1 && (
-                  <div className="px-6 py-4 mt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                    <div className="flex items-center justify-between">
+                  <div className="px-4 sm:px-6 py-4 mt-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                    <div className="flex items-center justify-between gap-2">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
@@ -564,7 +581,7 @@ export const MyBookingsPage: React.FC = () => {
                         Previous
                       </button>
 
-                      <div className="flex space-x-1">
+                      <div className="flex space-x-1 sm:space-x-2">
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                           let pageNum;
                           if (totalPages <= 5) {
@@ -581,7 +598,7 @@ export const MyBookingsPage: React.FC = () => {
                             <button
                               key={pageNum}
                               onClick={() => setCurrentPage(pageNum)}
-                              className={`w-10 h-10 text-sm font-bold rounded-lg transition-all duration-150 ${
+                              className={`w-8 h-8 sm:w-10 sm:h-10 text-xs sm:text-sm font-bold rounded-lg transition-all duration-150 ${
                                 currentPage === pageNum
                                   ? 'bg-heritage-green text-white shadow-md transform scale-105'
                                   : 'text-gray-700 hover:bg-heritage-green hover:text-white bg-white border border-gray-200 shadow-sm'
@@ -596,7 +613,7 @@ export const MyBookingsPage: React.FC = () => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
+                        className={`inline-flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-150 ${
                           currentPage === totalPages
                             ? 'text-gray-400 cursor-not-allowed bg-gray-100'
                             : 'text-gray-700 hover:bg-heritage-green hover:text-white shadow-sm bg-white border border-gray-200'
