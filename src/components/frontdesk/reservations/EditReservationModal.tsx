@@ -1,46 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom'; // Import createPortal
+import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { db } from '../../../config/firebase';
 import { 
   collection, query, where, getDocs, 
-  doc, getDoc, Timestamp, setDoc 
+  doc, Timestamp, writeBatch
 } from 'firebase/firestore';
+// --- UPDATED ---
+// Import shared types and the new hook from the parent page
+import {
+  type BookingData,
+  type IRoom,
+  useRooms
+} from './ReservationsPage';
+// --- END UPDATED ---
 
-// --- TYPE DEFINITIONS ---
-// (It's best to move this to a shared types file, but it can stay here)
-interface BookingData {
-  additionalGuestPrice: number;
-  baseGuests: number;
-  basePrice: number;
-  bookingId: string;
-  checkIn: string;
-  checkOut: string;
-  createdAt: Timestamp;
-  guests: number;
-  nights: number;
-  paymentDetails: {
-    cardLast4: string | null;
-    cardholderName: string | null;
-    gcashName: string | null;
-    gcashNumber: string | null;
-    paidAt: Timestamp | null;
-    paymentMethod: string;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
-  };
-  roomName: string;
-  roomNumber: string | null;
-  roomPricePerNight: number;
-  roomType: string;
-  status: 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
-  subtotal: number;
-  tax: number;
-  taxRate: number;
-  totalAmount: number;
-  updatedAt: Timestamp;
-  userEmail: string;
-  userId: string;
-  userName: string;
-}
 
 // --- PROPS ---
 interface EditReservationModalProps {
@@ -58,17 +31,32 @@ const localRoomTypes = [
   { id: 'family', name: 'Silid Haraya', price: 8000, baseGuests: 4, maxGuests: 8, additionalGuestPrice: 1200 },
 ];
 
-// --- HELPER FUNCTIONS ---
-const normalizeTypeInput = (raw: any) => {
-  if (!raw) return '';
-  const s = raw.toString().trim().toLowerCase();
-  if (localRoomTypes.some(rt => rt.id === s)) return s;
-  if (s === 'standard room' || s === 'silid payapa') return 'standard';
-  if (s === 'deluxe room' || s === 'silid marahuyo') return 'deluxe';
-  if (s === 'suite room' || s === 'silid ginhawa') return 'suite';
-  if (s === 'family suite' || s === 'silid haraya' || s === 'premium family suite') return 'family';
-  return s;
+// --- HELPER FUNCTIONS (CORRECTED) ---
+// --- THIS IS THE FIX: Replaced the buggy 'normalizeTypeInput' ---
+const typeIdMap: Record<string, string> = {
+  'standard': 'standard', 'standard room': 'standard',
+  'deluxe': 'deluxe', 'deluxe room': 'deluxe',
+  'suite': 'suite', 'suite room': 'suite',
+  'family': 'family', 'family suite': 'family',
+  'premium family suite': 'family',
+  'silid payapa': 'standard',
+  'silid marahuyo': 'deluxe',
+  'silid ginhawa': 'suite',
+  'silid haraya': 'family',
+  // Add all variations from your data
+  'silid payapa (standard room)': 'standard',
+  'silid marahuyo (deluxe room)': 'deluxe',
+  'silid ginhawa (suite room)': 'suite',
+  'silid haraya (premium family suite)': 'family',
 };
+
+const normalizeTypeKey = (s: string) => {
+  if (!s) return 'unknown'; // Return a non-matching key
+  const key = s.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
+  // Default to a non-matching key instead of 'standard'
+  return typeIdMap[key] || 'unknown'; 
+};
+// --- END THE FIX ---
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "---";
@@ -77,6 +65,25 @@ const formatDate = (dateString: string) => {
     day: 'numeric',
     year: 'numeric'
   });
+};
+
+const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
+  if (!checkIn1 || !checkOut1 || !checkIn2 || !checkOut2) {
+    return false;
+  }
+  try {
+    const start1 = new Date(checkIn1);
+    const end1 = new Date(checkOut1);
+    const start2 = new Date(checkIn2);
+    const end2 = new Date(checkOut2);
+    // Check for invalid dates
+    if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || isNaN(start2.getTime()) || isNaN(end2.getTime())) {
+      return false;
+    }
+    return start1 < end2 && start2 < end1;
+  } catch(e) {
+    return false;
+  }
 };
 
 
@@ -104,6 +111,15 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // --- NEW ---
+  // Get rooms from context
+  const { rooms: allRooms, loading: roomsLoading } = useRooms();
+  // State for *available* rooms
+  const [filteredRooms, setFilteredRooms] = useState<IRoom[]>([]);
+  // State for our single availability query
+  const [overlappingBookings, setOverlappingBookings] = useState<BookingData[]>([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  // --- END NEW ---
+
   // Prevent background scroll while modal is open
   useEffect(() => {
     if (!isOpen) return;
@@ -120,7 +136,8 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
       setFormData({
         guestName: reservation.userName,
         email: reservation.userEmail,
-        roomType: normalizeTypeInput(reservation.roomType),
+        // --- UPDATED: Use the correct helper function ---
+        roomType: normalizeTypeKey(reservation.roomType),
         roomNumber: reservation.roomNumber || '',
         checkIn: reservation.checkIn,
         checkOut: reservation.checkOut,
@@ -134,6 +151,8 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         cardExpiry: '',
         cardCvv: '',
       });
+      // Clear errors when a new reservation is loaded
+      setErrors({});
     }
   }, [reservation]);
 
@@ -156,8 +175,6 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     
   }, [formData.checkIn, formData.checkOut, formData.guests, formData.roomType, isOpen, reservation]);
 
-
-  // --- All business logic (handlers, data fetching) remains unchanged ---
   
   // validateForm (unchanged)
   const validateForm = () => {
@@ -250,39 +267,167 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     };
   };
 
-  // handleSave (unchanged)
+  // --- NEW HOTFIX: Step 1 ---
+  // Runs ONE query to get all conflicting bookings for the date range.
+  useEffect(() => {
+    if (!isOpen || !reservation || !formData.checkIn || !formData.checkOut) {
+      setOverlappingBookings([]);
+      return;
+    }
+    
+    // Validate dates before querying
+    const checkIn = new Date(formData.checkIn);
+    const checkOut = new Date(formData.checkOut);
+    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime()) || checkOut <= checkIn) {
+      setOverlappingBookings([]);
+      return;
+    }
+
+    let mounted = true;
+    const fetchOverlappingBookings = async () => {
+      setIsCheckingAvailability(true);
+      setOverlappingBookings([]);
+      try {
+        // This is the single-query hotfix.
+        const q = query(
+          collection(db, 'bookings'),
+          where('status', 'in', ['confirmed', 'checked-in']),
+          where('checkIn', '<', formData.checkOut), // Booking starts *before* this one ends
+          where('checkOut', '>', formData.checkIn) // Booking ends *after* this one starts
+        );
+
+        const snap = await getDocs(q);
+        if (!mounted) return;
+
+        // Filter out the *current* reservation we are editing
+        const bookings = snap.docs
+          .map(doc => ({ ...doc.data(), bookingId: doc.id } as BookingData))
+          .filter(b => b.bookingId !== reservation.bookingId); 
+          
+        setOverlappingBookings(bookings);
+
+      } catch (err) {
+        console.error("Error fetching overlapping bookings:", err);
+        if (mounted) setOverlappingBookings([]);
+      } finally {
+        if (mounted) setIsCheckingAvailability(false);
+      }
+    };
+
+    fetchOverlappingBookings();
+    
+    return () => { mounted = false; };
+  }, [isOpen, reservation, formData.checkIn, formData.checkOut]); // Runs when dates change
+  // --- END NEW HOTFIX: Step 1 ---
+
+  // --- NEW HOTFIX: Step 2 ---
+  // Create a memoized Set of all room numbers that are occupied in the selected range.
+  const occupiedRoomNumbers = useMemo(() => {
+    const occupied = new Set<string>();
+    for (const b of overlappingBookings) {
+      if (!b.roomNumber) continue;
+      
+      const isOverlapping = checkDateOverlap(
+        formData.checkIn, formData.checkOut,
+        b.checkIn, b.checkOut
+      );
+      
+      if (isOverlapping) {
+        occupied.add(b.roomNumber);
+      }
+    }
+    return occupied;
+  }, [overlappingBookings, formData.checkIn, formData.checkOut]);
+  // --- END NEW HOTFIX: Step 2 ---
+
+
+  // --- UPDATED HOTFIX: Step 3 ---
+  // This effect is now fast and in-memory. It replaces the old 'compute' effect.
+  useEffect(() => {
+    if (!formData.roomType || !reservation) {
+      setFilteredRooms([]);
+      return;
+    }
+
+    // 1. Get all rooms of the correct type from context
+    // --- UPDATED: Use the correct helper function ---
+    const reservationTypeKey = formData.roomType; // This is already normalized (e.g., "standard")
+    const candidateRooms = allRooms.filter(r => 
+      normalizeTypeKey(r.roomType) === reservationTypeKey
+    );
+    // --- END UPDATED ---
+
+    // 2. Filter them in-memory
+    const availableRooms = candidateRooms.filter(room => {
+      // *Always* include the room currently assigned to this reservation
+      if (room.id === reservation.roomNumber) {
+        return true;
+      }
+      
+      // --- UPDATED LOGIC ---
+      // If the room's base status isn't 'available' OR it's not 'isActive', hide it
+      if (room.status !== 'available' || room.isActive === false) {
+        return false;
+      }
+      // --- END UPDATED LOGIC ---
+
+      // If the dates are invalid, just show all 'available' rooms
+      if (!formData.checkIn || !formData.checkOut || new Date(formData.checkOut) <= new Date(formData.checkIn)) {
+        return true;
+      }
+
+      // If the room is in the occupied Set, hide it.
+      if (occupiedRoomNumbers.has(room.id)) {
+        return false;
+      }
+      
+      // Otherwise, it's available.
+      return true;
+    });
+
+    setFilteredRooms(availableRooms);
+
+  }, [formData.roomType, allRooms, occupiedRoomNumbers, reservation, formData.checkIn, formData.checkOut]);
+  // --- END UPDATED HOTFIX: Step 3 ---
+
+
+  // --- UPDATED: handleSave ---
+  // Now uses in-memory checks instead of DB queries
   const handleSave = async () => {
     if (!validateForm() || !reservation) return;
 
-    // 1. Check room availability
-    if (formData.roomNumber && reservation && formData.roomNumber !== reservation.roomNumber) {
-      try {
-        const roomDoc = await getDoc(doc(db, 'rooms', formData.roomNumber));
-        const roomData = roomDoc.exists() ? roomDoc.data() : null;
-        const status = roomData?.status || 'available';
-        const isActive = roomData?.isActive === false ? false : true;
-        if (status !== 'available' || !isActive) {
-          setErrors(prev => ({ ...prev, roomNumber: 'Selected room is currently marked unavailable' }));
-          return;
-        }
-      } catch (e) { console.warn('Could not read room doc before save:', e); }
+    // 1. Check room availability (IN-MEMORY)
+    const newRoom = formData.roomNumber || null;
+    const prevRoom = reservation.roomNumber || null;
+    
+    // Only check if the room *changed* to a new room
+    if (newRoom && newRoom !== prevRoom) {
+      const selectedRoomData = allRooms.find(r => r.id === newRoom);
 
-      const ok = await isRoomAvailableForDates(formData.roomNumber, formData.checkIn, formData.checkOut);
-      if (!ok) {
+      // --- UPDATED LOGIC ---
+      // Check base status and isActive from context
+      if (!selectedRoomData || selectedRoomData.status !== 'available' || selectedRoomData.isActive === false) {
+        setErrors(prev => ({ ...prev, roomNumber: 'Selected room is currently marked unavailable' }));
+        return;
+      }
+      // --- END UPDATED LOGIC ---
+      
+      // Check occupancy from our hotfix query
+      if (occupiedRoomNumbers.has(newRoom)) {
         setErrors(prev => ({ ...prev, roomNumber: 'Selected room is not available for those dates' }));
         return;
       }
     }
 
-    // 2. Get new pricing
+    // 2. Get new pricing (unchanged)
     const newPricing = calculatePricing();
     const newTotalAmount = newPricing.totalAmount;
 
-    // 3. Get new room name
+    // 3. Get new room name (unchanged)
     const roomTypeData = localRoomTypes.find(rt => rt.id === formData.roomType);
     const newRoomName = roomTypeData ? roomTypeData.name : 'Unknown Room';
 
-    // 4. Determine new payment status
+    // 4. Determine new payment status (unchanged)
     const previouslyPaidAmount = reservation.paymentDetails.paymentStatus === 'paid' ? reservation.totalAmount : 0;
     const amountPaidNow = Number(formData.paymentReceived) || 0;
     const totalPaid = previouslyPaidAmount + amountPaidNow;
@@ -297,7 +442,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
       newPaidAt = null;
     }
 
-    // 5. Build final object
+    // 5. Build final object (unchanged)
     const updatedReservation: BookingData = {
       ...reservation,
       userName: formData.guestName,
@@ -307,7 +452,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
       guests: formData.guests,
       roomType: formData.roomType,
       roomName: newRoomName,
-      roomNumber: formData.roomNumber || null,
+      roomNumber: newRoom,
       ...newPricing,
       paymentDetails: {
         ...reservation.paymentDetails,
@@ -321,131 +466,39 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
       },
     };
 
-    // 6. Update room documents
+    // 6. Update room documents (unchanged logic, but now wrapped in transaction)
     try {
-      const prevRoom = reservation?.roomNumber;
-      const newRoom = formData.roomNumber || null;
-      if (newRoom && newRoom !== prevRoom) {
-        await setDoc(doc(db, 'rooms', newRoom), {
-          status: 'occupied', isActive: false, currentReservation: reservation.bookingId, 
-        }, { merge: true });
-      }
-      if (prevRoom && prevRoom !== newRoom) {
-        await setDoc(doc(db, 'rooms', prevRoom), {
-          status: 'available', isActive: true, currentReservation: null,
-        }, { merge: true });
+      if (newRoom !== prevRoom) {
+        // We need to update two rooms atomically
+        const batch = writeBatch(db);
+
+        if (newRoom) {
+          const newRoomRef = doc(db, 'rooms', newRoom);
+          batch.set(newRoomRef, {
+            status: 'occupied', isActive: false, currentReservation: reservation.bookingId, 
+          }, { merge: true });
+        }
+        if (prevRoom) {
+          const prevRoomRef = doc(db, 'rooms', prevRoom);
+          batch.set(prevRoomRef, {
+            status: 'available', isActive: true, currentReservation: null,
+          }, { merge: true });
+        }
+        await batch.commit();
       }
     } catch (err) {
-      console.error('Error updating room documents:', err);
+      console.error('Error updating room documents in batch:', err);
+      // Don't block the main save, but log the error
     }
+    // --- END UPDATED ---
 
     // 7. Pass object back
     onSave(updatedReservation);
   };
+  // --- END UPDATED: handleSave ---
   
-  // Room fetching logic (unchanged)
-  const [rooms, setRooms] = useState<Array<any>>([]);
-  const [loadingRooms, setLoadingRooms] = useState(false);
-  const [filteredRooms, setFilteredRooms] = useState<Array<any>>([]);
 
-  const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
-    const start1 = new Date(checkIn1);
-    const end1 = new Date(checkOut1);
-    const start2 = new Date(checkIn2);
-    const end2 = new Date(checkOut2);
-    return start1 < end2 && start2 < end1;
-  };
-
-  const isRoomAvailableForDates = async (roomNumber: string, checkIn: string, checkOut: string) => {
-    if (!roomNumber || !checkIn || !checkOut || !reservation) return false;
-    try {
-      const bookingsCol = collection(db, 'bookings');
-      const q = query(bookingsCol, where('roomNumber', '==', roomNumber), where('status', 'in', ['confirmed', 'checked-in']));
-      const snap = await getDocs(q);
-      const existing = snap.docs.map(d => (d.data() as any));
-      for (const b of existing) {
-        const bCheckIn = b.checkIn && typeof b.checkIn.toDate === 'function' ? b.checkIn.toDate().toISOString().split('T')[0] : b.checkIn;
-        const bCheckOut = b.checkOut && typeof b.checkOut.toDate === 'function' ? b.checkOut.toDate().toISOString().split('T')[0] : b.checkOut;
-        if (!bCheckIn || !bCheckOut) continue;
-        if (b.bookingId && reservation && b.bookingId === reservation.bookingId) continue;
-        if (checkDateOverlap(checkIn, checkOut, bCheckIn, bCheckOut)) return false;
-      }
-      return true;
-    } catch (err) {
-      console.error('Error checking room availability:', err);
-      return false;
-    }
-  };
-
-  useEffect(() => {
-    let mounted = true;
-    const fetchRooms = async () => {
-      setLoadingRooms(true);
-      try {
-        const roomsCol = collection(db, 'rooms');
-        const roomsSnap = await getDocs(roomsCol);
-        const fetched = roomsSnap.docs.map(d => ({ number: d.id, ...(d.data() as any) }));
-        if (mounted) {
-          if (fetched.length > 0) {
-            const normalizeType = (raw: any) => normalizeTypeInput(raw || 'standard');
-            setRooms(fetched.map((r: any) => ({
-              number: r.number || r.id || r.roomNumber,
-              type: normalizeType(r.type || r.roomType),
-              status: r.status || 'available',
-            })));
-          } else {
-            setRooms([]);
-          }
-        }
-      } catch (err) {
-        console.warn('Could not fetch rooms from Firestore.', err);
-        if (mounted) setRooms([]);
-      } finally {
-        if (mounted) setLoadingRooms(false);
-      }
-    };
-    fetchRooms();
-    return () => { mounted = false; };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const compute = async () => {
-      if (!formData.roomType) {
-        setFilteredRooms([]);
-        return;
-      }
-      const candidates = rooms.filter(r => r.type === formData.roomType);
-      const results: Array<any> = [];
-      try {
-        const roomsSnap = await getDocs(collection(db, 'rooms'));
-        const roomDocMap: Record<string, any> = {};
-        roomsSnap.docs.forEach(d => { roomDocMap[d.id] = d.data(); });
-        for (const r of candidates) {
-          if (reservation && r.number === reservation.roomNumber) {
-            results.push(r);
-            continue;
-          }
-          const roomData = roomDocMap[r.number] || null;
-          const status = roomData?.status || r.status || 'available';
-          if (!formData.checkIn || !formData.checkOut) {
-            if (status === 'available') results.push(r);
-            continue;
-          }
-          if (status !== 'available') continue;
-          const ok = await isRoomAvailableForDates(r.number, formData.checkIn, formData.checkOut);
-          if (ok) results.push(r);
-        }
-      } catch (e) {
-        console.warn('Failed to fetch rooms collection for availability checks', e);
-      }
-      if (!cancelled) setFilteredRooms(results);
-    };
-    compute();
-    return () => { cancelled = true; };
-  }, [formData.roomType, formData.checkIn, formData.checkOut, rooms, reservation]);
-  
-  // Helper calculations for JSX
+  // --- Helper calculations for JSX (unchanged)
   const calculateNights = () => {
     if (!formData.checkIn || !formData.checkOut) return 0;
     const checkIn = new Date(formData.checkIn);
@@ -548,13 +601,11 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
   );
 
 
-  // --- NEW ---
   // Guard clause
   if (!isOpen || !reservation) {
     return null;
   }
 
-  // --- NEW ---
   // Return the new modal structure
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
@@ -601,9 +652,8 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
             {/* --- Left Column: Form Fields --- */}
             <div className="lg:col-span-2 space-y-6">
               
-              {/* Guest Information - UPDATED STYLING */}
+              {/* Guest Information */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* --- CHANGED TO H4 --- */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconUser />
                   <span className="ml-2">Guest Information</span>
@@ -659,9 +709,8 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                 </div>
               </div>
 
-              {/* Booking Details - UPDATED STYLING */}
+              {/* Booking Details */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* --- CHANGED TO H4 --- */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconCalendar />
                   <span className="ml-2">Booking Details</span>
@@ -696,18 +745,26 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                       value={formData.roomNumber}
                       onChange={(e) => setFormData(prev => ({ ...prev, roomNumber: e.target.value }))}
                       className={`w-full px-3 py-2 border rounded-md ${errors.roomNumber ? 'border-red-300' : 'border-gray-300'}`}
-                      disabled={!formData.roomType || loadingRooms}
+                      // --- UPDATED ---
+                      disabled={!formData.roomType || roomsLoading || isCheckingAvailability}
                     >
-                      <option value="">{loadingRooms ? 'Loading rooms...' : 'Select room (optional)'}</option>
+                      <option value="">
+                        {roomsLoading ? 'Loading rooms...' :
+                        isCheckingAvailability ? 'Checking availability...' :
+                        'Select room (optional)'}
+                      </option>
+                      {/* --- UPDATED --- */}
                       {filteredRooms && filteredRooms.length > 0 ? (
-                        filteredRooms.map((room: any) => (
-                          <option key={room.number} value={room.number}>
-                            Room {room.number}
+                        filteredRooms.map((room: IRoom) => (
+                          <option key={room.id} value={room.id}>
+                            Room {room.roomNumber}
                           </option>
                         ))
                       ) : (
-                        !loadingRooms && formData.roomType && <option value="" disabled>No rooms available</option>
+                        !roomsLoading && !isCheckingAvailability && formData.roomType && 
+                        <option value="" disabled>No rooms available for this type/date</option>
                       )}
+                      {/* --- END UPDATED --- */}
                     </select>
                     {errors.roomNumber && <p className="text-red-500 text-xs mt-1">{errors.roomNumber}</p>}
                   </div>
@@ -740,15 +797,14 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                 </div>
               </div>
               
-              {/* Payment Section - UPDATED STYLING */}
+              {/* Payment Section */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* --- CHANGED TO H4 --- */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconCreditCard />
                   <span className="ml-2">Payment</span>
                 </h4>
 
-                {/* Price change summary - UPDATED STYLING (like a banner) */}
+                {/* Price change summary */}
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl mb-4">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
@@ -820,9 +876,8 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
             {/* --- Right Column: Summary (Actions removed) --- */}
             <div className="lg:col-span-1 lg:sticky lg:top-6 space-y-6">
               
-              {/* Summary Card - UPDATED STYLING */}
+              {/* Summary Card */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* --- CHANGED TO H4 --- */}
                 <h4 className="text-lg font-semibold text-gray-900 mb-3">Summary</h4>
                 <div className="space-y-3">
                   <div className="text-sm">
@@ -848,7 +903,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                 </div>
               </div>
 
-              {/* Total Amount Card - UPDATED STYLING (like a banner) */}
+              {/* Total Amount Card */}
               <div className="p-4 rounded-xl bg-green-50 border border-green-200">
                 <p className="block text-sm font-medium text-green-800">Updated Total Amount</p>
                 <p className="text-3xl font-bold text-green-900 mt-1">
@@ -861,13 +916,11 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                 )}
               </div>
               
-              {/* Action buttons were MOVED from here to the footer */}
-
             </div>
           </div>
         </div>
         
-        {/* Footer Actions - NEW */}
+        {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-gray-100">
           <div className="flex flex-col justify-end gap-3 sm:flex-row sm:items-center">
             
