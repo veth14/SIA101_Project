@@ -1,5 +1,3 @@
-// Add these to your invDepartment.controller.ts file
-
 import type { Request, Response } from "express";
 import { db } from "../config/firebaseAdmin.js";
 
@@ -25,13 +23,6 @@ type InventoryItem = {
   location: string;
 };
 
-// ... (keep your existing functions: getInvDepartment, getNextDepartmentId, etc.)
-
-/**
- * Gets department-like data grouped by inventory item categories
- * This creates a dynamic list based on categories in inventory_items
- */
-
 type MaintenanceRequest = {
   id: string;
   department: string;
@@ -40,6 +31,7 @@ type MaintenanceRequest = {
   date: string;
   status: "Pending" | "Approved" | "Rejected" | "Completed";
 };
+
 
 export const getDepartmentsByCategory = async (req: Request, res: Response) => {
   try {
@@ -340,6 +332,7 @@ export const assignItemToDepartment = async (req: Request, res: Response) => {
     });
   }
 };
+
 export const patchInvMaintenanceRequest = async (
   req: Request,
   res: Response
@@ -406,6 +399,120 @@ export const patchInvMaintenanceRequest = async (
       success: false,
       message: "Server error: " + (error.message || "Unknown error"),
       error: error.toString(),
+    });
+  }
+};
+
+export const patchInvDepartment = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Department ID is required",
+      });
+    }
+
+    const dataToUpdate = req.body;
+
+    const docRef = db.collection("departments").doc(id);
+
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found",
+      });
+    }
+
+    await docRef.update({
+      ...dataToUpdate,
+      updatedAt: new Date().toISOString(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Department updated successfully",
+      id: id,
+    });
+  } catch (error: any) {
+    console.error(" Error updating department:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error: " + (error.message || "Unknown error")
+    });
+  }
+};
+
+export async function getNextMaintenanceRequestId(): Promise<string> {
+  try {
+    const maintenanceRequestsRef = db.collection("maintenance_requests");
+
+    const snapshot = await maintenanceRequestsRef
+      .orderBy("id", "desc")
+      .limit(1)
+      .get();
+
+    if (snapshot.empty || !snapshot.docs[0]) {
+      return "#00001";
+    }
+
+    const lastRequest = snapshot.docs[0].data() as MaintenanceRequest;
+    const lastId = lastRequest.id;
+
+    if (!lastId || typeof lastId !== "string" || !lastId.startsWith("#")) {
+      console.warn("Invalid last ID format:", lastId);
+      return "#00001";
+    }
+
+    const numericString = lastId.replace("#", "");
+    const numericPart = parseInt(numericString, 10);
+
+    if (isNaN(numericPart)) {
+      console.warn("Could not parse numeric part from:", lastId);
+      return "#00001";
+    }
+
+    const nextNumber = numericPart + 1;
+    const nextId = `#${nextNumber.toString().padStart(5, "0")}`;
+
+    return nextId;
+  } catch (error) {
+    console.error("Error getting next Maintenance Request ID:", error);
+    throw error;
+  }
+}
+
+export const postInvMaintenanceRequest = async (req: Request, res: Response) => {
+  try {
+    const nextId = await getNextMaintenanceRequestId();
+    const maintenanceRequest = req.body;
+
+    const newMaintenanceRequest: MaintenanceRequest = {
+      id: nextId,
+      department: maintenanceRequest.department,
+      itemService: maintenanceRequest.itemService,
+      requestedBy: maintenanceRequest.requestedBy,
+      date: maintenanceRequest.date || new Date().toISOString().split('T')[0],
+      status: "Pending",
+    };
+
+    await db
+      .collection("maintenance_requests")
+      .doc(nextId)
+      .set(newMaintenanceRequest);
+
+    res.status(200).json({
+      success: true,
+      message: "Maintenance request submitted successfully",
+      data: newMaintenanceRequest,
+    });
+  } catch (error) {
+    console.error("Error creating maintenance request:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };

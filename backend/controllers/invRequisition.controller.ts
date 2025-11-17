@@ -138,7 +138,7 @@ export const postRequisition = async (req: Request, res: Response) => {
       requestNumber: newRequestNumber,
     });
   } catch (error) {
-    console.error("❌ Error adding requisition:", error);
+    console.error(" Error adding requisition:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -203,7 +203,7 @@ export const patchInvRequisition = async (req: Request, res: Response) => {
       updatedData: requisitionORders,
     });
   } catch (error) {
-    console.error("❌ Error updating purchase order:", error);
+    console.error(" Error updating purchase order:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

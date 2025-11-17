@@ -24,7 +24,6 @@ interface Supplier {
 }
 
 const SuppliersPage: React.FC = () => {
-  // Sample suppliers data
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   const { getInvSuppliers, loadingForGetInvSupplier } = useGetInvSupplier();
@@ -137,32 +136,34 @@ const SuppliersPage: React.FC = () => {
     totalSuppliers: suppliers.length,
     activeSuppliers: suppliers.filter((s) => s.status === "active").length,
     inactiveSuppliers: suppliers.filter((s) => s.status === "inactive").length,
-    suspendedSuppliers: suppliers.filter((s) => s.status === "suspended")
-      .length,
-    totalValue: suppliers.reduce((sum, s) => sum + s.totalValue, 0),
+    suspendedSuppliers: suppliers.filter((s) => s.status === "suspended").length,
+    totalValue: suppliers.reduce((sum, s) => sum + (s.totalValue || 0), 0),
   };
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
-      {/* Background */}
       <SupplierBackground />
 
-      {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
         <SuppliersHeader />
 
-        {/* Stats */}
-        <SupplierStats stats={stats} formatCurrency={formatCurrency} />
-
-        {/* Suppliers Grid */}
-        <SupplierGrid
-          suppliers={suppliers}
-          formatCurrency={formatCurrency}
-          getStatusBadge={getStatusBadge}
-          getRatingStars={getRatingStars}
-          setSuppliers={setSuppliers}
-        />
+        {loadingForGetInvSupplier ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green"></div>
+            <span className="ml-3 text-gray-600">Loading suppliers...</span>
+          </div>
+        ) : (
+          <>
+            <SupplierStats stats={stats} formatCurrency={formatCurrency} />
+            <SupplierGrid
+              suppliers={suppliers}
+              formatCurrency={formatCurrency}
+              getStatusBadge={getStatusBadge}
+              getRatingStars={getRatingStars}
+              setSuppliers={setSuppliers}
+            />
+          </>
+        )}
       </div>
     </div>
   );

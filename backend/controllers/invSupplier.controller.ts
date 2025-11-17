@@ -101,16 +101,15 @@ interface Supplier {
 //     deliveryTime: "7-10 days",
 //   },
 // ];
+
 export const postSuppliers = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     const currentYear = new Date().getFullYear();
 
-    // Step 1: Get the most recent requisition
+    // Step 1: Get the most recent supplier
     const snapshot = await db
-      //             table name (collection)
       .collection("suppliers")
-      //        document id
       .orderBy("id", "desc")
       .limit(1)
       .get();
@@ -119,7 +118,6 @@ export const postSuppliers = async (req: Request, res: Response) => {
 
     if (!snapshot.empty && snapshot.docs[0]) {
       const lastReq = snapshot.docs[0].data();
-      // Match something like REQ-2024-003
       const match = lastReq.id.match(/SUP-\d{4}-(\d+)/);
 
       if (match) {
@@ -128,25 +126,26 @@ export const postSuppliers = async (req: Request, res: Response) => {
       }
     }
 
-    //                        PO
     const newId = `SUP-${currentYear}-${String(nextNumber).padStart(3, "0")}`;
 
-    //                             table name (collection)
     const docRef = db.collection("suppliers").doc(newId);
     await docRef.set({
       ...data,
       id: newId,
+      rating: data.rating || 0,
+      totalOrders: data.totalOrders || 0,
+      totalValue: data.totalValue || 0,
       createdAt: new Date().toISOString(),
-      status: "pending",
+      status: "active", // default status active na sya agad pag nag add ng supplier
     });
 
     res.status(201).json({
       success: true,
-      message: "Requisition added successfully",
+      message: "Supplier added successfully",
       id: newId,
     });
   } catch (error) {
-    console.error("❌ Error adding requisition:", error);
+    console.error("Error adding supplier:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -190,14 +189,15 @@ export const patchInvSupplier = async (req: Request, res: Response) => {
       });
     }
 
+    // Allow updating status along with other fields
     await docRef.update({
       ...dataToUpdate,
       updatedAt: new Date().toISOString(),
     });
 
+    // Fetch updated suppliers list
     const snapshot = await db.collection("suppliers").get();
 
-    // Transform the snapshot into an array of purchase orders
     const suppliers = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -210,7 +210,7 @@ export const patchInvSupplier = async (req: Request, res: Response) => {
       updatedData: suppliers,
     });
   } catch (error) {
-    console.error("❌ Error updating Supplier:", error);
+    console.error("Error updating Supplier:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

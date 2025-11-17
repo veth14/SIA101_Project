@@ -1,7 +1,6 @@
 import type { Response, Request } from "express";
 import { db } from "../config/firebaseAdmin.js";
 
-// ============= INTERFACES =============
 interface SummaryStat {
   title: string;
   value: string;
@@ -60,9 +59,6 @@ interface DepartmentStatCard {
   iconBg: string;
 }
 
-
-
-// ============= UTILITY FUNCTIONS =============
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -95,11 +91,9 @@ export const getDepartmentMetrics = async (req: Request, res: Response) => {
       ...doc.data()
     }));
 
-    // Calculate real statistics
     const totalDepartments = departments.length;
     const totalRequests = requisitions.length;
     
-    // Calculate approval rate
     const approvedRequests = requisitions.filter((req: any) => 
       req.status === "approved" || req.status === "fulfilled"
     ).length;
@@ -107,7 +101,7 @@ export const getDepartmentMetrics = async (req: Request, res: Response) => {
       ? (approvedRequests / totalRequests) * 100 
       : 0;
 
-    // Calculate average response time (simulated based on date differences)
+    // Calculate average response time
     const avgResponseTime = requisitions
       .filter((req: any) => req.approvedDate && req.requestDate)
       .reduce((sum: number, req: any) => {
@@ -161,7 +155,7 @@ export const getDepartmentMetrics = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: departmentStatCards });
   } catch (error: any) {
-    console.error("❌ Error fetching department metrics:", error);
+    console.error(" Error fetching department metrics:", error);
     res.status(500).json({ 
       success: false, 
       message: "Server error: " + (error.message || "Unknown error")
@@ -191,11 +185,9 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       ...doc.data()
     }));
 
-    // Group requisitions by department and month
     const monthlyData: Record<string, any> = {};
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     
-    // Initialize all months
     months.forEach(month => {
       monthlyData[month] = {
         month,
@@ -207,7 +199,6 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       };
     });
 
-    // Process requisitions and group by month and department
     requisitions.forEach((req: any) => {
       if (!req.requestDate) return;
       
@@ -233,12 +224,9 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       }
     });
 
-    // Convert to array format
     const departmentData = months.map(month => monthlyData[month]);
-
     // Calculate department performance metrics
     const deptPerformance: Record<string, any> = {};
-    
     // Initialize department performance
     departments.forEach((dept: any) => {
       const deptName = dept.name || "Unknown";
@@ -251,7 +239,6 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       };
     });
 
-    // Color mapping for departments
     const colorMap: Record<string, string> = {
       "Housekeeping": "bg-blue-500",
       "Front Office": "bg-green-500",
@@ -262,7 +249,6 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       "Security": "bg-purple-500"
     };
 
-    // Process requisitions for performance metrics
     requisitions.forEach((req: any) => {
       const deptName = req.department;
       if (!deptName || !deptPerformance[deptName]) return;
@@ -283,7 +269,6 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       }
     });
 
-    // Format department performance data
     const departmentPerformance = Object.values(deptPerformance)
       .filter((dept: any) => dept.requests > 0)
       .map((dept: any) => ({
@@ -305,7 +290,7 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
       data: [departmentData, departmentPerformance] 
     });
   } catch (error: any) {
-    console.error("❌ Error fetching department charts:", error);
+    console.error(" Error fetching department charts:", error);
     res.status(500).json({ 
       success: false, 
       message: "Server error: " + (error.message || "Unknown error")
@@ -315,7 +300,6 @@ export const getDepartmentCharts = async (req: Request, res: Response) => {
 
 export const getAnalyticsChart = async (req: Request, res: Response) => {
   try {
-    // Fetch inventory items from Firebase
     const snapshot = await db.collection("inventory_items").get();
     
     if (snapshot.empty) {
@@ -325,17 +309,12 @@ export const getAnalyticsChart = async (req: Request, res: Response) => {
       });
     }
 
-    // Get all items
     const items = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    // Calculate totals for summary stats
-    const totalItems = items.length;
-    const categories = new Set(items.map((item: any) => item.category || "Unknown")).size;
-    
-    // Group items by category for analysis
+    // Group items by category
     const categoryGroups: Record<string, any[]> = {};
     items.forEach((item: any) => {
       const category = item.category || "Unknown";
@@ -345,49 +324,46 @@ export const getAnalyticsChart = async (req: Request, res: Response) => {
       categoryGroups[category].push(item);
     });
 
-    // Generate chart data based on actual inventory
+    // Get historical data from createdAt timestamps
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const chartData = months.map((month, index) => {
+    const currentYear = new Date().getFullYear();
+    
+    const chartData = months.map((month, monthIndex) => {
       const data: any = { month };
       
-      // Calculate values for each category based on current stock
       Object.keys(categoryGroups).forEach(category => {
-        const categoryItems = categoryGroups[category];
-        if (!categoryItems) return;
-        const totalStock = categoryItems.reduce((sum: number, item: any) => 
-          sum + (parseInt(String(item.currentStock)) || 0), 0
+        const categoryItems = categoryGroups[category] || [];
+        
+        // Count items created up to this month
+        const itemsUpToMonth = categoryItems.filter((item: any) => {
+          if (!item.createdAt) return true; // Include items without date
+          
+          const itemDate = new Date(item.createdAt);
+          const itemYear = itemDate.getFullYear();
+          const itemMonth = itemDate.getMonth();
+          
+          // Include if created in current year and before/on this month
+          // Or if created in previous years
+          return itemYear < currentYear || (itemYear === currentYear && itemMonth <= monthIndex);
+        });
+        
+        // Sum total stock for items up to this month
+        const totalStock = itemsUpToMonth.reduce((sum: number, item: any) => 
+          sum + (parseInt(String(item.currentStock || item.quantity)) || 0), 0
         );
         
-        // Simulate monthly variation (±20%)
-        const variation = 0.8 + (Math.random() * 0.4);
-        const monthlyValue = Math.round(totalStock * variation * (1 + index * 0.05));
-        
-        // Map category names to chart keys (lowercase, no spaces)
         const categoryKey = category.toLowerCase().replace(/\s+/g, '').replace(/&/g, '');
-        data[categoryKey] = monthlyValue;
+        data[categoryKey] = totalStock;
       });
       
       return data;
     });
 
-    // Calculate summary statistics safely
-    const currentMonth = new Date().getMonth();
-    const lastMonthData = chartData[currentMonth] || chartData[chartData.length - 1];
-    const prevMonthData = chartData[Math.max(0, currentMonth - 1)];
+    // Calculate real summary statistics
+    const totalItems = items.length;
+    const categories = Object.keys(categoryGroups).length;
     
-    const totalCurrentMonth = Object.keys(lastMonthData)
-      .filter(key => key !== 'month')
-      .reduce((sum, key) => sum + (lastMonthData[key] || 0), 0);
-    
-    const totalPrevMonth = Object.keys(prevMonthData)
-      .filter(key => key !== 'month')
-      .reduce((sum, key) => sum + (prevMonthData[key] || 0), 0);
-    
-    const monthlyChange = totalPrevMonth > 0 
-      ? (((totalCurrentMonth - totalPrevMonth) / totalPrevMonth) * 100).toFixed(1)
-      : "0";
-
-    // Find peak usage month safely
+    // Find actual peak month
     const peakMonth = chartData.reduce((peak, current) => {
       const currentTotal = Object.keys(current)
         .filter(key => key !== 'month')
@@ -402,20 +378,38 @@ export const getAnalyticsChart = async (req: Request, res: Response) => {
       .filter(key => key !== 'month')
       .reduce((sum, key) => sum + (peakMonth[key] || 0), 0);
 
+    // Calculate average monthly stock
     const avgMonthly = Math.round(
       chartData.reduce((sum, month) => {
         const monthTotal = Object.keys(month)
           .filter(key => key !== 'month')
           .reduce((total, key) => total + (month[key] || 0), 0);
         return sum + monthTotal;
-      }, 0) / chartData.length / 1000
+      }, 0) / chartData.length
     );
+
+    // Calculate monthly change (current month vs previous month)
+    const currentMonthIndex = new Date().getMonth();
+    const currentMonthData = chartData[currentMonthIndex];
+    const prevMonthData = chartData[Math.max(0, currentMonthIndex - 1)];
+    
+    const currentTotal = Object.keys(currentMonthData)
+      .filter(key => key !== 'month')
+      .reduce((sum, key) => sum + (currentMonthData[key] || 0), 0);
+    
+    const prevTotal = Object.keys(prevMonthData)
+      .filter(key => key !== 'month')
+      .reduce((sum, key) => sum + (prevMonthData[key] || 0), 0);
+    
+    const monthlyChange = prevTotal > 0 
+      ? (((currentTotal - prevTotal) / prevTotal) * 100).toFixed(1)
+      : "0";
 
     const summaryStats = [
       {
         title: "Total Items",
         value: totalItems.toLocaleString(),
-        change: `+${monthlyChange}%`,
+        change: `${parseFloat(monthlyChange) >= 0 ? '+' : ''}${monthlyChange}% from last month`,
         changeType: parseFloat(monthlyChange) >= 0 ? "positive" : "negative",
         icon: "Package",
         iconBg: "bg-blue-100",
@@ -423,24 +417,24 @@ export const getAnalyticsChart = async (req: Request, res: Response) => {
       {
         title: "Categories",
         value: categories.toString(),
-        change: "Active",
+        change: "Active categories",
         changeType: "neutral",
         icon: "Sparkles",
         iconBg: "bg-emerald-100",
       },
       {
-        title: "Peak Usage",
-        value: `${(peakValue / 1000).toFixed(1)}K`,
-        change: peakMonth.month,
+        title: "Peak Stock",
+        value: peakValue.toLocaleString(),
+        change: `in ${peakMonth.month}`,
         changeType: "neutral",
         icon: "TrendingUp",
         iconBg: "bg-violet-100",
       },
       {
-        title: "Avg. Monthly",
-        value: `${avgMonthly.toFixed(1)}K`,
-        change: `+${monthlyChange}%`,
-        changeType: parseFloat(monthlyChange) >= 0 ? "positive" : "negative",
+        title: "Avg. Stock",
+        value: avgMonthly.toLocaleString(),
+        change: "items per month",
+        changeType: "neutral",
         icon: "Utensils",
         iconBg: "bg-amber-100",
       },
@@ -458,7 +452,6 @@ export const getAnalyticsChart = async (req: Request, res: Response) => {
 
 export const getAnalyticsBottomSection = async (req: Request, res: Response) => {
   try {
-    // Fetch inventory items from Firebase
     const snapshot = await db.collection("inventory_items").get();
     
     if (snapshot.empty) {
@@ -473,9 +466,13 @@ export const getAnalyticsBottomSection = async (req: Request, res: Response) => 
       ...doc.data()
     }));
 
-    // Calculate Top Moving Items (items with highest stock levels)
+    // TOP MOVING ITEMS - Based on actual stock levels
     const topMovingItems = items
-      .sort((a: any, b: any) => (parseInt(String(b.currentStock)) || 0) - (parseInt(String(a.currentStock)) || 0))
+      .map((item: any) => ({
+        ...item,
+        stock: parseInt(String(item.currentStock || item.quantity)) || 0
+      }))
+      .sort((a, b) => b.stock - a.stock)
       .slice(0, 4)
       .map((item: any, index: number) => {
         const colors = [
@@ -485,40 +482,50 @@ export const getAnalyticsBottomSection = async (req: Request, res: Response) => 
           { color: "from-red-50 to-orange-50", border: "border-red-100" }
         ];
         
-        const trend = Math.random() > 0.3 ? Math.floor(Math.random() * 20) + 5 : -Math.floor(Math.random() * 5);
-        
         return {
-          name: item.name || "Unknown Item",
+          name: item.itemName || item.name || "Unknown Item",
           department: item.category || "N/A",
-          units: `${parseInt(String(item.currentStock)) || 0} units`,
-          trend: trend > 0 ? `+${trend}%` : `${trend}%`,
-          trendColor: trend > 0 ? "text-green-600" : "text-red-600",
+          units: `${item.stock} ${item.unit || 'units'}`,
+          trend: "Active",
+          trendColor: "text-green-600",
           ...colors[index]
         };
       });
 
-    // Calculate Critical Stocks (low stock items)
+    // CRITICAL STOCKS - Based on reorder levels
     const criticalStocks = items
-      .filter((item: any) => {
-        const current = parseInt(String(item.currentStock)) || 0;
-        const reorder = parseInt(String(item.reorderPoint)) || 0;
-        return reorder > 0 && current <= reorder * 1.5;
+      .map((item: any) => {
+        const current = parseInt(String(item.currentStock || item.quantity)) || 0;
+        const reorder = parseInt(String(item.reorderLevel)) || 0;
+        
+        return {
+          ...item,
+          current,
+          reorder,
+          ratio: reorder > 0 ? current / reorder : 999
+        };
       })
+      .filter(item => item.reorder > 0)
+      .sort((a, b) => a.ratio - b.ratio)
       .slice(0, 4)
       .map((item: any) => {
-        const current = parseInt(String(item.currentStock)) || 0;
-        const reorder = parseInt(String(item.reorderPoint)) || 0;
-        
         let status, statusColor, textColor, emoji, color, border;
         
-        if (current <= reorder * 0.5) {
-          status = "Critical";
+        if (item.current === 0) {
+          status = "Out of Stock";
           statusColor = "from-red-100 to-red-200";
           textColor = "text-red-800";
           emoji = "🔴";
           color = "from-red-50 to-pink-50";
           border = "border-red-100";
-        } else if (current <= reorder) {
+        } else if (item.current <= item.reorder * 0.5) {
+          status = "Critical";
+          statusColor = "from-orange-100 to-red-100";
+          textColor = "text-orange-800";
+          emoji = "🟠";
+          color = "from-orange-50 to-red-50";
+          border = "border-orange-100";
+        } else if (item.current <= item.reorder) {
           status = "Low";
           statusColor = "from-yellow-100 to-orange-100";
           textColor = "text-yellow-800";
@@ -526,7 +533,7 @@ export const getAnalyticsBottomSection = async (req: Request, res: Response) => 
           color = "from-yellow-50 to-orange-50";
           border = "border-yellow-100";
         } else {
-          status = "Medium";
+          status = "Adequate";
           statusColor = "from-green-100 to-emerald-100";
           textColor = "text-green-800";
           emoji = "🟢";
@@ -535,7 +542,7 @@ export const getAnalyticsBottomSection = async (req: Request, res: Response) => 
         }
 
         return {
-          name: item.name || "Unknown Item",
+          name: item.itemName || item.name || "Unknown Item",
           department: item.category || "N/A",
           status,
           statusColor,
@@ -546,55 +553,76 @@ export const getAnalyticsBottomSection = async (req: Request, res: Response) => 
         };
       });
 
-    // If not enough critical stocks, fill with good stock items
-    if (criticalStocks.length < 4) {
-      const goodStockItems = items
-        .filter((item: any) => {
-          const current = parseInt(String(item.currentStock)) || 0;
-          const reorder = parseInt(String(item.reorderPoint)) || 0;
-          return reorder > 0 && current > reorder * 1.5;
-        })
-        .slice(0, 4 - criticalStocks.length)
-        .map((item: any) => ({
-          name: item.name || "Unknown Item",
-          department: item.category || "N/A",
-          status: "Good",
-          statusColor: "from-green-100 to-emerald-100",
-          textColor: "text-green-800",
-          emoji: "🟢",
-          color: "from-blue-50 to-indigo-50",
-          border: "border-blue-100"
-        }));
-      
-      criticalStocks.push(...goodStockItems);
-    }
-
-    // Calculate Wastage Items (simulated based on stock value)
+    // WASTAGE ITEMS - Based on value of expired/damaged items
+    // For now, we'll show items with highest value at risk (low stock * high price)
     const wastageItems = items
-      .sort((a: any, b: any) => {
-        const aValue = (parseFloat(String(a.unitCost)) || 0) * (parseInt(String(a.currentStock)) || 0);
-        const bValue = (parseFloat(String(b.unitCost)) || 0) * (parseInt(String(b.currentStock)) || 0);
-        return bValue - aValue;
+      .map((item: any) => {
+        const stock = parseInt(String(item.currentStock || item.quantity)) || 0;
+        const price = parseFloat(String(item.unitPrice)) || 0;
+        const reorder = parseInt(String(item.reorderLevel)) || 0;
+        
+        // Calculate potential waste: excess stock beyond normal levels
+        const excessStock = Math.max(0, stock - (reorder * 3));
+        const wasteValue = excessStock * price;
+        
+        return {
+          ...item,
+          stock,
+          price,
+          wasteValue,
+          excessStock
+        };
       })
+      .filter(item => item.wasteValue > 0)
+      .sort((a, b) => b.wasteValue - a.wasteValue)
       .slice(0, 3)
       .map((item: any, index: number) => {
         const colors = [
           { color: "from-red-50 to-orange-50", border: "border-red-100", textColor: "text-red-600" },
           { color: "from-yellow-50 to-orange-50", border: "border-yellow-100", textColor: "text-yellow-600" },
-          { color: "from-amber-50 to-yellow-50", border: "border-amber-100", textColor: "text-yellow-600" }
+          { color: "from-amber-50 to-yellow-50", border: "border-amber-100", textColor: "text-amber-600" }
         ];
         
-        const wastageAmount = (parseFloat(String(item.unitCost)) || 0) * Math.floor((parseInt(String(item.currentStock)) || 0) * 0.02);
-        const wastagePercentage = (Math.random() * 2 + 0.5).toFixed(1);
+        const wastePercentage = item.stock > 0 
+          ? ((item.excessStock / item.stock) * 100).toFixed(1)
+          : "0";
         
         return {
-          name: item.name || "Unknown Item",
+          name: item.itemName || item.name || "Unknown Item",
           department: item.category || "N/A",
-          amount: `₱${wastageAmount.toLocaleString()}`,
-          percentage: `${wastagePercentage}% waste`,
+          amount: formatCurrency(item.wasteValue),
+          percentage: `${wastePercentage}% excess`,
           ...colors[index]
         };
       });
+
+    // If no wastage items, show lowest value items
+    if (wastageItems.length === 0) {
+      const lowValueItems = items
+        .map((item: any) => ({
+          ...item,
+          value: (parseInt(String(item.currentStock || item.quantity)) || 0) * (parseFloat(String(item.unitPrice)) || 0)
+        }))
+        .sort((a, b) => a.value - b.value)
+        .slice(0, 3)
+        .map((item: any, index: number) => {
+          const colors = [
+            { color: "from-green-50 to-emerald-50", border: "border-green-100", textColor: "text-green-600" },
+            { color: "from-blue-50 to-indigo-50", border: "border-blue-100", textColor: "text-blue-600" },
+            { color: "from-purple-50 to-pink-50", border: "border-purple-100", textColor: "text-purple-600" }
+          ];
+          
+          return {
+            name: item.itemName || item.name || "Unknown Item",
+            department: item.category || "N/A",
+            amount: formatCurrency(item.value),
+            percentage: "Low risk",
+            ...colors[index]
+          };
+        });
+      
+      wastageItems.push(...lowValueItems);
+    }
 
     res.status(200).json({
       success: true,
@@ -673,7 +701,7 @@ export const getProcurementMetrics = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: procurementStats });
   } catch (error: any) {
-    console.error("❌ Error fetching procurement metrics:", error);
+    console.error(" Error fetching procurement metrics:", error);
     res.status(500).json({ 
       success: false, 
       message: "Server error: " + (error.message || "Unknown error")
@@ -697,7 +725,6 @@ export const getProcurementAnalytics = async (req: Request, res: Response) => {
       ...doc.data()
     }));
 
-    // Group orders by month
     const monthlyData: Record<string, any> = {};
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     
@@ -713,7 +740,7 @@ export const getProcurementAnalytics = async (req: Request, res: Response) => {
       };
     });
 
-    // Process purchase orders
+    // Process real purchase orders
     purchaseOrders.forEach((po: any) => {
       if (!po.orderDate) return;
       
@@ -730,24 +757,26 @@ export const getProcurementAnalytics = async (req: Request, res: Response) => {
         monthlyData[monthName].suppliers.add(po.supplier);
       }
       
-      // Calculate on-time delivery (if received or approved)
-      if (po.status === 'received' || po.status === 'approved') {
+      // Calculate actual on-time delivery
+      if (po.status === 'received' && po.expectedDelivery) {
         monthlyData[monthName].totalDeliveries += 1;
         
-        // Simulate on-time delivery (in real app, compare delivery date with expected)
-        const isOnTime = Math.random() > 0.1; // 90% on-time rate simulation
-        if (isOnTime) {
+        // Check if received date exists and compare
+        const expectedDate = new Date(po.expectedDelivery);
+        const actualDate = po.receivedDate ? new Date(po.receivedDate) : new Date();
+        
+        if (actualDate <= expectedDate) {
           monthlyData[monthName].onTimeDeliveries += 1;
         }
       }
     });
 
-    // Convert to array format and calculate on-time percentage
+    // Convert to array format
     const procurementData = months.map(month => {
       const data = monthlyData[month];
       const onTimePercentage = data.totalDeliveries > 0
         ? Math.round((data.onTimeDeliveries / data.totalDeliveries) * 100)
-        : 95; // Default 95% if no deliveries yet
+        : 0;
       
       return {
         month: data.month,

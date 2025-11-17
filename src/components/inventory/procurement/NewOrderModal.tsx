@@ -44,7 +44,11 @@ const NewOrderModal: React.FC<NewOrderModalProps> = ({ isOpen, onClose, onSucces
     try {
       const response = await getInvSuppliers();
       if (response.success) {
-        setSuppliers(response.data || []);
+        // fifilter to para ishow only mga active suppliers
+        const activeSuppliers = (response.data || []).filter(
+          (supplier: any) => supplier.status === "active"
+        );
+        setSuppliers(activeSuppliers);
       } else {
         console.error("Failed to fetch suppliers:", response.message);
         setSuppliers([]);

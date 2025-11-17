@@ -7,4 +7,5 @@ router.get("/get-procurement-orders", procurementController.getInvProcurementOrd
 router.get("/get-procurement-stats", procurementController.getInvProcurementStats);
 router.post("/post-procurement-order", procurementController.postInvProcurementOrder);
 router.patch("/update-procurement-order/:id", procurementController.patchInvProcurementOrder);
+
 export default router;

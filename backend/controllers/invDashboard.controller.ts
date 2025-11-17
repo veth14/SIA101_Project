@@ -142,7 +142,7 @@ export const getInvDashboardStats = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: stats });
   } catch (error) {
-    console.error("❌ Error fetching dashboard stats:", error);
+    console.error(" Error fetching dashboard stats:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -225,7 +225,7 @@ export const getInvDashboardChart = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: { chartData, departmentData } });
   } catch (error) {
-    console.error("❌ Error fetching chart data:", error);
+    console.error(" Error fetching chart data:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -319,7 +319,7 @@ export const getInvDashboardActivity = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: recentActivities });
   } catch (error) {
-    console.error("❌ Error fetching activities:", error);
+    console.error(" Error fetching activities:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

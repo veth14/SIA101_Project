@@ -190,7 +190,7 @@ export const postInvProcurementOrder = async (req: Request, res: Response) => {
       orderNumber: newOrderNumber,
     });
   } catch (error) {
-    console.error("❌ Error adding order purchase:", error);
+    console.error(" Error adding order purchase:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -286,7 +286,7 @@ export const getInvProcurementStats = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, data: statCards });
   } catch (error) {
-    console.error("❌ Error fetching procurement stats:", error);
+    console.error("Error fetching procurement stats:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -335,7 +335,7 @@ export const patchInvProcurementOrder = async (req: Request, res: Response) => {
       updatedData: purchaseOrders,
     });
   } catch (error) {
-    console.error("❌ Error updating purchase order:", error);
+    console.error(" Error updating purchase order:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
