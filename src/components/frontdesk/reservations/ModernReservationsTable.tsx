@@ -68,50 +68,15 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const processedCheckedOut = useRef<Set<string>>(new Set());
 
-  // useEffect now uses 'bookingId' and sets 'isActive: false'
-  useEffect(() => {
-    let mounted = true;
-    const markRoomsCleaning = async () => {
-      try {
-        for (const res of reservations) {
-          if (res.status === 'checked-out' && res.roomNumber && !processedCheckedOut.current.has(res.bookingId)) {
-            const roomRef = doc(db, 'rooms', res.roomNumber);
-            try {
-              const snap = await getDoc(roomRef);
-              const roomData = snap.exists() ? snap.data() as any : null;
-              const currentStatus = roomData?.status || 'available';
-              if (currentStatus !== 'cleaning') {
-                try {
-                  await updateDoc(roomRef, { 
-                    status: 'cleaning', 
-                    isActive: false, // Add this
-                    currentReservation: null 
-                  });
-                } catch (e) {
-                  await setDoc(roomRef, { 
-                    roomNumber: res.roomNumber, 
-                    status: 'cleaning', 
-                    isActive: false, // Add this
-                    currentReservation: null 
-                  }, { merge: true });
-                }
-              }
-            } catch (err) {
-              console.warn('Failed to mark room cleaning for', res.roomNumber, err);
-            }
-            if (mounted) processedCheckedOut.current.add(res.bookingId);
-          }
-        }
-      } catch (err) {
-        console.warn('Error in markRoomsCleaning effect', err);
-      }
-    };
-
-    if (reservations && reservations.length > 0) markRoomsCleaning();
-    return () => { mounted = false; };
-  }, [reservations]);
+  // --- DELETED ---
+  // The 'markRoomsCleaning' useEffect was removed.
+  // This logic is redundant because the parent component's
+  // 'handleConfirmCheckOut' function already sets the room
+  // status to 'cleaning' transactionally.
+  // Removing this hook saves N reads and N writes on every
+  // table data refresh.
+  // --- END DELETED ---
 
   // useEffect for click outside (remains the same)
   useEffect(() => {

@@ -1,45 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom'; // Import createPortal
+import { createPortal } from 'react-dom';
 import { db } from '../../../config/firebase';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
-
-// --- TYPE DEFINITIONS ---
-// It's good practice to move these to a shared types file (e.g., types.ts)
-// I've assumed they are moved, but you can keep them here if you prefer.
-
-interface BookingData {
-  additionalGuestPrice: number;
-  baseGuests: number;
-  basePrice: number;
-  bookingId: string;
-  checkIn: string;
-  checkOut: string;
-  createdAt: Timestamp;
-  guests: number;
-  nights: number;
-  paymentDetails: {
-    cardLast4: string | null;
-    cardholderName: string | null;
-    gcashName: string | null;
-    gcashNumber: string | null;
-    paidAt: Timestamp | null;
-    paymentMethod: string;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
-  };
-  roomName: string;
-  roomNumber: string | null;
-  roomPricePerNight: number;
-  roomType: string;
-  status: 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
-  subtotal: number;
-  tax: number;
-  taxRate: number;
-  totalAmount: number;
-  updatedAt: Timestamp;
-  userEmail: string;
-  userId: string;
-  userName: string;
-}
+// --- UPDATED ---
+// Import shared types and the new hook from the parent page
+import {
+  type BookingData,
+  type IRoom,
+  useRooms
+} from './ReservationsPage';
+// --- END UPDATED ---
 
 interface AvailableRoom {
   number: string;
@@ -55,24 +25,32 @@ interface CheckInModalProps {
   onCheckIn: (updatedReservation: BookingData) => void;
 }
 
-// --- HELPER FUNCTIONS ---
+// --- HELPER FUNCTIONS (CORRECTED) ---
 const typeIdMap: Record<string, string> = {
   'standard': 'standard', 'standard room': 'standard',
   'deluxe': 'deluxe', 'deluxe room': 'deluxe',
   'suite': 'suite', 'suite room': 'suite',
   'family': 'family', 'family suite': 'family',
   'premium family suite': 'family',
+  // Add all variations from your data
+  'silid payapa': 'standard',
+  'silid marahuyo': 'deluxe',
+  'silid ginhawa': 'suite',
+  'silid haraya': 'family',
   'silid payapa (standard room)': 'standard',
   'silid marahuyo (deluxe room)': 'deluxe',
   'silid ginhawa (suite room)': 'suite',
   'silid haraya (premium family suite)': 'family',
 };
 
+// --- THIS IS THE FIX ---
 const normalizeTypeKey = (s: string) => {
-  if (!s) return 'standard';
+  if (!s) return 'unknown'; // Return a non-matching key
   const key = s.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
-  return typeIdMap[key] || 'standard';
+  // Default to a non-matching key instead of 'standard'
+  return typeIdMap[key] || 'unknown'; 
 };
+// --- END THE FIX ---
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "---";
@@ -92,13 +70,21 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
   const [guestIdVerified, setGuestIdVerified] = useState(false);
   const [keyCardsIssued, setKeyCardsIssued] = useState(false);
   
-  const [rooms, setRooms] = useState<AvailableRoom[]>([]);
-  const [loadingRooms, setLoadingRooms] = useState(false);
+  // --- UPDATED ---
+  // Get rooms from context instead of local state/fetching
+  const { rooms: allRooms, loading: roomsLoading } = useRooms();
+  // Local state for the filtered *available* rooms list
   const [filteredRooms, setFilteredRooms] = useState<AvailableRoom[]>([]);
+  // --- END UPDATED ---
+
+  // --- NEW ---
+  // State to hold results of our single availability query
+  const [overlappingBookings, setOverlappingBookings] = useState<BookingData[]>([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  // --- END NEW ---
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // --- NEW ---
   // Prevent background scroll while modal is open (from base code)
   useEffect(() => {
     if (!isOpen) return;
@@ -127,8 +113,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
     
   }, [isOpen, reservation]);
 
-  // --- All business logic (handlers, data fetching) remains unchanged ---
-  // --- handleCheckIn ---
+  // --- handleCheckIn (untouched) ---
   const handleCheckIn = () => {
     // Validation
     const newErrors: Record<string, string> = {};
@@ -167,108 +152,159 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 
   const remainingBalance = reservation ? Math.max(0, reservation.totalAmount - paymentReceived) : 0;
 
-  // --- checkDateOverlap ---
+  // --- checkDateOverlap (untouched, used by new logic) ---
   const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
-    const start1 = new Date(checkIn1);
-    const end1 = new Date(checkOut1);
-    const start2 = new Date(checkIn2);
-    const end2 = new Date(checkOut2);
-    return start1 < end2 && start2 < end1;
-  };
-
-  // --- isRoomAvailableForDates ---
-  const isRoomAvailableForDates = async (roomNumber: string, checkIn: string, checkOut: string) => {
-    if (!roomNumber || !checkIn || !checkOut || !reservation) return false; // Added reservation check
+    // Ensure inputs are valid date strings
+    if (!checkIn1 || !checkOut1 || !checkIn2 || !checkOut2) {
+      return false;
+    }
     try {
-      const bookingsCol = collection(db, 'bookings');
-      const q = query(bookingsCol, where('roomNumber', '==', roomNumber), where('status', 'in', ['confirmed', 'checked-in']));
-      const snap = await getDocs(q);
-      const existing = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+      const start1 = new Date(checkIn1);
+      const end1 = new Date(checkOut1);
+      const start2 = new Date(checkIn2);
+      const end2 = new Date(checkOut2);
 
-      for (const b of existing) {
-        const bCheckIn = b.checkIn && typeof b.checkIn.toDate === 'function' ? b.checkIn.toDate().toISOString().split('T')[0] : b.checkIn;
-        const bCheckOut = b.checkOut && typeof b.checkOut.toDate === 'function' ? b.checkOut.toDate().toISOString().split('T')[0] : b.checkOut;
-        if (!bCheckIn || !bCheckOut) continue;
-        if (b.bookingId && reservation && b.bookingId === reservation.bookingId) continue;
-        if (checkDateOverlap(checkIn, checkOut, bCheckIn, bCheckOut)) return false;
+      // Check for invalid dates
+      if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || isNaN(start2.getTime()) || isNaN(end2.getTime())) {
+        return false;
       }
-      return true;
-    } catch (err) {
-      console.error('Error checking room availability:', err);
+      
+      // Standard overlap check: (StartA < EndB) and (StartB < EndA)
+      return start1 < end2 && start2 < end1;
+    } catch (e) {
+      console.error("Error parsing dates for overlap check:", e);
       return false;
     }
   };
 
-  // --- fetchRooms useEffect ---
+  // --- DELETED ---
+  // The old, inefficient isRoomAvailableForDates function was removed.
+  // --- END DELETED ---
+
+  // --- DELETED ---
+  // The old, inefficient fetchRooms useEffect was removed.
+  // Rooms are now provided by the useRooms() hook.
+  // --- END DELETED ---
+
+  // --- NEW HOTFIX: Step 1 ---
+  // This effect runs ONE query to get all *potentially* conflicting bookings for the
+  // check-in date range.
   useEffect(() => {
+    if (!isOpen || !reservation?.checkIn || !reservation?.checkOut) {
+      setOverlappingBookings([]);
+      return;
+    }
+    
     let mounted = true;
-    const fetchRooms = async () => {
-      setLoadingRooms(true);
+    const fetchOverlappingBookings = async () => {
+      setIsCheckingAvailability(true);
+      setOverlappingBookings([]);
       try {
-        const roomsCol = collection(db, 'rooms');
-        const snap = await getDocs(roomsCol);
-        const fetched = snap.docs.map(d => ({ number: d.id, ...(d.data() as any) }));
+        const { checkIn, checkOut, bookingId } = reservation;
         
-        if (mounted && fetched.length > 0) {
-          setRooms(fetched.map(r => ({
-            number: r.number || r.id,
-            type: normalizeTypeKey(r.type || r.roomType),
-            status: r.status || 'available'
-          })));
-        } else if (mounted) {
-          setRooms([]);
-        }
+        // This is the single-query hotfix.
+        const q = query(
+          collection(db, 'bookings'),
+          where('status', 'in', ['confirmed', 'checked-in']),
+          where('checkIn', '<', checkOut),  // Booking starts *before* this one ends
+          where('checkOut', '>', checkIn) // Booking ends *after* this one starts
+        );
+
+        const snap = await getDocs(q);
+        
+        if (!mounted) return;
+
+        const bookings = snap.docs
+          .map(doc => ({ ...doc.data(), bookingId: doc.id } as BookingData))
+          // Exclude the reservation we are *currently* checking in
+          .filter(b => b.bookingId !== bookingId);
+
+        setOverlappingBookings(bookings);
+
       } catch (err) {
-        console.error('Error loading rooms:', err);
-        if (mounted) setRooms([]);
+        console.error("Error fetching overlapping bookings:", err);
+        if (mounted) setOverlappingBookings([]);
       } finally {
-        if (mounted) setLoadingRooms(false);
+        if (mounted) setIsCheckingAvailability(false);
       }
     };
-    fetchRooms();
+
+    fetchOverlappingBookings();
+    
     return () => { mounted = false; };
-  }, []);
+  }, [isOpen, reservation]); // Runs when modal opens or reservation changes
+  // --- END NEW HOTFIX: Step 1 ---
 
-  // --- filterRooms useEffect ---
+
+  // --- UPDATED HOTFIX: Step 2 ---
+  // This effect is now fast and runs *in-memory*.
+  // It filters the `allRooms` list from context against the `overlappingBookings` list.
   useEffect(() => {
-    let cancelled = false;
-    const compute = async () => {
-      if (!reservation) {
-        setFilteredRooms([]);
-        return;
-      }
+    if (!reservation) {
+      setFilteredRooms([]);
+      return;
+    }
+    
+    // 1. Get the room type we care about
+    const reservationTypeKey = normalizeTypeKey(reservation.roomType);
+    
+    // 2. Get all rooms of that type from the context
+    // --- THIS IS THE FIX ---
+    const candidateRooms = allRooms.filter(r => 
+      normalizeTypeKey(r.roomType) === reservationTypeKey
+    );
+    // --- END THE FIX ---
 
-      const reservationTypeKey = normalizeTypeKey(reservation.roomType);
-      const candidates = rooms.filter(r => r.type === reservationTypeKey);
+    // 3. Get a Set of all room numbers that have a *true* conflict
+    const occupiedRoomNumbers = new Set<string>();
+    for (const b of overlappingBookings) {
+      if (!b.roomNumber) continue;
       
-      try {
-        const roomsSnap = await getDocs(collection(db, 'rooms'));
-        const roomMap = Object.fromEntries(roomsSnap.docs.map(d => [d.id, d.data()]));
-        
-        const results = await Promise.all(candidates.map(async r => {
-          if (r.number === reservation.roomNumber) return r;
-          
-          const roomData = roomMap[r.number];
-          const status = roomData?.status || r.status || 'available';
-          
-          if (status !== 'available') return null;
-          if (!reservation.checkIn || !reservation.checkOut) return null;
-          
-          const isAvailable = await isRoomAvailableForDates(r.number, reservation.checkIn, reservation.checkOut);
-          return isAvailable ? r : null;
-        }));
-        
-        if (!cancelled) setFilteredRooms(results.filter((r): r is AvailableRoom => r !== null));
-      } catch (e) {
-        console.error('Failed to check room availability:', e);
-        if (!cancelled) setFilteredRooms([]);
+      const isOverlapping = checkDateOverlap(
+        reservation.checkIn, reservation.checkOut,
+        b.checkIn, b.checkOut
+      );
+      
+      if (isOverlapping) {
+        occupiedRoomNumbers.add(b.roomNumber);
       }
-    };
-    compute();
-    return () => { cancelled = true; };
-  }, [rooms, reservation]); // `isRoomAvailableForDates` is stable
+    }
 
-  // --- Auto-select room useEffect ---
+    // 4. Filter the candidate rooms in-memory
+    const availableRooms = candidateRooms.filter(room => {
+      // If the room is already assigned to *this* reservation, always show it.
+      if (room.id === reservation.roomNumber) {
+        return true;
+      }
+      
+      // --- UPDATED LOGIC ---
+      // If the room's base status isn't 'available' OR it's not 'isActive', hide it
+      if (room.status !== 'available' || room.isActive === false) {
+        return false;
+      }
+      // --- END UPDATED LOGIC ---
+
+      // If the room is in the occupied Set, hide it.
+      if (occupiedRoomNumbers.has(room.id)) {
+        return false;
+      }
+      
+      // Otherwise, it's available.
+      return true;
+    });
+
+    // 5. Set the final list for the dropdown
+    setFilteredRooms(availableRooms.map(r => ({
+      number: r.id,
+      type: r.roomType, // <-- Use roomType here
+      status: r.status
+    })));
+
+  }, [allRooms, overlappingBookings, reservation]); // Depends on context rooms + query results
+  // --- END UPDATED HOTFIX: Step 2 ---
+
+
+  // --- Auto-select room useEffect (untouched) ---
   useEffect(() => {
     if (!isOpen || !reservation) return;
     if ((!selectedRoom || selectedRoom === '') && !reservation.roomNumber && filteredRooms.length > 0) {
@@ -277,32 +313,30 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
   }, [filteredRooms, isOpen, selectedRoom, reservation]);
 
 
-  // --- NEW ---
-  // Handle early exit if modal is not open or no reservation is provided
+  // Handle early exit
   if (!isOpen || !reservation) {
     return null;
   }
 
-  // --- NEW ---
-  // Return the new modal structure using createPortal
+  // --- createPortal JSX (untouched, only one change) ---
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
-      {/* Full-screen overlay from base code */}
+      {/* Full-screen overlay */}
       <div
         className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
         onClick={onClose}
         aria-label="Close overlay"
       />
 
-      {/* Modal Card from base code (using max-w-4xl for "xl" size) */}
+      {/* Modal Card */}
       <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
         
-        {/* Header (branded) - from base code */}
+        {/* Header */}
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
+          {/* ... (header content untouched) ... */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
-                {/* Using IconKey, but could be any icon */}
                 <IconKey />
               </div>
               <div className="flex flex-col">
@@ -311,8 +345,6 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
               </div>
             </div>
           </div>
-
-          {/* Close button (small subtle) - from base code */}
           <button
             onClick={onClose}
             aria-label="Close"
@@ -324,18 +356,14 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
           </button>
         </div>
 
-        {/* Content - from base code */}
-        {/* Using 160px for header/footer height, same as base code */}
+        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
-          {/* Your original 3-column grid layout is preserved,
-            but the "sub-cards" are restyled to match the base code.
-          */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* --- Left Column: Task Workflow --- */}
             <div className="lg:col-span-2 space-y-6">
 
-              {/* Step 1: Room Assignment - UPDATED STYLING */}
+              {/* Step 1: Room Assignment */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconKey />
@@ -354,9 +382,18 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                     setErrors(prev => ({ ...prev, room: '' }));
                   }}
                   className={`w-full px-3 py-2 border rounded-md ${errors.room ? 'border-red-300' : 'border-gray-300'}`}
-                  disabled={loadingRooms}
+                  // --- UPDATED ---
+                  // Now disabled based on context loading OR our availability check
+                  disabled={roomsLoading || isCheckingAvailability}
+                  // --- END UPDATED ---
                 >
-                  <option value="">{loadingRooms ? 'Loading rooms...' : 'Select a room'}</option>
+                  {/* --- UPDATED --- */}
+                  <option value="">
+                    {roomsLoading ? 'Loading rooms...' : 
+                    isCheckingAvailability ? 'Checking availability...' : 
+                    (filteredRooms.length > 0 ? 'Select a room' : 'No rooms available')}
+                  </option>
+                  {/* --- END UPDATED --- */}
                   {filteredRooms.map((room) => (
                     <option key={room.number} value={room.number}>
                       Room {room.number}
@@ -366,14 +403,13 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                 {errors.room && <p className="text-red-500 text-xs mt-1">{errors.room}</p>}
               </div>
 
-              {/* Step 2: Payment - UPDATED STYLING */}
+              {/* Step 2: Payment */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
+                {/* ... (payment section untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconCreditCard />
                   <span className="ml-2">2. Collect Payment</span>
                 </h4>
-                
-                {/* UPDATED STYLING for this banner */}
                 <div className="flex justify-between items-center bg-gray-50 border border-gray-200 p-4 rounded-xl mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Total Amount</label>
@@ -392,7 +428,6 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                     </span>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Payment Received Now</label>
@@ -419,9 +454,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                     </select>
                   </div>
                 </div>
-                
                 {remainingBalance > 0 && (
-                  /* UPDATED STYLING for this banner */
                   <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
                     <p className="text-sm font-semibold text-yellow-800">
                       Remaining Balance: ₱{remainingBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -430,8 +463,9 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                 )}
               </div>
 
-              {/* Step 3: Final Checklist - UPDATED STYLING */}
+              {/* Step 3: Final Checklist */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
+                {/* ... (checklist section untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconClipboardCheck />
                   <span className="ml-2">3. Final Checklist</span>
@@ -479,8 +513,9 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
             {/* --- Right Column: Summary & Actions (Sticky) --- */}
             <div className="lg:col-span-1 lg:sticky lg:top-6 space-y-6">
               
-              {/* Guest Card - UPDATED STYLING */}
+              {/* Guest Card */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
+                {/* ... (guest card untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
                   <IconUser />
                   <span className="ml-2">Guest</span>
@@ -497,8 +532,9 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                 </div>
               </div>
 
-              {/* Booking Card - UPDATED STYLING */}
+              {/* Booking Card */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
+                {/* ... (booking card untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
                   <IconCalendar />
                   <span className="ml-2">Booking</span>
@@ -509,7 +545,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                     <p className="text-sm font-semibold text-gray-900">{reservation.guests} guest{reservation.guests > 1 ? 's' : ''}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500">Check-in</label>
+                    <label className="block text-sm font-medium text-gray-500">Check-in</label>
                     <p className="text-sm font-semibold text-gray-900">{formatDate(reservation.checkIn)}</p>
                   </div>
                   <div>
@@ -518,20 +554,14 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                   </div>
                 </div>
               </div>
-
-              {/* NOTE: The action buttons are MOVED
-                from this column to the new Modal Footer.
-              */}
-
             </div>
           </div>
         </div>
         
-        {/* Footer Actions - from base code */}
+        {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-gray-100">
+          {/* ... (footer actions untouched) ... */}
           <div className="flex flex-col justify-end gap-3 sm:flex-row sm:items-center">
-            
-            {/* Secondary Action */}
             <button
               onClick={onClose}
               className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 bg-white/80 rounded-2xl shadow-sm hover:bg-gray-50 transition transform"
@@ -539,8 +569,6 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
             >
               Cancel
             </button>
-            
-            {/* Primary Action - Styled like "Send Receipt" button */}
             <button
               onClick={handleCheckIn}
               disabled={!selectedRoom || !guestIdVerified}
@@ -560,7 +588,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 };
 
 
-// --- Icon Components (Moved to bottom for readability) ---
+// --- Icon Components (untouched) ---
 const IconKey = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM5.93 16.5A7 7 0 0012 21a7 7 0 006.07-4.5M12 3v7m-3 4h6" /></svg>
 );

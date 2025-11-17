@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../../../config/firebase';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+// --- UPDATED ---
+// Import the shared types and hook
+import {
+  type BookingData,
+  type IRoom,
+  useRooms
+} from './ReservationsPage';
+// --- END UPDATED ---
 
 // --- Icon Components (Copied from Guide + New) ---
 const IconUserPlus = () => (
@@ -85,7 +93,7 @@ const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
-// ... (All your existing helpers: defaultRoomTypes, checkDateOverlap, normalizeTypeInput)
+
 const defaultRoomTypes = [
   { id: 'standard', name: 'Silid Payapa', price: 2500, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 500 },
   { id: 'deluxe', name: 'Silid Marahuyo', price: 3800, baseGuests: 2, maxGuests: 5, additionalGuestPrice: 750 },
@@ -93,22 +101,44 @@ const defaultRoomTypes = [
   { id: 'family', name: 'Silid Haraya', price: 8000, baseGuests: 4, maxGuests: 8, additionalGuestPrice: 1200 },
 ];
 const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
-  const start1 = new Date(checkIn1);
-  const end1 = new Date(checkOut1);
-  const start2 = new Date(checkIn2);
-  const end2 = new Date(checkOut2);
-  return start1 < end2 && start2 < end1;
+  if (!checkIn1 || !checkOut1 || !checkIn2 || !checkOut2) {
+    return false;
+  }
+  try {
+    const start1 = new Date(checkIn1);
+    const end1 = new Date(checkOut1);
+    const start2 = new Date(checkIn2);
+    const end2 = new Date(checkOut2);
+    if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || isNaN(start2.getTime()) || isNaN(end2.getTime())) {
+      return false;
+    }
+    return start1 < end2 && start2 < end1;
+  } catch (e) {
+    return false;
+  }
 };
-const normalizeTypeInput = (raw: any) => {
-  if (!raw) return '';
-  const s = raw.toString().trim().toLowerCase();
-  if (defaultRoomTypes.some(rt => rt.id === s)) return s;
-  if (s === 'standard room' || s === 'silid payapa') return 'standard';
-  if (s === 'deluxe room' || s === 'silid marahuyo') return 'deluxe';
-  if (s === 'suite room' || s === 'silid ginhawa') return 'suite';
-  if (s === 'family suite' || s === 'silid haraya' || s === 'premium family suite') return 'family';
-  return s;
+
+// --- UPDATED: Replaced normalizeTypeInput with the better version ---
+const typeIdMap: Record<string, string> = {
+  'standard': 'standard', 'standard room': 'standard',
+  'deluxe': 'deluxe', 'deluxe room': 'deluxe',
+  'suite': 'suite', 'suite room': 'suite',
+  'family': 'family', 'family suite': 'family',
+  'premium family suite': 'family',
+  'silid payapa': 'standard',
+  'silid marahuyo': 'deluxe',
+  'silid ginhawa': 'suite',
+  'silid haraya': 'family',
 };
+
+// --- THIS IS THE FIX ---
+const normalizeTypeKey = (s: string) => {
+  if (!s) return 'unknown'; // Return a non-matching key
+  const key = s.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
+  // Default to a non-matching key instead of 'standard'
+  return typeIdMap[key] || 'unknown'; 
+};
+// --- END THE FIX ---
 
 // --- Props Interface (Unchanged) ---
 interface WalkInModalProps {
@@ -126,9 +156,20 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
   // --- All State and Logic (Unchanged) ---
   const [step, setStep] = useState(1);
   const [roomTypes, setRoomTypes] = useState<Array<any>>(defaultRoomTypes);
-  const [rooms, setRooms] = useState<Array<any>>([]);
-  const [loadingRooms, setLoadingRooms] = useState(false);
-  const [filteredRooms, setFilteredRooms] = useState<Array<any>>([]);
+  
+  // --- UPDATED ---
+  // Get rooms from context
+  const { rooms: allRooms, loading: roomsLoading } = useRooms();
+  // State for *available* rooms
+  const [filteredRooms, setFilteredRooms] = useState<IRoom[]>([]); // --- Changed type to IRoom ---
+  // --- END UPDATED ---
+
+  // --- NEW ---
+  // State for our single availability query
+  const [overlappingBookings, setOverlappingBookings] = useState<BookingData[]>([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  // --- END NEW ---
+  
   const [formData, setFormData] = useState({
     guestName: '', email: '', phone: '', idType: 'passport', idNumber: '', address: '',
     roomType: '', roomNumber: '', guests: 1,
@@ -139,92 +180,139 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isRoomAvailableForDates = async (roomNumber: string, checkIn: string, checkOut: string) => {
-    if (!roomNumber || !checkIn || !checkOut) return false;
-    try {
-      const bookingsCol = collection(db, 'bookings');
-      const q = query(bookingsCol, where('roomNumber', '==', roomNumber), where('status', 'in', ['confirmed', 'checked-in']));
-      const snap = await getDocs(q);
-      const existing = snap.docs.map(d => (d.data() as any));
-      for (const b of existing) {
-        const bCheckIn = b.checkIn && typeof b.checkIn.toDate === 'function' ? b.checkIn.toDate().toISOString().split('T')[0] : b.checkIn;
-        const bCheckOut = b.checkOut && typeof b.checkOut.toDate === 'function' ? b.checkOut.toDate().toISOString().split('T')[0] : b.checkOut;
-        if (!bCheckIn || !bCheckOut) continue;
-        if (checkDateOverlap(checkIn, checkOut, bCheckIn, bCheckOut)) return false;
-      }
-      return true;
-    } catch (err) {
-      console.error('Error checking room availability:', err);
-      return false;
+  // --- DELETED ---
+  // The old, inefficient isRoomAvailableForDates function was removed.
+  // --- END DELETED ---
+
+  // --- DELETED ---
+  // The old, inefficient fetchRooms useEffect was removed.
+  // --- END DELETED ---
+
+  // --- NEW HOTFIX: Step 1 ---
+  // Runs ONE query to get all *potentially* conflicting bookings for the date range.
+  useEffect(() => {
+    if (!isOpen || !formData.checkIn || !formData.checkOut) {
+      setOverlappingBookings([]);
+      return;
     }
-  };
+    
+    // Validate dates before querying
+    const checkIn = new Date(formData.checkIn);
+    const checkOut = new Date(formData.checkOut);
+    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime()) || checkOut <= checkIn) {
+      setOverlappingBookings([]);
+      return;
+    }
 
-  useEffect(() => {
     let mounted = true;
-    const fetchRooms = async () => {
-      setLoadingRooms(true);
+    const fetchOverlappingBookings = async () => {
+      setIsCheckingAvailability(true);
+      setOverlappingBookings([]);
       try {
-        const roomsCol = collection(db, 'rooms');
-        const roomsSnap = await getDocs(roomsCol);
-        const fetched = roomsSnap.docs.map(d => ({ number: d.id, ...(d.data() as any) }));
-        if (mounted && fetched.length > 0) {
-          setRooms(fetched.map((r: any) => ({
-            number: r.number || r.id || r.roomNumber,
-            type: normalizeTypeInput(r.type || r.roomType),
-            status: r.status || 'available',
-          })));
-        } else if (mounted) {
-          console.warn('No rooms found in Firestore `rooms` collection.');
-          setRooms([]);
-        }
+        // This is the single-query hotfix.
+        const q = query(
+          collection(db, 'bookings'),
+          where('status', 'in', ['confirmed', 'checked-in']),
+          where('checkIn', '<', formData.checkOut), // Booking starts *before* this one ends
+          where('checkOut', '>', formData.checkIn) // Booking ends *after* this one starts
+        );
+
+        const snap = await getDocs(q);
+        if (!mounted) return;
+
+        const bookings = snap.docs.map(doc => ({ ...doc.data(), bookingId: doc.id } as BookingData));
+        setOverlappingBookings(bookings);
+
       } catch (err) {
-        console.warn('Could not fetch rooms from Firestore.', err);
-        if (mounted) setRooms([]);
+        console.error("Error fetching overlapping bookings:", err);
+        if (mounted) setOverlappingBookings([]);
       } finally {
-        if (mounted) setLoadingRooms(false);
+        if (mounted) setIsCheckingAvailability(false);
       }
     };
-    fetchRooms();
+
+    fetchOverlappingBookings();
+    
     return () => { mounted = false; };
-  }, []);
+  }, [isOpen, formData.checkIn, formData.checkOut]); // Runs when dates change
+  // --- END NEW HOTFIX: Step 1 ---
 
+
+  // --- NEW HOTFIX: Step 2 ---
+  // Create a memoized Set of all room numbers that are occupied in the selected range.
+  const occupiedRoomNumbers = useMemo(() => {
+    const occupied = new Set<string>();
+    for (const b of overlappingBookings) {
+      if (!b.roomNumber) continue;
+      
+      // We already pre-filtered by date range, but a final check is safest.
+      const isOverlapping = checkDateOverlap(
+        formData.checkIn, formData.checkOut,
+        b.checkIn, b.checkOut
+      );
+      
+      if (isOverlapping) {
+        occupied.add(b.roomNumber);
+      }
+    }
+    return occupied;
+  }, [overlappingBookings, formData.checkIn, formData.checkOut]);
+  // --- END NEW HOTFIX: Step 2 ---
+
+
+  // --- UPDATED HOTFIX: Step 3 ---
+  // This effect is now fast and in-memory. It replaces the old 'compute' effect.
   useEffect(() => {
-    let cancelled = false;
-    const compute = async () => {
-      if (!formData.roomType) {
-        setFilteredRooms([]);
-        return;
-      }
-      const candidates = rooms.filter(r => r.type === formData.roomType);
-      const results: Array<any> = [];
-      try {
-        const roomsSnap = await getDocs(collection(db, 'rooms'));
-        const roomDocMap: Record<string, any> = {};
-        roomsSnap.docs.forEach(d => { roomDocMap[d.id] = d.data(); });
-        for (const r of candidates) {
-          const roomData = roomDocMap[r.number] || null;
-          const status = roomData?.status || r.status || 'available';
-          if (!formData.checkIn || !formData.checkOut) {
-            if (status === 'available') results.push(r);
-            continue;
-          }
-          if (status !== 'available') continue;
-          const ok = await isRoomAvailableForDates(r.number, formData.checkIn, formData.checkOut);
-          if (ok) results.push(r);
-        }
-      } catch (e) {
-        console.warn('Failed to fetch rooms collection for availability checks', e);
-      }
-      if (!cancelled) setFilteredRooms(results);
-    };
-    compute();
-    return () => { cancelled = true; };
-  }, [formData.roomType, formData.checkIn, formData.checkOut, rooms]);
+    if (!formData.roomType) {
+      setFilteredRooms([]);
+      return;
+    }
 
+    // 1. Get all rooms of the correct type from context
+    // --- UPDATED: Uses the form value directly as the key ---
+    const reservationTypeKey = formData.roomType; 
+    
+    const candidateRooms = allRooms.filter(r => 
+      // --- UPDATED: Uses the new normalizeTypeKey function ---
+      normalizeTypeKey(r.roomType) === reservationTypeKey
+    );
+
+    // 2. Filter them in-memory
+    const availableRooms = candidateRooms.filter(room => {
+      
+      // --- UPDATED LOGIC ---
+      // If the room's base status isn't 'available' OR it's not 'isActive', hide it.
+      if (room.status !== 'available' || room.isActive === false) { 
+        return false;
+      }
+      // --- END UPDATED LOGIC ---
+
+      // If the dates are invalid, just show all 'available' rooms
+      if (!formData.checkIn || !formData.checkOut || new Date(formData.checkOut) <= new Date(formData.checkIn)) {
+        return true;
+      }
+      // If the room is in the occupied Set, hide it.
+      if (occupiedRoomNumbers.has(room.id)) {
+        return false;
+      }
+      
+      // Otherwise, it's available.
+      return true;
+    });
+
+    // 3. Set the final list for the dropdown
+    setFilteredRooms(availableRooms);
+
+  }, [formData.roomType, allRooms, occupiedRoomNumbers, formData.checkIn, formData.checkOut]);
+  // --- END UPDATED HOTFIX: Step 3 ---
+
+
+  // --- Auto-select room useEffect (Unchanged) ---
   useEffect(() => {
     if (!isOpen) return;
     if (filteredRooms.length > 0 && !formData.roomNumber) {
-      setFormData(prev => ({ ...prev, roomNumber: filteredRooms[0].number }));
+      // --- UPDATED: Use room.id from the IRoom object ---
+      setFormData(prev => ({ ...prev, roomNumber: filteredRooms[0].id }));
     } else if (filteredRooms.length === 0) {
       setFormData(prev => ({ ...prev, roomNumber: '' }));
     }
@@ -240,6 +328,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     };
   }, [isOpen]);
 
+  // --- ValidateStep1 (Unchanged) ---
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.guestName.trim()) newErrors.guestName = 'Guest name is required';
@@ -258,34 +347,42 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep2 = async () => {
+  // --- UPDATED: validateStep2 ---
+  // Now uses the in-memory 'occupiedRoomNumbers' Set.
+  const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.roomType) newErrors.roomType = 'Room type is required';
     if (!formData.checkOut) newErrors.checkOut = 'Check-out date is required';
-    if (filteredRooms.length === 0) {
-      newErrors.roomNumber = 'No rooms are available for these dates';
+    
+    if (!formData.roomNumber) {
+      newErrors.roomNumber = 'Room selection is required';
+    } else if (filteredRooms.length === 0 || !filteredRooms.find(r => r.id === formData.roomNumber)) {
+      newErrors.roomNumber = 'Selected room is not available for these dates';
     }
-    if (!formData.roomNumber) newErrors.roomNumber = 'Room selection is required';
+
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
     if (checkIn < today) {
       newErrors.checkIn = 'Check-in date cannot be in the past';
     }
     if (checkOut <= checkIn) {
       newErrors.checkOut = 'Check-out must be after check-in date';
     }
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return false;
-    const isAvailable = await isRoomAvailableForDates(formData.roomNumber, formData.checkIn, formData.checkOut);
-    if (!isAvailable) {
-      setErrors({ roomNumber: 'Selected room is not available for those dates' });
-      return false;
+    
+    // Final in-memory check
+    if (formData.roomNumber && occupiedRoomNumbers.has(formData.roomNumber)) {
+      newErrors.roomNumber = 'Selected room is not available for those dates';
     }
-    return true;
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
+  // --- END UPDATED: validateStep2 ---
 
+  // --- validateStep3 (Unchanged) ---
   const validateStep3 = () => {
     const newErrors: Record<string, string> = {};
     if (formData.paymentMethod === 'gcash') {
@@ -318,6 +415,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     return Object.keys(newErrors).length === 0;
   };
 
+  // --- calculatePricing (Unchanged) ---
   const calculatePricing = () => {
     const rt = roomTypes.find(rt => rt.id === formData.roomType);
     if (!rt || !formData.checkOut || !formData.checkIn) {
@@ -342,11 +440,13 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     };
   };
 
+  // --- handleNext (UPDATED) ---
   const handleNext = async () => {
     if (step === 1 && validateStep1()) {
       setStep(2);
     } else if (step === 2) {
-      const ok = await validateStep2();
+      // --- UPDATED: No longer async ---
+      const ok = validateStep2();
       if (ok) {
         const { totalAmount } = calculatePricing();
         setFormData(prev => ({ ...prev, totalAmount: totalAmount, paymentReceived: totalAmount }));
@@ -354,12 +454,15 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       }
     }
   };
+  // --- END UPDATED ---
 
+  // --- handleBack (Unchanged) ---
   const handleBack = () => {
     setErrors({});
     setStep(step - 1);
   };
   
+  // --- internalOnClose (Unchanged) ---
   const internalOnClose = () => {
     // Reset form on close
     setStep(1);
@@ -375,8 +478,10 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     onClose(); // Call parent onClose
   };
 
+  // --- handleSubmit (UPDATED) ---
   const handleSubmit = async () => {
-    const step2Ok = await validateStep2();
+    // --- UPDATED: No longer async ---
+    const step2Ok = validateStep2();
     if (!step2Ok) { setStep(2); return; }
     const step3Ok = validateStep3();
     if (!step3Ok) return;
@@ -418,12 +523,12 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       userEmail: formData.email,
       userId,
       userName: formData.guestName,
-      // Note: specialRequests and ID info are not in the final booking object model.
     };
 
     onBooking(newBooking);
     internalOnClose(); // Use internal close to reset state
   };
+  // --- END UPDATED ---
 
   // --- RENDER FUNCTIONS (Refactored to use new Form components) ---
 
@@ -519,16 +624,19 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             onChange={(e) => setFormData(prev => ({ ...prev, roomNumber: e.target.value }))}
             title="Available Rooms"
             hasError={!!errors.roomNumber}
-            disabled={loadingRooms || filteredRooms.length === 0}
+            disabled={roomsLoading || isCheckingAvailability || filteredRooms.length === 0}
           >
             <option value="">
-              {loadingRooms
+              {roomsLoading
                 ? 'Loading...'
+                : isCheckingAvailability
+                ? 'Checking availability...'
                 : (filteredRooms.length > 0 ? 'Select room' : 'No rooms available for selected dates')}
             </option>
-            {filteredRooms.map((room: any) => (
-              <option key={room.number} value={room.number}>
-                Room {room.number}
+            {/* --- UPDATED: Use room.id and room.roomNumber --- */}
+            {filteredRooms.map((room: IRoom) => (
+              <option key={room.id} value={room.id}>
+                Room {room.roomNumber}
               </option>
             ))}
           </FormSelect>
@@ -684,7 +792,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
 
         {/* Payment Section */}
         <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-           <h4 className="text-lg font-semibold text-gray-900 mb-4">Payment</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">Payment</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormItem label="Payment Method">
               <FormSelect

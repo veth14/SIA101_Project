@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import {
   collection, getDocs, doc, updateDoc, addDoc,
   serverTimestamp, setDoc, query, where, Timestamp, onSnapshot, orderBy, limit
@@ -7,17 +7,50 @@ import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ROOMS_DATA } from '../../../data/roomsData';
 import { CheckInModal } from './CheckInModal';
-// import { WalkInModal } from './WalkInModal'; // Not used in this file's JSX
 import { ReservationDetailsModal } from './ReservationDetailsModal';
 import { EditReservationModal } from './EditReservationModal';
-// --- NEW ---
-// Import the new modals
 import { ConfirmCheckOutModal } from './ConfirmCheckOutModal';
 import { ConfirmCancelModal } from './ConfirmCancelModal';
-// --- END NEW ---
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
 import ModernReservationsTable from './ModernReservationsTable';
 import { updateBookingCount, updateRevenue, updateArrivals, updateCurrentGuests } from '../../../lib/statsHelpers';
+
+// --- NEW ---
+// Interface for a single room document
+export interface IRoom {
+  id: string; // Document ID (which is the roomNumber)
+  roomNumber: string;
+  roomName: string;
+  roomType: string;
+  status: 'available' | 'occupied' | 'cleaning' | 'maintenance';
+  currentReservation: string | null;
+  isActive: boolean;
+  // Add any other fields from your 'rooms' collection
+}
+// --- END NEW ---
+
+// --- NEW ---
+// The shape of the data our RoomsContext will provide
+interface IRoomsContext {
+  rooms: IRoom[];
+  loading: boolean;
+  refreshRooms: () => Promise<void>;
+}
+
+// --- NEW ---
+// Create the context. We export this so modals can use it.
+export const RoomsContext = createContext<IRoomsContext | null>(null);
+
+// --- NEW ---
+// Create a custom hook to make using the context easier.
+// Modals will call this: `const { rooms } = useRooms();`
+export const useRooms = () => {
+  const context = useContext(RoomsContext);
+  if (!context) {
+    throw new Error('useRooms must be used within a RoomsContext.Provider');
+  }
+  return context;
+};
 
 // --- UPDATED ---
 // Export the interface so other files (like your modals) can use it
@@ -63,21 +96,47 @@ export const ReservationsPage = () => {
   const [filteredReservations, setFilteredReservations] = useState<BookingData[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<BookingData | null>(null);
 
+  // State for holding the master list of rooms
+  const [rooms, setRooms] = useState<IRoom[]>([]); // --- NEW ---
+  const [roomsLoading, setRoomsLoading] = useState(true); // --- NEW ---
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-
-  // --- NEW ---
-  // State for the new confirmation modals
   const [showCheckOutModal, setShowCheckOutModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  // --- END NEW ---
-
   const [loading, setLoading] = useState(true);
   const [dashboardStats, setDashboardStats] = useState<{
     totalBookings?: number;
     monthlyCount?: number;
   } | null>(null);
+
+  // --- NEW ---
+  // Function to fetch all rooms. This will be passed to the context.
+  const fetchRooms = async () => {
+    setRoomsLoading(true);
+    try {
+      const snap = await getDocs(collection(db, 'rooms'));
+      const roomsData = snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<IRoom, 'id'>)
+      }));
+      setRooms(roomsData as IRoom[]);
+    } catch (err) {
+      console.error("Failed to fetch rooms:", err);
+      // Handle error (e.g., show a toast)
+    } finally {
+      setRoomsLoading(false);
+    }
+  };
+
+  // --- NEW ---
+  // useEffect to fetch rooms *once* when the user is logged in
+  useEffect(() => {
+    if (user) {
+      fetchRooms();
+    }
+  }, [user]);
+  // --- END NEW ---
 
   // Fetch reservations (untouched)
   useEffect(() => {
@@ -370,7 +429,7 @@ export const ReservationsPage = () => {
   };
 
   // Save handler (untouched)
-  const handleSaveReservation = async (updatedReservation: BookingData) => {
+const handleSaveReservation = async (updatedReservation: BookingData) => {
     try {
       await updateDoc(doc(db, 'bookings', updatedReservation.bookingId), {
         ...updatedReservation,
@@ -382,6 +441,12 @@ export const ReservationsPage = () => {
           r.bookingId === updatedReservation.bookingId ? updatedReservation : r
         )
       );
+
+      // --- THIS IS THE FIX ---
+      // After saving, refresh the master room list in the context.
+      await fetchRooms(); 
+      // --- END THE FIX ---
+
       setShowEditModal(false);
       setSelectedReservation(null);
     } catch (error) {
@@ -389,7 +454,6 @@ export const ReservationsPage = () => {
       alert('Failed to update reservation. Please try again.');
     }
   };
-
   // --- NEW ---
   // Handlers to open the confirmation modals
   const handleOpenCheckOutModal = (reservation: BookingData) => {
@@ -482,8 +546,9 @@ export const ReservationsPage = () => {
     'checked-out': reservations.filter(r => r.status === 'checked-out').length,
   };
 
-  // --- JSX (Modified) ---
+  // --- JSX (UPDATED) ---
   return (
+  <RoomsContext.Provider value={{ rooms, loading: roomsLoading, refreshRooms: fetchRooms }}>
     <div className="min-h-screen bg-[#F9F6EE]">
       {/* Background Elements (no change) */}
       <div className="fixed inset-0 pointer-events-none">
@@ -669,5 +734,6 @@ export const ReservationsPage = () => {
       )}
       {/* --- END NEW --- */}
     </div>
+  </RoomsContext.Provider>
   );
 };
