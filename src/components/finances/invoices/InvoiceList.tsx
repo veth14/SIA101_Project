@@ -36,6 +36,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
     dateRange: 'all',
     searchTerm: ''
   });
+  const [showAll, setShowAll] = useState(false);
 
   const itemsPerPage = 8;
 
@@ -82,6 +83,12 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentInvoices = filteredInvoices.slice(startIndex, endIndex);
+
+  const totalItems = filteredInvoices.length;
+  const visibleInvoices = showAll ? filteredInvoices : currentInvoices;
+
+  const displayedStart = totalItems === 0 ? 0 : (showAll ? 1 : startIndex + 1);
+  const displayedEnd = showAll ? totalItems : Math.min(endIndex, totalItems);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -168,234 +175,261 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
       `}</style>
 
       {/* Invoice Table */}
-      <div className="relative overflow-hidden transition-all duration-500 border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 animate-table-slide-in group hover:shadow-3xl">
-        {/* Background Elements */}
-        <div className="absolute inset-0 transition-opacity duration-700 bg-gradient-to-br from-heritage-green/5 via-heritage-light/20 to-heritage-green/3 rounded-3xl opacity-60 group-hover:opacity-100"></div>
-        <div className="absolute top-0 right-0 w-40 h-40 rounded-full translate-x-1/3 -translate-y-1/3 bg-gradient-to-bl from-heritage-green/10 to-transparent"></div>
-        <div className="absolute w-32 h-32 rounded-full -bottom-10 -left-10 bg-gradient-to-tr from-heritage-light/30 to-transparent"></div>
-        
-        {/* Content Container */}
-        <div className="relative z-10 flex flex-col h-[900px] p-8">
-          {/* Header Section */}
+      <div className="flex flex-col h-full overflow-hidden bg-white border shadow-md rounded-xl border-gray-200/70">
+        {/* Header with Search and Controls */}
+        <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-12 h-12 shadow-lg bg-gradient-to-br from-heritage-green to-heritage-neutral rounded-2xl">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-heritage-green">Invoice Management</h2>
-                <p className="text-sm text-heritage-neutral/70">
-                  Showing {startIndex + 1} to {Math.min(endIndex, filteredInvoices.length)} of {filteredInvoices.length} invoices
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <svg className="w-5 h-5 text-heritage-neutral/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <div>
+              <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Search invoices..."
-                  value={filters.searchTerm}
-                  onChange={(e) => setFilters({...filters, searchTerm: e.target.value})}
-                  className="py-3 pl-10 pr-4 transition-all duration-300 border shadow-sm w-80 border-heritage-neutral/30 rounded-2xl bg-white/90 backdrop-blur-sm text-heritage-green placeholder-heritage-neutral/50 focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 focus:bg-white hover:shadow-md"
-                />
-              </div>
+                Invoice Records
+              </h3>
+              <p className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                  {showAll
+                    ? `All ${totalItems}`
+                    : totalItems === 0
+                      ? '0 results'
+                      : `${displayedStart}-${displayedEnd} of ${totalItems}`}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span>{showAll ? 'All invoices' : 'Paginated view'}</span>
+              </p>
+            </div>
 
-              {/* Filter Dropdowns */}
-              <select
-                value={filters.status}
-                onChange={(e) => setFilters({...filters, status: e.target.value})}
-                className="px-4 py-3 transition-all duration-300 border shadow-sm border-heritage-neutral/30 rounded-2xl bg-white/90 backdrop-blur-sm text-heritage-green focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 hover:shadow-md"
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowAll((prev) => !prev)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
               >
-                <option value="all">All Status</option>
-                <option value="paid">Paid Only</option>
-                <option value="pending">Pending Only</option>
-                <option value="overdue">Overdue Only</option>
-              </select>
-              <select
-                value={filters.dateRange}
-                onChange={(e) => setFilters({...filters, dateRange: e.target.value})}
-                className="px-4 py-3 transition-all duration-300 border shadow-sm border-heritage-neutral/30 rounded-2xl bg-white/90 backdrop-blur-sm text-heritage-green focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 hover:shadow-md"
-              >
-                <option value="all">All Dates</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-              </select>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {showAll ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                  )}
+                </svg>
+                <span>{showAll ? 'Paginate' : 'Display All'}</span>
+              </button>
 
-              {/* Action Buttons */}
               <button 
                 onClick={() => setIsCreateModalOpen(true)}
-                className="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-heritage-green to-heritage-green/90 hover:from-heritage-green/90 hover:to-heritage-green/80 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white transition-all shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-xl hover:shadow-xl hover:scale-105"
               >
-                <svg className="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Create Invoice
+                <span>Create Invoice</span>
               </button>
+
               <button 
                 onClick={handleExportAll}
-                className="px-6 py-3 text-sm font-semibold text-heritage-green hover:text-white bg-white/80 hover:bg-heritage-green border border-heritage-neutral/20 hover:border-heritage-green rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
               >
-                <svg className="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
                 </svg>
-                {filters.status !== 'all' || filters.dateRange !== 'all' || filters.searchTerm 
-                  ? `Export ${filteredInvoices.length} Filtered` 
-                  : 'Export All'
-                }
+                <span>
+                  {filters.status !== 'all' || filters.dateRange !== 'all' || filters.searchTerm 
+                    ? `Export ${filteredInvoices.length} Filtered` 
+                    : 'Export All'}
+                </span>
               </button>
             </div>
           </div>
 
-          {/* Invoice List - Table Format */}
-          <div className="flex-1 overflow-hidden border shadow-inner rounded-2xl border-heritage-neutral/10 bg-white/50 backdrop-blur-sm">
-            <table className="w-full">
-              <thead className="border-b bg-gradient-to-r from-heritage-light/40 to-heritage-green/10 border-heritage-neutral/10">
-                <tr>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-left text-heritage-green">
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <span>Invoice ID</span>
-                    </div>
-                  </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-left text-heritage-green">
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span>Guest Name</span>
-                    </div>
-                  </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-center text-heritage-green">
-                    <div className="flex items-center justify-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                      </svg>
-                      <span>Room</span>
-                    </div>
-                  </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-center text-heritage-green">
-                    <div className="flex items-center justify-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>Status</span>
-                    </div>
-                  </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-right text-heritage-green">
-                    <div className="flex items-center justify-end space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
-                      <span>Amount</span>
-                    </div>
-                  </th>
-                  <th className="px-8 py-5 text-sm font-bold tracking-wide text-center text-heritage-green">
-                    <div className="flex items-center justify-center space-x-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>Date</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-heritage-neutral/10 bg-white/30">
-                {currentInvoices.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-8 py-12">
-                      <div className="flex flex-col items-center justify-center text-center">
-                        <div className="p-4 mb-4 rounded-full bg-heritage-green/10">
-                          <svg className="w-8 h-8 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+          {/* Search and Filter Row */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Search */}
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search invoices..."
+                value={filters.searchTerm}
+                onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+            >
+              <option value="all">📊 All Status</option>
+              <option value="paid">✅ Paid</option>
+              <option value="pending">⏳ Pending</option>
+              <option value="overdue">⚠️ Overdue</option>
+            </select>
+
+            {/* Date Filter */}
+            <select
+              value={filters.dateRange}
+              onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
+              className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+            >
+              <option value="all">📅 All Dates</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="flex-1 overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
+              <tr>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                  Invoice ID
+                </th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                  Guest
+                </th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                  Room
+                </th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                  Status
+                </th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
+                  Amount
+                </th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                  Date
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {visibleInvoices.map((invoice, index) => (
+                <tr
+                  key={invoice.id}
+                  onClick={() => {
+                    console.log('Invoice clicked:', invoice.id);
+                    onInvoiceSelect(invoice);
+                  }}
+                  style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
+                  className={`group cursor-pointer transition-all duration-300 hover:shadow-sm animate-fade-in ${
+                    selectedInvoice?.id === invoice.id
+                      ? 'bg-gradient-to-r from-[#82A33D]/10 via-[#82A33D]/5 to-transparent border-l-4 border-l-[#82A33D]'
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#82A33D]/10">
+                        <svg className="w-4 h-4 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-900 transition-colors group-hover:text-[#82A33D]">
+                          {invoice.id}
                         </div>
-                        <h3 className="text-lg font-semibold text-heritage-green">No invoices found</h3>
-                        <p className="text-heritage-neutral/60">Try adjusting your filters or create a new invoice</p>
+                        <div className="text-xs font-medium text-gray-500">
+                          {invoice.items?.length || 0} items
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-bold text-gray-900 transition-colors group-hover:text-[#82A33D]">
+                        {invoice.guestName}
+                      </div>
+                      <div className="text-xs font-medium text-gray-500">
+                        Stay: {invoice.checkIn} - {invoice.checkOut}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-center whitespace-nowrap">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {invoice.roomNumber}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-center whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${
+                        invoice.status === 'paid'
+                          ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200'
+                          : invoice.status === 'pending'
+                          ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200'
+                          : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 mr-2 rounded-full ${
+                          invoice.status === 'paid'
+                            ? 'bg-emerald-500'
+                            : invoice.status === 'pending'
+                            ? 'bg-amber-500'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5 text-right whitespace-nowrap">
+                    <div className="text-sm font-bold text-gray-900">
+                      ${invoice.totalAmount.toFixed(2)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-center whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{invoice.checkIn}</div>
+                    <div className="text-xs font-medium text-gray-500">{invoice.checkOut}</div>
+                  </td>
+                </tr>
+              ))}
+
+              {/* Fill empty rows to always show itemsPerPage rows when paginated */}
+              {!showAll && totalItems > 0 &&
+                Array.from({ length: Math.max(0, itemsPerPage - currentInvoices.length) }).map((_, index) => (
+                  <tr
+                    key={`empty-${index}`}
+                    style={{ height: '74px' }}
+                    className="border-gray-200 border-dashed bg-gray-50/30"
+                  >
+                    <td className="px-6 py-5" colSpan={6}>
+                      <div className="flex items-center justify-center text-sm font-medium text-gray-300 opacity-60">
+                        <div className="w-2 h-2 mr-2 bg-gray-300 rounded-full opacity-40"></div>
+                        Empty slot {index + 1}
                       </div>
                     </td>
                   </tr>
-                ) : (
-                  currentInvoices.map((invoice) => (
-                    <tr 
-                      key={invoice.id}
-                      className="h-16 transition-all duration-300 border-l-4 border-transparent cursor-pointer hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-heritage-light/20 group hover:border-heritage-green"
-                      onClick={() => {
-                        console.log('Invoice clicked:', invoice.id);
-                        onInvoiceSelect(invoice);
-                      }}
-                    >
-                      <td className="px-8 py-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-heritage-green/20 to-heritage-neutral/20 rounded-xl">
-                            <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold transition-colors text-heritage-green group-hover:text-heritage-green/80">{invoice.id}</p>
-                            <p className="text-xs text-heritage-neutral/70">{invoice.items?.length || 0} items</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-4">
-                        <p className="text-sm font-medium text-heritage-green">{invoice.guestName}</p>
-                      </td>
-                      <td className="px-8 py-4 text-center">
-                        <p className="text-sm font-medium text-heritage-green">{invoice.roomNumber}</p>
-                      </td>
-                      <td className="px-8 py-4 text-center">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                          invoice.status === 'paid' 
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
-                            : invoice.status === 'pending'
-                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                            : 'bg-red-100 text-red-800 border border-red-200'
-                        }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                            invoice.status === 'paid' ? 'bg-emerald-500' :
-                            invoice.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
-                          }`}></div>
-                          {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-8 py-4 text-right">
-                        <div>
-                          <p className="text-base font-bold text-heritage-green">${invoice.totalAmount.toFixed(2)}</p>
-                        </div>
-                      </td>
-                      <td className="px-8 py-4 text-center">
-                        <div>
-                          <p className="text-sm font-medium text-heritage-green">{invoice.checkIn}</p>
-                          <p className="text-xs text-heritage-neutral/70">{invoice.checkOut}</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Pagination - Matching Transaction Table Style */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center pt-4 mt-6 border-t border-heritage-neutral/10">
+        {/* Empty State */}
+        {totalItems === 0 && (
+          <div className="py-12 text-center">
+            <div className="mb-4 text-5xl text-gray-400">🔍</div>
+            <p className="font-medium text-gray-500">No invoices found</p>
+            <p className="mt-1 text-sm text-gray-400">Try adjusting your search or filters</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!showAll && totalPages > 1 && (
+          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex items-center justify-center">
               <div className="flex items-center gap-3">
-                {/* Previous Button */}
                 <button
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -403,18 +437,16 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                   Previous
                 </button>
 
-                {/* Page Numbers */}
                 <div className="flex items-center space-x-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
                     if (totalPages <= 5) {
                       pageNum = i + 1;
                     } else {
-                      // Show pages around current page
                       const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
                       pageNum = start + i;
                     }
-                    
+
                     return (
                       <button
                         key={pageNum}
@@ -422,7 +454,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                         className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
                           pageNum === currentPage
                             ? 'bg-heritage-green text-white'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                         }`}
                       >
                         {pageNum}
@@ -431,11 +463,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                   })}
                 </div>
 
-                {/* Next Button */}
                 <button
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -444,16 +475,16 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Create Invoice Modal */}
-    <CreateInvoiceModal
-      isOpen={isCreateModalOpen}
-      onClose={() => setIsCreateModalOpen(false)}
-      onInvoiceCreated={handleInvoiceCreated}
-    />
+      <CreateInvoiceModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onInvoiceCreated={handleInvoiceCreated}
+      />
     </>
   );
 };
