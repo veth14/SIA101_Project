@@ -229,9 +229,6 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
               <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
                 Status
               </th>
-              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
-                Actions
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -258,14 +255,9 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                     <div className="text-sm font-bold text-gray-900">{employee.employeeId}</div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#82A33D] to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                        {employee.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">{employee.name}</div>
-                        <div className="text-xs font-medium text-gray-500">{getDepartmentName(employee.department)}</div>
-                      </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">{employee.name}</div>
+                      <div className="text-xs font-medium text-gray-500">{getDepartmentName(employee.department)}</div>
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
@@ -308,28 +300,13 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-5 text-center whitespace-nowrap">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEmployeeSelect(employee);
-                      }}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white text-xs font-bold rounded-lg hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
-                    >
-                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View
-                    </button>
-                  </td>
                 </tr>
               );
             })}
             {/* Fill empty rows to always show 10 rows */}
             {Array.from({ length: Math.max(0, 10 - currentEmployees.length) }).map((_, index) => (
               <tr key={`empty-${index}`} style={{ height: '74px' }} className="border-gray-200 border-dashed bg-gray-50/30">
-                <td className="px-6 py-5" colSpan={8}>
+                <td className="px-6 py-5" colSpan={7}>
                   <div className="flex items-center justify-center text-sm font-medium text-gray-300 opacity-60">
                     <div className="w-2 h-2 mr-2 bg-gray-300 rounded-full opacity-40"></div>
                     Empty slot {index + 1}

@@ -132,6 +132,12 @@ export const TransactionsPage: React.FC = () => {
                 setCurrentPage(1); // Reset to first page when toggling
               }}
               isLoading={isLoading}
+              statusFilter={filters.status}
+              typeFilter={filters.type}
+              categoryFilter={filters.category}
+              onStatusFilterChange={(status) => setFilters({ ...filters, status })}
+              onTypeFilterChange={(type) => setFilters({ ...filters, type })}
+              onCategoryFilterChange={(category) => setFilters({ ...filters, category })}
             />
           </div>
 
