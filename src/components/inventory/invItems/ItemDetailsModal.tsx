@@ -6,6 +6,7 @@ interface ItemDetailsModalProps {
   item: InventoryItem | null;
   isOpen: boolean;
   onClose: () => void;
+  onStockUpdated?: () => Promise<void>; // Add this prop
 }
 
 interface ActivityItem {
@@ -21,6 +22,7 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({
   item,
   isOpen,
   onClose,
+  onStockUpdated,
 }) => {
   const [activeTab, setActiveTab] = useState<
     "overview" | "history" | "analytics"
@@ -114,15 +116,17 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({
     setShowAdjustStock(true);
   };
 
-  const handleStockAdjustmentSubmit = () => {
+  const handleStockAdjustmentSubmit = async () => {
     if (!adjustmentQuantity || !adjustmentReason) {
       console.log("Validation failed: Missing quantity or reason");
+      alert("Please enter both quantity and reason");
       return;
     }
 
     const quantity = parseInt(adjustmentQuantity);
     if (isNaN(quantity) || quantity <= 0) {
       console.log("Validation failed: Invalid quantity");
+      alert("Please enter a valid quantity greater than 0");
       return;
     }
 
@@ -131,31 +135,73 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({
 
     if (newStock < 0) {
       console.log("Validation failed: Cannot reduce stock below 0");
+      alert("Cannot reduce stock below 0");
       return;
     }
 
-    // Here you would typically update the database
-    console.log("Stock Adjustment:", {
-      itemId: item?.id,
-      itemName: item?.name,
-      oldStock: item?.currentStock,
-      adjustment: finalQuantity,
-      newStock: newStock,
-      reason: adjustmentReason,
-      timestamp: new Date().toISOString(),
-    });
+    if (!item?.id) {
+      console.log("Error: Item ID is missing");
+      return;
+    }
 
-    console.log(
-      `Stock adjusted successfully: ${item?.name} - ${
-        finalQuantity > 0 ? "+" : ""
-      }${finalQuantity} = ${newStock}`
-    );
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/inventory-inventory/adjust-stock",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            itemId: item.id,
+            adjustment: quantity,
+            reason: adjustmentReason,
+            type: adjustmentType,
+            itemName: item.name,
+            oldStock: item.currentStock,
+          }),
+        }
+      );
 
-    // Reset form
-    setShowAdjustStock(false);
-    setAdjustmentQuantity("");
-    setAdjustmentReason("");
-    setAdjustmentType("add");
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to update stock");
+      }
+
+      console.log("Stock Adjustment:", data.data);
+
+      alert(
+        `Stock updated successfully! ${item.name}\n${
+          finalQuantity > 0 ? "+" : ""
+        }${finalQuantity} = ${data.data.newStock}`
+      );
+
+      // Reset form
+      setShowAdjustStock(false);
+      setAdjustmentQuantity("");
+      setAdjustmentReason("");
+      setAdjustmentType("add");
+
+      if (onStockUpdated) {
+        await onStockUpdated();
+      }
+
+      // Close the modal after a short delay to show the success message
+      setTimeout(() => {
+        onClose();
+      }, 500);
+
+      // Optionally refresh the inventory list
+      // window.location.reload(); // or call your fetch function
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to update stock. Please try again."
+      );
+    }
   };
 
   const handleCancelAdjustment = () => {
