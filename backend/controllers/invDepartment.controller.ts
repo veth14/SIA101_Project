@@ -32,11 +32,9 @@ type MaintenanceRequest = {
   status: "Pending" | "Approved" | "Rejected" | "Completed";
 };
 
-
 export const getDepartmentsByCategory = async (req: Request, res: Response) => {
   try {
     const itemsSnapshot = await db.collection("inventory_items").get();
-
     const snapshot1 = await db.collection("maintenance_requests").get();
 
     if (itemsSnapshot.empty) {
@@ -64,19 +62,20 @@ export const getDepartmentsByCategory = async (req: Request, res: Response) => {
         items: any[];
         totalValue: number;
         monthlyConsumption: number;
+        totalUsage: number;
       }
     > = {};
 
-    const maintenanceRequests: MaintenanceRequest[] = [];
+    const maintenanceRequests: any[] = [];
     snapshot1.forEach((doc) => {
       maintenanceRequests.push({
         id: doc.id,
         ...doc.data(),
-      } as MaintenanceRequest);
+      });
     });
 
     itemsSnapshot.forEach((doc) => {
-      const item = doc.data();
+      const item = doc.data() as any;
       const category = item.category || "Uncategorized";
 
       if (!categoryGroups[category]) {
@@ -86,25 +85,38 @@ export const getDepartmentsByCategory = async (req: Request, res: Response) => {
           items: [],
           totalValue: 0,
           monthlyConsumption: 0,
+          totalUsage: 0,
         };
       }
 
       categoryGroups[category].count += 1;
+
+      // Calculate usage: initialStock - currentStock
+      const initialStock = item.initialStock || 0;
+      const currentStock = item.currentStock || 0;
+      const itemUsage = initialStock - currentStock;
+
       categoryGroups[category].items.push({
         id: doc.id,
         ...item,
+        usage: itemUsage, // Add usage to each item
       });
 
-      // Calculate total inventory value
-      if (item.currentStock && item.unitPrice) {
-        categoryGroups[category].totalValue +=
-          item.currentStock * item.unitPrice;
+      // Add to total usage for the category
+      if (itemUsage > 0) {
+        categoryGroups[category].totalUsage += itemUsage;
       }
 
-      // Calculate monthly consumption
-      if (item.monthlyUsage && item.unitPrice) {
+      // Calculate total inventory value (current stock value)
+      if (currentStock !== undefined && item.unitPrice) {
+        categoryGroups[category].totalValue += currentStock * item.unitPrice;
+      }
+
+      // Calculate monthly consumption (usage × unit price)
+      // Assuming the usage happened over time, this gives total consumption value
+      if (itemUsage > 0 && item.unitPrice) {
         categoryGroups[category].monthlyConsumption +=
-          item.monthlyUsage * item.unitPrice;
+          itemUsage * item.unitPrice;
       }
     });
 
@@ -112,13 +124,10 @@ export const getDepartmentsByCategory = async (req: Request, res: Response) => {
     const categories = Object.entries(categoryGroups).map(([key, data]) => ({
       id: key.replace(/\s+/g, "_").toUpperCase(),
       name: data.name,
-      manager: "", // You can set default managers or leave empty
+      manager: "",
       itemsAssigned: data.count,
-      totalUsage: data.items.reduce(
-        (sum, item) => sum + (item.totalUsageCount || 0),
-        0
-      ),
-      monthlyConsumption: Math.round(data.monthlyConsumption),
+      totalUsage: data.totalUsage, // Total units used across all items in category
+      monthlyConsumption: Math.round(data.monthlyConsumption), // Total value of consumption
     }));
 
     res.status(200).json({
@@ -438,9 +447,9 @@ export const patchInvDepartment = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error(" Error updating department:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server error: " + (error.message || "Unknown error")
+    res.status(500).json({
+      success: false,
+      message: "Server error: " + (error.message || "Unknown error"),
     });
   }
 };
@@ -484,7 +493,10 @@ export async function getNextMaintenanceRequestId(): Promise<string> {
   }
 }
 
-export const postInvMaintenanceRequest = async (req: Request, res: Response) => {
+export const postInvMaintenanceRequest = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const nextId = await getNextMaintenanceRequestId();
     const maintenanceRequest = req.body;
@@ -494,7 +506,7 @@ export const postInvMaintenanceRequest = async (req: Request, res: Response) => 
       department: maintenanceRequest.department,
       itemService: maintenanceRequest.itemService,
       requestedBy: maintenanceRequest.requestedBy,
-      date: maintenanceRequest.date || new Date().toISOString().split('T')[0],
+      date: maintenanceRequest.date || new Date().toISOString().split("T")[0],
       status: "Pending",
     };
 

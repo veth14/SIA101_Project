@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import InventoryItemsHeader from "./InventoryItemsHeader";
 import { ItemsBackground } from "./ItemsBackground";
 import { ItemsStats } from "./ItemsStats";
@@ -11,7 +11,6 @@ import type { InventoryItem } from "./items-backendLogic/inventoryService";
 
 // Import the dropdown components from ItemsTableContainer
 import { CategoryDropdown, StockStatusDropdown } from "./ItemsTableContainer";
-import useGetInvInventory from "@/api/getInvInventory";
 
 const ItemsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,29 +18,17 @@ const ItemsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
 
-  // Use the inventory management hook for filtering logic
-  const { filterOptions, loading, error, filters, setFilters, filteredItems } =
-    useInventoryManagement();
-
-  // Separate state for raw items from API
-  const [rawItems, setRawItems] = useState([]);
-  const { getInvInventoryItems, loadingForGetInvInventoryItems } =
-    useGetInvInventory();
-
-  // Fetch items from API on mount
-  useEffect(() => {
-    const fetchInventoryItems = async () => {
-      const response = await getInvInventoryItems();
-      if (!response.success) {
-        alert(response.message);
-        return;
-      }
-      console.log(response);
-      setRawItems(response.data);
-    };
-
-    fetchInventoryItems();
-  }, []);
+  // Use the inventory management hook - it handles everything!
+  const {
+    items,
+    filterOptions,
+    loading,
+    error,
+    filters,
+    setFilters,
+    filteredItems,
+    refreshItems, // This is what you need for refetching!
+  } = useInventoryManagement();
 
   // Reset to page 1 when filters change
   const handleSearchChange = (value: string) => {
@@ -87,9 +74,29 @@ const ItemsPage: React.FC = () => {
     }).format(amount);
   };
 
+  // Refetch function for after stock updates
+  const handleStockUpdated = async () => {
+    console.log("🔄 Stock updated, refreshing inventory...");
+    await refreshItems();
+
+    // Update selected item with fresh data
+    if (selectedItem) {
+      const updatedItem = items.find((item) => item.id === selectedItem.id);
+      if (updatedItem) {
+        console.log("✅ Updated selected item:", updatedItem);
+        setSelectedItem(updatedItem);
+      }
+    }
+  };
+
   // Calculate if we have filtered results
   const hasResults = filteredItems.length > 0;
-  const isLoading = loading || loadingForGetInvInventoryItems;
+
+  console.log("📊 Current state:", {
+    itemsCount: items.length,
+    filteredItemsCount: filteredItems.length,
+    loading,
+  });
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
@@ -105,7 +112,7 @@ const ItemsPage: React.FC = () => {
         <ItemsStats items={filteredItems} formatCurrency={formatCurrency} />
 
         {/* Loading State */}
-        {isLoading ? (
+        {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green"></div>
             <span className="ml-3 text-gray-600">
@@ -152,7 +159,7 @@ const ItemsPage: React.FC = () => {
                       <p className="text-sm text-gray-500 font-medium">
                         {hasResults ? (
                           <>
-                            Showing {filteredItems.length} of {rawItems.length}{" "}
+                            Showing {filteredItems.length} of {items.length}{" "}
                             items
                           </>
                         ) : (
@@ -253,14 +260,15 @@ const ItemsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Item Details Modal - Rendered via Portal */}
+      {/* Item Details Modal - Pass refresh function */}
       <ItemDetailsModal
         item={selectedItem}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        onStockUpdated={handleStockUpdated}
       />
 
-      {/* Add Item Modal - Rendered via Portal */}
+      {/* Add Item Modal */}
       <AddItemModal
         isOpen={showAddItemModal}
         onClose={handleCloseAddItemModal}

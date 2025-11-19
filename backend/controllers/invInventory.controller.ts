@@ -65,7 +65,7 @@ export const getInventoryItems = async (req: Request, res: Response) => {
 export const postInventoryItem = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-
+    console.log(data);
     const categoryMap: Record<string, string> = {
       "Food & Beverage": "FB",
       "Front Office": "FO",
@@ -141,5 +141,162 @@ export const postInventoryItem = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("❌ Error adding Inventory item:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// export const patchAddInitialStock = async (req: Request, res: Response) => {
+//   try {
+//     const snapshot = await db.collection("inventory_items").get();
+
+//     if (snapshot.empty) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No inventory items found",
+//       });
+//     }
+
+//     const batch = db.batch();
+//     let updatedCount = 0;
+
+//     snapshot.forEach((doc) => {
+//       const data = doc.data();
+
+//       // Only update documents that:
+//       // 1. Do NOT have initialStock
+//       // 2. Have a valid currentStock value
+//       if (
+//         data.initialStock === undefined &&
+//         data.currentStock !== undefined &&
+//         data.currentStock !== null
+//       ) {
+//         const docRef = db.collection("inventory_items").doc(doc.id);
+//         batch.update(docRef, { initialStock: data.currentStock });
+//         updatedCount++;
+//       }
+//     });
+
+//     if (updatedCount > 0) {
+//       await batch.commit();
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: `${updatedCount} documents successfully updated with initialStock.`,
+//       updatedCount,
+//     });
+//   } catch (error) {
+//     console.error("❌ Error updating initialStock:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error while updating initialStock",
+//     });
+//   }
+// };
+
+export const patchStockAdjustment = async (req: Request, res: Response) => {
+  try {
+    const { itemId, adjustment, reason, type, itemName, oldStock } = req.body;
+
+    // Validation
+    if (!itemId || adjustment === undefined || !reason || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: itemId, adjustment, reason, or type",
+      });
+    }
+
+    const adjustmentNum = parseInt(adjustment);
+    if (isNaN(adjustmentNum)) {
+      return res.status(400).json({
+        success: false,
+        message: "Adjustment must be a valid number",
+      });
+    }
+
+    // Get the current item
+    const itemRef = db.collection("inventory_items").doc(itemId);
+    const itemDoc = await itemRef.get();
+
+    if (!itemDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Item not found",
+      });
+    }
+
+    const itemData = itemDoc.data();
+    const currentStock = itemData?.currentStock || 0;
+    const finalAdjustment = type === "add" ? adjustmentNum : -adjustmentNum;
+    const newStock = currentStock + finalAdjustment;
+
+    // Prevent negative stock
+    if (newStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reduce stock below 0",
+      });
+    }
+
+    const formatDate = (date: Date) => {
+      return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZoneName: "short",
+      }).format(date);
+    };
+
+    const now = new Date();
+    const formattedDate = formatDate(now);
+
+    // Prepare update data
+    const updateData: any = {
+      currentStock: newStock,
+      updatedAt: formattedDate,
+    };
+
+    // Only update lastRestocked if adding stock
+    if (type === "add") {
+      updateData.lastRestocked = formattedDate;
+    }
+
+    // Update the item
+    await itemRef.update(updateData);
+
+    // Log the adjustment to stock_adjustments collection
+    const adjustmentLogRef = db.collection("stock_adjustments").doc();
+    await adjustmentLogRef.set({
+      itemId: itemId,
+      itemName: itemName || itemData?.name || "Unknown Item",
+      oldStock: currentStock,
+      adjustment: finalAdjustment,
+      newStock: newStock,
+      reason: reason,
+      type: type,
+      timestamp: formattedDate,
+      createdAt: formattedDate,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Stock ${type === "add" ? "added" : "removed"} successfully`,
+      data: {
+        itemId,
+        oldStock: currentStock,
+        adjustment: finalAdjustment,
+        newStock,
+        lastRestocked: type === "add" ? formattedDate : itemData?.lastRestocked,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error adjusting stock:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while adjusting stock",
+    });
   }
 };
