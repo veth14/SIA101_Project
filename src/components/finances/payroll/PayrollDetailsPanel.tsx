@@ -402,7 +402,6 @@ const PayrollDetailsPanel: React.FC<PayrollDetailsPanelProps> = ({
                 <p className="text-xs font-medium text-green-100 mb-1">Net Pay (Take Home)</p>
                 <p className="text-2xl font-black">₱{payroll.netPay.toLocaleString()}</p>
               </div>
-              <div className="text-3xl opacity-20">💰</div>
             </div>
           </div>
         </div>

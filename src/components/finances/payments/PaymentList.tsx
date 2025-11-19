@@ -299,7 +299,7 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
                       className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                        pageNum === currentPage ? 'bg-heritage-green text-white' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                        pageNum === currentPage ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                       }`}
                     >
                       {pageNum}
@@ -307,7 +307,6 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
                   );
                 })}
               </div>
-
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}

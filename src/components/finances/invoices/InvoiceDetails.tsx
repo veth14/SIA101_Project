@@ -29,7 +29,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
             animation: slide-in-right 0.7s ease-out;
           }
         `}</style>
-        <div className="h-[1000px] p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+  <div className="h-full min-h-0 p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
           <div className="relative flex flex-col items-center justify-center h-full overflow-hidden text-center">
             {/* Background Elements */}
             <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-neutral/5 rounded-3xl"></div>
@@ -125,7 +125,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
           background: rgba(130, 163, 61, 0.5);
         }
       `}</style>
-      <div className="h-[1000px] p-5 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+  <div className="h-full min-h-0 p-5 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
         <div className="flex flex-col h-full">
           {/* Compact Header */}
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 via-white to-gray-50">
@@ -143,7 +143,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
                       #{invoice.id}
                     </span>
                     <span className="text-gray-400">•</span>
-                    <span className="truncate max-w-[180px]">{invoice.guestName}</span>
+                    <span className="truncate max-w-[320px]">{invoice.guestName}</span>
                   </p>
                 </div>
               </div>
@@ -159,9 +159,9 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
           </div>
 
           {/* Content - Utilizing Full Space */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Amount - Highlighted */}
-            <div className="flex-1 p-6 space-y-8 overflow-hidden">
+            <div className="flex-1 p-6 space-y-8 overflow-y-auto min-h-0">
               <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-blue-100/50 flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold tracking-wide uppercase text-gray-600">Guest & Stay</p>
@@ -196,7 +196,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
                 </div>
               </div>
 
-              <div className="flex-1 space-y-4 overflow-y-auto invoice-items-scroll">
+              <div className="flex-1 space-y-4 overflow-y-auto invoice-items-scroll min-h-0">
                 {/* Invoice ID & Status Row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
@@ -236,7 +236,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
                 {/* Invoice Items Preview */}
                 <div className="p-4 bg-white border border-gray-200/60 rounded-lg">
                   <label className="block mb-2 text-xs font-semibold tracking-wide uppercase text-gray-500">Invoice Items</label>
-                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto">
                     {invoice.items.slice(0, 4).map((item, index) => (
                       <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-[#82A33D]/5">
                         <div className="flex items-center space-x-2">
@@ -289,7 +289,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handlePrint}
-                  className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white rounded-xl hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] group text-sm font-semibold"
+                  className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl hover:from-heritage-green hover:to-heritage-neutral transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] group text-sm font-semibold"
                 >
                   <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

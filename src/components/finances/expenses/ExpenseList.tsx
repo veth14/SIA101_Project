@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { FileText, Plus, Download } from 'lucide-react';
 import { ExpenseModal } from './ExpenseModal';
 import NewExpenseModal from './NewExpenseModal';
 import type { Expense } from './types';
@@ -270,11 +271,11 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="flex items-center justify-center shadow-lg w-14 h-14 rounded-2xl bg-gradient-to-br from-heritage-green to-heritage-neutral">
-                  <svg className="text-white w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
                 <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green/30 to-heritage-neutral/30 rounded-2xl blur-lg -z-10"></div>
               </div>
               <div>
@@ -293,17 +294,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             <div className="flex gap-3">
               <button onClick={() => setIsCreateOpen(true)} className="px-5 py-2.5 text-sm font-bold text-white transition-all rounded-xl bg-gradient-to-r from-heritage-green to-heritage-neutral hover:shadow-lg hover:scale-105 active:scale-95">
                 <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus className="w-4 h-4" />
                   New Expense
                 </span>
               </button>
               <button className="px-5 py-2.5 text-sm font-bold text-gray-700 transition-all bg-white border-2 rounded-xl border-heritage-neutral/30 hover:border-heritage-green hover:text-heritage-green hover:shadow-md">
                 <span className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <Download className="w-4 h-4" />
                   Export
                 </span>
               </button>
@@ -420,9 +417,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
           {sortedExpenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[500px]">
               <div className="flex items-center justify-center w-20 h-20 mb-4 bg-gray-100 rounded-full">
-                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <FileText className="w-10 h-10 text-gray-400" />
               </div>
               <h3 className="mb-1 text-lg font-bold text-gray-900">No expenses found</h3>
               <p className="text-sm text-gray-500">Try adjusting your filters or add a new expense</p>
@@ -705,11 +700,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             {selectedExpense.receiptUrl && (
               <div className="p-5 border-2 border-green-200 bg-green-50 rounded-2xl">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 bg-green-600 rounded-xl">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                      <FileText className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-green-900">Receipt Available</p>

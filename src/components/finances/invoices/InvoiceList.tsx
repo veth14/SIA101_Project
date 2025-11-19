@@ -7,6 +7,7 @@ export interface Invoice {
   roomNumber: string;
   checkIn: string;
   checkOut: string;
+  linkedBookingId?: string;
   status: 'paid' | 'pending' | 'overdue';
   totalAmount: number;
   items: InvoiceItem[];
@@ -38,7 +39,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
   });
   const [showAll, setShowAll] = useState(false);
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 11;
 
   // Filter invoices based on current filters
   const filteredInvoices = invoices.filter(invoice => {
@@ -202,20 +203,6 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowAll((prev) => !prev)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {showAll ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                  )}
-                </svg>
-                <span>{showAll ? 'Paginate' : 'Display All'}</span>
-              </button>
-
               <button 
                 onClick={() => setIsCreateModalOpen(true)}
                 className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white transition-all shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-xl hover:shadow-xl hover:scale-105"
@@ -421,41 +408,40 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
           </div>
         )}
 
-        {/* Pagination */}
+        {/* Pagination (centered) */}
         {!showAll && totalPages > 1 && (
-          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="p-4 border-t border-gray-100 bg-white/50">
             <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
-                  Previous
+                  <span className="ml-1">Previous</span>
                 </button>
 
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
                     let pageNum;
-                    if (totalPages <= 5) {
+                    if (totalPages <= 7) {
                       pageNum = i + 1;
                     } else {
-                      const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                      const start = Math.max(1, Math.min(currentPage - 3, totalPages - 6));
                       pageNum = start + i;
                     }
+
+                    const isActive = pageNum === currentPage;
 
                     return (
                       <button
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
-                        className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                          pageNum === currentPage
-                            ? 'bg-heritage-green text-white'
-                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                        }`}
+                        className={`inline-flex items-center justify-center min-w-[38px] h-10 px-3 text-sm font-medium rounded-md transition-all ${isActive ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100'}`}
+                        aria-current={isActive ? 'page' : undefined}
                       >
                         {pageNum}
                       </button>
@@ -466,10 +452,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                 <button
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Next
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="mr-1">Next</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>

@@ -155,6 +155,34 @@ export const InvoicesPage: React.FC = () => {
         { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
         { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
       ]
+    },
+    {
+      id: 'INV-2024-011',
+      guestName: 'Ian Angelo Valmores',
+      roomNumber: '307',
+      checkIn: '2024-10-14',
+      checkOut: '2024-10-16',
+      status: 'paid',
+      totalAmount: 1180.60,
+      items: [
+        { id: '1', description: 'Presidential Suite (2 nights)', category: 'room', quantity: 2, unitPrice: 500, total: 1000 },
+        { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
+      ]
+    },
+    {
+      id: 'INV-2024-012',
+      guestName: 'Macky Valmonte',
+      roomNumber: '309',
+      checkIn: '2024-10-14',
+      checkOut: '2024-10-16',
+      status: 'paid',
+      totalAmount: 1180.60,
+      items: [
+        { id: '1', description: 'Presidential Suite (2 nights)', category: 'room', quantity: 2, unitPrice: 500, total: 1000 },
+        { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
+      ]
     }
   ]);
 
