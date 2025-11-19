@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import useGetInvAnalytic from "@/api/getInvAnalytic";
+import { exportProcurementToPDF } from "@/utils/exportUtils";
 
 const ProcurementCharts: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("Last 30 Days");
@@ -32,21 +33,62 @@ const ProcurementCharts: React.FC = () => {
   }, []);
 
   const [procurementData, setProcurementData] = useState([]);
-  // Sample procurement data
-  // const procurementData = [
-  //   { month: 'Jan', orders: 45, value: 2800, suppliers: 12, onTime: 94 },
-  //   { month: 'Feb', orders: 52, value: 3200, suppliers: 14, onTime: 96 },
-  //   { month: 'Mar', orders: 38, value: 2400, suppliers: 11, onTime: 89 },
-  //   { month: 'Apr', orders: 61, value: 3800, suppliers: 16, onTime: 92 },
-  //   { month: 'May', orders: 47, value: 2900, suppliers: 13, onTime: 97 },
-  //   { month: 'Jun', orders: 55, value: 3400, suppliers: 15, onTime: 91 },
-  //   { month: 'Jul', orders: 49, value: 3100, suppliers: 14, onTime: 95 },
-  //   { month: 'Aug', orders: 53, value: 3300, suppliers: 15, onTime: 93 },
-  //   { month: 'Sep', orders: 41, value: 2600, suppliers: 12, onTime: 96 },
-  //   { month: 'Oct', orders: 58, value: 3600, suppliers: 16, onTime: 94 },
-  //   { month: 'Nov', orders: 46, value: 2800, suppliers: 13, onTime: 92 },
-  //   { month: 'Dec', orders: 51, value: 3200, suppliers: 14, onTime: 95 }
-  // ];
+
+  const handleExport = () => {
+    if (!procurementData || procurementData.length === 0) {
+      alert("No data available to export");
+      return;
+    }
+
+    // Prepare export data with formatted values
+    const exportData = procurementData.map((item: any) => ({
+      Month: item.month,
+      "Purchase Orders": item.orders || 0,
+      "Order Value (₱K)": item.value || 0,
+      "Active Suppliers": item.suppliers || 0,
+      "On-time Delivery (%)": item.onTime || 0,
+    }));
+
+    // Calculate totals and averages
+    const totalOrders = exportData.reduce(
+      (sum, item) => sum + item["Purchase Orders"],
+      0
+    );
+    const totalValue = exportData.reduce(
+      (sum, item) => sum + item["Order Value (₱K)"],
+      0
+    );
+    const avgSuppliers = Math.round(
+      exportData.reduce(
+        (sum, item) => sum + item["Active Suppliers"],
+        0
+      ) / exportData.length
+    );
+    const avgOnTime = Math.round(
+      exportData.reduce(
+        (sum, item) => sum + item["On-time Delivery (%)"],
+        0
+      ) / exportData.length
+    );
+
+    // Add summary row
+    exportData.push({
+      Month: "TOTAL/AVERAGE",
+      "Purchase Orders": totalOrders,
+      "Order Value (₱K)": totalValue,
+      "Active Suppliers": avgSuppliers,
+      "On-time Delivery (%)": avgOnTime,
+    });
+
+    // Export to PDF using specialized function
+    exportProcurementToPDF(
+      exportData,
+      `procurement_analytics_${selectedPeriod
+        .toLowerCase()
+        .replace(/\s+/g, "_")}`,
+      `Procurement Analytics - ${selectedPeriod}`
+    );
+  };
 
   // Custom Tooltip Component
   const CustomTooltip = ({
@@ -83,8 +125,10 @@ const ProcurementCharts: React.FC = () => {
                 <p className="text-sm font-medium text-gray-700">
                   {entry.dataKey === "orders" && `Orders: ${entry.value}`}
                   {entry.dataKey === "value" && `Value: ₱${entry.value}K`}
-                  {entry.dataKey === "suppliers" && `Suppliers: ${entry.value}`}
-                  {entry.dataKey === "onTime" && `On-time: ${entry.value}%`}
+                  {entry.dataKey === "suppliers" &&
+                    `Suppliers: ${entry.value}`}
+                  {entry.dataKey === "onTime" &&
+                    `On-time: ${entry.value}%`}
                 </p>
               </div>
             )
@@ -139,7 +183,15 @@ const ProcurementCharts: React.FC = () => {
                 <option value="All Time">All Time</option>
               </select>
             </div>
-            <button className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105">
+            <button
+              onClick={handleExport}
+              disabled={
+                loadingForGetInvProcurementAnalytics ||
+                !procurementData ||
+                procurementData.length === 0
+              }
+              className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -153,7 +205,9 @@ const ProcurementCharts: React.FC = () => {
                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              Export
+              {loadingForGetInvProcurementAnalytics
+                ? "Loading..."
+                : "Export"}
             </button>
           </div>
         </div>
@@ -176,13 +230,41 @@ const ProcurementCharts: React.FC = () => {
               }}
             >
               <defs>
-                <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+                <linearGradient
+                  id="ordersGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="#3B82F6"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="#3B82F6"
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
-                <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05} />
+                <linearGradient
+                  id="valueGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="#10B981"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="#10B981"
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
                 <linearGradient
                   id="suppliersGradient"
@@ -191,12 +273,34 @@ const ProcurementCharts: React.FC = () => {
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.05} />
+                  <stop
+                    offset="5%"
+                    stopColor="#F59E0B"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="#F59E0B"
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
-                <linearGradient id="onTimeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05} />
+                <linearGradient
+                  id="onTimeGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="#8B5CF6"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="#8B5CF6"
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />

@@ -10,6 +10,7 @@ import {
   Area,
 } from "recharts";
 import useGetInvAnalytic from "@/api/getInvAnalytic";
+import { exportDepartmentToPDF } from "@/utils/exportUtils";
 
 // Interface for monthly department data (e.g., Jan–Dec stats)
 export interface DepartmentMonthlyData {
@@ -55,30 +56,45 @@ const DepartmentCharts: React.FC = () => {
     useGetInvAnalyticFunc();
   }, []);
 
-  // // Updated data structure for Recharts
-  // const departmentData = [
-  //   { month: 'Jan', housekeeping: 45, frontoffice: 28, fnb: 35, maintenance: 22, security: 15 },
-  //   { month: 'Feb', housekeeping: 52, frontoffice: 32, fnb: 41, maintenance: 28, security: 18 },
-  //   { month: 'Mar', housekeeping: 38, frontoffice: 25, fnb: 29, maintenance: 19, security: 12 },
-  //   { month: 'Apr', housekeeping: 61, frontoffice: 38, fnb: 47, maintenance: 31, security: 21 },
-  //   { month: 'May', housekeeping: 47, frontoffice: 29, fnb: 36, maintenance: 24, security: 16 },
-  //   { month: 'Jun', housekeeping: 55, frontoffice: 34, fnb: 42, maintenance: 28, security: 19 },
-  //   { month: 'Jul', housekeeping: 49, frontoffice: 31, fnb: 38, maintenance: 25, security: 17 },
-  //   { month: 'Aug', housekeeping: 53, frontoffice: 33, fnb: 40, maintenance: 27, security: 18 },
-  //   { month: 'Sep', housekeeping: 41, frontoffice: 26, fnb: 32, maintenance: 21, security: 14 },
-  //   { month: 'Oct', housekeeping: 58, frontoffice: 36, fnb: 44, maintenance: 29, security: 20 },
-  //   { month: 'Nov', housekeeping: 46, frontoffice: 28, fnb: 35, maintenance: 23, security: 16 },
-  //   { month: 'Dec', housekeeping: 51, frontoffice: 32, fnb: 39, maintenance: 26, security: 18 }
-  // ];
+  const handleExport = () => {
+    if (!departmentData || departmentData.length === 0) {
+      alert("No data available to export");
+      return;
+    }
 
-  // // Department performance data
-  // const departmentPerformance = [
-  //   { name: 'Housekeeping', requests: 156, avgTime: '2.1h', approval: 94, color: 'bg-blue-500' },
-  //   { name: 'Front Office', requests: 89, avgTime: '1.8h', approval: 97, color: 'bg-green-500' },
-  //   { name: 'Food & Beverage', requests: 134, avgTime: '2.5h', approval: 91, color: 'bg-orange-500' },
-  //   { name: 'Maintenance', requests: 78, avgTime: '3.2h', approval: 88, color: 'bg-red-500' },
-  //   { name: 'Security', requests: 45, avgTime: '1.5h', approval: 98, color: 'bg-purple-500' }
-  // ];
+    // Prepare monthly data for export
+    const monthlyData = departmentData.map((item: any) => ({
+      Month: item.month,
+      "Housekeeping": item.housekeeping || 0,
+      "Front Office": item.frontoffice || 0,
+      "Food & Beverage": item.fnb || 0,
+      "Maintenance": item.maintenance || 0,
+      "Security": item.security || 0,
+      "Total": (item.housekeeping || 0) + (item.frontoffice || 0) + 
+               (item.fnb || 0) + (item.maintenance || 0) + (item.security || 0)
+    }));
+
+    // Add totals row
+    const totals = {
+      Month: "TOTAL",
+      "Housekeeping": monthlyData.reduce((sum, item) => sum + item.Housekeeping, 0),
+      "Front Office": monthlyData.reduce((sum, item) => sum + item["Front Office"], 0),
+      "Food & Beverage": monthlyData.reduce((sum, item) => sum + item["Food & Beverage"], 0),
+      "Maintenance": monthlyData.reduce((sum, item) => sum + item.Maintenance, 0),
+      "Security": monthlyData.reduce((sum, item) => sum + item.Security, 0),
+      "Total": monthlyData.reduce((sum, item) => sum + item.Total, 0)
+    };
+
+    monthlyData.push(totals);
+
+    // Export to PDF using specialized function
+    exportDepartmentToPDF(
+      monthlyData,
+      departmentPerformance,
+      `department_request_trends_${selectedPeriod.toLowerCase().replace(/\s+/g, '_')}`,
+      `Department Request Trends - ${selectedPeriod}`
+    );
+  };
 
   // Custom tooltip component
   interface TooltipPayload {
@@ -169,7 +185,11 @@ const DepartmentCharts: React.FC = () => {
                   <option value="All Time">All Time</option>
                 </select>
               </div>
-              <button className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105">
+              <button 
+                onClick={handleExport}
+                disabled={loadingForGetInvDepartmentCharts || !departmentData || departmentData.length === 0}
+                className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
@@ -183,7 +203,7 @@ const DepartmentCharts: React.FC = () => {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Export
+                {loadingForGetInvDepartmentCharts ? "Loading..." : "Export"}
               </button>
             </div>
           </div>

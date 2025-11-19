@@ -16,6 +16,7 @@ import {
   YAxis,
 } from "recharts";
 import useGetInvAnalytic from "@/api/getInvAnalytic";
+import { exportToPDF } from "@/utils/exportUtils";
 
 // Sample data for inventory analytics
 // const chartData = [
@@ -152,6 +153,42 @@ export function AnalyticsChart(): React.ReactElement {
     useGetInvAnalyticFunc();
   }, []);
 
+  const handleExport = () => {
+    if (!chartData || chartData.length === 0) {
+      alert("No data available to export");
+      return;
+    }
+
+    // Prepare export data with formatted values
+    const exportData = chartData.map((item: any) => ({
+      Month: item.month,
+      "Linens & Textiles": item.linens || 0,
+      "Cleaning Supplies": item.cleaning || 0,
+      "Food & Beverage": item.food || 0,
+      "Maintenance": item.maintenance || 0,
+      "Total": (item.linens || 0) + (item.cleaning || 0) + (item.food || 0) + (item.maintenance || 0)
+    }));
+
+    // Add summary row
+    const totals = {
+      Month: "TOTAL",
+      "Linens & Textiles": exportData.reduce((sum, item) => sum + item["Linens & Textiles"], 0),
+      "Cleaning Supplies": exportData.reduce((sum, item) => sum + item["Cleaning Supplies"], 0),
+      "Food & Beverage": exportData.reduce((sum, item) => sum + item["Food & Beverage"], 0),
+      "Maintenance": exportData.reduce((sum, item) => sum + item["Maintenance"], 0),
+      "Total": exportData.reduce((sum, item) => sum + item.Total, 0)
+    };
+
+    exportData.push(totals);
+
+    // Export to PDF with title
+    exportToPDF(
+      exportData, 
+      `inventory_usage_trends_${selectedPeriod.toLowerCase().replace(/\s+/g, '_')}`,
+      `Inventory Usage Trends - ${selectedPeriod}`
+    );
+  };
+
   return (
     <div className="w-full space-y-8">
       {/* Simple Metrics Display */}
@@ -265,7 +302,11 @@ export function AnalyticsChart(): React.ReactElement {
                   <option value="All Time">All Time</option>
                 </select>
               </div>
-              <button className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105">
+              <button 
+                onClick={handleExport}
+                disabled={loadingForGetInvAnalyticsChart || !chartData || chartData.length === 0}
+                className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="none"
@@ -279,7 +320,7 @@ export function AnalyticsChart(): React.ReactElement {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Export
+                {loadingForGetInvAnalyticsChart ? "Loading..." : "Export"}
               </button>
             </div>
           </div>
