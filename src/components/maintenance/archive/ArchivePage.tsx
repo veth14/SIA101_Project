@@ -7,7 +7,8 @@ import {
   ClockLog,
   fetchArchiveRecords,
   fetchArchiveStats,
-  fetchClockLogs,
+  // fetchClockLogs, (replaced by subscribeClockLogs to keep listener)
+  subscribeClockLogs,
   deleteArchiveRecord,
   downloadArchiveRecord,
 } from './archiveService';
@@ -20,21 +21,31 @@ const ArchivePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load initial data from archiveService (stubs). Replace with real backend calls.
+    // Load initial data (stats + records) once, and subscribe to live clock log updates.
+    let unsubClock: (() => void) | undefined;
     const load = async () => {
       try {
         setLoading({ stats: true, records: true, logs: true });
-        const [s, r, l] = await Promise.all([fetchArchiveStats(), fetchArchiveRecords(), fetchClockLogs()]);
+        const [s, r] = await Promise.all([fetchArchiveStats(), fetchArchiveRecords()]);
         setStats(s);
         setRecords(r);
-        setLogs(l);
       } catch (err) {
         setError((err as Error)?.message ?? 'Failed to load archive data');
       } finally {
-        setLoading({ stats: false, records: false, logs: false });
+        setLoading(prev => ({ ...prev, stats: false, records: false }));
       }
     };
     load();
+
+    // Subscribe to clock logs using a shared onSnapshot listener to avoid repeated reads.
+    unsubClock = subscribeClockLogs((delta, full) => {
+      setLogs(full ?? []);
+      setLoading(prev => ({ ...prev, logs: false }));
+    }, { limit: 50 });
+
+    return () => {
+      if (unsubClock) unsubClock();
+    };
   }, []);
 
   const handleDelete = async (id: string) => {
