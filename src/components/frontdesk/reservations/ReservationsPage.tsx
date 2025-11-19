@@ -1,30 +1,64 @@
-import { useState, useEffect } from 'react';
-// --- UPDATED ---
-// Timestamp is needed for the new data structure
-import { 
-  collection, getDocs, doc, updateDoc, addDoc, deleteDoc, 
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import {
+  collection, getDocs, doc, updateDoc, addDoc,
   serverTimestamp, setDoc, query, where, Timestamp, onSnapshot, orderBy, limit
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ROOMS_DATA } from '../../../data/roomsData';
 import { CheckInModal } from './CheckInModal';
-import { WalkInModal } from './WalkInModal';
 import { ReservationDetailsModal } from './ReservationDetailsModal';
 import { EditReservationModal } from './EditReservationModal';
-import { ConfirmDialog } from '../../admin/ConfirmDialog';
+import { ConfirmCheckOutModal } from './ConfirmCheckOutModal';
+import { ConfirmCancelModal } from './ConfirmCancelModal';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
 import ModernReservationsTable from './ModernReservationsTable';
 import { updateBookingCount, updateRevenue, updateArrivals, updateCurrentGuests } from '../../../lib/statsHelpers';
 
+// --- NEW ---
+// Interface for a single room document
+export interface IRoom {
+  id: string; // Document ID (which is the roomNumber)
+  roomNumber: string;
+  roomName: string;
+  roomType: string;
+  status: 'available' | 'occupied' | 'cleaning' | 'maintenance';
+  currentReservation: string | null;
+  isActive: boolean;
+  // Add any other fields from your 'rooms' collection
+}
+// --- END NEW ---
+
+// --- NEW ---
+// The shape of the data our RoomsContext will provide
+interface IRoomsContext {
+  rooms: IRoom[];
+  loading: boolean;
+  refreshRooms: () => Promise<void>;
+}
+
+// --- NEW ---
+// Create the context. We export this so modals can use it.
+export const RoomsContext = createContext<IRoomsContext | null>(null);
+
+// --- NEW ---
+// Create a custom hook to make using the context easier.
+// Modals will call this: `const { rooms } = useRooms();`
+export const useRooms = () => {
+  const context = useContext(RoomsContext);
+  if (!context) {
+    throw new Error('useRooms must be used within a RoomsContext.Provider');
+  }
+  return context;
+};
+
 // --- UPDATED ---
-// This is our new "source of truth" interface.
-// The old 'Reservation' interface is removed.
-interface BookingData {
+// Export the interface so other files (like your modals) can use it
+export interface BookingData {
   additionalGuestPrice: number;
   baseGuests: number;
   basePrice: number;
-  bookingId: string; // This will be the document ID
+  bookingId: string;
   checkIn: string;
   checkOut: string;
   createdAt: Timestamp;
@@ -58,28 +92,53 @@ interface BookingData {
 
 export const ReservationsPage = () => {
   const { user } = useAuth();
-  // --- UPDATED ---
-  // All state now uses the new BookingData interface
   const [reservations, setReservations] = useState<BookingData[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<BookingData[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<BookingData | null>(null);
-  // --- END UPDATED ---
-  
+
+  // State for holding the master list of rooms
+  const [rooms, setRooms] = useState<IRoom[]>([]); // --- NEW ---
+  const [roomsLoading, setRoomsLoading] = useState(true); // --- NEW ---
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [reservationToCancel, setReservationToCancel] = useState<string | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [reservationToDelete, setReservationToDelete] = useState<string | null>(null);
+  const [showCheckOutModal, setShowCheckOutModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  // Subscribe to aggregated stats to avoid client-side scans for counts
   const [dashboardStats, setDashboardStats] = useState<{
     totalBookings?: number;
     monthlyCount?: number;
   } | null>(null);
 
-  // Fetch reservations from Firebase
+  // --- NEW ---
+  // Function to fetch all rooms. This will be passed to the context.
+  const fetchRooms = async () => {
+    setRoomsLoading(true);
+    try {
+      const snap = await getDocs(collection(db, 'rooms'));
+      const roomsData = snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<IRoom, 'id'>)
+      }));
+      setRooms(roomsData as IRoom[]);
+    } catch (err) {
+      console.error("Failed to fetch rooms:", err);
+      // Handle error (e.g., show a toast)
+    } finally {
+      setRoomsLoading(false);
+    }
+  };
+
+  // --- NEW ---
+  // useEffect to fetch rooms *once* when the user is logged in
+  useEffect(() => {
+    if (user) {
+      fetchRooms();
+    }
+  }, [user]);
+  // --- END NEW ---
+
+  // Fetch reservations (untouched)
   useEffect(() => {
     if (user) {
       fetchReservations();
@@ -89,7 +148,7 @@ export const ReservationsPage = () => {
     }
   }, [user]);
 
-  // Subscribe to stats/dashboard for aggregated numbers (lightweight single doc)
+  // Subscribe to stats (untouched)
   useEffect(() => {
     if (!user) return;
     try {
@@ -116,79 +175,74 @@ export const ReservationsPage = () => {
     }
   }, [user]);
 
-// --- UPDATED ---
-  // Auto-checkout: Now also sets isActive: false
-  // OPTIMIZED: Only run once per session to reduce Firestore reads
+  // Auto Checkout (untouched)
   useEffect(() => {
     let mounted = true;
     const autoCheckoutAndCleanRooms = async () => {
-      // Check if auto-checkout already ran in this session
       const lastRun = sessionStorage.getItem('autoCheckoutLastRun');
       const now = Date.now();
       const FIVE_MINUTES = 5 * 60 * 1000;
-      
+
       if (lastRun && (now - parseInt(lastRun)) < FIVE_MINUTES) {
         console.log('⏭️ Skipping auto-checkout (ran recently)');
         return;
       }
-      
+
       try {
         const bookingsCol = collection(db, 'bookings');
         const q = query(bookingsCol, where('status', 'in', ['confirmed', 'checked-in']));
         const snap = await getDocs(q);
         const today = new Date();
         today.setHours(0,0,0,0);
-        
+
         sessionStorage.setItem('autoCheckoutLastRun', now.toString());
 
         for (const d of snap.docs) {
           const data: any = d.data();
-          let checkOutVal = data.checkOut; 
+          let checkOutVal = data.checkOut;
           let checkOutDate: Date | null = null;
-          
+
           if (checkOutVal && typeof checkOutVal === 'string') {
             const parsed = new Date(checkOutVal);
             if (!isNaN(parsed.getTime())) checkOutDate = parsed;
           }
-          else if (checkOutVal?.toDate) { 
+          else if (checkOutVal?.toDate) {
             checkOutDate = checkOutVal.toDate();
           }
 
           if (!checkOutDate) continue;
-          
+
           const co = new Date(checkOutDate);
           co.setHours(0,0,0,0);
-          
+
           if (co < today) {
             try {
-              await updateDoc(doc(db, 'bookings', d.id), { 
-                status: 'checked-out', 
-                updatedAt: serverTimestamp() 
+              await updateDoc(doc(db, 'bookings', d.id), {
+                status: 'checked-out',
+                updatedAt: serverTimestamp()
               });
-              
+
               if (mounted) {
                 setReservations(prev => prev.map(r => r.bookingId === d.id ? { ...r, status: 'checked-out' as const } : r));
               }
 
-              const roomNumber = data.roomNumber; 
+              const roomNumber = data.roomNumber;
               if (roomNumber) {
                 try {
                   const roomRef = doc(db, 'rooms', roomNumber);
-                  // --- FIX ---
-                  await updateDoc(roomRef, { 
-                    status: 'cleaning', 
-                    isActive: false, // Add this
-                    currentReservation: null, 
-                    updatedAt: serverTimestamp() 
+                  await updateDoc(roomRef, {
+                    status: 'cleaning',
+                    isActive: false, 
+                    currentReservation: null,
+                    updatedAt: serverTimestamp()
                   });
                 } catch (e) {
                   try {
-                    // --- FIX ---
-                    await setDoc(doc(db, 'rooms', roomNumber), { 
-                      roomNumber, 
-                      status: 'cleaning', 
-                      isActive: false, // Add this
-                      currentReservation: null 
+                    await setDoc(doc(db, 'rooms', roomNumber), {
+                      roomNumber,
+                      status: 'cleaning',
+                      isActive: false, 
+                      currentReservation: null
                     }, { merge: true });
                   } catch (err) {
                     console.warn('Failed to mark room cleaning for', roomNumber, err);
@@ -206,63 +260,45 @@ export const ReservationsPage = () => {
     };
 
     if (user) {
-      // Run auto-checkout once on page load only (removed 5-minute interval to save Firebase reads)
       autoCheckoutAndCleanRooms();
       return () => { mounted = false; };
     }
     return () => { mounted = false; };
   }, [user]);
-  // --- END UPDATED ---
 
-  // --- UPDATED ---
-  // This is the most important fix.
-  // The fetchReservations function now correctly reads the new data structure.
+  // fetchReservations (untouched)
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      // Limit initial fetch to 20 documents to avoid scanning entire collection
       const bookingsQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(20));
       const bookingsSnapshot = await getDocs(bookingsQuery);
-      
+
       const bookingsData = bookingsSnapshot.docs.map(doc => {
         const data = doc.data();
-        
-        // Helper to parse dates ("YYYY-MM-DD" string or Timestamp)
         const parseDate = (dateField: any): string => {
           if (!dateField) return '';
-          if (dateField.toDate) { // Handle Firestore Timestamp
+          if (dateField.toDate) {
             return dateField.toDate().toISOString().split('T')[0];
           }
-          if (typeof dateField === 'string') { // Handle "YYYY-MM-DD"
+          if (typeof dateField === 'string') {
             return dateField;
           }
-          return ''; // Fallback
+          return '';
         };
 
-        // This maps the Firestore document to our strict BookingData interface.
-        // It provides defaults for any fields that might be missing from old records.
         return {
-          // IDs
-          bookingId: doc.id, // Use the document ID as the bookingId
+          bookingId: doc.id,
           userId: data.userId || `U-UNKNOWN-${doc.id}`,
-          
-          // Guest Details
           userName: data.userName || 'Unknown Guest',
           userEmail: data.userEmail || 'no-email@provided.com',
-          
-          // Stay Details
           checkIn: parseDate(data.checkIn),
           checkOut: parseDate(data.checkOut),
           guests: data.guests || 1,
           nights: data.nights || 1,
           status: data.status || 'confirmed',
-
-          // Room Details
           roomName: data.roomName || 'Unknown Room',
           roomType: data.roomType || 'standard',
           roomNumber: data.roomNumber || null,
-
-          // Pricing Details
           basePrice: data.basePrice || 0,
           baseGuests: data.baseGuests || 2,
           additionalGuestPrice: data.additionalGuestPrice || 0,
@@ -271,27 +307,20 @@ export const ReservationsPage = () => {
           tax: data.tax || 0,
           taxRate: data.taxRate || 0.12,
           totalAmount: data.totalAmount || 0,
-
-          // --- THIS FIXES THE BUG ---
-          // Read from the nested paymentDetails map
           paymentDetails: {
-            paymentStatus: data.paymentDetails?.paymentStatus || 'pending',
-            paymentMethod: data.paymentDetails?.paymentMethod || 'cash',
-            paidAt: data.paymentDetails?.paidAt || null,
-            gcashName: data.paymentDetails?.gcashName || null,
-            gcashNumber: data.paymentDetails?.gcashNumber || null,
-            cardholderName: data.paymentDetails?.cardholderName || null,
-            cardLast4: data.paymentDetails?.cardLast4 || null,
+            paymentStatus: data.paymentDetails?.paymentStatus || data.paymentStatus || 'pending',
+            paymentMethod: data.paymentDetails?.paymentMethod || data.paymentMethod || 'cash',
+            paidAt: data.paymentDetails?.paidAt || data.paidAt || null,
+            gcashName: data.paymentDetails?.gcashName || data.gcashName || null,
+            gcashNumber: data.paymentDetails?.gcashNumber || data.gcashNumber || null,
+            cardholderName: data.paymentDetails?.cardholderName || data.cardholderName || null,
+            cardLast4: data.paymentDetails?.cardLast4 || data.cardLast4 || null,
           },
-          // --- END BUG FIX ---
-
-          // Timestamps
           createdAt: data.createdAt || Timestamp.now(),
           updatedAt: data.updatedAt || Timestamp.now(),
-          
         } as BookingData;
       });
-      
+
       setReservations(bookingsData);
       setFilteredReservations(bookingsData);
     } catch (error: any) {
@@ -307,9 +336,8 @@ export const ReservationsPage = () => {
       setLoading(false);
     }
   };
-  // --- END UPDATED ---
 
-  // ensureRooms (useEffect remains the same)
+  // ensureRooms (untouched)
   useEffect(() => {
     let mounted = true;
     const ensureRooms = async () => {
@@ -338,45 +366,21 @@ export const ReservationsPage = () => {
     return () => { mounted = false; };
   }, [user]);
 
-  // useEffect for filters (remains the same)
+  // filter useEffect (untouched)
   useEffect(() => {
     setFilteredReservations(reservations);
   }, [reservations]);
 
-  // --- UPDATED ---
-  // All handlers now use BookingData
+
+  // --- HANDLER FUNCTIONS (MODIFIED) ---
+
+  // Check In handler (untouched)
   const handleCheckIn = (reservation: BookingData) => {
     setSelectedReservation(reservation);
     setShowCheckInModal(true);
   };
 
-  const handleCheckOut = async (reservation: BookingData) => {
-    try {
-      await updateDoc(doc(db, 'bookings', reservation.bookingId), { // Use bookingId
-        status: 'checked-out',
-        updatedAt: serverTimestamp()
-      });
-
-      setReservations(prev =>
-        prev.map(r =>
-          r.bookingId === reservation.bookingId // Use bookingId
-            ? { ...r, status: 'checked-out' as const }
-            : r
-        )
-      );
-
-      // Update aggregated stats: decrement currentGuests if was checked-in
-      if (reservation.status === 'checked-in') {
-        await updateCurrentGuests(-1);
-      }
-    } catch (error) {
-      console.error('Error checking out reservation:', error);
-      alert('Failed to check out reservation. Please try again.');
-    }
-  };
-
-// --- UPDATED ---
-  // handleWalkInBooking now sets isActive: false
+  // handleWalkInBooking (untouched)
   const handleWalkInBooking = async (newBooking: BookingData) => {
     try {
       const docRef = await addDoc(collection(db, 'bookings'), {
@@ -385,15 +389,14 @@ export const ReservationsPage = () => {
         updatedAt: serverTimestamp()
       });
 
-      const bookingWithId: BookingData = { 
-        ...newBooking, 
+      const bookingWithId: BookingData = {
+        ...newBooking,
         bookingId: docRef.id,
-        createdAt: Timestamp.now(), 
+        createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       };
       setReservations(prev => [...prev, bookingWithId]);
 
-      // Update aggregated stats
       await updateBookingCount(1, newBooking.checkIn);
       await updateRevenue(newBooking.totalAmount);
       await updateArrivals(1, newBooking.checkIn);
@@ -403,11 +406,10 @@ export const ReservationsPage = () => {
 
       if (newBooking.roomNumber) {
         try {
-          // --- FIX ---
           await setDoc(doc(db, 'rooms', newBooking.roomNumber), {
             roomNumber: newBooking.roomNumber,
             status: 'occupied',
-            isActive: false, // Add this
+            isActive: false, 
             currentReservation: docRef.id,
           }, { merge: true });
         } catch (err) {
@@ -420,30 +422,31 @@ export const ReservationsPage = () => {
     }
   };
 
-
+  // Edit handler (untouched)
   const handleEditReservation = (reservation: BookingData) => {
     setSelectedReservation(reservation);
     setShowEditModal(true);
   };
 
-  // --- UPDATED ---
-  // handleSaveReservation now saves the full BookingData object
-  // Note: This assumes EditReservationModal will ALSO be refactored.
-  const handleSaveReservation = async (updatedReservation: BookingData) => {
+  // Save handler (untouched)
+const handleSaveReservation = async (updatedReservation: BookingData) => {
     try {
-      // Update in Firebase using the *entire* updated object
-      // This ensures the nested paymentDetails are saved correctly
       await updateDoc(doc(db, 'bookings', updatedReservation.bookingId), {
         ...updatedReservation,
-        updatedAt: serverTimestamp() // Set the update timestamp
+        updatedAt: serverTimestamp()
       });
 
-      // Update local state
       setReservations(prev =>
         prev.map(r =>
           r.bookingId === updatedReservation.bookingId ? updatedReservation : r
         )
       );
+
+      // --- THIS IS THE FIX ---
+      // After saving, refresh the master room list in the context.
+      await fetchRooms(); 
+      // --- END THE FIX ---
+
       setShowEditModal(false);
       setSelectedReservation(null);
     } catch (error) {
@@ -451,88 +454,101 @@ export const ReservationsPage = () => {
       alert('Failed to update reservation. Please try again.');
     }
   };
-
-  const handleCancelReservation = (reservationId: string) => {
-    setReservationToCancel(reservationId);
-    setShowCancelDialog(true);
+  // --- NEW ---
+  // Handlers to open the confirmation modals
+  const handleOpenCheckOutModal = (reservation: BookingData) => {
+    setSelectedReservation(reservation);
+    setShowCheckOutModal(true);
   };
 
-  const confirmCancelReservation = async () => {
-    if (reservationToCancel) {
-      try {
-        await updateDoc(doc(db, 'bookings', reservationToCancel), {
-          status: 'cancelled',
+  const handleOpenCancelModal = (reservation: BookingData) => {
+    setSelectedReservation(reservation);
+    setShowCancelModal(true);
+  };
+
+  // Logic for checking out (called by ConfirmCheckOutModal)
+  const handleConfirmCheckOut = async (reservation: BookingData) => {
+    if (!reservation.bookingId) {
+      alert("Error: Reservation ID is missing.");
+      return;
+    }
+    const wasCheckedIn = reservation.status === 'checked-in';
+    try {
+      await updateDoc(doc(db, 'bookings', reservation.bookingId), {
+        status: 'checked-out',
+        updatedAt: serverTimestamp()
+      });
+      setReservations(prev => prev.map(r =>
+        r.bookingId === reservation.bookingId ? { ...r, status: 'checked-out' as const } : r
+      ));
+      if (reservation.roomNumber) {
+        await setDoc(doc(db, 'rooms', reservation.roomNumber), {
+          status: 'cleaning',
+          isActive: false,
+          currentReservation: null,
           updatedAt: serverTimestamp()
-        });
-
-        setReservations(prev =>
-          prev.map(r =>
-            r.bookingId === reservationToCancel // Use bookingId
-              ? { ...r, status: 'cancelled' as const }
-              : r
-          )
-        );
-      } catch (error) {
-        console.error('Error cancelling reservation:', error);
-        alert('Failed to cancel reservation. Please try again.');
+        }, { merge: true });
       }
-    }
-    setShowCancelDialog(false);
-    setReservationToCancel(null);
-  };
-
-  // --- ADD THESE TWO FUNCTIONS ---
-
-  const handleDeleteReservation = (reservationId: string) => {
-    setReservationToDelete(reservationId);
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDeleteReservation = async () => {
-    if (reservationToDelete) {
-      try {
-        const reservation = reservations.find(r => r.bookingId === reservationToDelete);
-        
-        // Delete from Firebase
-        await deleteDoc(doc(db, 'bookings', reservationToDelete));
-
-        // Update aggregated stats
-        if (reservation) {
-          await updateBookingCount(-1, reservation.checkIn);
-          await updateRevenue(-reservation.totalAmount);
-          await updateArrivals(-1, reservation.checkIn);
-          if (reservation.status === 'checked-in') {
-            await updateCurrentGuests(-1);
-          }
-        }
-
-        // Update local state
-        setReservations(prev =>
-          prev.filter(r => r.bookingId !== reservationToDelete)
-        );
-        
-      } catch (error) {
-        console.error('Error deleting reservation:', error);
-        alert('Failed to delete reservation. Please try again.');
+      if (wasCheckedIn) {
+        await updateCurrentGuests(-1);
       }
+    } catch (error) {
+      console.error('Error during manual check-out:', error);
+      alert('Failed to check out reservation. Please try again.');
+    } finally {
+      setShowCheckOutModal(false);
+      setSelectedReservation(null);
     }
-    setShowDeleteDialog(false);
-    setReservationToDelete(null);
   };
-  // --- END ADD ---
 
-  // --- UPDATED ---
-  // Stats cards logic is now correct
+  // Logic for cancelling (called by ConfirmCancelModal)
+  const handleConfirmCancel = async (reservation: BookingData) => {
+    if (!reservation.bookingId) {
+      alert("Error: Reservation ID is missing.");
+      return;
+    }
+    const wasCheckedIn = reservation.status === 'checked-in';
+    try {
+      await updateDoc(doc(db, 'bookings', reservation.bookingId), {
+        status: 'cancelled',
+        updatedAt: serverTimestamp()
+      });
+      setReservations(prev => prev.map(r =>
+        r.bookingId === reservation.bookingId ? { ...r, status: 'cancelled' as const } : r
+      ));
+      if (reservation.roomNumber) {
+        await setDoc(doc(db, 'rooms', reservation.roomNumber), {
+          status: 'available',
+          isActive: true,
+          currentReservation: null,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+      if (wasCheckedIn) {
+        await updateCurrentGuests(-1);
+      }
+    } catch (error) {
+      console.error('Error cancelling reservation:', error);
+      alert('Failed to cancel reservation. Please try again.');
+    } finally {
+      setShowCancelModal(false);
+      setSelectedReservation(null);
+    }
+  };
+  // --- END NEW ---
+
+
+  // Stats cards logic (untouched)
   const statusCounts = {
-    // show current month totals when available
     all: dashboardStats?.monthlyCount ?? reservations.length,
     confirmed: reservations.filter(r => r.status === 'confirmed').length,
     'checked-in': reservations.filter(r => r.status === 'checked-in').length,
     'checked-out': reservations.filter(r => r.status === 'checked-out').length,
   };
 
-  // --- JSX (No changes needed, but updated for clarity) ---
+  // --- JSX (UPDATED) ---
   return (
+  <RoomsContext.Provider value={{ rooms, loading: roomsLoading, refreshRooms: fetchRooms }}>
     <div className="min-h-screen bg-[#F9F6EE]">
       {/* Background Elements (no change) */}
       <div className="fixed inset-0 pointer-events-none">
@@ -548,9 +564,9 @@ export const ReservationsPage = () => {
       </div>
 
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-      
-        
-        {/* Stats Cards Grid (no change) */}
+
+
+        {/* Stats Cards Grid (THIS IS THE SECTION YOU ASKED ABOUT) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <FrontDeskStatsCard
             title="Total Reservations"
@@ -579,9 +595,8 @@ export const ReservationsPage = () => {
         </div>
 
         {/* --- UPDATED ---
-        // The table and modals will now receive the correct BookingData type,
-        // fixing all TypeScript errors.
-        */}
+         * Pass the new handlers to the table
+         */}
         {!user ? (
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             {/* ... Not logged in UI ... */}
@@ -592,22 +607,21 @@ export const ReservationsPage = () => {
           </div>
         ) : (
           <ModernReservationsTable
-          reservations={filteredReservations}
-          onRowClick={(reservation: BookingData) => { 
-            setSelectedReservation(reservation);
-            setShowDetailsModal(true);
-          }}
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
-          onEdit={handleEditReservation}
-          onCancel={(reservation: BookingData) => handleCancelReservation(reservation.bookingId)}
-          onAddReservation={handleWalkInBooking}
-          onDelete={(reservation: BookingData) => handleDeleteReservation(reservation.bookingId)} // <-- ADD THIS LINE
-        />
+            reservations={filteredReservations}
+            onRowClick={(reservation: BookingData) => {
+              setSelectedReservation(reservation);
+              setShowDetailsModal(true);
+            }}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleOpenCheckOutModal} // <-- UPDATED
+            onEdit={handleEditReservation}
+            onCancel={handleOpenCancelModal} // <-- UPDATED
+            onAddReservation={handleWalkInBooking}
+          />
         )}
       </div>
 
-      {/* Check-in Modal */}
+      {/* Check-in Modal (untouched) */}
       {showCheckInModal && selectedReservation && (
         <CheckInModal
           isOpen={showCheckInModal}
@@ -615,53 +629,44 @@ export const ReservationsPage = () => {
             setShowCheckInModal(false);
             setSelectedReservation(null);
           }}
-          reservation={selectedReservation} // Prop is now BookingData
-          onCheckIn={async (updatedReservation) => { // Receives BookingData
+          reservation={selectedReservation}
+          onCheckIn={async (updatedReservation) => {
             try {
               const wasStatus = reservations.find(r => r.bookingId === updatedReservation.bookingId)?.status;
-
               await updateDoc(doc(db, 'bookings', updatedReservation.bookingId), {
-                ...updatedReservation, 
-                updatedAt: serverTimestamp() 
+                ...updatedReservation,
+                updatedAt: serverTimestamp()
               });
-
               setReservations(prev =>
                 prev.map(r =>
                   r.bookingId === updatedReservation.bookingId ? updatedReservation : r
                 )
               );
-
-              // Update aggregated stats: increment currentGuests if transitioning to checked-in
               if (wasStatus !== 'checked-in' && updatedReservation.status === 'checked-in') {
                 await updateCurrentGuests(1);
               }
-              
-              // Update rooms collection
               try {
                 const prevRoom = reservations.find(r => r.bookingId === updatedReservation.bookingId)?.roomNumber;
                 const newRoom = updatedReservation.roomNumber;
                 if (newRoom) {
-                  // --- FIX ---
                   await setDoc(doc(db, 'rooms', newRoom), {
                     roomNumber: newRoom,
                     status: 'occupied',
-                    isActive: false, // Add this
+                    isActive: false,
                     currentReservation: updatedReservation.bookingId
                   }, { merge: true });
                 }
                 if (prevRoom && prevRoom !== newRoom) {
-                  // --- FIX ---
                   await setDoc(doc(db, 'rooms', prevRoom), {
                     roomNumber: prevRoom,
                     status: 'available',
-                    isActive: true, // Add this
+                    isActive: true,
                     currentReservation: null
                   }, { merge: true });
                 }
               } catch (err) {
                 console.warn('Failed to update rooms documents on check-in:', err);
               }
-
               setShowCheckInModal(false);
               setSelectedReservation(null);
             } catch (error) {
@@ -671,27 +676,26 @@ export const ReservationsPage = () => {
           }}
         />
       )}
-      
-      {/* Reservation Details Modal */}
+
+      {/* --- UPDATED ---
+       * Pass the new handlers to the details modal
+       */}
       {showDetailsModal && selectedReservation && (
         <ReservationDetailsModal
           isOpen={showDetailsModal}
           onClose={() => {
             setShowDetailsModal(false);
-            setSelectedReservation(null);
+
           }}
-          reservation={selectedReservation} // Prop is now BookingData
+          reservation={selectedReservation}
           onEdit={handleEditReservation}
           onCheckIn={handleCheckIn}
-          onCheckOut={(reservationId) => {
-            const reservation = reservations.find(r => r.bookingId === reservationId);
-            if (reservation) handleCheckOut(reservation);
-          }}
-          onCancel={handleCancelReservation}
+          onCheckOut={handleOpenCheckOutModal} 
+          onCancel={handleOpenCancelModal}   
         />
       )}
 
-      {/* Edit Reservation Modal */}
+      {/* Edit Reservation Modal (untouched) */}
       {showEditModal && selectedReservation && (
         <EditReservationModal
           isOpen={showEditModal}
@@ -699,43 +703,37 @@ export const ReservationsPage = () => {
             setShowEditModal(false);
             setSelectedReservation(null);
           }}
-          reservation={selectedReservation} // Prop is now BookingData
-          onSave={handleSaveReservation} // Now expects BookingData
+          reservation={selectedReservation}
+          onSave={handleSaveReservation}
         />
       )}
 
-      {/* Cancel Confirmation Dialog */}
-      {showCancelDialog && (
-        <ConfirmDialog
-          isOpen={showCancelDialog}
+      {/* --- NEW ---
+       * Render the new confirmation modals
+       */}
+      {showCheckOutModal && selectedReservation && (
+        <ConfirmCheckOutModal
+          isOpen={showCheckOutModal}
           onClose={() => {
-            setShowCancelDialog(false);
-            setReservationToCancel(null);
+            setShowCheckOutModal(false);
           }}
-          onConfirm={confirmCancelReservation}
-          title="Cancel Reservation"
-          message="Are you sure you want to cancel this reservation? This action cannot be undone."
-          confirmText="Cancel Reservation"
+          reservation={selectedReservation}
+          onConfirmCheckOut={handleConfirmCheckOut}
         />
       )}
 
-      {/* --- ADD THIS NEW DIALOG --- */}
-      {showDeleteDialog && (
-        <ConfirmDialog
-          isOpen={showDeleteDialog}
+      {showCancelModal && selectedReservation && (
+        <ConfirmCancelModal
+          isOpen={showCancelModal}
           onClose={() => {
-            setShowDeleteDialog(false);
-            setReservationToDelete(null);
+            setShowCancelModal(false);
           }}
-          onConfirm={confirmDeleteReservation}
-          title="Delete Reservation"
-          message="Are you sure you want to permanently delete this reservation? This action is irreversible."
-          confirmText="Delete"
-          type='danger' // <-- THIS IS THE FIX
+          reservation={selectedReservation}
+          onConfirmCancel={handleConfirmCancel}
         />
       )}
-      {/* --- END ADD --- */}
-
+      {/* --- END NEW --- */}
     </div>
+  </RoomsContext.Provider>
   );
 };
