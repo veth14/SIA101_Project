@@ -23,6 +23,18 @@ const TicketsTasksPage: React.FC = () => {
     dueDateTime: '',
   });
 
+  // Filter states for Active Tickets
+  const [filters, setFilters] = useState({
+    search: '',
+    category: '',
+    priority: '',
+    status: '',
+  });
+
+  // Mock data - replace with actual backend data
+  const activeTickets: any[] = [];
+  const completedTickets: any[] = [];
+
   const handleCreateTicket = () => {
     // Handle ticket creation logic here
     console.log('Creating ticket:', createTicketForm);
@@ -56,230 +68,259 @@ const TicketsTasksPage: React.FC = () => {
     setIsReportComplicationModalOpen(true);
   };
 
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      category: '',
+      priority: '',
+      status: '',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
-
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
+        
+        {/* Create Ticket Button */}
+        <div className="mb-6">
+          <button 
+            onClick={() => setIsCreateTicketModalOpen(true)}
+            className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors"
+          >
+            Create New Ticket
+          </button>
+        </div>
 
-      {/* Action Buttons and Search */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
-        <button 
-          onClick={() => setIsCreateTicketModalOpen(true)}
-          className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors"
-        >
-          Create New Ticket
-        </button>
-        
-        {/* Search Bar */}
-        <div className="flex-1 min-w-[200px] max-w-md">
-          <input
-            type="text"
-            placeholder="Search tickets..."
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
-          />
-        </div>
-        
-        <select className="border border-gray-300 rounded-lg px-3 py-2">
-          <option>All Status</option>
-          <option>Open</option>
-          <option>In Progress</option>
-          <option>Completed</option>
-        </select>
-        <select className="border border-gray-300 rounded-lg px-3 py-2">
-          <option>All Priority</option>
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
-        </select>
-        
-        {/* Clear Filters Button */}
-        <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300">
-          Clear Filters
-        </button>
-      </div>
+        {/* Active Tickets Section */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Active Tickets</h2>
+          </div>
 
-      {/* Tickets Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Active Tickets</h2>
+          {/* Filter Bar for Active Tickets */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex flex-wrap gap-4 items-center">
+              {/* Search Bar */}
+              <div className="flex-1 min-w-[200px] max-w-md">
+                <input
+                  type="text"
+                  placeholder="Search tickets..."
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
+                />
+              </div>
+              
+              {/* Category Filter */}
+              <select 
+                value={filters.category}
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                className="border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="">All Categories</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Housekeeping">Housekeeping</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+              </select>
+
+              {/* Priority Filter */}
+              <select 
+                value={filters.priority}
+                onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+                className="border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="">All Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+
+              {/* Status Filter */}
+              <select 
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className="border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="">All Status</option>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+              </select>
+              
+              {/* Clear Filters Button */}
+              <button 
+                onClick={handleClearFilters}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Active Tickets Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ticket ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Description
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Priority
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assigned To
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {activeTickets.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500">
+                      No active tickets found
+                    </td>
+                  </tr>
+                ) : (
+                  activeTickets.map((ticket) => (
+                    <tr key={ticket.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {ticket.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          ticket.priority === 'High' ? 'bg-red-100 text-red-800' :
+                          ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {ticket.priority}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.assignedTo}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {ticket.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex flex-wrap gap-2">
+                          <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors">
+                            Confirm Availability
+                          </button>
+                          <button 
+                            onClick={() => openReportComplicationModal(ticket)}
+                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors"
+                          >
+                            Report Complication
+                          </button>
+                          <button className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors">
+                            Mark as Completed
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ticket ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Priority
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Assigned To
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #MT-001
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  AC unit not cooling properly
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Room 205
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                    High
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  John Smith
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    In Progress
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex flex-wrap gap-2">
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors">
-                      Confirm Availability
-                    </button>
-                    <button 
-                      onClick={() => openReportComplicationModal({
-                        id: '#MT-001',
-                        title: 'AC unit not cooling properly',
-                        description: 'Guest reported AC unit making loud noise and not cooling properly.',
-                        location: 'Room 205',
-                        assignedTo: 'John Smith',
-                        createdDate: 'Sep. 20, 11:15 AM',
-                        dueDate: 'Sep. 20, 12:00 PM'
-                      })}
-                      className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors"
-                    >
-                      Report Complication
-                    </button>
-                    <button className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors">
-                      Mark as Completed
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #MT-002
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Lobby lighting flickering
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Main Lobby
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    Medium
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Mike Johnson
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    Open
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex flex-wrap gap-2">
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors">
-                      Confirm Availability
-                    </button>
-                    <button 
-                      onClick={() => openReportComplicationModal({
-                        id: '#MT-002',
-                        title: 'Lobby lighting flickering',
-                        description: 'Lobby lights are flickering intermittently.',
-                        location: 'Main Lobby',
-                        assignedTo: 'Mike Johnson',
-                        createdDate: 'Sep. 20, 9:00 AM',
-                        dueDate: 'Sep. 20, 5:00 PM'
-                      })}
-                      className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors"
-                    >
-                      Report Complication
-                    </button>
-                    <button className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors">
-                      Mark as Completed
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #MT-003
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Pool filter maintenance
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Pool Area
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                    High
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  Robert Brown
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    Completed
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex flex-wrap gap-2">
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors">
-                      Confirm Availability
-                    </button>
-                    <button 
-                      onClick={() => openReportComplicationModal({
-                        id: '#MT-003',
-                        title: 'Pool filter maintenance',
-                        description: 'Regular pool filter cleaning and maintenance.',
-                        location: 'Pool Area',
-                        assignedTo: 'Robert Brown',
-                        createdDate: 'Sep. 19, 2:00 PM',
-                        dueDate: 'Sep. 20, 10:00 AM'
-                      })}
-                      className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors"
-                    >
-                      Report Complication
-                    </button>
-                    <button className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors">
-                      Mark as Completed
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+        {/* Completed Tickets Section */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Completed Tickets</h2>
+          </div>
+
+          {/* Completed Tickets Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ticket ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Description
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Priority
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assigned To
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Completed Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {completedTickets.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                      No completed tickets found
+                    </td>
+                  </tr>
+                ) : (
+                  completedTickets.map((ticket) => (
+                    <tr key={ticket.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {ticket.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          ticket.priority === 'High' ? 'bg-red-100 text-red-800' :
+                          ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {ticket.priority}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.assignedTo}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.completedDate}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Create Ticket Modal */}
@@ -300,7 +341,6 @@ const TicketsTasksPage: React.FC = () => {
               value={createTicketForm.title}
               onChange={(e) => setCreateTicketForm({ ...createTicketForm, title: e.target.value })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
-              placeholder="Conditioning not working"
             />
           </div>
 
@@ -314,7 +354,6 @@ const TicketsTasksPage: React.FC = () => {
               onChange={(e) => setCreateTicketForm({ ...createTicketForm, description: e.target.value })}
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
-              placeholder="Guest in Room 205 reported that the AC unit is making loud noise and not cooling properly."
             />
           </div>
 
@@ -356,17 +395,12 @@ const TicketsTasksPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Room Number
             </label>
-            <select
+            <input
+              type="text"
               value={createTicketForm.roomNumber}
               onChange={(e) => setCreateTicketForm({ ...createTicketForm, roomNumber: e.target.value })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
-            >
-              <option value="">Select Room</option>
-              <option value="Room 205">Room 205</option>
-              <option value="Room 301">Room 301</option>
-              <option value="Main Lobby">Main Lobby</option>
-              <option value="Pool Area">Pool Area</option>
-            </select>
+            />
           </div>
 
           {/* Due Date & Time */}
@@ -437,7 +471,6 @@ const TicketsTasksPage: React.FC = () => {
               onChange={(e) => setReportComplicationForm({ ...reportComplicationForm, description: e.target.value })}
               rows={3}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
-              placeholder="Replaced AC filter and tested unit. Cooling properly now."
             />
           </div>
 
