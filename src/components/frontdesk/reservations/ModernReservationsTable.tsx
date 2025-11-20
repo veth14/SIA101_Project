@@ -1,14 +1,16 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { db } from '../../../config/firebase';
-import { Modal } from '../../admin/Modal';
-import { doc, getDoc, updateDoc, setDoc, Timestamp } from 'firebase/firestore';
+// Removed unused firebase imports (db, doc, getDoc, etc.) to prevent lint errors and confusion
+import { Timestamp } from 'firebase/firestore';
+import { WalkInModal } from './WalkInModal';
 
-// This is our new "source of truth" interface.
-interface BookingData {
+// --- Interfaces ---
+// Ideally, this should be imported from a shared types file, 
+// but we keep it here to ensure the component is self-contained for this update.
+export interface BookingData {
   additionalGuestPrice: number;
   baseGuests: number;
   basePrice: number;
-  bookingId: string; // This will be the document ID
+  bookingId: string;
   checkIn: string;
   checkOut: string;
   createdAt: Timestamp;
@@ -38,9 +40,6 @@ interface BookingData {
   userName: string;
 }
 
-import { WalkInModal } from './WalkInModal';
-
-// Props now all use the new BookingData interface
 interface ModernReservationsTableProps {
   reservations: BookingData[];
   onRowClick: (reservation: BookingData) => void;
@@ -50,7 +49,6 @@ interface ModernReservationsTableProps {
   onCancel: (reservation: BookingData) => void;
   onAddReservation?: (booking: any) => void;
 }
-
 
 const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   reservations,
@@ -69,16 +67,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   const itemsPerPage = 5;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // --- DELETED ---
-  // The 'markRoomsCleaning' useEffect was removed.
-  // This logic is redundant because the parent component's
-  // 'handleConfirmCheckOut' function already sets the room
-  // status to 'cleaning' transactionally.
-  // Removing this hook saves N reads and N writes on every
-  // table data refresh.
-  // --- END DELETED ---
-
-  // useEffect for click outside (remains the same)
+  // Click outside handler for dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -91,7 +80,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
     };
   }, []);
 
-  // Filter logic now sorts by "Active" vs "Inactive", then by newest
+  // Filter & Sort Logic
   const filteredReservations = useMemo(() => {
     if (!reservations || reservations.length === 0) {
       return [];
@@ -122,6 +111,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
+        // Sort active bookings first
         const priorityA = getStatusPriority(a.status);
         const priorityB = getStatusPriority(b.status);
         
@@ -129,6 +119,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           return priorityA - priorityB; 
         }
 
+        // Then sort by newest created
         const timeA = a.createdAt?.toMillis() || 0;
         const timeB = b.createdAt?.toMillis() || 0;
         
@@ -136,18 +127,18 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
       });
   }, [reservations, searchTerm, selectedStatus]);
 
-  // Pagination calculations (remains the same)
+  // Pagination
   const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedReservations = filteredReservations.slice(startIndex, endIndex);
 
-  // useEffect for pagination (remains the same)
+  // Reset page on filter change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedStatus]);
 
-  // getStatusBadge (remains the same)
+  // Helper: Status Badge
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       confirmed: { 
@@ -184,7 +175,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
     );
   };
 
-  // getPaymentBadge (remains the same)
+  // Helper: Payment Badge
   const getPaymentBadge = (status: string) => {
     const paymentConfig = {
       paid: { bg: 'bg-gradient-to-r from-green-100 to-emerald-100', text: 'text-green-800', icon: '✓', label: 'Paid' },
@@ -200,10 +191,11 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
     );
   };
 
-  // --- UPDATED: Modified Cancel and Check-Out button logic ---
+  // Helper: Action Buttons
+  // These buttons now delegate strictly to props without local logic
   const getActionButtons = (reservation: BookingData) => (
     <div className="flex items-center justify-center space-x-2">
-      {/* --- Active Booking Buttons --- */}
+      {/* Check In */}
       {reservation.status === 'confirmed' && (
         <button
           onClick={(e) => {
@@ -215,17 +207,21 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           Check In
         </button>
       )}
+      
+      {/* Check Out */}
       {reservation.status === 'checked-in' && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCheckOut(reservation); // Call prop directly
+            onCheckOut(reservation); // Delegates to parent
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           Check Out
         </button>
       )}
+
+      {/* Edit (Available unless cancelled/checked-out) */}
       {reservation.status !== 'cancelled' && reservation.status !== 'checked-out' && (
         <button
           onClick={(e) => {
@@ -237,11 +233,13 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           Edit
         </button>
       )}
+
+      {/* Cancel */}
       {reservation.status === 'confirmed' && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCancel(reservation); // Call prop directly
+            onCancel(reservation); // Delegates to parent
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
@@ -249,12 +247,12 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </button>
       )}
       
-      {/* --- INACTIVE BOOKING BUTTONS (REMAINS THE SAME) --- */}
+      {/* View (for inactive) */}
       {(reservation.status === 'checked-out' || reservation.status === 'cancelled') && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onRowClick(reservation); // Re-uses the existing onRowClick handler
+            onRowClick(reservation);
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
@@ -263,11 +261,10 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
       )}
     </div>
   );
-  // --- END UPDATED ---
 
   return (
     <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
-      {/* Header (remains the same) */}
+      {/* Header */}
       <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -289,7 +286,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
             </div>
           </div>
           <div className="flex space-x-4">
-            {/* Search Bar (remains the same) */}
+            {/* Search Bar */}
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative flex items-center">
@@ -306,7 +303,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
               </div>
             </div>
 
-            {/* Status Filter (remains the same) */}
+            {/* Status Filter */}
             <div className="relative group" ref={dropdownRef}>
               <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative">
@@ -328,7 +325,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                   </svg>
                 </button>
 
-                {/* Dropdown Menu (remains the same) */}
+                {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <>
                     <div 
@@ -368,7 +365,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
               </div>
             </div>
             
-            {/* Add Button (remains the same) */}
+            {/* Add Button */}
             <button 
               onClick={() => setIsWalkInModalOpen(true)}
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
@@ -382,7 +379,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </div>
       </div>
       
-      {/* Walk-in Modal (remains the same) */}
+      {/* Walk-in Modal */}
       <WalkInModal 
         isOpen={isWalkInModalOpen}
         onClose={() => setIsWalkInModalOpen(false)}
@@ -411,7 +408,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           <tbody className="divide-y divide-gray-200/50">
             {paginatedReservations.map((reservation, index) => (
               <tr
-                key={reservation.bookingId} // Use bookingId
+                key={reservation.bookingId}
                 onClick={() => onRowClick(reservation)}
                 className="group h-20 hover:bg-gradient-to-r hover:from-heritage-green/5 hover:to-emerald-50/50 cursor-pointer transition-all duration-200"
                 style={{ animationDelay: `${index * 50}ms` }}
@@ -450,22 +447,20 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                     <div className="text-sm font-semibold text-gray-900">
                       {(() => {
                         try {
-                          if (!reservation.checkIn || !reservation.checkOut) return 'Invalid Date - Invalid Date';
+                          if (!reservation.checkIn || !reservation.checkOut) return 'Invalid Date';
                           const checkInDate = new Date(reservation.checkIn);
                           const checkOutDate = new Date(reservation.checkOut);
                           if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
-                            return 'Invalid Date - Invalid Date';
+                            return 'Invalid Date';
                           }
                           const formatDate = (date: Date) => {
                             const month = date.toLocaleDateString('en-US', { month: 'short' });
                             const day = date.getDate().toString().padStart(2, '0');
                             return `${month} ${day}`;
                           };
-                          const checkInStr = formatDate(checkInDate);
-                          const checkOutStr = formatDate(checkOutDate);
-                          return `${checkInStr} - ${checkOutStr}`;
+                          return `${formatDate(checkInDate)} - ${formatDate(checkOutDate)}`;
                         } catch (error) {
-                          return 'Invalid Date - Invalid Date';
+                          return 'Invalid Date';
                         }
                       })()}
                     </div>
@@ -494,81 +489,60 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </table>
       </div>
       
-      {/* Pagination (remains the same) */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 font-medium">
-            </div>
-            <div className="flex items-center space-x-2">
-              {/* Previous Button */}
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                } transition-colors`}
-              >
-                <svg className="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Previous
-              </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              Previous
+            </button>
 
-              {/* Page Numbers */}
-              <div className="flex items-center space-x-1">
-                {(() => {
-                  const pages = [];
-                  const showPages = 5;
-                  let startPage = Math.max(1, currentPage - Math.floor(showPages / 2));
-                  const endPage = Math.min(totalPages, startPage + showPages - 1);
-                  
-                  if (endPage - startPage + 1 < showPages) {
-                    startPage = Math.max(1, endPage - showPages + 1);
-                  }
+            {/* Simple Pagination Logic */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
+              .map((page, i, arr) => {
+                const isGap = i > 0 && page - arr[i - 1] > 1;
+                return (
+                  <React.Fragment key={page}>
+                    {isGap && <span className="text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        currentPage === page
+                          ? 'bg-heritage-green text-white'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
 
-                  for (let i = startPage; i <= endPage; i++) {
-                    pages.push(
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(i)}
-                        className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                          currentPage === i
-                            ? 'bg-heritage-green text-white'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                      >
-                        {i}
-                      </button>
-                    );
-                  }
-                  return pages;
-                })()}
-              </div>
-
-              {/* Next Button */}
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  currentPage === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-                }`}
-              >
-                Next
-                <svg className="w-4 h-4 ml-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+              }`}
+            >
+              Next
+            </button>
           </div>
         </div>
       )}
 
-      {/* ... (Empty state JSX remains the same) ... */}
+      {/* Empty State */}
       {reservations.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">

@@ -11,7 +11,7 @@ import {
   type BookingData,
   type IRoom,
   useRooms
-} from './ReservationsPage';
+} from './ReservationsContext';
 // --- END UPDATED ---
 
 

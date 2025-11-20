@@ -8,7 +8,7 @@ import {
   type BookingData,
   type IRoom,
   useRooms
-} from './ReservationsPage';
+} from './ReservationsContext';
 // --- END UPDATED ---
 
 // --- Icon Components (Copied from Guide + New) ---
@@ -179,14 +179,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     cardNumber: '', cardExpiry: '', cardCvv: '', specialRequests: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // --- DELETED ---
-  // The old, inefficient isRoomAvailableForDates function was removed.
-  // --- END DELETED ---
-
-  // --- DELETED ---
-  // The old, inefficient fetchRooms useEffect was removed.
-  // --- END DELETED ---
 
   // --- NEW HOTFIX: Step 1 ---
   // Runs ONE query to get all *potentially* conflicting bookings for the date range.

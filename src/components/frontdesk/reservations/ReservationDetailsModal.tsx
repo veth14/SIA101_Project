@@ -2,10 +2,43 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Timestamp } from 'firebase/firestore';
 
-// Import the interface from the parent page where it's exported
-import { BookingData } from './ReservationsPage'; 
+// --- Interface Definition ---
+// Defined locally to avoid Circular Dependency with ReservationsPage
+export interface BookingData {
+  additionalGuestPrice: number;
+  baseGuests: number;
+  basePrice: number;
+  bookingId: string;
+  checkIn: string;
+  checkOut: string;
+  createdAt: Timestamp;
+  guests: number;
+  nights: number;
+  paymentDetails: {
+    cardLast4: string | null;
+    cardholderName: string | null;
+    gcashName: string | null;
+    gcashNumber: string | null;
+    paidAt: Timestamp | null;
+    paymentMethod: string;
+    paymentStatus: 'paid' | 'pending' | 'refunded';
+  };
+  roomName: string;
+  roomNumber: string | null;
+  roomPricePerNight: number;
+  roomType: string;
+  status: 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
+  subtotal: number;
+  tax: number;
+  taxRate: number;
+  totalAmount: number;
+  updatedAt: Timestamp;
+  userEmail: string;
+  userId: string;
+  userName: string;
+}
 
-// --- Icon Components (Defined first for use in component) ---
+// --- Icon Components ---
 const IconUser = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
 );
@@ -57,33 +90,13 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, children }) => (
   </div>
 );
 
-// --- Badge Functions (Unchanged) ---
+// --- Badge Functions ---
 const getStatusBadge = (status: string) => {
   const statusConfig = {
-    confirmed: {
-      bg: 'bg-gradient-to-r from-amber-100 to-yellow-100',
-      text: 'text-amber-800',
-      dot: 'bg-amber-400',
-      label: 'Confirmed'
-    },
-    'checked-in': {
-      bg: 'bg-gradient-to-r from-emerald-100 to-green-100',
-      text: 'text-emerald-800',
-      dot: 'bg-emerald-400',
-      label: 'Checked In'
-    },
-    'checked-out': {
-      bg: 'bg-gradient-to-r from-blue-100 to-indigo-100',
-      text: 'text-blue-800',
-      dot: 'bg-blue-400',
-      label: 'Checked Out'
-    },
-    cancelled: {
-      bg: 'bg-gradient-to-r from-red-100 to-rose-100',
-      text: 'text-red-800',
-      dot: 'bg-red-400',
-      label: 'Cancelled'
-    }
+    confirmed: { bg: 'bg-gradient-to-r from-amber-100 to-yellow-100', text: 'text-amber-800', dot: 'bg-amber-400', label: 'Confirmed' },
+    'checked-in': { bg: 'bg-gradient-to-r from-emerald-100 to-green-100', text: 'text-emerald-800', dot: 'bg-emerald-400', label: 'Checked In' },
+    'checked-out': { bg: 'bg-gradient-to-r from-blue-100 to-indigo-100', text: 'text-blue-800', dot: 'bg-blue-400', label: 'Checked Out' },
+    cancelled: { bg: 'bg-gradient-to-r from-red-100 to-rose-100', text: 'text-red-800', dot: 'bg-red-400', label: 'Cancelled' }
   };
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.confirmed;
   return (
@@ -109,67 +122,43 @@ const getPaymentBadge = (status: string) => {
   );
 };
 
-
-// --- Helper Functions (Unchanged) ---
-const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-}) => {
+// --- Helper Functions ---
+const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) => {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
 
 const formatDateTime = (dateInput: Timestamp | string | Date | null | undefined) => {
   if (!dateInput) return "N/A";
-
   let date: Date;
-  if (dateInput instanceof Timestamp) {
-    date = dateInput.toDate();
-  } else if (dateInput instanceof Date) {
-    date = dateInput;
-  } else {
-    date = new Date(dateInput);
-  }
-
+  if (dateInput instanceof Timestamp) date = dateInput.toDate();
+  else if (dateInput instanceof Date) date = dateInput;
+  else date = new Date(dateInput);
   if (isNaN(date.getTime())) return "Invalid Date";
-
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-// --- MODIFIED PROPS INTERFACE ---
+// --- Props Interface ---
 interface ReservationDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   reservation: BookingData | null;
   onEdit?: (reservation: BookingData) => void;
   onCheckIn?: (reservation: BookingData) => void;
-  onCheckOut?: (reservation: BookingData) => void; // RE-ENABLED
-  onCancel?: (reservation: BookingData) => void;   // RE-ENABLED
+  onCheckOut?: (reservation: BookingData) => void;
+  onCancel?: (reservation: BookingData) => void;
 }
 
-// --- MAIN COMPONENT ---
+// --- Main Component ---
 export const ReservationDetailsModal = ({
   isOpen,
   onClose,
   reservation,
   onEdit,
   onCheckIn,
-  onCheckOut, // RE-ENABLED
-  onCancel    // RE-ENABLED
+  onCheckOut,
+  onCancel
 }: ReservationDetailsModalProps) => {
-
-  // --- ALL INTERNAL STATE REMOVED ---
-  // The parent (ReservationsPage) now handles all
-  // confirmation modal logic. This component
-  // just shows details and calls props.
 
   useEffect(() => {
     if (!isOpen) return;
@@ -182,39 +171,39 @@ export const ReservationDetailsModal = ({
 
   if (!isOpen || !reservation) return null;
 
-  // --- NEW HANDLERS ---
-  // These simple handlers call the props passed from ReservationsPage.
-  // They also close *this* modal so the *next* modal can open.
-
+  // --- Handlers (Delegators) ---
+  // These invoke the props passed from ReservationsPage
   const handleCheckInClick = () => {
     if (onCheckIn) {
       onCheckIn(reservation);
+      onClose(); // Close detail modal so action modal can open
     }
   };
   
   const handleEditClick = () => {
     if (onEdit) {
       onEdit(reservation);
+      onClose();
     }
   };
 
   const handleCheckOutClick = () => {
     if (onCheckOut) {
       onCheckOut(reservation);
+      onClose();
     }
   };
 
   const handleCancelClick = () => {
     if (onCancel) {
       onCancel(reservation);
+      onClose();
     }
   };
-  // --- END Confirmation Handlers ---
-
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
-      {/* Full-screen overlay */}
+      {/* Overlay */}
       <div
         className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
         onClick={onClose}
@@ -224,7 +213,7 @@ export const ReservationDetailsModal = ({
       {/* Modal Card */}
       <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
 
-        {/* Header (branded) */}
+        {/* Header */}
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -236,8 +225,6 @@ export const ReservationDetailsModal = ({
                 <p className="mt-1 text-sm text-gray-500">Reservation Details</p>
               </div>
             </div>
-
-            {/* Close button */}
             <button
               onClick={onClose}
               aria-label="Close"
@@ -250,10 +237,10 @@ export const ReservationDetailsModal = ({
           </div>
         </div>
 
-        {/* Content (Scrolling Area) */}
+        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)] space-y-6">
 
-          {/* Status/Badges Banner */}
+          {/* Status Banner */}
           <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
             <p className="text-sm font-semibold text-gray-700 mb-2">Booking Status & Reference</p>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -265,8 +252,7 @@ export const ReservationDetailsModal = ({
             </div>
           </div>
 
-
-          {/* Stay Details */}
+          {/* Stay Dates */}
           <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Stay Dates</h4>
             <div className="flex items-center justify-between text-center">
@@ -294,10 +280,9 @@ export const ReservationDetailsModal = ({
             </div>
           </div>
 
-          {/* Guest/Booking Info Grid */}
+          {/* Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            {/* Guest Information Card */}
+            {/* Guest Info */}
             <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Guest Information</h4>
               <div className="space-y-4">
@@ -313,7 +298,7 @@ export const ReservationDetailsModal = ({
               </div>
             </div>
 
-            {/* Booking & Payment Card */}
+            {/* Booking & Payment */}
             <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking & Payment</h4>
               <div className="space-y-4">
@@ -334,7 +319,7 @@ export const ReservationDetailsModal = ({
               </div>
             </div>
 
-            {/* Booking Timeline Card */}
+            {/* Timeline */}
             <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Timeline</h4>
               <div className="space-y-4">
@@ -349,11 +334,10 @@ export const ReservationDetailsModal = ({
                 </InfoItem>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* Footer Actions (BUTTONS NOW WIRED TO PROPS) */}
+        {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-gray-100">
           <div className="flex flex-col-reverse justify-start gap-3 sm:flex-row sm:items-center">
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
@@ -361,7 +345,7 @@ export const ReservationDetailsModal = ({
               {/* Edit Button */}
               {onEdit && ['confirmed', 'checked-in'].includes(reservation.status) && (
                 <button
-                  onClick={handleEditClick} // <-- Use handler
+                  onClick={handleEditClick}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 7.232z" /></svg>
@@ -372,7 +356,7 @@ export const ReservationDetailsModal = ({
               {/* Check In Button */}
               {reservation.status === 'confirmed' && onCheckIn && (
                 <button
-                  onClick={handleCheckInClick} // <-- Use handler
+                  onClick={handleCheckInClick}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-2xl shadow-sm hover:bg-green-700 transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
@@ -380,10 +364,10 @@ export const ReservationDetailsModal = ({
                 </button>
               )}
 
-              {/* Check Out Button (FUNCTIONALITY RE-WIRED) */}
+              {/* Check Out Button */}
               {reservation.status === 'checked-in' && onCheckOut && (
                 <button
-                  onClick={handleCheckOutClick} // <-- RE-WIRED
+                  onClick={handleCheckOutClick}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-2xl shadow-sm hover:bg-blue-700 transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H3m5 4v1a3 3 0 003 3h6a3 3 0 003-3V7a3 3 0 00-3-3h-6a3 3 0 00-3 3v1" /></svg>
@@ -391,10 +375,10 @@ export const ReservationDetailsModal = ({
                 </button>
               )}
 
-              {/* Cancel Button (FUNCTIONALITY RE-WIRED) */}
+              {/* Cancel Button */}
               {reservation.status === 'confirmed' && onCancel && (
                 <button
-                  onClick={handleCancelClick} // <-- RE-WIRED
+                  onClick={handleCancelClick}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-300 rounded-2xl shadow-sm hover:bg-red-100 transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -404,9 +388,8 @@ export const ReservationDetailsModal = ({
             </div>
           </div>
         </div>
+
       </div>
-
-
     </div>,
     document.body
   );
