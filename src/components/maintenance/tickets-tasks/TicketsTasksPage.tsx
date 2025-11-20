@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../../admin/Modal';
+import { useAuth } from '../../../hooks/useAuth';
+import { 
+  Ticket, 
+  createTicket, 
+  subscribeToActiveTickets, 
+  subscribeToCompletedTickets,
+  markTicketCompleted,
+  updateTicketStatus,
+  searchTickets
+} from './ticketsService';
 
 const TicketsTasksPage: React.FC = () => {
+  const { user } = useAuth();
   const [isCreateTicketModalOpen, setIsCreateTicketModalOpen] = useState(false);
   const [isReportComplicationModalOpen, setIsReportComplicationModalOpen] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form states for Create Ticket
   const [createTicketForm, setCreateTicketForm] = useState({
     title: '',
     description: '',
     category: 'Maintenance',
-    priority: 'Medium',
+    priority: 'Medium' as 'High' | 'Medium' | 'Low',
     roomNumber: '',
     dueDateTime: '',
   });
@@ -19,7 +32,7 @@ const TicketsTasksPage: React.FC = () => {
   // Form states for Report Complication
   const [reportComplicationForm, setReportComplicationForm] = useState({
     description: '',
-    priorityLevel: 'Medium',
+    priorityLevel: 'Medium' as 'High' | 'Medium' | 'Low',
     dueDateTime: '',
   });
 
@@ -31,39 +44,132 @@ const TicketsTasksPage: React.FC = () => {
     status: '',
   });
 
-  // Mock data - replace with actual backend data
-  const activeTickets: any[] = [];
-  const completedTickets: any[] = [];
+  // Ticket data
+  const [activeTickets, setActiveTickets] = useState<Ticket[]>([]);
+  const [completedTickets, setCompletedTickets] = useState<Ticket[]>([]);
+  const [filteredActiveTickets, setFilteredActiveTickets] = useState<Ticket[]>([]);
 
-  const handleCreateTicket = () => {
-    // Handle ticket creation logic here
-    console.log('Creating ticket:', createTicketForm);
-    setIsCreateTicketModalOpen(false);
-    // Reset form
-    setCreateTicketForm({
-      title: '',
-      description: '',
-      category: 'Maintenance',
-      priority: 'Medium',
-      roomNumber: '',
-      dueDateTime: '',
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const unsubscribeActive = subscribeToActiveTickets((tickets) => {
+      setActiveTickets(tickets);
     });
+
+    const unsubscribeCompleted = subscribeToCompletedTickets((tickets) => {
+      setCompletedTickets(tickets);
+    });
+
+    return () => {
+      unsubscribeActive();
+      unsubscribeCompleted();
+    };
+  }, []);
+
+  // Apply filters to active tickets
+  useEffect(() => {
+    const applyFilters = async () => {
+      if (filters.search || filters.category || filters.priority || filters.status) {
+        const filtered = await searchTickets({
+          search: filters.search,
+          category: filters.category,
+          priority: filters.priority,
+          status: filters.status,
+          isCompleted: false,
+        });
+        setFilteredActiveTickets(filtered);
+      } else {
+        setFilteredActiveTickets(activeTickets);
+      }
+    };
+
+    applyFilters();
+  }, [filters, activeTickets]);
+
+  const handleCreateTicket = async () => {
+    if (!createTicketForm.title || !createTicketForm.dueDateTime) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (!user?.email) {
+      setError('User not authenticated');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await createTicket({
+        taskTitle: createTicketForm.title,
+        description: createTicketForm.description,
+        category: createTicketForm.category,
+        priority: createTicketForm.priority,
+        roomNumber: createTicketForm.roomNumber,
+        dueDateTime: createTicketForm.dueDateTime,
+        createdBy: user.email,
+      });
+
+      setIsCreateTicketModalOpen(false);
+      // Reset form
+      setCreateTicketForm({
+        title: '',
+        description: '',
+        category: 'Maintenance',
+        priority: 'Medium',
+        roomNumber: '',
+        dueDateTime: '',
+      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to create ticket');
+      console.error('Error creating ticket:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReportComplication = () => {
-    // Handle report complication logic here
-    console.log('Reporting complication for ticket:', selectedTicket, reportComplicationForm);
-    setIsReportComplicationModalOpen(false);
-    // Reset form
-    setReportComplicationForm({
-      description: '',
-      priorityLevel: 'Medium',
-      dueDateTime: '',
-    });
-    setSelectedTicket(null);
+  const handleReportComplication = async () => {
+    if (!selectedTicket || !reportComplicationForm.description) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Create a new ticket for the complication
+      if (!user?.email) {
+        throw new Error('User not authenticated');
+      }
+
+      await createTicket({
+        taskTitle: `Complication: ${selectedTicket.taskTitle}`,
+        description: `Original Ticket: ${selectedTicket.ticketNumber}\n\n${reportComplicationForm.description}`,
+        category: selectedTicket.category,
+        priority: reportComplicationForm.priorityLevel,
+        roomNumber: selectedTicket.roomNumber,
+        dueDateTime: reportComplicationForm.dueDateTime,
+        createdBy: user.email,
+      });
+
+      setIsReportComplicationModalOpen(false);
+      // Reset form
+      setReportComplicationForm({
+        description: '',
+        priorityLevel: 'Medium',
+        dueDateTime: '',
+      });
+      setSelectedTicket(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to report complication');
+      console.error('Error reporting complication:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const openReportComplicationModal = (ticket: any) => {
+  const openReportComplicationModal = (ticket: Ticket) => {
     setSelectedTicket(ticket);
     setIsReportComplicationModalOpen(true);
   };
@@ -77,16 +183,64 @@ const TicketsTasksPage: React.FC = () => {
     });
   };
 
+  const handleMarkCompleted = async (ticketId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await markTicketCompleted(ticketId);
+    } catch (err: any) {
+      setError(err.message || 'Failed to mark ticket as completed');
+      console.error('Error marking ticket completed:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateStatus = async (ticketId: string, status: 'In Progress') => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await updateTicketStatus(ticketId, status);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update ticket status');
+      console.error('Error updating ticket status:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleString();
+  };
+
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+            <button 
+              onClick={() => setError(null)}
+              className="float-right font-bold"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         {/* Create Ticket Button */}
         <div className="mb-6">
           <button 
             onClick={() => setIsCreateTicketModalOpen(true)}
-            className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors"
+            disabled={loading}
+            className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors disabled:opacity-50"
           >
             Create New Ticket
           </button>
@@ -187,23 +341,24 @@ const TicketsTasksPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {activeTickets.length === 0 ? (
+                {filteredActiveTickets.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500">
                       No active tickets found
                     </td>
                   </tr>
                 ) : (
-                  activeTickets.map((ticket) => (
+                  filteredActiveTickets.map((ticket) => (
                     <tr key={ticket.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {ticket.id}
+                        {ticket.ticketNumber}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="font-medium">{ticket.taskTitle}</div>
+                        <div className="text-gray-500 text-xs">{ticket.description}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ticket.description}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ticket.location}
+                        Room {ticket.roomNumber}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -227,17 +382,28 @@ const TicketsTasksPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex flex-wrap gap-2">
-                          <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors">
-                            Confirm Availability
-                          </button>
+                          {ticket.status === 'Open' && (
+                            <button 
+                              onClick={() => handleUpdateStatus(ticket.id, 'In Progress')}
+                              disabled={loading}
+                              className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors disabled:opacity-50"
+                            >
+                              Start Task
+                            </button>
+                          )}
                           <button 
                             onClick={() => openReportComplicationModal(ticket)}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors"
+                            disabled={loading}
+                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors disabled:opacity-50"
                           >
-                            Report Complication
+                            Report Issue
                           </button>
-                          <button className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors">
-                            Mark as Completed
+                          <button 
+                            onClick={() => handleMarkCompleted(ticket.id)}
+                            disabled={loading}
+                            className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors disabled:opacity-50"
+                          >
+                            Complete
                           </button>
                         </div>
                       </td>
@@ -291,13 +457,14 @@ const TicketsTasksPage: React.FC = () => {
                   completedTickets.map((ticket) => (
                     <tr key={ticket.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {ticket.id}
+                        {ticket.ticketNumber}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="font-medium">{ticket.taskTitle}</div>
+                        <div className="text-gray-500 text-xs">{ticket.description}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ticket.description}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ticket.location}
+                        Room {ticket.roomNumber}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -312,7 +479,7 @@ const TicketsTasksPage: React.FC = () => {
                         {ticket.assignedTo}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ticket.completedDate}
+                        {formatDate(ticket.completedAt)}
                       </td>
                     </tr>
                   ))
@@ -380,7 +547,7 @@ const TicketsTasksPage: React.FC = () => {
               </label>
               <select
                 value={createTicketForm.priority}
-                onChange={(e) => setCreateTicketForm({ ...createTicketForm, priority: e.target.value })}
+                onChange={(e) => setCreateTicketForm({ ...createTicketForm, priority: e.target.value as 'High' | 'Medium' | 'Low' })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
               >
                 <option value="High">Urgent</option>
@@ -426,9 +593,10 @@ const TicketsTasksPage: React.FC = () => {
             </button>
             <button
               onClick={handleCreateTicket}
-              className="px-6 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors"
+              disabled={loading}
+              className="px-6 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors disabled:opacity-50"
             >
-              Create Ticket
+              {loading ? 'Creating...' : 'Create Ticket'}
             </button>
           </div>
         </div>
@@ -448,14 +616,17 @@ const TicketsTasksPage: React.FC = () => {
           {/* Ticket Info Header */}
           {selectedTicket && (
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <h3 className="font-semibold text-gray-900 mb-1">{selectedTicket.title}</h3>
-              <p className="text-sm text-gray-600 mb-3">{selectedTicket.location}</p>
+              <h3 className="font-semibold text-gray-900 mb-1">{selectedTicket.taskTitle}</h3>
+              <p className="text-sm text-gray-600 mb-3">Room {selectedTicket.roomNumber}</p>
               <div className="flex flex-col gap-1 text-xs text-gray-500">
                 <div>
-                  <span className="font-medium">Due:</span> {selectedTicket.dueDate}
+                  <span className="font-medium">Ticket:</span> {selectedTicket.ticketNumber}
                 </div>
                 <div>
-                  <span className="font-medium">Created:</span> {selectedTicket.createdDate}
+                  <span className="font-medium">Due:</span> {formatDate(selectedTicket.dueDate)}
+                </div>
+                <div>
+                  <span className="font-medium">Created:</span> {formatDate(selectedTicket.createdAt)}
                 </div>
               </div>
             </div>
@@ -487,7 +658,7 @@ const TicketsTasksPage: React.FC = () => {
                     name="priorityLevel"
                     value={level}
                     checked={reportComplicationForm.priorityLevel === level}
-                    onChange={(e) => setReportComplicationForm({ ...reportComplicationForm, priorityLevel: e.target.value })}
+                    onChange={(e) => setReportComplicationForm({ ...reportComplicationForm, priorityLevel: e.target.value as 'High' | 'Medium' | 'Low' })}
                     className="mr-2"
                   />
                   <span className="text-sm text-gray-700">{level}</span>
@@ -522,9 +693,10 @@ const TicketsTasksPage: React.FC = () => {
             </button>
             <button
               onClick={handleReportComplication}
-              className="px-6 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors"
+              disabled={loading}
+              className="px-6 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors disabled:opacity-50"
             >
-              Report Task
+              {loading ? 'Reporting...' : 'Report Task'}
             </button>
           </div>
         </div>
