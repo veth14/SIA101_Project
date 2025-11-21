@@ -1,42 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Timestamp } from 'firebase/firestore';
 
-// --- Interface Definition ---
-// Defined locally to avoid Circular Dependency with ReservationsPage
-export interface BookingData {
-  additionalGuestPrice: number;
-  baseGuests: number;
-  basePrice: number;
-  bookingId: string;
-  checkIn: string;
-  checkOut: string;
-  createdAt: Timestamp;
-  guests: number;
-  nights: number;
-  paymentDetails: {
-    cardLast4: string | null;
-    cardholderName: string | null;
-    gcashName: string | null;
-    gcashNumber: string | null;
-    paidAt: Timestamp | null;
-    paymentMethod: string;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
-  };
-  roomName: string;
-  roomNumber: string | null;
-  roomPricePerNight: number;
-  roomType: string;
-  status: 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
-  subtotal: number;
-  tax: number;
-  taxRate: number;
-  totalAmount: number;
-  updatedAt: Timestamp;
-  userEmail: string;
-  userId: string;
-  userName: string;
-}
+// --- UPDATED IMPORT ---
+import { BookingData } from './ReservationsContext';
 
 interface ConfirmCheckOutModalProps {
   isOpen: boolean;

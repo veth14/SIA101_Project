@@ -1,5 +1,5 @@
 // constants.ts
-import { Shift } from 'types';
+import { Shift } from './types';
 
 export const SHIFTS: Shift[] = [
   { value: '7am-3pm', label: '7:00 AM - 3:00 PM' },

@@ -6,9 +6,6 @@ import { collection, getDocs, addDoc, serverTimestamp, doc, DocumentReference } 
 // Import types
 import { Staff, Schedule, WeeklySchedule } from './types';
 
-// Import constants
-import { DAYS } from './constants';
-
 // Import utilities
 import {
   getDayFromDate,
@@ -78,11 +75,7 @@ const StaffSchedulesPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching staff:', error);
       alert('Error loading staff. Please check your Firebase configuration.');
-      setStaffList([
-        { id: '1', fullName: 'John Smith', classification: 'HVAC Technician' },
-        { id: '2', fullName: 'Mike Johnson', classification: 'Electrician' },
-        { id: '3', fullName: 'Sarah Williams', classification: 'Plumber' },
-      ]);
+      setStaffList([]);
     } finally {
       setLoading(false);
     }
@@ -111,29 +104,33 @@ const StaffSchedulesPage: React.FC = () => {
   }, []);
 
   // Fetch schedules from Firestore
-  const fetchSchedules = useCallback(async (): Promise<void> => {
-    try {
-      const schedulesCollection = collection(db, 'staff_schedules');
-      const schedulesSnapshot = await getDocs(schedulesCollection);
-      
-      const schedulesData: Schedule[] = schedulesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Schedule));
+const fetchSchedules = useCallback(async (): Promise<void> => {
+  try {
+    const schedulesCollection = collection(db, 'staff_schedules');
+    const schedulesSnapshot = await getDocs(schedulesCollection);
+    
+    const schedulesData: Schedule[] = schedulesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Schedule));
 
-      setSchedules(schedulesData);
-      
-      const weekFiltered = filterSchedulesByWeek(
-        schedulesData, 
-        currentWeekRange.start, 
-        currentWeekRange.end
-      );
-      organizeWeeklySchedule(weekFiltered);
-    } catch (error) {
-      console.error('Error fetching schedules:', error);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentWeekOffset, organizeWeeklySchedule]);
+    setSchedules(schedulesData);
+    
+    // Use the state variable in a useEffect instead
+  } catch (error) {
+    console.error('Error fetching schedules:', error);
+  }
+}, []);
+
+// Add new useEffect to organize schedules when they change
+useEffect(() => {
+  const weekFiltered = filterSchedulesByWeek(
+    schedules, 
+    currentWeekRange.start, 
+    currentWeekRange.end
+  );
+  organizeWeeklySchedule(weekFiltered);
+}, [schedules, currentWeekRange, organizeWeeklySchedule]);
 
   // Effects
   useEffect(() => {

@@ -1,44 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-// Removed unused firebase imports (db, doc, getDoc, etc.) to prevent lint errors and confusion
-import { Timestamp } from 'firebase/firestore';
 import { WalkInModal } from './WalkInModal';
 
-// --- Interfaces ---
-// Ideally, this should be imported from a shared types file, 
-// but we keep it here to ensure the component is self-contained for this update.
-export interface BookingData {
-  additionalGuestPrice: number;
-  baseGuests: number;
-  basePrice: number;
-  bookingId: string;
-  checkIn: string;
-  checkOut: string;
-  createdAt: Timestamp;
-  guests: number;
-  nights: number;
-  paymentDetails: {
-    cardLast4: string | null;
-    cardholderName: string | null;
-    gcashName: string | null;
-    gcashNumber: string | null;
-    paidAt: Timestamp | null;
-    paymentMethod: string;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
-  };
-  roomName: string;
-  roomNumber: string | null;
-  roomPricePerNight: number;
-  roomType: string;
-  status: 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
-  subtotal: number;
-  tax: number;
-  taxRate: number;
-  totalAmount: number;
-  updatedAt: Timestamp;
-  userEmail: string;
-  userId: string;
-  userName: string;
-}
+// --- UPDATED IMPORT ---
+import { BookingData } from './ReservationsContext';
 
 interface ModernReservationsTableProps {
   reservations: BookingData[];
@@ -67,7 +31,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   const itemsPerPage = 5;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Click outside handler for dropdown
+  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -111,7 +75,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
-        // Sort active bookings first
         const priorityA = getStatusPriority(a.status);
         const priorityB = getStatusPriority(b.status);
         
@@ -119,7 +82,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
           return priorityA - priorityB; 
         }
 
-        // Then sort by newest created
         const timeA = a.createdAt?.toMillis() || 0;
         const timeB = b.createdAt?.toMillis() || 0;
         
@@ -192,10 +154,8 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
   };
 
   // Helper: Action Buttons
-  // These buttons now delegate strictly to props without local logic
   const getActionButtons = (reservation: BookingData) => (
     <div className="flex items-center justify-center space-x-2">
-      {/* Check In */}
       {reservation.status === 'confirmed' && (
         <button
           onClick={(e) => {
@@ -208,12 +168,11 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </button>
       )}
       
-      {/* Check Out */}
       {reservation.status === 'checked-in' && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCheckOut(reservation); // Delegates to parent
+            onCheckOut(reservation); 
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
@@ -221,7 +180,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </button>
       )}
 
-      {/* Edit (Available unless cancelled/checked-out) */}
       {reservation.status !== 'cancelled' && reservation.status !== 'checked-out' && (
         <button
           onClick={(e) => {
@@ -234,12 +192,11 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </button>
       )}
 
-      {/* Cancel */}
       {reservation.status === 'confirmed' && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCancel(reservation); // Delegates to parent
+            onCancel(reservation); 
           }}
           className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
@@ -247,7 +204,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </button>
       )}
       
-      {/* View (for inactive) */}
       {(reservation.status === 'checked-out' || reservation.status === 'cancelled') && (
         <button
           onClick={(e) => {
@@ -325,7 +281,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                   </svg>
                 </button>
 
-                {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <>
                     <div 
@@ -379,7 +334,6 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         </div>
       </div>
       
-      {/* Walk-in Modal */}
       <WalkInModal 
         isOpen={isWalkInModalOpen}
         onClose={() => setIsWalkInModalOpen(false)}

@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../../../config/firebase';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
-// --- UPDATED ---
-// Import shared types and the new hook from the parent page
+
+// --- IMPORTED CONTEXT & TYPES ---
 import {
   type BookingData,
-  type IRoom,
   useRooms
 } from './ReservationsContext';
-// --- END UPDATED ---
+
+// --- IMPORTED SHARED UTILS ---
+import { 
+  normalizeTypeKey, 
+  checkDateOverlap 
+} from './reservations.utils';
 
 interface AvailableRoom {
   number: string;
@@ -21,37 +25,11 @@ interface AvailableRoom {
 interface CheckInModalProps {
   isOpen: boolean;
   onClose: () => void;
-  reservation: BookingData | null; // Allow null to match base code pattern
+  reservation: BookingData | null;
   onCheckIn: (updatedReservation: BookingData) => void;
 }
 
-// --- HELPER FUNCTIONS (CORRECTED) ---
-const typeIdMap: Record<string, string> = {
-  'standard': 'standard', 'standard room': 'standard',
-  'deluxe': 'deluxe', 'deluxe room': 'deluxe',
-  'suite': 'suite', 'suite room': 'suite',
-  'family': 'family', 'family suite': 'family',
-  'premium family suite': 'family',
-  // Add all variations from your data
-  'silid payapa': 'standard',
-  'silid marahuyo': 'deluxe',
-  'silid ginhawa': 'suite',
-  'silid haraya': 'family',
-  'silid payapa (standard room)': 'standard',
-  'silid marahuyo (deluxe room)': 'deluxe',
-  'silid ginhawa (suite room)': 'suite',
-  'silid haraya (premium family suite)': 'family',
-};
-
-// --- THIS IS THE FIX ---
-const normalizeTypeKey = (s: string) => {
-  if (!s) return 'unknown'; // Return a non-matching key
-  const key = s.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
-  // Default to a non-matching key instead of 'standard'
-  return typeIdMap[key] || 'unknown'; 
-};
-// --- END THE FIX ---
-
+// --- HELPER ---
 const formatDate = (dateString: string) => {
   if (!dateString) return "---";
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -70,22 +48,18 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
   const [guestIdVerified, setGuestIdVerified] = useState(false);
   const [keyCardsIssued, setKeyCardsIssued] = useState(false);
   
-  // --- UPDATED ---
-  // Get rooms from context instead of local state/fetching
+  // Get rooms from context
   const { rooms: allRooms, loading: roomsLoading } = useRooms();
   // Local state for the filtered *available* rooms list
   const [filteredRooms, setFilteredRooms] = useState<AvailableRoom[]>([]);
-  // --- END UPDATED ---
 
-  // --- NEW ---
-  // State to hold results of our single availability query
+  // State for our single availability query
   const [overlappingBookings, setOverlappingBookings] = useState<BookingData[]>([]);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
-  // --- END NEW ---
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Prevent background scroll while modal is open (from base code)
+  // Prevent background scroll
   useEffect(() => {
     if (!isOpen) return;
     const original = document.body.style.overflow;
@@ -95,7 +69,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
     };
   }, [isOpen]);
 
-  // When modal opens or reservation changes, prefill
+  // Prefill data
   useEffect(() => {
     if (!isOpen || !reservation) return;
     
@@ -113,9 +87,8 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
     
   }, [isOpen, reservation]);
 
-  // --- handleCheckIn (untouched) ---
+  // --- handleCheckIn ---
   const handleCheckIn = () => {
-    // Validation
     const newErrors: Record<string, string> = {};
     if (!selectedRoom) {
       newErrors.room = 'Please select a room to assign';
@@ -126,7 +99,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0 || !reservation) {
-      return; // Stop if there are errors or no reservation
+      return; 
     }
 
     const now = new Date();
@@ -152,43 +125,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 
   const remainingBalance = reservation ? Math.max(0, reservation.totalAmount - paymentReceived) : 0;
 
-  // --- checkDateOverlap (untouched, used by new logic) ---
-  const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
-    // Ensure inputs are valid date strings
-    if (!checkIn1 || !checkOut1 || !checkIn2 || !checkOut2) {
-      return false;
-    }
-    try {
-      const start1 = new Date(checkIn1);
-      const end1 = new Date(checkOut1);
-      const start2 = new Date(checkIn2);
-      const end2 = new Date(checkOut2);
-
-      // Check for invalid dates
-      if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || isNaN(start2.getTime()) || isNaN(end2.getTime())) {
-        return false;
-      }
-      
-      // Standard overlap check: (StartA < EndB) and (StartB < EndA)
-      return start1 < end2 && start2 < end1;
-    } catch (e) {
-      console.error("Error parsing dates for overlap check:", e);
-      return false;
-    }
-  };
-
-  // --- DELETED ---
-  // The old, inefficient isRoomAvailableForDates function was removed.
-  // --- END DELETED ---
-
-  // --- DELETED ---
-  // The old, inefficient fetchRooms useEffect was removed.
-  // Rooms are now provided by the useRooms() hook.
-  // --- END DELETED ---
-
-  // --- NEW HOTFIX: Step 1 ---
-  // This effect runs ONE query to get all *potentially* conflicting bookings for the
-  // check-in date range.
+  // --- Availability Query (Step 1) ---
   useEffect(() => {
     if (!isOpen || !reservation?.checkIn || !reservation?.checkOut) {
       setOverlappingBookings([]);
@@ -202,12 +139,11 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
       try {
         const { checkIn, checkOut, bookingId } = reservation;
         
-        // This is the single-query hotfix.
         const q = query(
           collection(db, 'bookings'),
           where('status', 'in', ['confirmed', 'checked-in']),
-          where('checkIn', '<', checkOut),  // Booking starts *before* this one ends
-          where('checkOut', '>', checkIn) // Booking ends *after* this one starts
+          where('checkIn', '<', checkOut), 
+          where('checkOut', '>', checkIn)
         );
 
         const snap = await getDocs(q);
@@ -230,81 +166,53 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
     };
 
     fetchOverlappingBookings();
-    
     return () => { mounted = false; };
-  }, [isOpen, reservation]); // Runs when modal opens or reservation changes
-  // --- END NEW HOTFIX: Step 1 ---
+  }, [isOpen, reservation]); 
 
 
-  // --- UPDATED HOTFIX: Step 2 ---
-  // This effect is now fast and runs *in-memory*.
-  // It filters the `allRooms` list from context against the `overlappingBookings` list.
+  // --- Filter Rooms In-Memory (Step 2) ---
   useEffect(() => {
     if (!reservation) {
       setFilteredRooms([]);
       return;
     }
     
-    // 1. Get the room type we care about
+    // USED UTILITY
     const reservationTypeKey = normalizeTypeKey(reservation.roomType);
-    
-    // 2. Get all rooms of that type from the context
-    // --- THIS IS THE FIX ---
     const candidateRooms = allRooms.filter(r => 
       normalizeTypeKey(r.roomType) === reservationTypeKey
     );
-    // --- END THE FIX ---
 
-    // 3. Get a Set of all room numbers that have a *true* conflict
     const occupiedRoomNumbers = new Set<string>();
     for (const b of overlappingBookings) {
       if (!b.roomNumber) continue;
-      
+      // USED UTILITY
       const isOverlapping = checkDateOverlap(
         reservation.checkIn, reservation.checkOut,
         b.checkIn, b.checkOut
       );
-      
       if (isOverlapping) {
         occupiedRoomNumbers.add(b.roomNumber);
       }
     }
 
-    // 4. Filter the candidate rooms in-memory
     const availableRooms = candidateRooms.filter(room => {
-      // If the room is already assigned to *this* reservation, always show it.
-      if (room.id === reservation.roomNumber) {
-        return true;
-      }
-      
-      // --- UPDATED LOGIC ---
-      // If the room's base status isn't 'available' OR it's not 'isActive', hide it
-      if (room.status !== 'available' || room.isActive === false) {
-        return false;
-      }
-      // --- END UPDATED LOGIC ---
-
-      // If the room is in the occupied Set, hide it.
-      if (occupiedRoomNumbers.has(room.id)) {
-        return false;
-      }
-      
-      // Otherwise, it's available.
+      if (room.id === reservation.roomNumber) return true;
+      if (room.status !== 'available' || room.isActive === false) return false;
+      if (occupiedRoomNumbers.has(room.id)) return false;
       return true;
     });
 
-    // 5. Set the final list for the dropdown
     setFilteredRooms(availableRooms.map(r => ({
       number: r.id,
-      type: r.roomType, // <-- Use roomType here
+      type: r.roomType,
       status: r.status
     })));
 
-  }, [allRooms, overlappingBookings, reservation]); // Depends on context rooms + query results
-  // --- END UPDATED HOTFIX: Step 2 ---
+  }, [allRooms, overlappingBookings, reservation]);
 
 
-  // --- Auto-select room useEffect (untouched) ---
+  // Auto-select room
   useEffect(() => {
     if (!isOpen || !reservation) return;
     if ((!selectedRoom || selectedRoom === '') && !reservation.roomNumber && filteredRooms.length > 0) {
@@ -313,27 +221,19 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
   }, [filteredRooms, isOpen, selectedRoom, reservation]);
 
 
-  // Handle early exit
-  if (!isOpen || !reservation) {
-    return null;
-  }
+  if (!isOpen || !reservation) return null;
 
-  // --- createPortal JSX (untouched, only one change) ---
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
-      {/* Full-screen overlay */}
       <div
         className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
         onClick={onClose}
         aria-label="Close overlay"
       />
 
-      {/* Modal Card */}
       <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
         
-        {/* Header */}
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
-          {/* ... (header content untouched) ... */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
@@ -356,11 +256,10 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {/* --- Left Column: Task Workflow --- */}
+            {/* --- Left Column: Workflow --- */}
             <div className="lg:col-span-2 space-y-6">
 
               {/* Step 1: Room Assignment */}
@@ -382,18 +281,13 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                     setErrors(prev => ({ ...prev, room: '' }));
                   }}
                   className={`w-full px-3 py-2 border rounded-md ${errors.room ? 'border-red-300' : 'border-gray-300'}`}
-                  // --- UPDATED ---
-                  // Now disabled based on context loading OR our availability check
                   disabled={roomsLoading || isCheckingAvailability}
-                  // --- END UPDATED ---
                 >
-                  {/* --- UPDATED --- */}
                   <option value="">
                     {roomsLoading ? 'Loading rooms...' : 
                     isCheckingAvailability ? 'Checking availability...' : 
                     (filteredRooms.length > 0 ? 'Select a room' : 'No rooms available')}
                   </option>
-                  {/* --- END UPDATED --- */}
                   {filteredRooms.map((room) => (
                     <option key={room.number} value={room.number}>
                       Room {room.number}
@@ -405,7 +299,6 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 
               {/* Step 2: Payment */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* ... (payment section untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconCreditCard />
                   <span className="ml-2">2. Collect Payment</span>
@@ -465,7 +358,6 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 
               {/* Step 3: Final Checklist */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* ... (checklist section untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
                   <IconClipboardCheck />
                   <span className="ml-2">3. Final Checklist</span>
@@ -510,12 +402,9 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
               </div>
             </div>
 
-            {/* --- Right Column: Summary & Actions (Sticky) --- */}
+            {/* --- Right Column: Summary --- */}
             <div className="lg:col-span-1 lg:sticky lg:top-6 space-y-6">
-              
-              {/* Guest Card */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* ... (guest card untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
                   <IconUser />
                   <span className="ml-2">Guest</span>
@@ -532,9 +421,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                 </div>
               </div>
 
-              {/* Booking Card */}
               <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                {/* ... (booking card untouched) ... */}
                 <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-3">
                   <IconCalendar />
                   <span className="ml-2">Booking</span>
@@ -558,9 +445,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
           </div>
         </div>
         
-        {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-gray-100">
-          {/* ... (footer actions untouched) ... */}
           <div className="flex flex-col justify-end gap-3 sm:flex-row sm:items-center">
             <button
               onClick={onClose}
@@ -588,7 +473,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 };
 
 
-// --- Icon Components (untouched) ---
+// --- Icon Components ---
 const IconKey = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM5.93 16.5A7 7 0 0012 21a7 7 0 006.07-4.5M12 3v7m-3 4h6" /></svg>
 );
