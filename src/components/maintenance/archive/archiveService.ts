@@ -52,13 +52,8 @@ function formatDate(value: any): string {
   // Return a locale date string (no time). Handles Firestore Timestamp, Date, or string.
   try {
     if (!value) return '';
-    // Firestore Timestamp
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof value === 'object' && typeof (value as any).toDate === 'function') {
-      return (value as any).toDate().toLocaleDateString();
-    }
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString();
+    const d = parseFirestoreDate(value);
+    if (d) return d.toLocaleDateString();
     return String(value).split('T')[0];
   } catch (e) {
     return String(value);
@@ -69,14 +64,9 @@ function formatTime(value: any): string {
   // Return a locale time string (no date). Handles Firestore Timestamp, Date, or string.
   try {
     if (!value) return '';
-    // Firestore Timestamp
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof value === 'object' && typeof (value as any).toDate === 'function') {
-      return (value as any).toDate().toLocaleTimeString();
-    }
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) return d.toLocaleTimeString();
-    // attempt to split an ISO datetime
+    const d = parseFirestoreDate(value);
+    if (d) return d.toLocaleTimeString();
+    // fallback: try to pick a time portion from string
     const s = String(value);
     const t = s.split('T')[1];
     return t ? t.split('Z')[0] : s;
@@ -85,22 +75,79 @@ function formatTime(value: any): string {
   }
 }
 
+/**
+ * Parse a Firestore-like value into a Date if possible.
+ * Supports Firestore Timestamp objects (toDate()), numbers (ms), Date, and common string forms.
+ */
+function parseFirestoreDate(value: any): Date | null {
+  if (value == null) return null;
+  // Firestore Timestamp
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (typeof value === 'object' && typeof (value as any).toDate === 'function') {
+    try {
+      return (value as any).toDate();
+    } catch (e) {
+      return null;
+    }
+  }
+  if (value instanceof Date) return value;
+  if (typeof value === 'number') {
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof value === 'string') {
+    // Some values may look like: "22 November 2025 at 15:00:00 UTC+8"
+    // Normalize by removing ' at ' and 'UTC±' timezone tokens which Date.parse may not like.
+    let s = value.trim();
+    // Replace ' at ' with space
+    s = s.replace(/\s+at\s+/i, ' ');
+    // Remove 'UTC+8' or 'UTC-8' tokens (we'll let the local timezone apply)
+    s = s.replace(/UTC[+\-]\d+/i, '').trim();
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    // Last resort: try Date.parse directly
+    const t = Date.parse(value);
+    if (!isNaN(t)) return new Date(t);
+    return null;
+  }
+  return null;
+}
+
+function sameDate(a: Date | null, b: Date | null) {
+  if (!a || !b) return false;
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
 function mapAttendanceDoc(docSnap: QueryDocumentSnapshot): ClockLog {
   const d = docSnap.data() as Record<string, any>;
-  // prefer explicit date field, else derive from timeIn/TimeIn
-  const rawDate = d.date ?? d.Date ?? d.dateCreated ?? d.createdAt ?? (d.TimeIn ?? d.timeIn);
-  const rawTimeIn = d.TimeIn ?? d.timeIn ?? d.timeInRaw ?? null;
-  const rawTimeOut = d.timeOut ?? d.TimeOut ?? d.timeOutRaw ?? null;
+  // Prefer TimeIn's date portion as authoritative for the shift date. Fall back to explicit date fields.
+  const rawTimeIn = d.TimeIn ?? d.timeIn ?? d.time_in ?? d.timeInRaw ?? null;
+  const rawTimeOut = d.timeOut ?? d.TimeOut ?? d.time_out ?? d.timeOutRaw ?? null;
+  const explicitDate = d.date ?? d.Date ?? d.dateCreated ?? d.createdAt ?? null;
+
+  const parsedTimeIn = parseFirestoreDate(rawTimeIn) ?? parseFirestoreDate(explicitDate) ?? parseFirestoreDate(rawTimeOut);
+  const parsedTimeOut = parseFirestoreDate(rawTimeOut);
+
+  const today = new Date();
+  let status: ClockLog['status'] = 'Off-Duty';
+
+  // If the record's date (from TimeIn) matches today and there's no TimeOut -> On-Duty
+  if (parsedTimeIn && sameDate(parsedTimeIn, today)) {
+    status = parsedTimeOut ? 'Off-Duty' : 'On-Duty';
+  } else {
+    // If TimeIn is not today, rely on explicit status or presence of TimeOut
+    status = d.status ?? (parsedTimeOut ? 'Off-Duty' : 'Off-Duty');
+  }
 
   return {
     id: docSnap.id,
     staffMember: d.fullName ?? d.staffName ?? d.name ?? '',
     classification: d.classification ?? d.department ?? '',
-    date: formatDate(rawDate),
-    timeIn: formatTime(rawTimeIn),
-    timeOut: formatTime(rawTimeOut),
+    date: parsedTimeIn ? parsedTimeIn.toLocaleDateString() : formatDate(explicitDate),
+    timeIn: parsedTimeIn ? parsedTimeIn.toLocaleTimeString() : formatTime(rawTimeIn),
+    timeOut: parsedTimeOut ? parsedTimeOut.toLocaleTimeString() : formatTime(rawTimeOut),
     hoursWorked: typeof d.hoursWorked === 'number' ? d.hoursWorked : undefined,
-    status: d.status ?? (rawTimeOut ? 'Off-Duty' : 'On-Duty'),
+    status,
   };
 }
 

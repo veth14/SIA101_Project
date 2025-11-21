@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ClockLog } from './archiveService';
 
 interface Props {
@@ -7,6 +7,54 @@ interface Props {
 }
 
 const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
+  const [search, setSearch] = useState('');
+  const [classification, setClassification] = useState<'All' | 'Housekeeping' | 'Maintenance'>('All');
+  const [dateFilter, setDateFilter] = useState<string>(''); // yyyy-mm-dd
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setClassification('All');
+    setDateFilter('');
+  };
+
+  const filteredLogs = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    return logs.filter((log) => {
+      // Classification filter (only two allowed options)
+      if (classification !== 'All' && (log.classification ?? '').toLowerCase() !== classification.toLowerCase()) {
+        return false;
+      }
+
+      // Date filter: compare against log.date which is formatted for UI (locale string)
+      if (dateFilter) {
+        try {
+          // dateFilter is yyyy-mm-dd
+          const parts = dateFilter.split('-');
+          if (parts.length === 3) {
+            const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            const logDate = new Date(log.date);
+            if (isNaN(logDate.getTime()) || !(
+              logDate.getFullYear() === d.getFullYear() &&
+              logDate.getMonth() === d.getMonth() &&
+              logDate.getDate() === d.getDate()
+            )) {
+              return false;
+            }
+          }
+        } catch (e) {
+          // ignore invalid date filter
+        }
+      }
+
+      // Search filter: look at staffMember and classification
+      if (!s) return true;
+      const fields = [log.staffMember ?? '', log.classification ?? ''];
+      return fields.some((f) => f.toLowerCase().includes(s));
+    });
+  }, [logs, search, classification, dateFilter]);
+
+  const displayLogs = filteredLogs;
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden mt-6">
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -22,24 +70,34 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
         <div className="flex gap-3 items-center">
           <input
             type="text"
-            placeholder="Search by name or task..."
+            placeholder="Search by name or classification..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
           />
-          <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heritage-green/50">
-            <option>Filter by classification</option>
-            <option>Maintenance</option>
-            <option>Housekeeping</option>
-            <option>Front Desk</option>
+          <select
+            value={classification}
+            onChange={(e) => setClassification(e.target.value as 'All' | 'Housekeeping' | 'Maintenance')}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
+          >
+            <option value="All">All Classifications</option>
+            <option value="Housekeeping">Housekeeping</option>
+            <option value="Maintenance">Maintenance</option>
           </select>
-          <input type="date" className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heritage-green/50" />
-          <button className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors text-sm">Clear Filters</button>
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
+          />
+          <button onClick={handleClearFilters} className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors text-sm">Clear Filters</button>
         </div>
       </div>
 
       <div className="overflow-x-auto">
         {loading ? (
           <div className="p-6">Loading clock logs...</div>
-        ) : logs.length === 0 ? (
+        ) : displayLogs.length === 0 ? (
           <div className="p-6 text-sm text-gray-600">No clock logs available.</div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
@@ -55,7 +113,7 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {logs.map((log) => (
+              {displayLogs.map((log) => (
                 <tr key={log.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{log.staffMember}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.classification}</td>
