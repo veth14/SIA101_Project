@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   collection, getDocs, doc, updateDoc, addDoc,
   serverTimestamp, query, Timestamp, onSnapshot, orderBy, limit,
-  writeBatch,
-  where // Kept 'where' because it is used in autoCheckout logic below
+  writeBatch, where, WriteBatch
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -23,6 +22,23 @@ import { ConfirmCancelModal } from './ConfirmCancelModal';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
 import ModernReservationsTable from './ModernReservationsTable';
 import { updateBookingCount, updateRevenue, updateArrivals, updateCurrentGuests } from '../../../lib/statsHelpers';
+
+// --- HELPER FOR ROOM UPDATES ---
+const updateRoomStatusInBatch = (
+  batch: WriteBatch, 
+  roomId: string, 
+  status: 'occupied' | 'available' | 'cleaning', 
+  isActive: boolean, 
+  currentReservation: string | null
+) => {
+  const roomRef = doc(db, 'rooms', roomId);
+  batch.set(roomRef, {
+    status,
+    isActive,
+    currentReservation,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
 
 export const ReservationsPage = () => {
   const { user } = useAuth();
@@ -80,11 +96,11 @@ export const ReservationsPage = () => {
       const bookingsData = bookingsSnapshot.docs.map(docSnapshot => {
         const data = docSnapshot.data();
         
-        // FIXED: Removed 'any' type for dateField
+        // FIXED: Improved type checking for dateField
         const parseDate = (dateField: unknown): string => {
           if (!dateField) return '';
           // Check if it's a Firestore Timestamp (has toDate method)
-          if (typeof dateField === 'object' && dateField !== null && 'toDate' in dateField) {
+          if (typeof dateField === 'object' && 'toDate' in dateField) {
             return (dateField as { toDate: () => Date }).toDate().toISOString().split('T')[0];
           }
           if (typeof dateField === 'string') {
@@ -129,8 +145,7 @@ export const ReservationsPage = () => {
       });
 
       setReservations(bookingsData);
-    // FIXED: Typed error as unknown (standard TS practice)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching reservations:', error);
       setReservations([]);
     } finally {
@@ -183,7 +198,6 @@ export const ReservationsPage = () => {
 
       try {
         const bookingsCol = collection(db, 'bookings');
-        // 'where' IS used here
         const q = query(bookingsCol, where('status', 'in', ['confirmed', 'checked-in']));
         const snap = await getDocs(q);
         const today = new Date();
@@ -214,26 +228,17 @@ export const ReservationsPage = () => {
 
           if (co < today) {
             hasUpdates = true;
-            // Update Booking
             batch.update(doc(db, 'bookings', d.id), {
               status: 'checked-out',
               updatedAt: serverTimestamp()
             });
 
-            // Update Room (if exists)
             if (data.roomNumber) {
-              // We use update with merge logic via batch.set to behave like setDoc(..., {merge: true})
-              const roomRef = doc(db, 'rooms', data.roomNumber);
-              batch.set(roomRef, {
-                status: 'cleaning',
-                isActive: false,
-                currentReservation: null,
-                updatedAt: serverTimestamp()
-              }, { merge: true });
+              // USED HELPER
+              updateRoomStatusInBatch(batch, data.roomNumber, 'cleaning', false, null);
             }
             
             if (mounted) {
-               // Optimistic local update
                setReservations(prev => prev.map(r => r.bookingId === d.id ? { ...r, status: 'checked-out' as const } : r));
             }
           }
@@ -273,21 +278,13 @@ export const ReservationsPage = () => {
       const newRoom = updatedReservation.roomNumber;
 
       if (prevRoom && prevRoom !== newRoom) {
-        const prevRoomRef = doc(db, 'rooms', prevRoom);
-        batch.set(prevRoomRef, {
-          status: 'available',
-          isActive: true,
-          currentReservation: null
-        }, { merge: true });
+        // USED HELPER
+        updateRoomStatusInBatch(batch, prevRoom, 'available', true, null);
       }
 
       if (newRoom) {
-        const newRoomRef = doc(db, 'rooms', newRoom);
-        batch.set(newRoomRef, {
-          status: 'occupied',
-          isActive: false,
-          currentReservation: updatedReservation.bookingId
-        }, { merge: true });
+        // USED HELPER
+        updateRoomStatusInBatch(batch, newRoom, 'occupied', false, updatedReservation.bookingId);
       }
 
       await batch.commit();
@@ -328,12 +325,8 @@ export const ReservationsPage = () => {
       batch.set(newBookingRef, bookingPayload);
 
       if (newBooking.roomNumber) {
-        const roomRef = doc(db, 'rooms', newBooking.roomNumber);
-        batch.set(roomRef, {
-          status: 'occupied',
-          isActive: false,
-          currentReservation: bookingId,
-        }, { merge: true });
+        // USED HELPER
+        updateRoomStatusInBatch(batch, newBooking.roomNumber, 'occupied', false, bookingId);
       }
 
       await batch.commit();
@@ -368,13 +361,8 @@ export const ReservationsPage = () => {
       });
 
       if (reservation.roomNumber) {
-        const roomRef = doc(db, 'rooms', reservation.roomNumber);
-        batch.set(roomRef, {
-          status: 'cleaning',
-          isActive: false,
-          currentReservation: null,
-          updatedAt: serverTimestamp()
-        }, { merge: true }); 
+        // USED HELPER
+        updateRoomStatusInBatch(batch, reservation.roomNumber, 'cleaning', false, null);
       }
 
       await batch.commit();
@@ -412,13 +400,8 @@ export const ReservationsPage = () => {
       });
 
       if (reservation.roomNumber) {
-        const roomRef = doc(db, 'rooms', reservation.roomNumber);
-        batch.set(roomRef, {
-          status: 'available',
-          isActive: true,
-          currentReservation: null,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
+        // USED HELPER
+        updateRoomStatusInBatch(batch, reservation.roomNumber, 'available', true, null);
       }
 
       await batch.commit();

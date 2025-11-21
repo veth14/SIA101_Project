@@ -2,16 +2,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { db } from '../../../config/firebase';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
-// --- UPDATED ---
-// Import the shared types and hook
+
+// --- UPDATED IMPORTS ---
 import {
   type BookingData,
   type IRoom,
   useRooms
 } from './ReservationsContext';
-// --- END UPDATED ---
 
-// --- Icon Components (Copied from Guide + New) ---
+import { 
+  ROOM_TYPES_CONFIG, 
+  normalizeTypeKey, 
+  checkDateOverlap 
+} from './reservations.utils';
+
+// --- Icon Components ---
 const IconUserPlus = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
 );
@@ -31,7 +36,7 @@ const IconDollar = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3-.895 3-2-1.343-2-3-2m-3.5 7.039a5.002 5.002 0 01-2.599-1M15.5 11.039a5.002 5.002 0 012.599-1" /></svg>
 );
 
-// --- InfoItem Component (Copied from Guide) ---
+// --- InfoItem Component ---
 interface InfoItemProps {
   icon: React.ReactNode;
   label: string;
@@ -49,7 +54,7 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, children }) => (
   </div>
 );
 
-// --- NEW Form Components (Styled to match Guide's aesthetic) ---
+// --- Form Components ---
 interface FormItemProps {
   label: string;
   required?: boolean;
@@ -84,7 +89,7 @@ const FormTextarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement> &
   return <textarea {...rest} className={`${inputBaseStyles} ${hasError ? errorStyles : ''} ${className || ''}`} />;
 };
 
-// --- Helper Functions (formatDate from Guide + existing helpers) ---
+// --- Helper Functions ---
 const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'long',
@@ -94,53 +99,7 @@ const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = {
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
 
-const defaultRoomTypes = [
-  { id: 'standard', name: 'Silid Payapa', price: 2500, baseGuests: 2, maxGuests: 4, additionalGuestPrice: 500 },
-  { id: 'deluxe', name: 'Silid Marahuyo', price: 3800, baseGuests: 2, maxGuests: 5, additionalGuestPrice: 750 },
-  { id: 'suite', name: 'Silid Ginhawa', price: 5500, baseGuests: 2, maxGuests: 6, additionalGuestPrice: 1000 },
-  { id: 'family', name: 'Silid Haraya', price: 8000, baseGuests: 4, maxGuests: 8, additionalGuestPrice: 1200 },
-];
-const checkDateOverlap = (checkIn1: string, checkOut1: string, checkIn2: string, checkOut2: string) => {
-  if (!checkIn1 || !checkOut1 || !checkIn2 || !checkOut2) {
-    return false;
-  }
-  try {
-    const start1 = new Date(checkIn1);
-    const end1 = new Date(checkOut1);
-    const start2 = new Date(checkIn2);
-    const end2 = new Date(checkOut2);
-    if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || isNaN(start2.getTime()) || isNaN(end2.getTime())) {
-      return false;
-    }
-    return start1 < end2 && start2 < end1;
-  } catch (e) {
-    return false;
-  }
-};
-
-// --- UPDATED: Replaced normalizeTypeInput with the better version ---
-const typeIdMap: Record<string, string> = {
-  'standard': 'standard', 'standard room': 'standard',
-  'deluxe': 'deluxe', 'deluxe room': 'deluxe',
-  'suite': 'suite', 'suite room': 'suite',
-  'family': 'family', 'family suite': 'family',
-  'premium family suite': 'family',
-  'silid payapa': 'standard',
-  'silid marahuyo': 'deluxe',
-  'silid ginhawa': 'suite',
-  'silid haraya': 'family',
-};
-
-// --- THIS IS THE FIX ---
-const normalizeTypeKey = (s: string) => {
-  if (!s) return 'unknown'; // Return a non-matching key
-  const key = s.replace(/\s*\([^)]*\)/, '').trim().toLowerCase();
-  // Default to a non-matching key instead of 'standard'
-  return typeIdMap[key] || 'unknown'; 
-};
-// --- END THE FIX ---
-
-// --- Props Interface (Unchanged) ---
+// --- Props Interface ---
 interface WalkInModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -153,22 +112,17 @@ const stepTitles = ["Guest Information", "Booking Details", "Payment & Confirmat
 // --- MAIN COMPONENT ---
 export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) => {
   
-  // --- All State and Logic (Unchanged) ---
   const [step, setStep] = useState(1);
-  const [roomTypes, setRoomTypes] = useState<Array<any>>(defaultRoomTypes);
+  // Note: Removed local roomTypes state, using ROOM_TYPES_CONFIG directly
   
-  // --- UPDATED ---
   // Get rooms from context
   const { rooms: allRooms, loading: roomsLoading } = useRooms();
   // State for *available* rooms
-  const [filteredRooms, setFilteredRooms] = useState<IRoom[]>([]); // --- Changed type to IRoom ---
-  // --- END UPDATED ---
+  const [filteredRooms, setFilteredRooms] = useState<IRoom[]>([]); 
 
-  // --- NEW ---
   // State for our single availability query
   const [overlappingBookings, setOverlappingBookings] = useState<BookingData[]>([]);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
-  // --- END NEW ---
   
   const [formData, setFormData] = useState({
     guestName: '', email: '', phone: '', idType: 'passport', idNumber: '', address: '',
@@ -180,15 +134,13 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // --- NEW HOTFIX: Step 1 ---
-  // Runs ONE query to get all *potentially* conflicting bookings for the date range.
+  // --- Availability Query ---
   useEffect(() => {
     if (!isOpen || !formData.checkIn || !formData.checkOut) {
       setOverlappingBookings([]);
       return;
     }
     
-    // Validate dates before querying
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
     if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime()) || checkOut <= checkIn) {
@@ -201,12 +153,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       setIsCheckingAvailability(true);
       setOverlappingBookings([]);
       try {
-        // This is the single-query hotfix.
         const q = query(
           collection(db, 'bookings'),
           where('status', 'in', ['confirmed', 'checked-in']),
-          where('checkIn', '<', formData.checkOut), // Booking starts *before* this one ends
-          where('checkOut', '>', formData.checkIn) // Booking ends *after* this one starts
+          where('checkIn', '<', formData.checkOut), 
+          where('checkOut', '>', formData.checkIn) 
         );
 
         const snap = await getDocs(q);
@@ -224,93 +175,70 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     };
 
     fetchOverlappingBookings();
-    
     return () => { mounted = false; };
-  }, [isOpen, formData.checkIn, formData.checkOut]); // Runs when dates change
-  // --- END NEW HOTFIX: Step 1 ---
+  }, [isOpen, formData.checkIn, formData.checkOut]);
 
 
-  // --- NEW HOTFIX: Step 2 ---
-  // Create a memoized Set of all room numbers that are occupied in the selected range.
+  // --- Occupied Rooms Calculation ---
   const occupiedRoomNumbers = useMemo(() => {
     const occupied = new Set<string>();
     for (const b of overlappingBookings) {
       if (!b.roomNumber) continue;
-      
-      // We already pre-filtered by date range, but a final check is safest.
+      // USED UTILITY
       const isOverlapping = checkDateOverlap(
         formData.checkIn, formData.checkOut,
         b.checkIn, b.checkOut
       );
-      
       if (isOverlapping) {
         occupied.add(b.roomNumber);
       }
     }
     return occupied;
   }, [overlappingBookings, formData.checkIn, formData.checkOut]);
-  // --- END NEW HOTFIX: Step 2 ---
 
 
-  // --- UPDATED HOTFIX: Step 3 ---
-  // This effect is now fast and in-memory. It replaces the old 'compute' effect.
+  // --- Filter Available Rooms ---
   useEffect(() => {
     if (!formData.roomType) {
       setFilteredRooms([]);
       return;
     }
 
-    // 1. Get all rooms of the correct type from context
-    // --- UPDATED: Uses the form value directly as the key ---
     const reservationTypeKey = formData.roomType; 
-    
+    // USED UTILITY
     const candidateRooms = allRooms.filter(r => 
-      // --- UPDATED: Uses the new normalizeTypeKey function ---
       normalizeTypeKey(r.roomType) === reservationTypeKey
     );
 
-    // 2. Filter them in-memory
     const availableRooms = candidateRooms.filter(room => {
-      
-      // --- UPDATED LOGIC ---
-      // If the room's base status isn't 'available' OR it's not 'isActive', hide it.
       if (room.status !== 'available' || room.isActive === false) { 
         return false;
       }
-      // --- END UPDATED LOGIC ---
-
-      // If the dates are invalid, just show all 'available' rooms
       if (!formData.checkIn || !formData.checkOut || new Date(formData.checkOut) <= new Date(formData.checkIn)) {
         return true;
       }
-      // If the room is in the occupied Set, hide it.
       if (occupiedRoomNumbers.has(room.id)) {
         return false;
       }
-      
-      // Otherwise, it's available.
       return true;
     });
 
-    // 3. Set the final list for the dropdown
     setFilteredRooms(availableRooms);
 
   }, [formData.roomType, allRooms, occupiedRoomNumbers, formData.checkIn, formData.checkOut]);
-  // --- END UPDATED HOTFIX: Step 3 ---
 
 
-  // --- Auto-select room useEffect (Unchanged) ---
+  // Auto-select room
   useEffect(() => {
     if (!isOpen) return;
     if (filteredRooms.length > 0 && !formData.roomNumber) {
-      // --- UPDATED: Use room.id from the IRoom object ---
       setFormData(prev => ({ ...prev, roomNumber: filteredRooms[0].id }));
     } else if (filteredRooms.length === 0) {
       setFormData(prev => ({ ...prev, roomNumber: '' }));
     }
   }, [filteredRooms, isOpen, formData.roomNumber]);
   
-  // Body scroll lock effect (from guide)
+  // Body scroll lock
   useEffect(() => {
     if (!isOpen) return;
     const original = document.body.style.overflow;
@@ -320,7 +248,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     };
   }, [isOpen]);
 
-  // --- ValidateStep1 (Unchanged) ---
+  // --- Validation ---
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.guestName.trim()) newErrors.guestName = 'Guest name is required';
@@ -339,8 +267,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- UPDATED: validateStep2 ---
-  // Now uses the in-memory 'occupiedRoomNumbers' Set.
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.roomType) newErrors.roomType = 'Room type is required';
@@ -364,7 +290,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       newErrors.checkOut = 'Check-out must be after check-in date';
     }
     
-    // Final in-memory check
     if (formData.roomNumber && occupiedRoomNumbers.has(formData.roomNumber)) {
       newErrors.roomNumber = 'Selected room is not available for those dates';
     }
@@ -372,9 +297,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  // --- END UPDATED: validateStep2 ---
 
-  // --- validateStep3 (Unchanged) ---
   const validateStep3 = () => {
     const newErrors: Record<string, string> = {};
     if (formData.paymentMethod === 'gcash') {
@@ -407,9 +330,9 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- calculatePricing (Unchanged) ---
   const calculatePricing = () => {
-    const rt = roomTypes.find(rt => rt.id === formData.roomType);
+    // USED UTILITY
+    const rt = ROOM_TYPES_CONFIG.find(rt => rt.id === formData.roomType);
     if (!rt || !formData.checkOut || !formData.checkIn) {
       return { nights: 0, basePrice: 0, roomPricePerNight: 0, additionalGuestPrice: 0, baseGuests: 0, subtotal: 0, tax: 0, taxRate: 0.12, totalAmount: 0 };
     }
@@ -432,12 +355,10 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     };
   };
 
-  // --- handleNext (UPDATED) ---
   const handleNext = async () => {
     if (step === 1 && validateStep1()) {
       setStep(2);
     } else if (step === 2) {
-      // --- UPDATED: No longer async ---
       const ok = validateStep2();
       if (ok) {
         const { totalAmount } = calculatePricing();
@@ -446,17 +367,13 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       }
     }
   };
-  // --- END UPDATED ---
 
-  // --- handleBack (Unchanged) ---
   const handleBack = () => {
     setErrors({});
     setStep(step - 1);
   };
   
-  // --- internalOnClose (Unchanged) ---
   const internalOnClose = () => {
-    // Reset form on close
     setStep(1);
     setFormData({
       guestName: '', email: '', phone: '', idType: 'passport', idNumber: '', address: '',
@@ -467,12 +384,10 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       cardNumber: '', cardExpiry: '', cardCvv: '',
     });
     setErrors({});
-    onClose(); // Call parent onClose
+    onClose(); 
   };
 
-  // --- handleSubmit (UPDATED) ---
   const handleSubmit = async () => {
-    // --- UPDATED: No longer async ---
     const step2Ok = validateStep2();
     if (!step2Ok) { setStep(2); return; }
     const step3Ok = validateStep3();
@@ -486,7 +401,9 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     const firestoreTimestamp = Timestamp.fromDate(now);
     const todayString = now.toISOString().split('T')[0];
     const bookingStatus = (formData.checkIn === todayString) ? 'checked-in' : 'confirmed';
-    const selectedRoomType = roomTypes.find(rt => rt.id === formData.roomType);
+    
+    // USED UTILITY
+    const selectedRoomType = ROOM_TYPES_CONFIG.find(rt => rt.id === formData.roomType);
     const roomName = selectedRoomType?.name || 'Unknown Room';
     const roomType = selectedRoomType?.id || formData.roomType;
     const roomNumber = formData.roomNumber;
@@ -518,11 +435,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     };
 
     onBooking(newBooking);
-    internalOnClose(); // Use internal close to reset state
+    internalOnClose(); 
   };
-  // --- END UPDATED ---
 
-  // --- RENDER FUNCTIONS (Refactored to use new Form components) ---
+
+  // --- RENDER FUNCTIONS ---
 
   const renderStep1 = () => (
     <div className="space-y-4">
@@ -601,7 +518,8 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           hasError={!!errors.roomType}
         >
           <option value="">Select room type</option>
-          {roomTypes.map(type => (
+          {/* USED UTILITY */}
+          {ROOM_TYPES_CONFIG.map(type => (
             <option key={type.id} value={type.id}>
               {type.name} - ₱{type.price.toLocaleString()}/night
             </option>
@@ -625,7 +543,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
                 ? 'Checking availability...'
                 : (filteredRooms.length > 0 ? 'Select room' : 'No rooms available for selected dates')}
             </option>
-            {/* --- UPDATED: Use room.id and room.roomNumber --- */}
             {filteredRooms.map((room: IRoom) => (
               <option key={room.id} value={room.id}>
                 Room {room.roomNumber}
@@ -661,7 +578,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             onChange={(e) => setFormData(prev => ({ ...prev, guests: Number(e.target.value) }))}
           >
             {Array.from(
-              { length: formData.roomType ? (roomTypes.find(rt => rt.id === formData.roomType)?.maxGuests || 4) : 4 },
+              { length: formData.roomType ? (ROOM_TYPES_CONFIG.find(rt => rt.id === formData.roomType)?.maxGuests || 4) : 4 },
               (_, i) => i + 1
             ).map(num => (
               <option key={num} value={num}>{num} guest{num > 1 ? 's' : ''}</option>
@@ -747,16 +664,12 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     </div>
   );
   
-  // --- REFACTORED Step 3 ---
-  // Now uses InfoItem from the guide for the summary
   const renderStep3 = () => {
     const { totalAmount } = calculatePricing();
     const remainingBalance = totalAmount - formData.paymentReceived;
     
     return (
       <div className="space-y-6">
-        
-        {/* REFACTORED Booking Summary */}
         <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
           <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h4>
           <div className="space-y-4">
@@ -764,7 +677,8 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
               {formData.guestName}
             </InfoItem>
             <InfoItem icon={<IconBed />} label="Room">
-              {roomTypes.find(rt => rt.id === formData.roomType)?.name || formData.roomType}
+              {/* USED UTILITY */}
+              {ROOM_TYPES_CONFIG.find(rt => rt.id === formData.roomType)?.name || formData.roomType}
               {formData.roomNumber && ` - Room ${formData.roomNumber}`}
             </InfoItem>
             <InfoItem icon={<IconCalendar />} label="Stay Dates">
@@ -782,7 +696,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           </div>
         </div>
 
-        {/* Payment Section */}
         <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Payment</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -832,7 +745,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     );
   };
   
-  // --- NEW Progress Bar (Restyled) ---
   const renderProgressBar = () => (
     <div className="flex items-center mb-6">
       {stepTitles.map((title, index) => {
@@ -862,20 +774,16 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
 
   if (!isOpen) return null;
 
-  // --- NEW MODAL RENDER (Using Guide's Structure) ---
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
-      {/* Full-screen overlay */}
       <div
         className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
         onClick={internalOnClose}
         aria-label="Close overlay"
       />
 
-      {/* Modal Card */}
       <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-gray-50/95 shadow-2xl ring-1 ring-black/5">
 
-        {/* Header (Branded) */}
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -890,7 +798,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
               </div>
             </div>
 
-            {/* Close button */}
             <button
               onClick={internalOnClose}
               aria-label="Close"
@@ -903,13 +810,9 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           </div>
         </div>
 
-        {/* Content (Scrolling Area) */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)] space-y-6">
-          
-          {/* Progress Bar */}
           {renderProgressBar()}
 
-          {/* Step Content */}
           <div className="p-6 bg-white rounded-2xl ring-1 ring-black/5 shadow-inner">
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}
@@ -918,11 +821,9 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           
         </div>
 
-        {/* Footer Actions (Restyled Buttons) */}
         <div className="p-6 bg-white border-t border-gray-100">
           <div className="flex items-center justify-between">
             
-            {/* Cancel Button */}
             <button
               onClick={internalOnClose}
               className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
@@ -930,7 +831,6 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
               Cancel
             </button>
             
-            {/* Back/Next/Submit Buttons */}
             <div className="flex items-center space-x-3">
               {step > 1 && (
                 <button
