@@ -1,10 +1,3 @@
-/**
- * RoomGrid Component
- * 
- * Premium modern grid layout for room cards with pagination and professional header.
- * Displays rooms in a responsive grid with filtering and pagination support.
- */
-
 import React, { useState, useEffect } from 'react';
 import RoomCard from './RoomCard';
 import type { Room } from './Room-backendLogic/roomService';
@@ -13,28 +6,29 @@ interface RoomGridProps {
   rooms: Room[];
   loading: boolean;
   error: string | null;
+  onView: (room: Room) => void;
+  onEdit: (room: Room) => void;
 }
 
 const RoomGrid: React.FC<RoomGridProps> = ({
   rooms,
   loading,
-  error
+  error,
+  onView,
+  onEdit
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Reset to page 1 when rooms change
   useEffect(() => {
     setCurrentPage(1);
   }, [rooms]);
 
-  // Pagination logic
   const totalPages = Math.ceil(rooms.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentRooms = rooms.slice(startIndex, endIndex);
 
-  // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
@@ -60,11 +54,9 @@ const RoomGrid: React.FC<RoomGridProps> = ({
         pages.push(totalPages);
       }
     }
-    
     return pages;
   };
 
-  // Show loading state
   if (loading) {
     return (
       <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
@@ -77,7 +69,6 @@ const RoomGrid: React.FC<RoomGridProps> = ({
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
@@ -96,7 +87,6 @@ const RoomGrid: React.FC<RoomGridProps> = ({
     );
   }
 
-  // Show empty state if no rooms
   if (rooms.length === 0 && !loading) {
     return (
       <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
@@ -144,6 +134,7 @@ const RoomGrid: React.FC<RoomGridProps> = ({
             >
               <RoomCard
                 roomNumber={room.roomNumber}
+                roomName={room.roomName} // --- NEW: Pass display name ---
                 roomType={room.roomType}
                 status={room.status}
                 price={room.basePrice}
@@ -152,26 +143,18 @@ const RoomGrid: React.FC<RoomGridProps> = ({
                 checkOut={room.checkOut}
                 features={room.features}
                 maxFeatures={3}
-                onViewDetails={() => console.log('View details:', room.roomNumber)}
-                onEdit={() => console.log('Edit room:', room.roomNumber)}
-                onBook={() => console.log('Book room:', room.roomNumber)}
+                onViewDetails={() => onView(room)}
+                onEdit={() => onEdit(room)}
               />
             </div>
           ))}
         </div>
         
-        {/* Inline styles for animation */}
         <style dangerouslySetInnerHTML={{
           __html: `
             @keyframes fadeInUp {
-              from {
-                opacity: 0;
-                transform: translateY(30px);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0);
-              }
+              from { opacity: 0; transform: translateY(30px); }
+              to { opacity: 1; transform: translateY(0); }
             }
           `
         }} />
@@ -179,23 +162,16 @@ const RoomGrid: React.FC<RoomGridProps> = ({
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center space-x-2 pt-6 border-t border-gray-100">
-            {/* Previous Button */}
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               } transition-colors`}
             >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
               Previous
             </button>
 
-            {/* Page Numbers */}
             <div className="flex items-center space-x-1">
               {getPageNumbers().map((pageNum, index) => (
                 <button
@@ -215,20 +191,14 @@ const RoomGrid: React.FC<RoomGridProps> = ({
               ))}
             </div>
 
-            {/* Next Button */}
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
               className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                currentPage === totalPages
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               } transition-colors`}
             >
               Next
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
             </button>
           </div>
         )}
