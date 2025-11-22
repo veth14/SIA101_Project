@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '../../admin/Modal';
+import { db } from '../../../config/firebase';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
 
 interface FeedbackItem {
   id: string;
@@ -19,65 +21,36 @@ export const GuestFeedback: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  // make feedback data stateful so we can update status/response
-  const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>([
-    {
-      id: '1',
-      guestName: 'Maria Santos',
-      roomNumber: '201',
-      rating: 5,
-      category: 'service',
-      feedback: 'Exceptional service from the front desk staff. Very accommodating and professional.',
-      date: '2024-01-15',
-      status: 'responded',
-      response: 'Thank you for your kind words! We\'ll share this with our team.',
-      respondedBy: 'Frontdesk Manager',
-      responseDate: '2024-01-16T10:00:00.000Z'
-    },
-    {
-      id: '2',
-      guestName: 'John Rodriguez',
-      roomNumber: '305',
-      rating: 4,
-      category: 'cleanliness',
-      feedback: 'Room was very clean and well-maintained. Minor issue with bathroom lighting.',
-      date: '2024-01-14',
-      status: 'reviewed'
-    },
-    {
-      id: '3',
-      guestName: 'Lisa Chen',
-      roomNumber: '102',
-      rating: 3,
-      category: 'food',
-      feedback: 'Breakfast selection could be improved. Limited vegetarian options.',
-      date: '2024-01-13',
-      status: 'new'
-    },
-    {
-      id: '4',
-      guestName: 'Carlos Mendoza',
-      roomNumber: '408',
-      rating: 5,
-      category: 'amenities',
-      feedback: 'Love the spa facilities! Pool area is beautiful and well-maintained.',
-      date: '2024-01-12',
-      status: 'responded',
-      response: 'We\'re delighted you enjoyed our amenities! Thank you for staying with us.',
-      respondedBy: 'Guest Services',
-      responseDate: '2024-01-13T09:30:00.000Z'
-    },
-    {
-      id: '5',
-      guestName: 'Anna Williams',
-      roomNumber: '156',
-      rating: 2,
-      category: 'service',
-      feedback: 'Check-in process took too long. Staff seemed overwhelmed during peak hours.',
-      date: '2024-01-11',
-      status: 'new'
-    }
-  ]);
+  // feedbackData is loaded from Firestore `guestReview` collection
+  const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>([]);
+
+  useEffect(() => {
+    // listen for guest reviews in real-time, newest first
+    const q = query(collection(db, 'guestReview'), orderBy('submittedAt', 'desc'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const items: FeedbackItem[] = snapshot.docs.map(docSnap => {
+        const d = docSnap.data() as any;
+        return {
+          id: docSnap.id,
+          guestName: d.guestName || d.guestEmail || 'Guest',
+          roomNumber: d.roomName || d.roomType || '',
+          rating: d.rating || 0,
+          category: (d.category || d.title || 'general').toString().toLowerCase() as FeedbackItem['category'],
+          feedback: d.review || '',
+          date: d.submittedAt && d.submittedAt.toDate ? d.submittedAt.toDate().toISOString() : (d.stayDate || new Date().toISOString()),
+          status: d.status || 'new',
+          response: d.response || '',
+          respondedBy: d.respondedBy || '',
+          responseDate: d.responseDate || ''
+        };
+      });
+      setFeedbackData(items);
+    }, (err) => {
+      console.error('guestReview onSnapshot error', err);
+    });
+
+    return () => unsub();
+  }, []);
   
 
   const getCategoryColor = (category: string) => {
@@ -146,19 +119,24 @@ export const GuestFeedback: React.FC = () => {
 
   const categoryTemplates: Record<string, Array<{ key: string; label: string; text: string }>> = {
     service: [
-      { key: 'service_apology', label: 'Apology', text: "We're sorry your check-in experience wasn't smooth. We will review staffing and processes to prevent this in the future." }
+      { key: 'service_apology', label: 'Apology', text: "We're truly sorry your experience with our service fell short. We will investigate what happened during your stay and retrain our team where needed to ensure this doesn't happen again." },
+      { key: 'service_thanks', label: 'Positive', text: "Thank you for highlighting our team's service. We're glad they made your stay comfortable — we'll share your kind words with the staff." }
     ],
     cleanliness: [
-      { key: 'clean_apology', label: 'Apology', text: "We're sorry the room did not meet our cleanliness standards. This is not acceptable and we'll address it immediately." }
+      { key: 'clean_apology', label: 'Apology', text: "We apologize the room did not meet our cleanliness standards. We have shared this with housekeeping and will follow up to prevent future occurrences." },
+      { key: 'clean_thanks', label: 'Positive', text: "Thank you for noting the cleanliness. We're pleased the room met your expectations and will pass your feedback to our housekeeping team." }
     ],
     amenities: [
-      { key: 'amenities_thanks', label: 'Thanks', text: "Thank you for the compliment! We're delighted you enjoyed our amenities and will share this with the team." }
+      { key: 'amenities_apology', label: 'Apology', text: "We're sorry one of our amenities didn't meet your expectations. Please let us know which facility so we can address and improve it promptly." },
+      { key: 'amenities_thanks', label: 'Positive', text: "Thank you for your kind words about our amenities. We're delighted you enjoyed them and will share your feedback with the relevant teams." }
     ],
     food: [
-      { key: 'food_apology', label: 'Apology', text: "We're sorry the breakfast selection didn't meet your needs. We'll broaden our vegetarian options immediately." }
+      { key: 'food_apology', label: 'Apology', text: "We apologize that the dining options didn't meet your needs. We'll review our menu and work with the kitchen to expand choices, including more vegetarian options." },
+      { key: 'food_thanks', label: 'Positive', text: "Thank you for your positive feedback about our food. We're happy you enjoyed the dining experience and will let the kitchen staff know." }
     ],
     general: [
-      { key: 'general_apology', label: 'Apology', text: "We're sorry to hear about your experience. We take feedback seriously and will take action." }
+      { key: 'general_apology', label: 'Apology', text: "We're sorry to hear about your experience. Your feedback is important — we'll investigate and take the necessary steps to improve." },
+      { key: 'general_thanks', label: 'Positive', text: "Thank you for your feedback. We're glad you had a positive stay and appreciate you taking the time to let us know." }
     ]
   };
 
@@ -182,18 +160,18 @@ export const GuestFeedback: React.FC = () => {
     const timestamp = new Date().toISOString();
     const adminUser = 'Admin User';
 
-    setFeedbackData(prev => prev.map(it => {
-      if (it.id !== respondTarget.id) return it;
-      return {
-        ...it,
-        status: 'responded',
-        response: responseDraft || it.response || '',
-        respondedBy: adminUser,
-        responseDate: timestamp
-      };
-    }));
-
-    closeRespondModal();
+    // update Firestore document for this review
+    const reviewRef = doc(db, 'guestReview', respondTarget.id);
+    updateDoc(reviewRef, {
+      status: 'responded',
+      response: responseDraft || respondTarget.response || '',
+      respondedBy: adminUser,
+      responseDate: timestamp
+    }).then(() => {
+      closeRespondModal();
+    }).catch(err => {
+      console.error('Failed to send response:', err);
+    });
   };
 
   return (
@@ -353,11 +331,24 @@ export const GuestFeedback: React.FC = () => {
                     ) : (
                       <select
                         value={activeFeedback.status}
-                        onChange={(e) => {
+                        onChange={async (e) => {
+                          if (!activeFeedback) return;
                           const newStatus = e.target.value as FeedbackItem['status'];
-                          // update local state
+                          const prevStatus = activeFeedback.status;
+
+                          // optimistic local update
                           setFeedbackData(prev => prev.map(it => it.id === activeFeedback.id ? { ...it, status: newStatus } : it));
                           setActiveFeedback(prev => prev ? { ...prev, status: newStatus } : prev);
+
+                          try {
+                            const reviewRef = doc(db, 'guestReview', activeFeedback.id);
+                            await updateDoc(reviewRef, { status: newStatus });
+                          } catch (err) {
+                            console.error('Failed to update status:', err);
+                            // revert on failure
+                            setFeedbackData(prev => prev.map(it => it.id === activeFeedback.id ? { ...it, status: prevStatus } : it));
+                            setActiveFeedback(prev => prev ? { ...prev, status: prevStatus } : prev);
+                          }
                         }}
                         className="mt-1 px-2 py-1 rounded-xl border text-sm"
                       >
