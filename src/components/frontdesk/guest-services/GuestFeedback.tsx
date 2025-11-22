@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Modal from '../../admin/Modal';
 
 interface FeedbackItem {
   id: string;
@@ -10,13 +11,16 @@ interface FeedbackItem {
   date: string;
   status: 'new' | 'reviewed' | 'responded';
   response?: string;
+  respondedBy?: string;
+  responseDate?: string;
 }
 
 export const GuestFeedback: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  const feedbackData: FeedbackItem[] = [
+  // make feedback data stateful so we can update status/response
+  const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>([
     {
       id: '1',
       guestName: 'Maria Santos',
@@ -26,7 +30,9 @@ export const GuestFeedback: React.FC = () => {
       feedback: 'Exceptional service from the front desk staff. Very accommodating and professional.',
       date: '2024-01-15',
       status: 'responded',
-      response: 'Thank you for your kind words! We\'ll share this with our team.'
+      response: 'Thank you for your kind words! We\'ll share this with our team.',
+      respondedBy: 'Frontdesk Manager',
+      responseDate: '2024-01-16T10:00:00.000Z'
     },
     {
       id: '2',
@@ -57,7 +63,9 @@ export const GuestFeedback: React.FC = () => {
       feedback: 'Love the spa facilities! Pool area is beautiful and well-maintained.',
       date: '2024-01-12',
       status: 'responded',
-      response: 'We\'re delighted you enjoyed our amenities! Thank you for staying with us.'
+      response: 'We\'re delighted you enjoyed our amenities! Thank you for staying with us.',
+      respondedBy: 'Guest Services',
+      responseDate: '2024-01-13T09:30:00.000Z'
     },
     {
       id: '5',
@@ -69,7 +77,8 @@ export const GuestFeedback: React.FC = () => {
       date: '2024-01-11',
       status: 'new'
     }
-  ];
+  ]);
+  
 
   const getCategoryColor = (category: string) => {
     const colors = {
@@ -113,6 +122,79 @@ export const GuestFeedback: React.FC = () => {
     const statusMatch = selectedStatus === 'all' || item.status === selectedStatus;
     return categoryMatch && statusMatch;
   });
+
+  // details modal state
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [activeFeedback, setActiveFeedback] = useState<FeedbackItem | null>(null);
+
+  const openModal = (item: FeedbackItem) => {
+    setActiveFeedback(item);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setActiveFeedback(null);
+  };
+
+  // respond modal state
+  const [isRespondOpen, setIsRespondOpen] = useState<boolean>(false);
+  const [respondTarget, setRespondTarget] = useState<FeedbackItem | null>(null);
+  const [responseDraft, setResponseDraft] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [templateCategory, setTemplateCategory] = useState<string>('all');
+
+  const categoryTemplates: Record<string, Array<{ key: string; label: string; text: string }>> = {
+    service: [
+      { key: 'service_apology', label: 'Apology', text: "We're sorry your check-in experience wasn't smooth. We will review staffing and processes to prevent this in the future." }
+    ],
+    cleanliness: [
+      { key: 'clean_apology', label: 'Apology', text: "We're sorry the room did not meet our cleanliness standards. This is not acceptable and we'll address it immediately." }
+    ],
+    amenities: [
+      { key: 'amenities_thanks', label: 'Thanks', text: "Thank you for the compliment! We're delighted you enjoyed our amenities and will share this with the team." }
+    ],
+    food: [
+      { key: 'food_apology', label: 'Apology', text: "We're sorry the breakfast selection didn't meet your needs. We'll broaden our vegetarian options immediately." }
+    ],
+    general: [
+      { key: 'general_apology', label: 'Apology', text: "We're sorry to hear about your experience. We take feedback seriously and will take action." }
+    ]
+  };
+
+  const openRespondModal = (item: FeedbackItem) => {
+    setRespondTarget(item);
+    setResponseDraft('');
+    setSelectedTemplate('');
+    setTemplateCategory(item.category || 'all');
+    setIsRespondOpen(true);
+  };
+
+  const closeRespondModal = () => {
+    setIsRespondOpen(false);
+    setRespondTarget(null);
+    setResponseDraft('');
+    setSelectedTemplate('');
+  };
+
+  const submitResponse = () => {
+    if (!respondTarget) return;
+    const timestamp = new Date().toISOString();
+    const adminUser = 'Admin User';
+
+    setFeedbackData(prev => prev.map(it => {
+      if (it.id !== respondTarget.id) return it;
+      return {
+        ...it,
+        status: 'responded',
+        response: responseDraft || it.response || '',
+        respondedBy: adminUser,
+        responseDate: timestamp
+      };
+    }));
+
+    closeRespondModal();
+  };
 
   return (
     <div className="space-y-6">
@@ -199,14 +281,22 @@ export const GuestFeedback: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="text-heritage-green hover:text-heritage-green/80 transition-colors">
+                      <button
+                        onClick={() => openModal(item)}
+                        className="text-heritage-green hover:text-heritage-green/80 transition-colors"
+                        aria-label="View feedback details"
+                      >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
-                      {item.status === 'new' && (
-                        <button className="text-blue-600 hover:text-blue-800 transition-colors">
+                      {(item.status === 'new' || item.status === 'reviewed') && (
+                        <button
+                          onClick={() => openRespondModal(item)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          aria-label="Respond to guest"
+                        >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                           </svg>
@@ -220,6 +310,168 @@ export const GuestFeedback: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Feedback Details Modal */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} title="Feedback Details" size="md">
+        {activeFeedback && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 border-b border-gray-100 pb-3">
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Guest</div>
+                  <div className="text-sm font-medium text-gray-900">{activeFeedback.guestName}</div>
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Room</div>
+                  <div className="text-sm font-medium text-gray-900">{activeFeedback.roomNumber}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Rating</div>
+                  <div className="flex items-center space-x-2"><div>{renderStars(activeFeedback.rating)}</div><div className="text-sm text-gray-700">{activeFeedback.rating}/5</div></div>
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Category</div>
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(activeFeedback.category)}`}>
+                    {activeFeedback.category.charAt(0).toUpperCase() + activeFeedback.category.slice(1)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b border-gray-100 pb-3">
+                <div className="text-base font-semibold text-gray-700">Feedback</div>
+                <p className="text-sm text-gray-700">{activeFeedback.feedback}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-b border-gray-100 pb-3 items-start">
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Status</div>
+                  <div>
+                    {activeFeedback.status === 'responded' ? (
+                      <div className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-100">Responded</div>
+                    ) : (
+                      <select
+                        value={activeFeedback.status}
+                        onChange={(e) => {
+                          const newStatus = e.target.value as FeedbackItem['status'];
+                          // update local state
+                          setFeedbackData(prev => prev.map(it => it.id === activeFeedback.id ? { ...it, status: newStatus } : it));
+                          setActiveFeedback(prev => prev ? { ...prev, status: newStatus } : prev);
+                        }}
+                        className="mt-1 px-2 py-1 rounded-xl border text-sm"
+                      >
+                        <option value="new">New</option>
+                        <option value="reviewed">Reviewed</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Date</div>
+                  <div className="text-sm font-medium text-gray-700">{new Date(activeFeedback.date).toLocaleDateString()}</div>
+                </div>
+              </div>
+
+              {activeFeedback.response && (
+                <div className="border-b border-gray-100 pb-3">
+                  <div className="text-base font-semibold text-gray-700">Response</div>
+                  <p className="text-sm text-gray-700">{activeFeedback.response}</p>
+                </div>
+              )}
+
+              {activeFeedback.respondedBy && (
+                <div className="grid grid-cols-2 gap-4 border-b border-gray-100 pb-3">
+                  <div>
+                    <div className="text-base font-semibold text-gray-700">Responded By</div>
+                    <div className="text-sm font-medium text-gray-700">{activeFeedback.respondedBy}</div>
+                  </div>
+                  {activeFeedback.responseDate && (
+                    <div>
+                      <div className="text-base font-semibold text-gray-700">Response Date</div>
+                      <div className="text-sm font-medium text-gray-700">{new Date(activeFeedback.responseDate).toLocaleString()}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button onClick={closeModal} className="px-4 py-2 bg-heritage-green text-white rounded-xl hover:bg-heritage-green/90">Close</button>
+              </div>
+            </div>
+        )}
+      </Modal>
+
+      {/* Respond Modal */}
+      <Modal isOpen={isRespondOpen} onClose={closeRespondModal} title={`Respond to ${respondTarget?.guestName ?? 'Guest'}`} size="md">
+        {respondTarget && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-600">Templates:</label>
+                <select
+                  value={templateCategory}
+                  onChange={(e) => setTemplateCategory(e.target.value)}
+                  className="px-2 py-1 border rounded-xl text-sm"
+                >
+                  <option value="all">All</option>
+                  <option value="service">Service</option>
+                  <option value="cleanliness">Cleanliness</option>
+                  <option value="amenities">Amenities</option>
+                  <option value="food">Food</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-2 flex-wrap">
+                {(() => {
+                  const cat = templateCategory === 'all' ? 'all' : templateCategory;
+                  if (cat === 'all') {
+                    return Object.keys(categoryTemplates).flatMap((c) =>
+                      categoryTemplates[c].map(t => (
+                        <button
+                          key={`${c}-${t.key}`}
+                          onClick={() => { setSelectedTemplate(t.key); setResponseDraft(t.text); }}
+                          className={`m-1 px-3 py-1 rounded-md text-sm border ${selectedTemplate === t.key ? 'bg-heritage-green/10 border-heritage-green text-heritage-green' : 'bg-white'}`}
+                        >
+                          {`${c.charAt(0).toUpperCase() + c.slice(1)}: ${t.label}`}
+                        </button>
+                      ))
+                    );
+                  }
+                  const list = categoryTemplates[cat] || categoryTemplates['general'];
+                  return list.map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => { setSelectedTemplate(t.key); setResponseDraft(t.text); }}
+                      className={`m-1 px-3 py-1 rounded-md text-sm border ${selectedTemplate === t.key ? 'bg-heritage-green/10 border-heritage-green text-heritage-green' : 'bg-white'}`}
+                    >
+                      {t.label}
+                    </button>
+                  ));
+                })()}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm text-gray-500">Message</div>
+              <textarea
+                value={responseDraft}
+                onChange={(e) => setResponseDraft(e.target.value)}
+                rows={5}
+                className="mt-1 w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-heritage-green/20"
+              />
+            </div>
+
+            
+
+            <div className="flex justify-end space-x-2 pt-2">
+              <button onClick={closeRespondModal} className="px-4 py-2 rounded-xl border text-sm">Cancel</button>
+              <button onClick={submitResponse} className="px-4 py-2 bg-heritage-green text-white rounded-xl text-sm">Send Response</button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {filteredFeedback.length === 0 && (
         <div className="text-center py-12">
