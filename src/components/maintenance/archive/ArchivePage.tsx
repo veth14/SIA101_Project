@@ -100,29 +100,6 @@ const ArchivePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Top-level filters and actions remain here so they're shared between sections */}
-        <div className="mb-6 flex flex-wrap gap-4">
-          <select className="border border-gray-300 rounded-lg px-3 py-2">
-            <option>All Records</option>
-            <option>Completed Tickets</option>
-            <option>Staff Records</option>
-            <option>Equipment Logs</option>
-          </select>
-          <select className="border border-gray-300 rounded-lg px-3 py-2">
-            <option>Last 30 Days</option>
-            <option>Last 3 Months</option>
-            <option>Last 6 Months</option>
-            <option>Last Year</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Search archives..."
-            className="border border-gray-300 rounded-lg px-3 py-2 flex-1 min-w-0"
-          />
-          <button className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors">
-            Export Data
-          </button>
-        </div>
 
         {/* Pass data into the unified sections. Components are data-driven and contain no mock data. */}
         <ArchiveRecordsSection

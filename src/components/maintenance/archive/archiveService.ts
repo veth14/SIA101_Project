@@ -23,6 +23,7 @@ import { jsPDF } from 'jspdf';
 export type ArchiveRecord = {
   id: string;
   type: string;
+  title?: string;
   description?: string;
   dateArchived?: string; // ISO or formatted string
 };
@@ -655,7 +656,8 @@ export async function fetchArchiveRecords(): Promise<ArchiveRecord[]> {
       records.push({
         id: d.id,
         type: 'Completed Ticket',
-        description: data.taskTitle ?? data.description ?? '',
+        title: data.taskTitle ?? data.title ?? '',
+        description: data.description ?? data.taskTitle ?? '',
         dateArchived: data.archivedAt ? (data.archivedAt as Timestamp).toDate().toLocaleString() : '',
       });
     });
@@ -725,7 +727,8 @@ export function subscribeArchivedRecords(
       const rec: ArchiveRecord = {
         id: change.doc.id,
         type: 'Completed Ticket',
-        description: d.taskTitle ?? d.description ?? '',
+        title: d.taskTitle ?? d.title ?? '',
+        description: d.description ?? d.taskTitle ?? '',
         dateArchived: d.archivedAt ? (d.archivedAt as Timestamp).toDate().toLocaleString() : '',
       };
       if (change.type === 'added') added.push(rec);
@@ -738,7 +741,8 @@ export function subscribeArchivedRecords(
       return {
         id: d.id,
         type: 'Completed Ticket',
-        description: data.taskTitle ?? data.description ?? '',
+        title: data.taskTitle ?? data.title ?? '',
+        description: data.description ?? data.taskTitle ?? '',
         dateArchived: data.archivedAt ? (data.archivedAt as Timestamp).toDate().toLocaleString() : '',
       } as ArchiveRecord;
     });
