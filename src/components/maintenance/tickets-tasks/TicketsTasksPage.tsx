@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Modal } from '../../admin/Modal';
 import { useAuth } from '../../../hooks/useAuth';
 import { 
@@ -85,6 +86,23 @@ const TicketsTasksPage: React.FC = () => {
     applyFilters();
   }, [filters, activeTickets]);
 
+  const resetCreateForm = () => {
+    setCreateTicketForm({
+      title: '',
+      description: '',
+      category: 'Maintenance',
+      priority: 'Medium',
+      roomNumber: '',
+      dueDateTime: '',
+    });
+  };
+
+  const closeCreateModal = () => {
+    setIsCreateTicketModalOpen(false);
+    // clear fields when modal closes
+    resetCreateForm();
+  };
+
   const handleCreateTicket = async () => {
     if (!createTicketForm.title || !createTicketForm.dueDateTime) {
       setError('Please fill in all required fields');
@@ -110,16 +128,9 @@ const TicketsTasksPage: React.FC = () => {
         createdBy: user.email,
       });
 
+      // Close and reset form after successful create
       setIsCreateTicketModalOpen(false);
-      // Reset form
-      setCreateTicketForm({
-        title: '',
-        description: '',
-        category: 'Maintenance',
-        priority: 'Medium',
-        roomNumber: '',
-        dueDateTime: '',
-      });
+      resetCreateForm();
     } catch (err: any) {
       setError(err.message || 'Failed to create ticket');
       console.error('Error creating ticket:', err);
@@ -217,23 +228,40 @@ const TicketsTasksPage: React.FC = () => {
     return date.toLocaleString();
   };
 
+  // ErrorModal: appears on top of everything. Uses a portal with a higher z-index
+  const ErrorModal: React.FC<{ open: boolean; message: string | null; onClose: () => void }> = ({ open, message, onClose }) => {
+    if (!open) return null;
+    return createPortal(
+      <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 bg-black/60">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+          <div className="px-6 py-4 border-b border-heritage-neutral/10">
+            <h3 className="text-xl font-semibold text-gray-900">Error</h3>
+          </div>
+          <div className="p-6">
+            <p className="text-sm text-gray-700">{message}</p>
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         
         {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
-            <button 
-              onClick={() => setError(null)}
-              className="float-right font-bold"
-            >
-              ×
-            </button>
-          </div>
-        )}
+              {/* Error modal will appear on top of any other modal */}
+              {/* Rendered via portal below as ErrorModal */}
 
         {/* Create Ticket Button */}
         <div className="mb-6">
@@ -275,8 +303,6 @@ const TicketsTasksPage: React.FC = () => {
                 <option value="">All Categories</option>
                 <option value="Maintenance">Maintenance</option>
                 <option value="Housekeeping">Housekeeping</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Plumbing">Plumbing</option>
               </select>
 
               {/* Priority Filter */}
@@ -493,7 +519,7 @@ const TicketsTasksPage: React.FC = () => {
       {/* Create Ticket Modal */}
       <Modal
         isOpen={isCreateTicketModalOpen}
-        onClose={() => setIsCreateTicketModalOpen(false)}
+        onClose={closeCreateModal}
         title="Create Ticket"
         size="md"
       >
@@ -537,8 +563,6 @@ const TicketsTasksPage: React.FC = () => {
               >
                 <option value="Maintenance">Maintenance</option>
                 <option value="Housekeeping">Housekeeping</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Plumbing">Plumbing</option>
               </select>
             </div>
             <div>
@@ -586,7 +610,7 @@ const TicketsTasksPage: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <button
-              onClick={() => setIsCreateTicketModalOpen(false)}
+              onClick={closeCreateModal}
               className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancel
@@ -701,6 +725,8 @@ const TicketsTasksPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+      {/* Error modal (renders after other modals so it appears on top) */}
+      <ErrorModal open={!!error} message={error} onClose={() => setError(null)} />
     </div>
   );
 };

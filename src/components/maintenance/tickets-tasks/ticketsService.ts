@@ -134,6 +134,34 @@ function isScheduleMatch(
 }
 
 /**
+ * Flexible name matching between attendance.fullName and staff_schedules.staffName
+ * Returns true if exact match (case-insensitive) or first+last name tokens match.
+ */
+function namesMatch(fullNameA: string, fullNameB: string): boolean {
+  if (!fullNameA || !fullNameB) return false;
+  const a = fullNameA.toString().trim().toLowerCase();
+  const b = fullNameB.toString().trim().toLowerCase();
+  if (a === b) return true;
+
+  const splitA = a.split(/\s+/).filter(Boolean);
+  const splitB = b.split(/\s+/).filter(Boolean);
+  if (splitA.length === 0 || splitB.length === 0) return false;
+
+  const firstA = splitA[0];
+  const lastA = splitA[splitA.length - 1];
+  const firstB = splitB[0];
+  const lastB = splitB[splitB.length - 1];
+
+  // Match first and last tokens
+  if (firstA === firstB && lastA === lastB) return true;
+
+  // If last names match and first names start with same letter, accept
+  if (lastA === lastB && firstA[0] === firstB[0]) return true;
+
+  return false;
+}
+
+/**
  * Fetch attendance records for current date filtered by category
  */
 async function fetchEligibleStaff(
@@ -157,10 +185,32 @@ async function fetchEligibleStaff(
   );
   
   const snapshot = await getDocs(q);
+  console.debug('fetchEligibleStaff: date-filtered query returned size', snapshot.size);
+
+  // If date-scoped query returned nothing, perform a fallback query by classification
+  let sourceSnapshot = snapshot;
+  if (snapshot.empty) {
+    try {
+      const fallbackQ = query(
+        attendanceRef,
+        where('classification', '==', category),
+        limit(50)
+      );
+      const fallbackSnap = await getDocs(fallbackQ);
+      console.debug('fetchEligibleStaff: fallback classification-only query returned size', fallbackSnap.size);
+      // Log raw fallback docs so we can see field names and shapes
+      fallbackSnap.forEach(d => console.debug('fetchEligibleStaff: fallback raw doc', d.id, d.data()));
+      sourceSnapshot = fallbackSnap;
+    } catch (err) {
+      console.error('fetchEligibleStaff: error running fallback query', err);
+    }
+  }
+
   const records: AttendanceRecord[] = [];
-  
-  snapshot.forEach(doc => {
+  sourceSnapshot.forEach(doc => {
     const data = doc.data();
+    // Log raw document for diagnosis
+    console.debug('fetchEligibleStaff: raw attendance doc', doc.id, data);
     records.push({
       id: doc.id,
       fullName: data.fullName,
@@ -173,9 +223,15 @@ async function fetchEligibleStaff(
       working: data.working || false,
     });
   });
-  
+
+  // Debug: list fetched attendance records and working flags
+  console.debug('fetchEligibleStaff: fetched', records.length, 'attendance records for category', category);
+  records.forEach(r => console.debug('attendance record', { id: r.id, fullName: r.fullName, timeIn: r.timeIn && r.timeIn.toDate ? r.timeIn.toDate() : r.timeIn, working: r.working }));
+
   // Filter out staff currently working
-  return records.filter(record => !record.working);
+  const available = records.filter(record => !record.working);
+  console.debug('fetchEligibleStaff: available (not working)', available.map(a => a.fullName));
+  return available;
 }
 
 /**
@@ -183,29 +239,112 @@ async function fetchEligibleStaff(
  */
 async function validateStaffSchedule(
   staffName: string,
-  ticketDueDate: Date,
+  referenceDate: Date,
   category: string
 ): Promise<boolean> {
   const schedulesRef = collection(db, 'staff_schedules');
+
+  // Query schedules for the classification and filter client-side by staffName (case-insensitive)
   const q = query(
     schedulesRef,
-    where('staffName', '==', staffName),
     where('classification', '==', category),
-    limit(10)
+    limit(50)
   );
-  
+
   const snapshot = await getDocs(q);
-  
+
+  // Enhanced behavior requested: base validation primarily on current device time.
+  // We'll try to find any schedule rows for this staff; if found, validate using shiftTime only (ignore schedule.day).
+  // If no schedule entries exist for staff, fallback to allowing assignment (so schedule records don't block assignment).
+
+  let foundScheduleForStaff = false;
+
+  // Helper to parse shift time strings into minutes since midnight
+  function parseTimeToMinutes(t: string | undefined): number | null {
+    if (!t) return null;
+    const s = t.toString().trim().toLowerCase();
+
+    // Handle formats like '07:00' or '7:00'
+    const hhmm = s.match(/^(\d{1,2}):(\d{2})$/);
+    if (hhmm) {
+      const h = parseInt(hhmm[1], 10);
+      const m = parseInt(hhmm[2], 10);
+      return h * 60 + m;
+    }
+
+    // Handle formats like '7am' or '7:30pm'
+    const ampm = s.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/);
+    if (ampm) {
+      let h = parseInt(ampm[1], 10);
+      const m = ampm[2] ? parseInt(ampm[2], 10) : 0;
+      const period = ampm[3];
+      if (period === 'pm' && h !== 12) h += 12;
+      if (period === 'am' && h === 12) h = 0;
+      return h * 60 + m;
+    }
+
+    // Couldn't parse
+    return null;
+  }
+
+  const nowMinutes = referenceDate.getHours() * 60 + referenceDate.getMinutes();
+
   for (const docSnap of snapshot.docs) {
     const schedule = docSnap.data() as StaffSchedule;
-    
-    // Check if schedule matches the ticket date/time
-    if (isScheduleMatch(ticketDueDate, schedule.day, schedule.shiftTime)) {
+    const scheduleStaffNameRaw = (schedule.staffName || '').toString().trim();
+
+    if (!namesMatch(scheduleStaffNameRaw, staffName)) continue;
+
+    foundScheduleForStaff = true;
+
+    const shiftRaw = (schedule.shiftTime || schedule.shift || '').toString().trim();
+    if (!shiftRaw) {
+      console.debug('validateStaffSchedule: schedule found but no shiftTime; accepting by default for', staffName, schedule);
       return true;
     }
+
+    // shiftRaw may be '07:00-15:00' or '7am-3pm'
+    const parts = shiftRaw.split('-').map(p => p.trim()).filter(Boolean);
+    if (parts.length === 0) {
+      console.debug('validateStaffSchedule: unable to parse shiftTime for', staffName, 'shiftRaw', shiftRaw);
+      continue;
+    }
+
+    const startMin = parseTimeToMinutes(parts[0]);
+    const endMin = parts[1] ? parseTimeToMinutes(parts[1]) : null;
+
+    if (startMin === null || endMin === null) {
+      console.debug('validateStaffSchedule: partial/invalid shiftTime parsing for', staffName, { shiftRaw, startMin, endMin });
+      // If parsing failed, accept by default to avoid blocking assignment
+      return true;
+    }
+
+    // Handle overnight shifts where end <= start
+    let isNowInShift = false;
+    if (startMin <= endMin) {
+      isNowInShift = nowMinutes >= startMin && nowMinutes < endMin;
+    } else {
+      // Overnight: e.g., 22:00 - 06:00
+      isNowInShift = nowMinutes >= startMin || nowMinutes < endMin;
+    }
+
+    console.debug('validateStaffSchedule: checking', staffName, { shiftRaw, startMin, endMin, nowMinutes, isNowInShift });
+
+    if (isNowInShift) {
+      return true;
+    }
+    // otherwise continue searching other schedule rows for this staff
   }
-  
-  return false;
+
+  // If we found schedule rows for the staff but none match current time, return false
+  if (foundScheduleForStaff) {
+    console.debug('validateStaffSchedule: found schedule entries for', staffName, 'but none matched current time');
+    return false;
+  }
+
+  // No schedule rows found for staff — accept by default (so staff attendance presence is enough)
+  console.debug('validateStaffSchedule: no schedule entries found for', staffName, '— accepting by default');
+  return true;
 }
 
 /**
@@ -229,15 +368,19 @@ async function assignStaffToTicket(
   // Get rotation index for this category
   const rotationIndex = getRotationIndex(category);
   
+  // Debug: show eligible staff and rotation state
+  console.debug('Eligible staff fetched for category', category, eligibleStaff.map(s => ({ id: s.id, fullName: s.fullName, timeIn: s.timeIn && s.timeIn.toDate ? s.timeIn.toDate() : s.timeIn })), 'rotationIndex', rotationIndex);
+
   // Try to assign starting from rotation index
   for (let i = 0; i < eligibleStaff.length; i++) {
     const staffIndex = (rotationIndex + i) % eligibleStaff.length;
     const staff = eligibleStaff[staffIndex];
-    
-    // Validate against staff_schedules
-    const isValid = await validateStaffSchedule(staff.fullName, dueDate, category);
-    
-    if (isValid) {
+    // Validate against staff_schedules using staff full name and current date/time as basis
+    const now = new Date();
+    const isValid = await validateStaffSchedule(staff.fullName, now, category);
+    console.debug('Schedule validation for', staff.fullName, { isValid, now });
+
+  if (isValid) {
       // Mark staff as working
       const attendanceDocRef = doc(db, 'attendance', staff.id);
       await updateDoc(attendanceDocRef, { working: true });
@@ -277,11 +420,11 @@ export async function createTicket(payload: {
     
     // Assign staff using FIFO algorithm
     const assignedStaff = await assignStaffToTicket(payload.category, dueDate);
-    
+
     if (!assignedStaff) {
       throw new Error(`No available staff found for category: ${payload.category}`);
     }
-    
+
     // Create ticket document
     const ticketData = {
       taskTitle: payload.taskTitle,
@@ -458,7 +601,7 @@ export async function markTicketCompleted(ticketId: string): Promise<void> {
       updatedAt: Timestamp.now(),
     });
     
-    // Clear working flag for assigned staff
+    // Clear working flag for assigned staff using staff fullName
     if (ticketData.assignedTo) {
       await clearStaffWorkingFlag(ticketData.assignedTo, ticketData.category);
     }
@@ -474,20 +617,29 @@ export async function markTicketCompleted(ticketId: string): Promise<void> {
 async function clearStaffWorkingFlag(staffName: string, category: string): Promise<void> {
   try {
     const attendanceRef = collection(db, 'attendance');
+
+    // Find attendance entries for the classification and match by name flexibly (client-side)
     const q = query(
       attendanceRef,
-      where('fullName', '==', staffName),
       where('classification', '==', category),
-      where('working', '==', true),
-      limit(1)
+      limit(50)
     );
-    
+
     const snapshot = await getDocs(q);
-    
+
     if (!snapshot.empty) {
-      const docRef = doc(db, 'attendance', snapshot.docs[0].id);
-      await updateDoc(docRef, { working: false });
+      for (const d of snapshot.docs) {
+        const data = d.data();
+        const recordName = (data.fullName || '').toString().trim();
+        if (namesMatch(recordName, staffName)) {
+          const docRef = doc(db, 'attendance', d.id);
+          await updateDoc(docRef, { working: false });
+          return;
+        }
+      }
     }
+
+    console.debug('clearStaffWorkingFlag: no attendance doc found for', staffName, 'category', category);
   } catch (error) {
     console.error('Error clearing staff working flag:', error);
   }
