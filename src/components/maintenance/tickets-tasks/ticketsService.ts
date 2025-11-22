@@ -12,6 +12,8 @@ import {
   Timestamp,
   writeBatch,
   getDoc,
+  setDoc,
+  runTransaction,
   QueryConstraint,
   startAfter,
   DocumentData,
@@ -89,20 +91,24 @@ function incrementRotationIndex(category: string, maxIndex: number): void {
  * Generate unique ticket number
  */
 async function generateTicketNumber(): Promise<string> {
-  const ticketsRef = collection(db, 'tickets_task');
-  const q = query(ticketsRef, orderBy('createdAt', 'desc'), limit(1));
-  const snapshot = await getDocs(q);
-  
-  let lastNumber = 0;
-  if (!snapshot.empty) {
-    const lastTicket = snapshot.docs[0].data();
-    const match = lastTicket.ticketNumber?.match(/\d+/);
-    if (match) {
-      lastNumber = parseInt(match[0], 10);
+  // Use a single counters/tickets document and a transaction to allocate a monotonically
+  // increasing ticket number. This avoids reading the tickets collection and prevents
+  // reuse of ticket numbers when documents are deleted or archived.
+  const counterRef = doc(db, 'counters', 'tickets');
+
+  const newNumber = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(counterRef);
+    if (!snap.exists()) {
+      tx.set(counterRef, { lastTicketNumber: 1 });
+      return 1;
     }
-  }
-  
-  return `TKT${String(lastNumber + 1).padStart(6, '0')}`;
+    const data = snap.data() as any;
+    const last = (data.lastTicketNumber || 0) + 1;
+    tx.update(counterRef, { lastTicketNumber: last });
+    return last;
+  });
+
+  return `TKT${String(newNumber).padStart(6, '0')}`;
 }
 
 /**
@@ -612,6 +618,34 @@ export async function markTicketCompleted(ticketId: string): Promise<void> {
 }
 
 /**
+ * Update ticket details when reporting a complication — do not create a new ticket.
+ * Updates description, priority, dueDate and updatedAt.
+ */
+export async function updateTicketDetails(
+  ticketId: string,
+  updates: { description?: string; priority?: 'High' | 'Medium' | 'Low'; dueDateTime?: string }
+): Promise<void> {
+  try {
+    const ticketRef = doc(db, 'tickets_task', ticketId);
+    const ticketSnap = await getDoc(ticketRef);
+    if (!ticketSnap.exists()) throw new Error('Ticket not found');
+
+    const updatePayload: any = {
+      updatedAt: Timestamp.now(),
+    };
+
+    if (updates.description !== undefined) updatePayload.description = updates.description;
+    if (updates.priority !== undefined) updatePayload.priority = updates.priority;
+    if (updates.dueDateTime) updatePayload.dueDate = Timestamp.fromDate(new Date(updates.dueDateTime));
+
+    await updateDoc(ticketRef, updatePayload);
+  } catch (err) {
+    console.error('Error updating ticket details:', err);
+    throw err;
+  }
+}
+
+/**
  * Clear working flag for staff in attendance
  */
 async function clearStaffWorkingFlag(staffName: string, category: string): Promise<void> {
@@ -671,20 +705,35 @@ export async function archiveTicket(ticketId: string): Promise<void> {
   try {
     const ticketRef = doc(db, 'tickets_task', ticketId);
     const ticketSnap = await getDoc(ticketRef);
-    
+
     if (!ticketSnap.exists()) {
       throw new Error('Ticket not found');
     }
-    
-    // Add to archive collection
-    const archiveRef = collection(db, 'tickets_archive');
-    await addDoc(archiveRef, {
-      ...ticketSnap.data(),
+
+    const data = ticketSnap.data() as any;
+
+    // Only archive the required fields
+    const archivedPayload: Record<string, any> = {
+      ticketNumber: data.ticketNumber,
+      taskTitle: data.taskTitle,
+      category: data.category,
+      description: data.description,
+      roomNumber: data.roomNumber,
+      priority: data.priority,
+      assignedTo: data.assignedTo,
+      createdBy: data.createdBy,
+      createdAt: data.createdAt,
+      completedAt: data.completedAt,
       archivedAt: Timestamp.now(),
-    });
-    
-    // Delete from tickets_task
+    };
+
+    // Use ticketNumber as document ID in archived_tickets so UI can show it as Record ID
+    const targetId = String(data.ticketNumber || ticketId);
+    const archiveRef = doc(db, 'archived_tickets', targetId);
+
+    // Write archived document and delete original atomically with a batch
     const batch = writeBatch(db);
+    batch.set(archiveRef, archivedPayload);
     batch.delete(ticketRef);
     await batch.commit();
   } catch (error) {

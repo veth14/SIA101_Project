@@ -9,6 +9,8 @@ import {
   subscribeToCompletedTickets,
   markTicketCompleted,
   updateTicketStatus,
+  updateTicketDetails,
+  archiveTicket,
   searchTickets
 } from './ticketsService';
 
@@ -149,19 +151,11 @@ const TicketsTasksPage: React.FC = () => {
     setError(null);
 
     try {
-      // Create a new ticket for the complication
-      if (!user?.email) {
-        throw new Error('User not authenticated');
-      }
-
-      await createTicket({
-        taskTitle: `Complication: ${selectedTicket.taskTitle}`,
+      // Instead of creating a new ticket, update the current ticket's details
+      await updateTicketDetails(selectedTicket.id, {
         description: `Original Ticket: ${selectedTicket.ticketNumber}\n\n${reportComplicationForm.description}`,
-        category: selectedTicket.category,
         priority: reportComplicationForm.priorityLevel,
-        roomNumber: selectedTicket.roomNumber,
         dueDateTime: reportComplicationForm.dueDateTime,
-        createdBy: user.email,
       });
 
       setIsReportComplicationModalOpen(false);
@@ -470,6 +464,9 @@ const TicketsTasksPage: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Completed Date
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -506,6 +503,28 @@ const TicketsTasksPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(ticket.completedAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={async () => {
+                              setLoading(true);
+                              setError(null);
+                              try {
+                                await archiveTicket(ticket.id);
+                              } catch (err: any) {
+                                setError(err.message || 'Failed to archive ticket');
+                                console.error('Error archiving ticket:', err);
+                              } finally {
+                                setLoading(false);
+                              }
+                            }}
+                            disabled={loading}
+                            className="bg-gray-400 text-white px-3 py-1 rounded text-xs hover:bg-gray-500 transition-colors disabled:opacity-50"
+                          >
+                            Archive Ticket
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

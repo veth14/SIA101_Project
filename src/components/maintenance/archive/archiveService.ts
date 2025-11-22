@@ -16,6 +16,7 @@ import {
   DocumentSnapshot,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 
 export type ArchiveRecord = {
   id: string;
@@ -301,16 +302,48 @@ export function clearClockLogsCache() {
 // These are intentionally minimal: implement your backend endpoints or collection names
 // here to avoid scans. For now they return empty data so UI can render safely.
 export async function fetchArchiveStats(): Promise<ArchiveStats> {
-  // TODO: implement efficient aggregations (use Firestore count() aggregation or maintain counters)
-  return {};
+  try {
+    // Simple counts for archived_tickets — for larger collections prefer aggregation queries
+    const archivedRef = collection(db, 'archived_tickets');
+    const snap = await getDocs(query(archivedRef, orderBy('archivedAt', 'desc'), queryLimit(1)));
+    const total = snap.size; // Note: this is only the page size; in absence of count() aggregation we return page size as approximation
+
+    // Attempt to get total by fetching up to 1000 documents (keep lightweight)
+    const allSnap = await getDocs(query(archivedRef, orderBy('archivedAt', 'desc'), queryLimit(1000)));
+
+    return {
+      totalRecords: allSnap.size,
+      completedTickets: allSnap.size,
+    };
+  } catch (err) {
+    console.error('fetchArchiveStats error', err);
+    return {};
+  }
 }
 
 export async function fetchArchiveRecords(): Promise<ArchiveRecord[]> {
-  // TODO: implement paginated reads for your archive collection(s). Return empty for now.
-  return [];
+  try {
+    const archivedRef = collection(db, 'archived_tickets');
+    const q = query(archivedRef, orderBy('archivedAt', 'desc'), queryLimit(200));
+    const snap = await getDocs(q);
+    const records: ArchiveRecord[] = [];
+    snap.forEach(d => {
+      const data = d.data() as any;
+      records.push({
+        id: d.id, // For archived tickets we write ticketNumber as doc id so this will be the ticket number
+        type: 'Completed Ticket',
+        description: data.taskTitle ?? data.description ?? '',
+        dateArchived: data.archivedAt ? (data.archivedAt as Timestamp).toDate().toLocaleString() : '',
+      });
+    });
+    return records;
+  } catch (err) {
+    console.error('fetchArchiveRecords error', err);
+    return [];
+  }
 }
 
-export async function deleteArchiveRecord(id: string, collectionName = 'archives'): Promise<void> {
+export async function deleteArchiveRecord(id: string, collectionName = 'archived_tickets'): Promise<void> {
   // Deletes a document from a specified collection. Use with care.
   try {
     await deleteDoc(doc(db, collectionName, id));
@@ -320,7 +353,7 @@ export async function deleteArchiveRecord(id: string, collectionName = 'archives
   }
 }
 
-export async function downloadArchiveRecord(id: string, collectionName = 'archives'): Promise<string | void> {
+export async function downloadArchiveRecord(id: string, collectionName = 'archived_tickets'): Promise<string | void> {
   // By convention, archive docs may store a fileUrl field pointing to storage or an external URL.
   // To avoid extra reads, consider returning a pre-signed URL from your backend instead.
   try {
