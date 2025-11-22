@@ -66,6 +66,15 @@ export type StaffSchedule = {
   year: number;
   status: string;
   createdAt: Timestamp;
+  // Optional fields - some schedule documents may store explicit start/end timestamps
+  start?: any;
+  end?: any;
+  startAt?: any;
+  endAt?: any;
+  startTime?: string;
+  endTime?: string;
+  shiftStart?: string;
+  shiftEnd?: string;
 };
 
 type RotationState = {
@@ -217,12 +226,16 @@ async function fetchEligibleStaff(
     const data = doc.data();
     // Log raw document for diagnosis
     console.debug('fetchEligibleStaff: raw attendance doc', doc.id, data);
+
+    const timeIn = data.TimeIn || data.timeIn || null;
+    const timeOut = data.TimeOut || data.timeOut || null;
+
     records.push({
       id: doc.id,
       fullName: data.fullName,
       classification: data.classification,
-      timeIn: data.TimeIn || data.timeIn,
-      timeOut: data.TimeOut || data.timeOut,
+      timeIn,
+      timeOut,
       date: data.date,
       rfid: data.rfid,
       staffId: data.staffId,
@@ -234,8 +247,12 @@ async function fetchEligibleStaff(
   console.debug('fetchEligibleStaff: fetched', records.length, 'attendance records for category', category);
   records.forEach(r => console.debug('attendance record', { id: r.id, fullName: r.fullName, timeIn: r.timeIn && r.timeIn.toDate ? r.timeIn.toDate() : r.timeIn, working: r.working }));
 
-  // Filter out staff currently working
-  const available = records.filter(record => !record.working);
+  // Filter out staff currently working, those without a timeIn, and those who already timed out
+  const available = records.filter(record => {
+    const hasTimeIn = !!record.timeIn;
+    const hasTimedOut = !!record.timeOut;
+    return !record.working && hasTimeIn && !hasTimedOut;
+  });
   console.debug('fetchEligibleStaff: available (not working)', available.map(a => a.fullName));
   return available;
 }
@@ -245,7 +262,8 @@ async function fetchEligibleStaff(
  */
 async function validateStaffSchedule(
   staffName: string,
-  referenceDate: Date,
+  ticketCreationDate: Date,
+  ticketDueDate: Date,
   category: string
 ): Promise<boolean> {
   const schedulesRef = collection(db, 'staff_schedules');
@@ -259,9 +277,10 @@ async function validateStaffSchedule(
 
   const snapshot = await getDocs(q);
 
-  // Enhanced behavior requested: base validation primarily on current device time.
-  // We'll try to find any schedule rows for this staff; if found, validate using shiftTime only (ignore schedule.day).
-  // If no schedule entries exist for staff, fallback to allowing assignment (so schedule records don't block assignment).
+  // Validation should ensure staff has at least one schedule block that covers the full
+  // interval from ticketCreationDate to ticketDueDate. If schedule documents contain
+  // explicit start/end timestamps, use them. Otherwise fall back to shiftTime + day
+  // matching. If no schedule rows exist for this staff, reject by default.
 
   let foundScheduleForStaff = false;
 
@@ -293,64 +312,144 @@ async function validateStaffSchedule(
     return null;
   }
 
-  const nowMinutes = referenceDate.getHours() * 60 + referenceDate.getMinutes();
+    // Attempt to validate using schedule documents
+    for (const docSnap of snapshot.docs) {
+      const schedule = docSnap.data() as any as StaffSchedule;
+      const scheduleStaffNameRaw = (schedule.staffName || '').toString().trim();
 
-  for (const docSnap of snapshot.docs) {
-    const schedule = docSnap.data() as StaffSchedule;
-    const scheduleStaffNameRaw = (schedule.staffName || '').toString().trim();
+      if (!namesMatch(scheduleStaffNameRaw, staffName)) continue;
 
-    if (!namesMatch(scheduleStaffNameRaw, staffName)) continue;
+      foundScheduleForStaff = true;
 
-    foundScheduleForStaff = true;
+      // If schedule document has explicit start/end fields as Timestamps or ISO strings, prefer them
+      const scheduleStartRaw = (schedule.start || schedule.startAt || schedule.startTime || schedule.shiftStart) as any;
+      const scheduleEndRaw = (schedule.end || schedule.endAt || schedule.endTime || schedule.shiftEnd) as any;
 
-    const shiftRaw = (schedule.shiftTime || schedule.shift || '').toString().trim();
-    if (!shiftRaw) {
-      console.debug('validateStaffSchedule: schedule found but no shiftTime; accepting by default for', staffName, schedule);
-      return true;
+      if (scheduleStartRaw && scheduleEndRaw) {
+        // Parse possible Timestamp objects or ISO strings
+        let scheduleStart: Date | null = null;
+        let scheduleEnd: Date | null = null;
+        try {
+          if (scheduleStartRaw.toDate) scheduleStart = scheduleStartRaw.toDate();
+          else scheduleStart = new Date(scheduleStartRaw);
+        } catch (e) {
+          scheduleStart = null;
+        }
+
+        try {
+          if (scheduleEndRaw.toDate) scheduleEnd = scheduleEndRaw.toDate();
+          else scheduleEnd = new Date(scheduleEndRaw);
+        } catch (e) {
+          scheduleEnd = null;
+        }
+
+        if (scheduleStart && scheduleEnd) {
+          // Check if schedule block covers the ticket interval
+          if (scheduleStart <= ticketCreationDate && scheduleEnd >= ticketDueDate) {
+            return true;
+          }
+          // otherwise continue to next schedule doc
+          continue;
+        }
+      }
+
+      // Fallback: use shiftTime + day fields
+      const shiftRaw = (schedule.shiftTime || schedule.shift || '').toString().trim();
+      const scheduleDayRaw = (schedule.day || '').toString().trim();
+
+      if (!shiftRaw) {
+        // No usable timing information — this schedule cannot prove coverage; continue
+        console.debug('validateStaffSchedule: schedule row for', staffName, 'missing shiftTime/start-end; skipping', schedule);
+        continue;
+      }
+
+      const parts = shiftRaw.split('-').map(p => p.trim()).filter(Boolean);
+      if (parts.length === 0) {
+        console.debug('validateStaffSchedule: unable to parse shiftTime for', staffName, 'shiftRaw', shiftRaw);
+        continue;
+      }
+
+      const startMin = parseTimeToMinutes(parts[0]);
+      const endMin = parts[1] ? parseTimeToMinutes(parts[1]) : null;
+      if (startMin === null || endMin === null) {
+        console.debug('validateStaffSchedule: partial/invalid shiftTime parsing for', staffName, { shiftRaw, startMin, endMin });
+        continue;
+      }
+
+      // Derive minutes for creation and due times
+      const creationMinutes = ticketCreationDate.getHours() * 60 + ticketCreationDate.getMinutes();
+      const dueMinutes = ticketDueDate.getHours() * 60 + ticketDueDate.getMinutes();
+
+      // If schedule.day is set, ensure the schedule covers the creation->due interval.
+      // For normal shifts (start <= end) both creation and due should be on the same schedule day.
+      // For overnight shifts (start > end) we interpret schedule.day as the start day and
+      // require creation on start day and due on the next day.
+      if (scheduleDayRaw) {
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const creationDay = dayNames[ticketCreationDate.getDay()];
+        const dueDay = dayNames[ticketDueDate.getDay()];
+
+        if (startMin <= endMin) {
+          // Non-overnight: both creation and due must be on the declared schedule day
+          if (creationDay !== scheduleDayRaw || dueDay !== scheduleDayRaw) {
+            continue;
+          }
+        } else {
+          // Overnight: scheduleDayRaw is considered the start day. Accept the schedule if either:
+          //  - creation is on start day and due is on next day (strict), OR
+          //  - both creation and due fall within the overnight time window and the schedule start day
+          //    matches the shift start day (which may be the previous calendar day relative to creation time).
+          const startDayIndex = dayNames.indexOf(scheduleDayRaw);
+          if (startDayIndex === -1) {
+            // Unknown schedule day string; skip this schedule row
+            continue;
+          }
+          const nextDay = dayNames[(startDayIndex + 1) % 7];
+
+          if (creationDay === scheduleDayRaw && dueDay === nextDay) {
+            // Strict overnight match
+          } else {
+            // Looser match: allow creation after midnight (creation day may be nextDay) as long as
+            // both creation and due minutes fall inside the overnight shift window and the schedule start
+            // day corresponds to the shift start (either equal to the day before creation or equal to creation day).
+            const creationDayIndex = ticketCreationDate.getDay();
+            const creationInWindow = creationMinutes >= startMin || creationMinutes < endMin;
+            const dueInWindow = dueMinutes >= startMin || dueMinutes < endMin;
+            const startMatchesCreationOrPrev = startDayIndex === creationDayIndex || startDayIndex === ((creationDayIndex + 6) % 7);
+
+            if (!(creationInWindow && dueInWindow && startMatchesCreationOrPrev)) {
+              continue;
+            }
+          }
+        }
+      }
+
+      // Check that shift start <= creation time AND shift end >= due time.
+      // Handle overnight shifts where end <= start by interpreting end as next day.
+      if (startMin <= endMin) {
+        if (startMin <= creationMinutes && endMin >= dueMinutes) {
+          return true;
+        }
+      } else {
+        // Overnight: e.g., 22:00 - 06:00
+        // For overnight, a shift covers times >= start OR < end. To ensure it covers both creation and due,
+        // both times must fall within that overnight window.
+        const creationInWindow = creationMinutes >= startMin || creationMinutes < endMin;
+        const dueInWindow = dueMinutes >= startMin || dueMinutes < endMin;
+        if (creationInWindow && dueInWindow) return true;
+      }
+      // otherwise continue to next schedule doc
     }
 
-    // shiftRaw may be '07:00-15:00' or '7am-3pm'
-    const parts = shiftRaw.split('-').map(p => p.trim()).filter(Boolean);
-    if (parts.length === 0) {
-      console.debug('validateStaffSchedule: unable to parse shiftTime for', staffName, 'shiftRaw', shiftRaw);
-      continue;
-    }
-
-    const startMin = parseTimeToMinutes(parts[0]);
-    const endMin = parts[1] ? parseTimeToMinutes(parts[1]) : null;
-
-    if (startMin === null || endMin === null) {
-      console.debug('validateStaffSchedule: partial/invalid shiftTime parsing for', staffName, { shiftRaw, startMin, endMin });
-      // If parsing failed, accept by default to avoid blocking assignment
-      return true;
-    }
-
-    // Handle overnight shifts where end <= start
-    let isNowInShift = false;
-    if (startMin <= endMin) {
-      isNowInShift = nowMinutes >= startMin && nowMinutes < endMin;
-    } else {
-      // Overnight: e.g., 22:00 - 06:00
-      isNowInShift = nowMinutes >= startMin || nowMinutes < endMin;
-    }
-
-    console.debug('validateStaffSchedule: checking', staffName, { shiftRaw, startMin, endMin, nowMinutes, isNowInShift });
-
-    if (isNowInShift) {
-      return true;
-    }
-    // otherwise continue searching other schedule rows for this staff
-  }
-
-  // If we found schedule rows for the staff but none match current time, return false
+  // If we found schedule rows but none satisfied the interval check, reject
   if (foundScheduleForStaff) {
-    console.debug('validateStaffSchedule: found schedule entries for', staffName, 'but none matched current time');
+    console.debug('validateStaffSchedule: found schedule entries for', staffName, 'but none covered the ticket interval');
     return false;
   }
 
-  // No schedule rows found for staff — accept by default (so staff attendance presence is enough)
-  console.debug('validateStaffSchedule: no schedule entries found for', staffName, '— accepting by default');
-  return true;
+  // No schedule rows found for staff — reject (require explicit schedule block)
+  console.debug('validateStaffSchedule: no schedule entries found for', staffName, '— rejecting assignment');
+  return false;
 }
 
 /**
@@ -361,7 +460,8 @@ async function assignStaffToTicket(
   dueDate: Date
 ): Promise<string | null> {
   // Fetch eligible staff (present today, matching category, not working)
-  const eligibleStaff = await fetchEligibleStaff(category, new Date());
+  const now = new Date();
+  const eligibleStaff = await fetchEligibleStaff(category, now);
   
   if (eligibleStaff.length === 0) {
     console.warn(`No eligible staff found for category: ${category}`);
@@ -381,10 +481,9 @@ async function assignStaffToTicket(
   for (let i = 0; i < eligibleStaff.length; i++) {
     const staffIndex = (rotationIndex + i) % eligibleStaff.length;
     const staff = eligibleStaff[staffIndex];
-    // Validate against staff_schedules using staff full name and current date/time as basis
-    const now = new Date();
-    const isValid = await validateStaffSchedule(staff.fullName, now, category);
-    console.debug('Schedule validation for', staff.fullName, { isValid, now });
+  // Validate against staff_schedules using staff full name and the ticket creation/due dates
+  const isValid = await validateStaffSchedule(staff.fullName, now, dueDate, category);
+  console.debug('Schedule validation for', staff.fullName, { isValid, creation: now, dueDate });
 
   if (isValid) {
       // Mark staff as working

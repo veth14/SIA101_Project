@@ -10,7 +10,15 @@ interface Props {
   onDelete?: (id: string) => void;
 }
 
+const PAGE_SIZE = 10;
+
 const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onView, onDownload, onDelete }) => {
+  const [page, setPage] = React.useState(1);
+
+  React.useEffect(() => {
+    // reset page when records change (e.g., after filters or refresh)
+    setPage(1);
+  }, [records]);
   return (
     <div>
       {/* Archive Stats */}
@@ -83,6 +91,7 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onVie
           ) : records.length === 0 ? (
             <div className="p-6 text-sm text-gray-600">No archived records found.</div>
           ) : (
+            <>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -94,7 +103,7 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onVie
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {records.map((rec) => (
+                {records.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE).map((rec) => (
                   <tr key={rec.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{rec.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -111,6 +120,39 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onVie
                 ))}
               </tbody>
             </table>
+            {/* Pagination controls */}
+            <div className="px-6 py-3 flex items-center justify-between bg-white">
+              <div className="text-sm text-gray-600">Showing {(records.length===0)?0:( (page-1)*PAGE_SIZE + 1)} to {Math.min(page*PAGE_SIZE, records.length)} of {records.length}</div>
+              <div className="flex items-center space-x-2">
+                <button
+                  className={`px-3 py-1 border rounded-md text-sm ${page===1? 'text-gray-400 border-gray-200' : 'text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                  onClick={() => setPage(p => Math.max(1, p-1))}
+                  disabled={page===1}
+                >Previous</button>
+                {/* page numbers (show up to 7) */}
+                {Array.from({length: Math.ceil(records.length / PAGE_SIZE)}, (_, i) => i+1).slice(0, 1000).map((p) => {
+                  // show compact set: first, last, current +/-2
+                  const total = Math.ceil(records.length / PAGE_SIZE);
+                  if (total > 7) {
+                    if (p===1 || p===total || (p>=page-2 && p<=page+2)) {
+                      return (
+                        <button key={p} onClick={() => setPage(p)} className={`px-2 py-1 rounded-md text-sm ${p===page? 'bg-heritage-green text-white' : 'text-gray-700 hover:bg-gray-50'}`}>{p}</button>
+                      );
+                    }
+                    if (p===2 && page>4) return <span key={p} className="px-2">...</span>;
+                    if (p===total-1 && page< total-3) return <span key={p} className="px-2">...</span>;
+                    return null;
+                  }
+                  return <button key={p} onClick={() => setPage(p)} className={`px-2 py-1 rounded-md text-sm ${p===page? 'bg-heritage-green text-white' : 'text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                })}
+                <button
+                  className={`px-3 py-1 border rounded-md text-sm ${page>=Math.ceil(records.length/PAGE_SIZE)? 'text-gray-400 border-gray-200' : 'text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                  onClick={() => setPage(p => Math.min(Math.ceil(records.length/PAGE_SIZE), p+1))}
+                  disabled={page>=Math.ceil(records.length/PAGE_SIZE)}
+                >Next</button>
+              </div>
+            </div>
+            </>
           )}
         </div>
       </div>

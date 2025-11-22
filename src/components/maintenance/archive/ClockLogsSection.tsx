@@ -53,7 +53,15 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
     });
   }, [logs, search, classification, dateFilter]);
 
-  const displayLogs = filteredLogs;
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, classification, dateFilter, logs]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE));
+  const displayLogs = filteredLogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden mt-6">
@@ -100,6 +108,7 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
         ) : displayLogs.length === 0 ? (
           <div className="p-6 text-sm text-gray-600">No clock logs available.</div>
         ) : (
+          <>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -109,6 +118,7 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time In</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Out</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours Worked</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Salary</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
@@ -121,6 +131,7 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.timeIn ?? '--'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.timeOut ?? '--'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.hoursWorked ?? '--'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{typeof log.baseSalary === 'number' ? new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(log.baseSalary) : '--'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{log.status ?? 'On-Duty'}</span>
                   </td>
@@ -128,6 +139,26 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
               ))}
             </tbody>
           </table>
+            {/* Pagination */}
+            <div className="px-6 py-3 flex items-center justify-between bg-white">
+              <div className="text-sm text-gray-600">Showing {(filteredLogs.length===0)?0:((page-1)*PAGE_SIZE+1)} to {Math.min(page*PAGE_SIZE, filteredLogs.length)} of {filteredLogs.length}</div>
+              <div className="flex items-center space-x-2">
+                <button
+                  className={`px-3 py-1 border rounded-md text-sm ${page===1? 'text-gray-400 border-gray-200' : 'text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                  onClick={() => setPage(p => Math.max(1, p-1))}
+                  disabled={page===1}
+                >Previous</button>
+                {Array.from({length: totalPages}, (_, i) => i+1).map((p) => (
+                  <button key={p} onClick={() => setPage(p)} className={`px-2 py-1 rounded-md text-sm ${p===page? 'bg-heritage-green text-white' : 'text-gray-700 hover:bg-gray-50'}`}>{p}</button>
+                ))}
+                <button
+                  className={`px-3 py-1 border rounded-md text-sm ${page>=totalPages? 'text-gray-400 border-gray-200' : 'text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                  onClick={() => setPage(p => Math.min(totalPages, p+1))}
+                  disabled={page>=totalPages}
+                >Next</button>
+              </div>
+            </div>
+            </>
         )}
       </div>
     </div>
