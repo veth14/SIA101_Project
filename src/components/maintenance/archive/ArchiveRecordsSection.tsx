@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArchiveRecord, ArchiveStats } from './archiveService';
+import { ArchiveRecord, ArchiveStats, fetchArchiveRecordById } from './archiveService';
 
 interface Props {
   stats?: ArchiveStats | null;
@@ -78,6 +78,86 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onVie
     a.click();
     a.remove();
     try { URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
+  };
+
+  // Export HTML-as-XLS with uniform column width and centered content
+  const exportXlsHtml = async () => {
+    try {
+      const target = filteredRecords.slice();
+      const detailedPromises = target.map((r: ArchiveRecord) => fetchArchiveRecordById(r.id).then(d => ({ meta: r, data: d })).catch(() => ({ meta: r, data: null })));
+      const detailed = await Promise.all(detailedPromises);
+
+      // Build union of keys
+      const keySet = new Set<string>();
+      const baseCols = ['id', 'type', 'title', 'dateArchived'];
+      baseCols.forEach(k => keySet.add(k));
+      for (const item of detailed) {
+        const obj = item.data ?? {};
+        for (const k of Object.keys(obj)) {
+          if (!baseCols.includes(k)) keySet.add(k);
+        }
+      }
+      const extraCols = Array.from(keySet).filter(k => !baseCols.includes(k)).sort();
+      const headers = baseCols.concat(extraCols);
+
+      // Column width and row height per request
+      const colWidthPx = 180;
+      const rowHeightPx = 53;
+
+      const escapeHtml = (s: any) => {
+        if (s == null) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      };
+
+      let html = '<html><head><meta charset="UTF-8"></head><body>';
+      html += `<table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;">`;
+      // colgroup
+      html += '<colgroup>' + headers.map(() => `<col style="width:${colWidthPx}px;">`).join('') + '</colgroup>';
+      // header
+      html += '<thead><tr>' + headers.map(h => `<th style="background:#f3f4f6; height:${rowHeightPx}px; text-align:center; vertical-align:middle;">${escapeHtml(h)}</th>`).join('') + '</tr></thead>';
+      html += '<tbody>';
+
+      for (const { meta, data } of detailed) {
+        const rowObj: Record<string, any> = {};
+        rowObj.id = meta.id;
+        rowObj.type = meta.type ?? '';
+        rowObj.title = meta.title ?? '';
+        rowObj.dateArchived = meta.dateArchived ?? '';
+        if (data && typeof data === 'object') {
+          for (const k of Object.keys(data)) {
+            if (!rowObj.hasOwnProperty(k)) {
+              const v = (data as Record<string, any>)[k];
+              rowObj[k] = (v === null || v === undefined) ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v));
+            }
+          }
+        }
+
+        html += '<tr>';
+        for (const h of headers) {
+          const cell = rowObj[h] ?? '';
+          html += `<td style="height:${rowHeightPx}px; text-align:center; vertical-align:middle; white-space:normal; word-wrap:break-word;">${escapeHtml(cell)}</td>`;
+        }
+        html += '</tr>';
+      }
+
+      html += '</tbody></table></body></html>';
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const dt = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const stamp = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}_${pad(dt.getHours())}-${pad(dt.getMinutes())}-${pad(dt.getSeconds())}`;
+      a.download = `archived_tickets_${stamp}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      try { URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
+    } catch (err) {
+      // fallback to CSV export
+      exportCsv();
+    }
   };
 
   return (
@@ -173,7 +253,7 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onVie
             </select>
             <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm" />
             <button onClick={() => { setSearch(''); setTypeFilter('All'); setDateFilter(''); }} className="bg-heritage-green text-white px-3 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors text-sm">Clear</button>
-            <button onClick={exportCsv} className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-500 transition-colors text-sm">Export CSV</button>
+            <button onClick={() => exportXlsHtml()} className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-500 transition-colors text-sm">Export Data</button>
           </div>
         </div>
         <div className="overflow-x-auto">
