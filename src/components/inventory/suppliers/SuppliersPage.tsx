@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import SuppliersHeader from "./SuppliersHeader";
 import { SupplierBackground } from "./SupplierBackground";
 import { SupplierStats } from "./SupplierStats";
 import { SupplierGrid } from "./SupplierGrid";
@@ -145,8 +144,6 @@ const SuppliersPage: React.FC = () => {
       <SupplierBackground />
 
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        <SuppliersHeader />
-
         {loadingForGetInvSupplier ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-heritage-green"></div>

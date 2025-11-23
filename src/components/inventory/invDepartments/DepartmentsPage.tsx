@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import DepartmentsHeader from "./DepartmentsHeader";
 import { DepartmentBackground } from "./DepartmentBackground";
 import { UltraPremiumDepartmentCards } from "./DepartmentCards";
 import { UltraPremiumRequestTable } from "./DepartmentRequestTracking";
@@ -64,7 +63,6 @@ const DepartmentsPage: React.FC = () => {
       <DepartmentBackground />
 
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        <DepartmentsHeader />
 
         {loadingForGetInvDepartment ? (
           <div className="flex items-center justify-center py-12">

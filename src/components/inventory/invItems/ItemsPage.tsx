@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import InventoryItemsHeader from "./InventoryItemsHeader";
 import { ItemsBackground } from "./ItemsBackground";
 import { ItemsStats } from "./ItemsStats";
 import { ItemsTableContainer } from "./ItemsTableContainer";
@@ -92,7 +91,7 @@ const ItemsPage: React.FC = () => {
   // Calculate if we have filtered results
   const hasResults = filteredItems.length > 0;
 
-  console.log("📊 Current state:", {
+  console.log("Current state:", {
     itemsCount: items.length,
     filteredItemsCount: filteredItems.length,
     loading,
@@ -106,7 +105,6 @@ const ItemsPage: React.FC = () => {
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         {/* Header */}
-        <InventoryItemsHeader />
 
         {/* Stats */}
         <ItemsStats items={filteredItems} formatCurrency={formatCurrency} />

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import RequisitionsHeader from "./RequisitionsHeader";
 import { RequisitionBackground } from "./RequisitionBackground";
 import { RequisitionStats } from "./RequisitionStats";
 import { RequisitionGrid } from "./RequisitionGrid";
@@ -132,7 +131,6 @@ const RequisitionsPage: React.FC = () => {
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
         {/* Header */}
-        <RequisitionsHeader />
 
         {/* Stats */}
         <RequisitionStats stats={stats} formatCurrency={formatCurrency} />
