@@ -1,5 +1,7 @@
 // ===== TYPES =====
 export interface Staff {
+  isActive?: boolean;
+
   id: string
   adminId?: string
   fullName: string
