@@ -22,10 +22,16 @@ export const LoyaltyProgram: React.FC = () => {
   const [search, setSearch] = useState<string>('');
   const [loyaltyMembers, setLoyaltyMembers] = useState<LoyaltyMember[]>([]);
   const { user } = useAuth();
+  // Pagination state (match invoices design: 6 rows per page)
+  const PAGE_SIZE = 6;
+  const [pageIndex, setPageIndex] = useState(0);
+  const [cursors, setCursors] = useState<Array<unknown>>([null]);
+  const [isLastPage, setIsLastPage] = useState(false);
 
-  const loadGuests = useCallback(async () => {
+  const loadGuestsPage = useCallback(async (index: number) => {
     try {
-      const guests = await loyaltyService.getGuests({ limitResults: 200 });
+      const startAfterValue = cursors[index] || undefined;
+      const guests = await loyaltyService.getGuests({ limitResults: PAGE_SIZE, startAfterValue });
       const normalizeTimestamp = (v: unknown): string | undefined => {
         if (!v) return undefined;
         if (typeof v === 'object' && v !== null) {
@@ -41,7 +47,7 @@ export const LoyaltyProgram: React.FC = () => {
         name: g.fullName || '',
         email: g.email || '',
         tier: (g.membershipTier as LoyaltyMember['tier']) || 'Bronze',
-        points: g.loyaltyPoints ?? loyaltyService.computePointsFromTotal(g.totalSpent ?? 0),
+        points: g.loyaltyPoints ?? 0,
         totalSpent: g.totalSpent ?? 0,
         // createdAt and lastBookingDate can be Timestamp or string — normalize safely
         joinDate: normalizeTimestamp(g.createdAt),
@@ -50,12 +56,33 @@ export const LoyaltyProgram: React.FC = () => {
         rewardsClaimed: []
       }));
       setLoyaltyMembers(mapped);
+
+      // Manage cursor for pagination: store lastBookingDate (or createdAt) of last item
+      const last = (guests as GuestProfile[]).length ? (guests as GuestProfile[])[(guests as GuestProfile[]).length - 1] : null;
+      const lastCursorValue = last ? (last.lastBookingDate ?? last.createdAt ?? null) : null;
+      // If we fetched a full page, assume there may be a next page and store cursor
+      if (index === cursors.length - 1) {
+        if ((guests as GuestProfile[]).length === PAGE_SIZE && lastCursorValue) {
+          setCursors(prev => {
+            const next = [...prev];
+            next.push(lastCursorValue);
+            return next;
+          });
+          setIsLastPage(false);
+        } else {
+          setIsLastPage(true);
+        }
+      } else {
+        setIsLastPage((guests as GuestProfile[]).length < PAGE_SIZE);
+      }
     } catch (err) {
       console.error('Failed to load guests', err);
     }
-  }, []);
+  }, [cursors]);
 
-  useEffect(() => { loadGuests(); }, [loadGuests]);
+  useEffect(() => {
+    loadGuestsPage(pageIndex);
+  }, [pageIndex, loadGuestsPage]);
 
   // Redeem modal state
   const [isRedeemOpen, setIsRedeemOpen] = useState(false);
@@ -103,40 +130,37 @@ export const LoyaltyProgram: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [activeMember, setActiveMember] = useState<LoyaltyMember | null>(null);
   const [formMember, setFormMember] = useState<Partial<LoyaltyMember> | null>(null);
+  // Track initial form state to detect changes (dirty) for edit flows
+  const [formInitial, setFormInitial] = useState<Partial<LoyaltyMember> | null>(null);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+  // Add Points modal state (replaces prompt/alert flows for consistency)
+  const [isAddPointsOpen, setIsAddPointsOpen] = useState(false);
+  const [addPointsMember, setAddPointsMember] = useState<LoyaltyMember | null>(null);
+  const [addPointsValue, setAddPointsValue] = useState<number>(0);
+  const [addPointsReason, setAddPointsReason] = useState<string>('');
+  const [addPointsError, setAddPointsError] = useState<string | null>(null);
 
   const openDetails = (m: LoyaltyMember) => {
+    // Open edit modal directly so 'View' doubles as 'Edit'
     setActiveMember(m);
-    setIsDetailsOpen(true);
+    setFormMember({ ...m });
+    setFormInitial({ ...m });
+    setIsFormDirty(false);
+    setIsAddOpen(true);
   };
   const closeDetails = () => {
     setIsDetailsOpen(false);
     setActiveMember(null);
   };
 
-  const openAdd = () => {
-    setActiveMember(null);
-    setFormMember({
-      name: '',
-      email: '',
-      tier: 'Bronze',
-      points: 0,
-      totalSpent: 0,
-      phone: '',
-      joinDate: new Date().toISOString(),
-      lastStay: null,
-      status: 'active'
-    });
-    setIsAddOpen(true);
-  };
-  const openEdit = (m: LoyaltyMember) => {
-    setActiveMember(m);
-    setFormMember({ ...m });
-    setIsAddOpen(true);
-  };
+  // NOTE: manual "Add Member" UI removed — members are created from walk-in reservations
+  // openEdit removed; 'View' opens the edit modal now
   const closeAdd = () => {
     setIsAddOpen(false);
     setActiveMember(null);
     setFormMember(null);
+    setFormInitial(null);
+    setIsFormDirty(false);
   };
 
   const updateMemberStatus = (status: LoyaltyMember['status']) => {
@@ -152,25 +176,15 @@ export const LoyaltyProgram: React.FC = () => {
           await loyaltyService.updateGuest(member.id, {
             fullName: member.name,
             email: member.email,
-              membershipTier: (member.tier as LoyaltyMember['tier']),
-            totalSpent: member.totalSpent,
-            status: member.status
-            });
-          await loadGuests();
-        } else {
-          await loyaltyService.createGuest({
-            fullName: member.name,
-            email: member.email,
-            phone: member.phone ?? '',
             membershipTier: (member.tier as LoyaltyMember['tier']),
-            // System-generated defaults for walk-in/new members
-            totalSpent: 0,
-            loyaltyPoints: 0,
-            totalBookings: 0,
-            lastBookingDate: null,
-            status: member.status ?? 'Active'
+            // Do NOT allow updating totalSpent from the UI; it's lifetime spend and read-only
+            status: member.status
           });
-          await loadGuests();
+          await loadGuestsPage(pageIndex);
+        } else {
+          // Manual creation of loyalty members via UI has been removed.
+          // Members are now created automatically from walk-in reservations.
+          alert('Member creation from this interface is disabled. Members are created from walk-in reservations.');
         }
       } catch (err) {
         console.error('Save member failed', err);
@@ -178,6 +192,60 @@ export const LoyaltyProgram: React.FC = () => {
       }
     })();
     closeAdd();
+  };
+
+  // compute dirty state for edit modal: compare current form with initial
+  React.useEffect(() => {
+    if (!formMember || !formInitial) {
+      setIsFormDirty(Boolean(formMember && !activeMember));
+      return;
+    }
+    try {
+      const a = JSON.stringify({
+        name: formInitial.name || '',
+        email: formInitial.email || '',
+        phone: formInitial.phone || '',
+        tier: formInitial.tier || 'Bronze',
+        points: formInitial.points ?? 0,
+        totalSpent: formInitial.totalSpent ?? 0,
+        lastStay: formInitial.lastStay || null,
+        status: formInitial.status || 'active'
+      });
+      const b = JSON.stringify({
+        name: formMember.name || '',
+        email: formMember.email || '',
+        phone: formMember.phone || '',
+        tier: formMember.tier || 'Bronze',
+        points: formMember.points ?? 0,
+        totalSpent: formMember.totalSpent ?? 0,
+        lastStay: formMember.lastStay || null,
+        status: formMember.status || 'active'
+      });
+      setIsFormDirty(a !== b);
+    } catch {
+      setIsFormDirty(true);
+    }
+  }, [formMember, formInitial, activeMember]);
+
+  // Confirm adding points via modal
+  const confirmAddPoints = async () => {
+    setAddPointsError(null);
+    if (!addPointsMember) return;
+    const delta = Number(addPointsValue);
+    if (!Number.isInteger(delta) || delta <= 0) {
+      setAddPointsError('Please enter a valid positive integer');
+      return;
+    }
+    const reason = addPointsReason || 'Points added by admin';
+    try {
+      await loyaltyService.adjustPoints(addPointsMember.id, delta, reason, user?.email || user?.uid || 'admin');
+      await loadGuestsPage(pageIndex);
+      setIsAddPointsOpen(false);
+      setAddPointsMember(null);
+    } catch (err: unknown) {
+      const msg = (typeof err === 'object' && err !== null && 'message' in err) ? (err as { message?: string }).message : String(err);
+      setAddPointsError('Failed to add points: ' + (msg || String(err)));
+    }
   };
 
   const getTierColor = (tier: string) => {
@@ -239,12 +307,7 @@ export const LoyaltyProgram: React.FC = () => {
             <option value="Platinum">Platinum</option>
           </select>
         </div>
-        <button onClick={openAdd} className="bg-heritage-green text-white px-4 py-2 rounded-xl hover:bg-heritage-green/90 transition-colors font-medium flex items-center space-x-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add Member</span>
-        </button>
+        {/* Add Member removed - members are now created from walk-in reservations */}
       </div>
 
       {/* Members Table */}
@@ -265,10 +328,17 @@ export const LoyaltyProgram: React.FC = () => {
               {filteredMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
-                    <div>
-                      <div className="font-semibold text-gray-900">{member.name}</div>
-                      <div className="text-sm text-gray-500">{member.email}</div>
-                      <div className="text-xs text-gray-400">Member since {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : '—'}</div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-heritage-green text-white font-bold text-lg shadow-sm">
+                          {member.name ? member.name.split(' ').map(n=>n[0]).slice(0,2).join('') : (member.email ? member.email.charAt(0).toUpperCase() : '?')}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 truncate">{member.name}</div>
+                        <div className="text-sm text-gray-500 truncate">{member.email}</div>
+                        <div className="text-xs text-gray-400">Member since {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : '—'}</div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -290,45 +360,24 @@ export const LoyaltyProgram: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button onClick={() => openDetails(member)} className="text-heritage-green hover:text-heritage-green/80 transition-colors" aria-label="View member details">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      <button onClick={() => openEdit(member)} className="text-blue-600 hover:text-blue-800 transition-colors" aria-label="Edit member">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </button>
-                      <button onClick={() => openRedeem(member)} className="text-yellow-600 hover:text-yellow-800 transition-colors" aria-label="Redeem rewards">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3v4h6v-4c0-1.657-1.343-3-3-3z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 20h14" />
-                        </svg>
-                      </button>
-                      {user?.role === 'admin' && (
-                        <button onClick={async () => {
-                          const deltaStr = window.prompt('Adjust points (use negative to deduct). Enter integer:');
-                          if (!deltaStr) return;
-                          const delta = Number(deltaStr);
-                          if (Number.isNaN(delta)) return alert('Invalid number');
-                          const reason = window.prompt('Reason for adjustment:') || 'Adjustment by admin';
-                          try {
-                            await loyaltyService.adjustPoints(member.id, delta, reason, user?.email || user?.uid || 'admin');
-                            await loadGuests();
-                          } catch (err: unknown) {
-                            const msg = (typeof err === 'object' && err !== null && 'message' in err) ? (err as { message?: string }).message : String(err);
-                            alert('Adjust failed: ' + (msg || String(err)));
-                          }
-                        }} className="text-red-600 hover:text-red-800 transition-colors" aria-label="Adjust points">⚙️</button>
-                      )}
+                      <button onClick={() => openDetails(member)} className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors" aria-label="View member details">View</button>
+                      <button onClick={() => openRedeem(member)} className="px-3 py-1 rounded-md text-sm text-yellow-600 border border-gray-200 bg-yellow-50 hover:bg-yellow-100 transition-colors" aria-label="Redeem rewards">Redeem</button>
+                      {/* Add Points removed from per-row actions — admin can add points from the member Edit/View modal */}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Pagination controls (6 items per page) */}
+      <div className="flex items-center justify-end px-6 py-3 bg-white">
+        <div className="flex items-center space-x-2">
+          <button disabled={pageIndex === 0} onClick={() => setPageIndex(p => Math.max(0, p - 1))} className={`px-3 py-1 rounded-md text-sm border ${pageIndex === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}>Prev</button>
+          <div className="text-sm text-gray-600">Page {pageIndex + 1}</div>
+          <button disabled={isLastPage} onClick={() => setPageIndex(p => p + 1)} className={`px-3 py-1 rounded-md text-sm border ${isLastPage ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}>Next</button>
         </div>
       </div>
 
@@ -466,9 +515,10 @@ export const LoyaltyProgram: React.FC = () => {
               <input
                 type="number"
                 value={formMember.totalSpent ?? 0}
-                onChange={(e) => setFormMember(prev => ({ ...(prev || {}), totalSpent: Number(e.target.value) }))}
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                readOnly
+                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed"
               />
+              <div className="text-xs text-gray-400 mt-1">Lifetime spend (read-only). Points are awarded per transaction and managed separately.</div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -496,10 +546,26 @@ export const LoyaltyProgram: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-end space-x-3 pt-3">
+              {user?.role === 'admin' && activeMember && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddPointsMember(activeMember);
+                    setAddPointsValue(0);
+                    setAddPointsReason('');
+                    setAddPointsError(null);
+                    setIsAddPointsOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-gray-200 bg-red-50 text-red-600"
+                >
+                  Add Points
+                </button>
+              )}
               <button onClick={closeAdd} className="px-4 py-2 rounded-xl border border-gray-200">Cancel</button>
               <button
                 onClick={() => formMember && saveMember({ ...(formMember as Partial<LoyaltyMember>) })}
-                className="px-4 py-2 rounded-xl bg-heritage-green text-white"
+                disabled={Boolean(activeMember) && !isFormDirty}
+                className={`px-4 py-2 rounded-xl text-white ${Boolean(activeMember) && !isFormDirty ? 'bg-heritage-green/50 cursor-not-allowed' : 'bg-heritage-green'}`}
               >
                 Save
               </button>
@@ -536,6 +602,53 @@ export const LoyaltyProgram: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+      
+      {/* Add Points Modal (replaces prompt-based adjustments) */}
+      <Modal
+        isOpen={isAddPointsOpen}
+        onClose={() => { setIsAddPointsOpen(false); setAddPointsMember(null); setAddPointsError(null); }}
+        title={addPointsMember ? `Add Points — ${addPointsMember.name}` : 'Add Points'}
+        size="sm"
+      >
+        {addPointsMember && (
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm text-gray-500">Member</div>
+              <div className="text-base font-semibold text-gray-900">{addPointsMember.name}</div>
+              <div className="text-xs text-gray-500">{addPointsMember.email}</div>
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-500">Points to Add</label>
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={addPointsValue}
+                onChange={(e) => setAddPointsValue(Number(e.target.value))}
+                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-500">Reason (optional)</label>
+              <input
+                value={addPointsReason}
+                onChange={(e) => setAddPointsReason(e.target.value)}
+                placeholder="e.g. Loyalty promo"
+                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+              />
+            </div>
+
+            {addPointsError && <div className="text-sm text-red-600">{addPointsError}</div>}
+
+            <div className="flex items-center justify-end space-x-3 pt-3">
+              <button onClick={() => { setIsAddPointsOpen(false); setAddPointsMember(null); }} className="px-4 py-2 rounded-xl border border-gray-200">Cancel</button>
+              <button onClick={confirmAddPoints} className="px-4 py-2 rounded-xl bg-heritage-green text-white">Add Points</button>
             </div>
           </div>
         )}

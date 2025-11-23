@@ -341,6 +341,51 @@ export const ReservationsPage = () => {
       
       await fetchRooms();
 
+      // Upsert a guest profile for this walk-in so loyalty members are sourced from reservations
+      try {
+        const guestProfilesRef = collection(db, 'guestprofiles');
+        const emailToCheck = (newBooking.userEmail || (newBooking as any).email || '').toString().toLowerCase();
+        let existingSnap = null;
+        if (emailToCheck) {
+          const q = query(guestProfilesRef, where('email', '==', emailToCheck), limit(1));
+          existingSnap = await getDocs(q);
+        }
+
+        if (existingSnap && !existingSnap.empty) {
+          const existingDoc = existingSnap.docs[0];
+          const existingData = existingDoc.data() as any;
+          const prevTotal = Number(existingData.totalBookings || 0);
+          const prevSpent = Number(existingData.totalSpent || 0);
+          await updateDoc(existingDoc.ref, {
+            fullName: newBooking.userName || (newBooking as any).guestName || existingData.fullName || '',
+            email: emailToCheck || existingData.email || '',
+            phone: (newBooking as any).phone || existingData.phone || '',
+            totalBookings: prevTotal + 1,
+            totalSpent: prevSpent + (Number(newBooking.totalAmount) || 0),
+            lastBookingDate: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          // create new guest profile document
+          await addDoc(guestProfilesRef, {
+            fullName: newBooking.userName || (newBooking as any).guestName || '',
+            firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
+            lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
+            email: emailToCheck || '',
+            phone: (newBooking as any).phone || '',
+            totalBookings: 1,
+            totalSpent: Number(newBooking.totalAmount) || 0,
+            loyaltyPoints: 0,
+            membershipTier: 'Bronze',
+            lastBookingDate: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            status: 'Active'
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to upsert guest profile from walk-in booking:', err);
+      }
     } catch (error) {
       console.error('Error adding walk-in:', error);
       alert('Failed to create booking.');

@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Modal } from '../../admin/Modal';
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, where, limit } from 'firebase/firestore';
+import { db } from '../../../config/firebase';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface AssistanceRequest {
   id: string;
   guestName: string;
   roomNumber: string;
-  requestType: 'housekeeping' | 'maintenance' | 'concierge' | 'dining' | 'transport' | 'other';
+  requestType: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   description: string;
   requestTime: string;
@@ -13,6 +16,7 @@ interface AssistanceRequest {
   assignedTo?: string;
   estimatedTime?: string;
   notes?: string;
+  source?: 'contactRequests' | 'guest_request' | 'local';
 }
 
 export const GuestAssistance: React.FC = () => {
@@ -20,83 +24,249 @@ export const GuestAssistance: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
 
-  const initialRequests: AssistanceRequest[] = [
-    {
-      id: '1',
-      guestName: 'Maria Santos',
-      roomNumber: '201',
-      requestType: 'housekeeping',
-      priority: 'medium',
-      description: 'Need extra towels and pillows for additional guests',
-      requestTime: '2024-01-15T14:30:00',
-      status: 'in-progress',
-      assignedTo: 'Ana Cruz - Housekeeping',
-      estimatedTime: '15 minutes'
-    },
-    {
-      id: '2',
-      guestName: 'John Rodriguez',
-      roomNumber: '305',
-      requestType: 'maintenance',
-      priority: 'high',
-      description: 'Air conditioning not working properly, room too warm',
-      requestTime: '2024-01-15T13:45:00',
-      status: 'pending',
-      estimatedTime: '30 minutes'
-    },
-    {
-      id: '3',
-      guestName: 'Lisa Chen',
-      roomNumber: '102',
-      requestType: 'concierge',
-      priority: 'low',
-      description: 'Restaurant recommendations for vegetarian dining nearby',
-      requestTime: '2024-01-15T12:20:00',
-      status: 'completed',
-      assignedTo: 'Mark Dela Cruz - Concierge',
-      notes: 'Provided list of 5 vegetarian restaurants with contact details'
-    },
-    {
-      id: '4',
-      guestName: 'Carlos Mendoza',
-      roomNumber: '408',
-      requestType: 'transport',
-      priority: 'medium',
-      description: 'Airport transfer needed tomorrow at 6 AM',
-      requestTime: '2024-01-15T11:15:00',
-      status: 'completed',
-      assignedTo: 'Transport Team',
-      notes: 'Booked sedan for 6 AM pickup, driver: Jose Santos'
-    },
-    {
-      id: '5',
-      guestName: 'Anna Williams',
-      roomNumber: '156',
-      requestType: 'dining',
-      priority: 'urgent',
-      description: 'Food allergy concern - need gluten-free meal options',
-      requestTime: '2024-01-15T10:30:00',
-      status: 'in-progress',
-      assignedTo: 'Chef Miguel - Kitchen',
-      estimatedTime: '10 minutes'
-    }
-  ];
+  // Start with no static requests; we'll load `contactRequests` from Firestore
+  const [assistanceRequests, setAssistanceRequests] = useState<AssistanceRequest[]>([]);
+  
+  const [selectedRequest, setSelectedRequest] = useState<AssistanceRequest | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'view'>('create');
+  const [status, setStatus] = useState<AssistanceRequest['status']>('pending');
+  const [initialPriority, setInitialPriority] = useState<AssistanceRequest['priority'] | null>(null);
+  const [initialStatus, setInitialStatus] = useState<AssistanceRequest['status'] | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [initialGuestName, setInitialGuestName] = useState<string | null>(null);
+  const [initialRoomNumber, setInitialRoomNumber] = useState<string | null>(null);
+  const [initialRequestType, setInitialRequestType] = useState<string | null>(null);
+  const [initialAssignedTo, setInitialAssignedTo] = useState<string | null>(null);
+  const [initialGuestContact, setInitialGuestContact] = useState<string | null>(null);
 
-  const [assistanceRequests, setAssistanceRequests] = useState<AssistanceRequest[]>(initialRequests);
+  useEffect(() => {
+    // Caching strategy: try load cached data from localStorage first to avoid full collection reads.
+    const CACHE_KEY = 'guest_assistance_cache_v1';
+
+    const loadCache = (): { items: AssistanceRequest[]; lastFetchedIso?: string } | null => {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        console.warn('Failed to parse cache', e);
+        return null;
+      }
+    };
+
+    const saveCache = (items: AssistanceRequest[]) => {
+      try {
+        const last = items.reduce<string | null>((acc, it) => {
+          const t = it.requestTime;
+          if (!t) return acc;
+          if (!acc) return t;
+          return new Date(t) > new Date(acc) ? t : acc;
+        }, null);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ items, lastFetchedIso: last }));
+      } catch (e) {
+        console.warn('Failed to save cache', e);
+      }
+    };
+
+    // (removed helper) timestamp conversion handled inline after switching to range queries
+
+    const fetchNewSince = async (sinceIso?: string) => {
+      const newItems: AssistanceRequest[] = [];
+      try {
+        // If we have a timestamp, query only docs with createdAt > timestamp to avoid full collection reads.
+        // Otherwise fetch a limited set (most recent N) to initialize the UI.
+        const contactRef = collection(db, 'contactRequests');
+        if (sinceIso) {
+          const sinceDate = new Date(sinceIso);
+          const q = query(contactRef, where('createdAt', '>', sinceDate), orderBy('createdAt', 'desc'), limit(200));
+          const snap = await getDocs(q);
+          snap.docs.forEach(d => {
+            const data = d.data();
+            const requestTime = data.submittedAt?.toDate?.()
+              ? data.submittedAt.toDate().toISOString()
+              : data.submittedAt || data.createdAt || new Date().toISOString();
+            const guestName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.email || 'Guest';
+            const requestType = data.inquiryType ? data.inquiryType.toString().toLowerCase() : 'other';
+            let status: AssistanceRequest['status'] = 'pending';
+            if (data.status === 'resolved') status = 'completed';
+            else if (data.status === 'in-progress') status = 'in-progress';
+            else if (data.status === 'cancelled') status = 'cancelled';
+            newItems.push({
+              id: d.id,
+              guestName,
+              roomNumber: data.bookingReference || '—',
+              requestType,
+              priority: 'medium',
+              description: [data.subject, data.message].filter(Boolean).join(' — '),
+              requestTime,
+              status,
+              assignedTo: data.assignedTo || 'Front Desk',
+              estimatedTime: data.estimatedTime,
+              notes: data.notes,
+              source: 'contactRequests'
+            } as AssistanceRequest);
+          });
+        } else {
+          // initial limited fetch (small number to avoid many reads)
+          const q = query(contactRef, orderBy('createdAt', 'desc'), limit(50));
+          const snap = await getDocs(q);
+          snap.docs.forEach(d => {
+            const data = d.data();
+            const requestTime = data.submittedAt?.toDate?.()
+              ? data.submittedAt.toDate().toISOString()
+              : data.submittedAt || data.createdAt || new Date().toISOString();
+            const guestName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.email || 'Guest';
+            const requestType = data.inquiryType ? data.inquiryType.toString().toLowerCase() : 'other';
+            let status: AssistanceRequest['status'] = 'pending';
+            if (data.status === 'resolved') status = 'completed';
+            else if (data.status === 'in-progress') status = 'in-progress';
+            else if (data.status === 'cancelled') status = 'cancelled';
+            newItems.push({
+              id: d.id,
+              guestName,
+              roomNumber: data.bookingReference || '—',
+              requestType,
+              priority: 'medium',
+              description: [data.subject, data.message].filter(Boolean).join(' — '),
+              requestTime,
+              status,
+              assignedTo: data.assignedTo || 'Front Desk',
+              estimatedTime: data.estimatedTime,
+              notes: data.notes,
+              source: 'contactRequests'
+            } as AssistanceRequest);
+          });
+        }
+
+        // guest_request
+        const guestRef = collection(db, 'guest_request');
+        if (sinceIso) {
+          const sinceDate = new Date(sinceIso);
+          const qg = query(guestRef, where('createdAt', '>', sinceDate), orderBy('createdAt', 'desc'), limit(200));
+          const s = await getDocs(qg);
+          s.docs.forEach(d => {
+            const data = d.data();
+            const requestTime = data.submittedAt?.toDate?.()
+              ? data.submittedAt.toDate().toISOString()
+              : data.submittedAt || data.createdAt || new Date().toISOString();
+            newItems.push({
+              id: d.id,
+              guestName: data.guestName || data.firstName || 'Guest',
+              roomNumber: data.roomNumber || '—',
+              requestType: data.requestType || 'other',
+              priority: data.priority || 'medium',
+              description: data.description || '',
+              requestTime,
+              status: data.status || 'pending',
+              assignedTo: data.assignedTo || undefined,
+              estimatedTime: data.estimatedTime || undefined,
+              notes: data.notes || undefined,
+              source: 'guest_request'
+            } as AssistanceRequest);
+          });
+        } else {
+          const qg = query(guestRef, orderBy('createdAt', 'desc'), limit(50));
+          const s = await getDocs(qg);
+          s.docs.forEach(d => {
+            const data = d.data();
+            const requestTime = data.submittedAt?.toDate?.()
+              ? data.submittedAt.toDate().toISOString()
+              : data.submittedAt || data.createdAt || new Date().toISOString();
+            newItems.push({
+              id: d.id,
+              guestName: data.guestName || data.firstName || 'Guest',
+              roomNumber: data.roomNumber || '—',
+              requestType: data.requestType || 'other',
+              priority: data.priority || 'medium',
+              description: data.description || '',
+              requestTime,
+              status: data.status || 'pending',
+              assignedTo: data.assignedTo || undefined,
+              estimatedTime: data.estimatedTime || undefined,
+              notes: data.notes || undefined,
+              source: 'guest_request'
+            } as AssistanceRequest);
+          });
+        }
+
+      } catch (error) {
+        console.error('Error fetching incremental requests:', error);
+      }
+
+      return newItems;
+    };
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const fetchRequests = async () => {
+      try {
+        const cache = loadCache();
+        if (cache && cache.items && cache.items.length > 0) {
+          setAssistanceRequests(cache.items);
+          // fetch only new docs since lastFetchedIso
+          const newOnes = await fetchNewSince(cache.lastFetchedIso);
+          if (newOnes && newOnes.length > 0) {
+            const merged = [...newOnes, ...cache.items].sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
+            setAssistanceRequests(merged);
+            saveCache(merged);
+          }
+        } else {
+          // No cache: fetch a limited set (still more than zero, but avoid unlimited reads)
+          const items = await fetchNewSince(undefined);
+          const combined = items.sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
+          setAssistanceRequests(combined);
+          saveCache(combined);
+        }
+
+        // Periodic background poll for new docs every 60s (fetches only new docs)
+        intervalId = setInterval(async () => {
+          const currentLast = assistanceRef.current.reduce<string | null>((acc, it) => {
+            if (!acc) return it.requestTime || null;
+            return new Date(it.requestTime) > new Date(acc) ? it.requestTime : acc;
+          }, null);
+          const newOnes = await fetchNewSince(currentLast || undefined);
+          if (newOnes && newOnes.length > 0) {
+            setAssistanceRequests(prev => {
+              const merged = [...newOnes, ...prev].sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
+              saveCache(merged);
+              return merged;
+            });
+          }
+        }, 60000);
+      } catch (error) {
+        console.error('Error in fetchRequests flow:', error);
+      }
+    };
+
+    fetchRequests().then(() => {
+      // nothing
+    });
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
+
+  // Keep a ref of assistanceRequests to use inside intervals without adding it to deps
+  const assistanceRef = useRef<AssistanceRequest[]>([]);
+  useEffect(() => {
+    assistanceRef.current = assistanceRequests;
+  }, [assistanceRequests]);
 
   // Modal & form state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useAuth();
+
   const [guestName, setGuestName] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
   const [guestContact, setGuestContact] = useState('');
-  const [requestType, setRequestType] = useState<AssistanceRequest['requestType']>('housekeeping');
+  const [requestType, setRequestType] = useState<string>('housekeeping');
   const [priority, setPriority] = useState<AssistanceRequest['priority']>('medium');
   const [description, setDescription] = useState('');
   const [assignedTo, setAssignedTo] = useState<string>('Unassigned');
-  const [notifyAssignee, setNotifyAssignee] = useState(true);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const calcEstimatedTime = (type: AssistanceRequest['requestType']) => {
+  const calcEstimatedTime = (type: string) => {
     switch (type) {
       case 'housekeeping':
         return '15 minutes';
@@ -115,20 +285,61 @@ export const GuestAssistance: React.FC = () => {
     setPriority('medium');
     setDescription('');
     setAssignedTo('Unassigned');
-    setNotifyAssignee(true);
     setFormErrors({});
   };
 
   const openModal = () => {
+    // open for creating a new request
+    setModalMode('create');
+    setSelectedRequest(null);
+    resetForm();
+    setInitialPriority(null);
+    setInitialStatus(null);
+    setInitialGuestName(null);
+    setInitialRoomNumber(null);
+    setInitialRequestType(null);
+    setInitialAssignedTo(null);
+    setInitialGuestContact(null);
+    setIsModalOpen(true);
+  };
+
+  const openViewModal = (request: AssistanceRequest) => {
+    setModalMode('view');
+    setSelectedRequest(request);
+    setGuestName(request.guestName || '');
+    setRoomNumber(request.roomNumber || '');
+    if (request.notes && request.notes.includes('Contact:')) {
+      setGuestContact(request.notes.replace('Contact:', '').trim());
+    } else {
+      setGuestContact('');
+    }
+    setRequestType(request.requestType || 'other');
+    setPriority(request.priority || 'medium');
+    setDescription(request.description || '');
+    setAssignedTo(request.assignedTo || 'Unassigned');
+    setStatus(request.status || 'pending');
+    setInitialPriority(request.priority || 'medium');
+    setInitialStatus(request.status || 'pending');
+    setInitialGuestName(request.guestName || '');
+    setInitialRoomNumber(request.roomNumber || '');
+    setInitialRequestType(request.requestType || '');
+    setInitialAssignedTo(request.assignedTo || 'Unassigned');
+    setInitialGuestContact(request.notes?.includes('Contact:') ? request.notes.replace('Contact:', '').trim() : '');
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     resetForm();
+    setSelectedRequest(null);
+    setModalMode('create');
+    setInitialPriority(null);
+    setInitialStatus(null);
+    setIsDirty(false);
   };
 
   const validateForm = () => {
+    if (modalMode === 'view') return true;
     const errs: Record<string, string> = {};
     if (!guestName.trim()) errs.guestName = 'Guest name is required.';
     if (!requestType) errs.requestType = 'Request type is required.';
@@ -139,27 +350,148 @@ export const GuestAssistance: React.FC = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  // Track whether anything changed so the submit/save button is only enabled when there's a change
+  useEffect(() => {
+    if (modalMode === 'view' && selectedRequest) {
+      const changed = (
+        priority !== (initialPriority ?? selectedRequest.priority) ||
+        status !== (initialStatus ?? selectedRequest.status) ||
+        guestName !== (initialGuestName ?? selectedRequest.guestName) ||
+        roomNumber !== (initialRoomNumber ?? selectedRequest.roomNumber) ||
+        requestType !== (initialRequestType ?? selectedRequest.requestType) ||
+        assignedTo !== (initialAssignedTo ?? (selectedRequest.assignedTo || 'Unassigned')) ||
+        (guestContact || '') !== (initialGuestContact || '')
+      );
+      setIsDirty(changed);
+    } else if (modalMode === 'create') {
+      const changed = (
+        guestName.trim() !== '' ||
+        roomNumber.trim() !== '' ||
+        guestContact.trim() !== '' ||
+        requestType !== 'housekeeping' ||
+        priority !== 'medium' ||
+        description.trim() !== '' ||
+        assignedTo !== 'Unassigned'
+      );
+      setIsDirty(changed);
+    } else {
+      setIsDirty(false);
+    }
+  }, [modalMode, selectedRequest, guestName, roomNumber, guestContact, requestType, priority, description, assignedTo, status, initialPriority, initialStatus, initialGuestName, initialRoomNumber, initialRequestType, initialAssignedTo, initialGuestContact]);
+
+  const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+
+    if (modalMode === 'view' && selectedRequest) {
+      try {
+        const collectionName = selectedRequest.source === 'guest_request' ? 'guest_request' : 'contactRequests';
+        const docRef = doc(db, collectionName, selectedRequest.id);
+
+        if (collectionName === 'guest_request') {
+          const payload = {
+            guestName: guestName.trim(),
+            roomNumber: roomNumber || null,
+            requestType: requestType,
+            priority,
+            assignedTo: assignedTo !== 'Unassigned' ? assignedTo : null,
+            status,
+            estimatedTime: calcEstimatedTime(requestType),
+            notes: guestContact ? `Contact: ${guestContact}` : null,
+            updatedAt: serverTimestamp()
+          };
+
+          await updateDoc(docRef, payload);
+
+          setAssistanceRequests(prev => prev.map(r => r.id === selectedRequest.id ? {
+            ...r,
+            guestName: String(payload.guestName),
+            roomNumber: payload.roomNumber ? String(payload.roomNumber) : '—',
+            requestType: String(payload.requestType),
+            priority: payload.priority as AssistanceRequest['priority'],
+            assignedTo: payload.assignedTo ? String(payload.assignedTo) : undefined,
+            status: payload.status as AssistanceRequest['status'],
+            estimatedTime: payload.estimatedTime as string | undefined,
+            notes: payload.notes as string | undefined
+          } : r));
+        } else {
+          // contactRequests - update common fields where possible
+          const payload = {
+            inquiryType: requestType,
+            bookingReference: roomNumber || null,
+            status,
+            // include assignment when saving contactRequests
+            assignedTo: assignedTo !== 'Unassigned' ? assignedTo : null,
+            notes: guestContact ? `Contact: ${guestContact}` : null,
+            updatedAt: serverTimestamp()
+          };
+
+          await updateDoc(docRef, payload);
+
+          setAssistanceRequests(prev => prev.map(r => r.id === selectedRequest.id ? {
+            ...r,
+            requestType: requestType,
+            roomNumber: roomNumber || '—',
+            status,
+            notes: payload.notes as string | undefined
+          } : r));
+        }
+      } catch (error) {
+        console.error('Error updating request:', error);
+        alert('Failed to update request.');
+      } finally {
+        closeModal();
+      }
+
+      return;
+    }
+
+    // create mode
     if (!validateForm()) return;
 
+    const tempId = `temp-${Date.now()}`;
     const newReq: AssistanceRequest = {
-      id: Date.now().toString(),
+      id: tempId,
       guestName: guestName.trim(),
       roomNumber: roomNumber || '—',
       requestType: requestType,
       priority: priority,
       description: description.trim(),
       requestTime: new Date().toISOString(),
-      status: assignedTo && assignedTo !== 'Unassigned' && notifyAssignee ? 'in-progress' : 'pending',
+      status: assignedTo && assignedTo !== 'Unassigned' ? 'in-progress' : 'pending',
       assignedTo: assignedTo !== 'Unassigned' ? assignedTo : undefined,
       estimatedTime: calcEstimatedTime(requestType),
-      notes: guestContact ? `Contact: ${guestContact}` : undefined
+      notes: guestContact ? `Contact: ${guestContact}` : undefined,
+      source: 'guest_request'
     };
 
+    // Optimistically add to UI
     setAssistanceRequests(prev => [newReq, ...prev]);
-    // TODO: wire to backend & notifications
-    closeModal();
+
+    try {
+      const payload = {
+        userId: user?.uid || null,
+        guestName: newReq.guestName,
+        roomNumber: newReq.roomNumber,
+        requestType: newReq.requestType,
+        priority: newReq.priority,
+        description: newReq.description,
+        status: newReq.status,
+        assignedTo: newReq.assignedTo || null,
+        estimatedTime: newReq.estimatedTime || null,
+        notes: newReq.notes || null,
+        createdAt: serverTimestamp(),
+        submittedAt: serverTimestamp()
+      };
+
+      const createdRef = await addDoc(collection(db, 'guest_request'), payload);
+      // replace temp id with real id
+      setAssistanceRequests(prev => prev.map(r => r.id === tempId ? { ...r, id: createdRef.id } : r));
+    } catch (error) {
+      console.error('Error saving guest request:', error);
+      alert('Failed to save request.');
+    } finally {
+      closeModal();
+    }
   };
 
   // Simple guest lookup: if guestName matches an existing entry, autofill room/contact
@@ -174,15 +506,28 @@ export const GuestAssistance: React.FC = () => {
   };
 
   const getTypeColor = (type: string) => {
+    const t = (type || '').toString().toLowerCase();
+    // Map known contact inquiry types and service request types
+    if (t.includes('cancellation')) return 'bg-red-100 text-red-800 border-red-200';
+    if (t.includes('complaint')) return 'bg-orange-100 text-orange-800 border-orange-200';
+    if (t.includes('feedback')) return 'bg-green-100 text-green-800 border-green-200';
+    if (t.includes('modification') || t.includes('booking')) return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+    if (t.includes('general') || t.includes('inquiry') || t === 'general inquiry') return 'bg-slate-100 text-slate-800 border-slate-200';
+
     const colors = {
       housekeeping: 'bg-blue-100 text-blue-800 border-blue-200',
       maintenance: 'bg-orange-100 text-orange-800 border-orange-200',
+      electrical: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      plumbing: 'bg-cyan-100 text-cyan-800 border-cyan-200',
       concierge: 'bg-purple-100 text-purple-800 border-purple-200',
       dining: 'bg-green-100 text-green-800 border-green-200',
       transport: 'bg-indigo-100 text-indigo-800 border-indigo-200',
       other: 'bg-gray-100 text-gray-800 border-gray-200'
-    };
-    return colors[type as keyof typeof colors] || colors.other;
+    } as const;
+
+    // Try direct key lookup; fall back to 'other'
+    const direct = (colors as unknown as Record<string, string>)[t];
+    return direct || colors.other;
   };
 
   const getPriorityColor = (priority: string) => {
@@ -206,15 +551,32 @@ export const GuestAssistance: React.FC = () => {
   };
 
   const getTypeIcon = (type: string) => {
+    const t = (type || '').toString().toLowerCase();
+    if (t.includes('cancellation')) return '🗓️';
+    if (t.includes('complaint')) return '⚠️';
+    if (t.includes('feedback')) return '💬';
+    if (t.includes('modification') || t.includes('booking')) return '🔁';
+    if (t.includes('general') || t.includes('inquiry')) return '✉️';
+
     const icons = {
       housekeeping: '🧹',
       maintenance: '🔧',
+      electrical: '🔌',
+      plumbing: '🚰',
       concierge: '🛎️',
       dining: '🍽️',
       transport: '🚗',
-      other: '❓'
-    };
-    return icons[type as keyof typeof icons] || icons.other;
+      other: ''
+    } as const;
+
+    const directIcon = (icons as unknown as Record<string, string>)[t];
+    return directIcon || icons.other;
+  };
+
+  const formatRequestTypeLabel = (type: string) => {
+    if (!type) return '';
+    // Split on non-word characters and capitalize each word
+    return type.toString().split(/[^a-zA-Z0-9]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
   const filteredRequests = assistanceRequests.filter(request => {
@@ -256,10 +618,8 @@ export const GuestAssistance: React.FC = () => {
             <option value="all">All Types</option>
             <option value="housekeeping">Housekeeping</option>
             <option value="maintenance">Maintenance</option>
-            <option value="concierge">Concierge</option>
-            <option value="dining">Dining</option>
-            <option value="transport">Transport</option>
-            <option value="other">Other</option>
+            <option value="electrical">Electrical</option>
+            <option value="plumbing">Plumbing</option>
           </select>
           <select
             value={selectedStatus}
@@ -293,7 +653,13 @@ export const GuestAssistance: React.FC = () => {
       </div>
 
       {/* Create New Request Modal */}
-      <Modal isOpen={isModalOpen} onClose={closeModal} title="Create New Request" size="md">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={modalMode === 'view' ? 'Request Details' : 'Create New Request'}
+        subtitle={modalMode === 'view' && selectedRequest ? `Request #${selectedRequest.id} • ${selectedRequest.guestName || guestName || 'Guest'}` : undefined}
+        size="md"
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Guest Information */}
           <div>
@@ -306,7 +672,7 @@ export const GuestAssistance: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600">Room Number</label>
+                <label className="block text-xs font-medium text-gray-600">Room Number/Location</label>
                 <input value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white" placeholder="Auto-filled when guest selected or enter manually" />
               </div>
 
@@ -323,14 +689,16 @@ export const GuestAssistance: React.FC = () => {
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-600">Request Type <span className="text-rose-500">*</span></label>
-                <select value={requestType} onChange={(e) => setRequestType(e.target.value as AssistanceRequest['requestType'])} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
-                  <option value="housekeeping">Housekeeping</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="concierge">Concierge</option>
-                  <option value="dining">Dining</option>
-                  <option value="transport">Transport</option>
-                  <option value="other">Other</option>
-                </select>
+                {modalMode === 'view' ? (
+                  <input value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white" />
+                ) : (
+                  <select value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
+                    <option value="housekeeping">Housekeeping</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="plumbing">Plumbing</option>
+                  </select>
+                )}
                 {formErrors.requestType && <div className="text-rose-600 text-xs mt-1">{formErrors.requestType}</div>}
               </div>
 
@@ -345,9 +713,21 @@ export const GuestAssistance: React.FC = () => {
                 {formErrors.priority && <div className="text-rose-600 text-xs mt-1">{formErrors.priority}</div>}
               </div>
 
+              {modalMode === 'view' && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-600">Status</label>
+                  <select value={status} onChange={(e) => setStatus(e.target.value as AssistanceRequest['status'])} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-medium text-gray-600">Description <span className="text-rose-500">*</span></label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg" rows={4} placeholder="Describe the guest's request or issue..."></textarea>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg" rows={4} placeholder="Describe the guest's request or issue..." disabled={modalMode === 'view'}></textarea>
                 <div className="flex justify-between items-center text-xs text-gray-500 mt-1">
                   <div>{description.length}/500</div>
                   {formErrors.description && <div className="text-rose-600">{formErrors.description}</div>}
@@ -369,6 +749,7 @@ export const GuestAssistance: React.FC = () => {
                 <label className="block text-xs font-medium text-gray-600">Assign To <span className="text-rose-500">*</span></label>
                 <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
                   <option value="Unassigned">Unassigned</option>
+                  <option value="Front Desk">Front Desk</option>
                   <option value="Housekeeping Team">Housekeeping Team</option>
                   <option value="Maintenance Team">Maintenance Team</option>
                   <option value="Electrical Team">Electrical Team</option>
@@ -380,19 +761,12 @@ export const GuestAssistance: React.FC = () => {
                 {formErrors.assignedTo && <div className="text-rose-600 text-xs mt-1">{formErrors.assignedTo}</div>}
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <input id="notify" type="checkbox" checked={notifyAssignee} onChange={(e) => setNotifyAssignee(e.target.checked)} className="h-4 w-4" />
-                  <label htmlFor="notify" className="text-sm text-gray-700">Notify Assignee</label>
-                </div>
-                <div className="text-xs text-gray-500">Notification methods: Push / Email / SMS (if available)</div>
-              </div>
             </div>
           </div>
 
           <div className="flex items-center justify-end space-x-3 pt-2">
             <button type="button" onClick={closeModal} className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm">Cancel</button>
-            <button type="submit" className="px-4 py-2 rounded-lg bg-heritage-green text-white text-sm">Submit Request</button>
+            <button type="submit" disabled={!isDirty} className={`px-4 py-2 rounded-lg text-white text-sm ${isDirty ? 'bg-heritage-green' : 'bg-heritage-green/50 cursor-not-allowed'}`}>{modalMode === 'view' ? 'Save Changes' : 'Submit Request'}</button>
           </div>
         </form>
       </Modal>
@@ -416,17 +790,24 @@ export const GuestAssistance: React.FC = () => {
               {filteredRequests.map((request) => (
                 <tr key={request.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
-                    <div>
-                      <div className="font-semibold text-gray-900">{request.guestName}</div>
-                      <div className="text-sm text-gray-500">Room {request.roomNumber}</div>
-                      <div className="text-xs text-gray-400">{formatTime(request.requestTime)}</div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-heritage-green text-white font-bold text-lg shadow-sm">
+                          {request.guestName ? request.guestName.split(' ').map(n=>n[0]).slice(0,2).join('') : 'G'}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 truncate">{request.guestName}</div>
+                        <div className="text-sm text-gray-500">Room {request.roomNumber}</div>
+                        <div className="text-xs text-gray-400">{formatTime(request.requestTime)}</div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-lg">{getTypeIcon(request.requestType)}</span>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(request.requestType)}`}>
-                        {request.requestType.charAt(0).toUpperCase() + request.requestType.slice(1)}
+                        {formatRequestTypeLabel(request.requestType)}
                       </span>
                     </div>
                   </td>
@@ -453,25 +834,10 @@ export const GuestAssistance: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="text-heritage-green hover:text-heritage-green/80 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      {request.status === 'pending' && (
-                        <button className="text-blue-600 hover:text-blue-800 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                        </button>
-                      )}
+                      <button onClick={() => openViewModal(request)} className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors">View</button>
+                      {/* 'Start' action removed per UI policy change */}
                       {request.status === 'in-progress' && (
-                        <button className="text-green-600 hover:text-green-800 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </button>
+                        <button className="px-3 py-1 rounded-md text-sm text-green-600 border border-gray-200 bg-green-50 hover:bg-green-100 transition-colors">Complete</button>
                       )}
                     </div>
                   </td>
