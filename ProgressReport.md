@@ -52,7 +52,6 @@ Inventory
 5
 
 Maintenance
-<<<<<<< HEAD
 1.Mamaril (Manage Staff)
     A.) Task/Feature: CRUD for staff
     B.) Status: Complete
@@ -68,7 +67,6 @@ Maintenance
     B.) Status: Pending
     C.) Time Spent: 2hrs
     D.) Remarks: hindi pa connected sa database
-=======
 1. Albiola (Archive)
     A.)Task: Added clock logs in the archive section
     B.)Status: Completed
@@ -80,7 +78,6 @@ Maintenance
     C.)Time Spent: 1 hour
     D.)Remarks: No backend logic yet.
 3.
->>>>>>> origin/main
 4.
 5.
 

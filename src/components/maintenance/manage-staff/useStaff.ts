@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp, query, where, getDoc } from "firebase/firestore";
 import { db } from '../../../config/firebase';
 import { Staff, StaffFormData } from './types';
 
@@ -103,6 +103,32 @@ export function useStaff() {
     fetchStaff()
   }, [])
 
+  const getStaffById = async (id: string): Promise<Staff | null> => {
+    try {
+      const docRef = doc(db, "staff", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          adminId: data.adminId || '',
+          fullName: data.fullName,
+          age: data.age,
+          gender: data.gender,
+          classification: data.classification,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          rfid: data.rfid || '',
+          createdAt: data.createdAt?.toDate() || new Date(),
+        };
+      }
+      return null;
+    } catch (err) {
+      console.error("Error fetching staff by ID:", err);
+      return null;
+    }
+  };
+
   return {
     staff,
     loading,
@@ -111,5 +137,6 @@ export function useStaff() {
     updateStaff,
     deleteStaff,
     refetch: fetchStaff,
+    getStaffById,
   }
 }

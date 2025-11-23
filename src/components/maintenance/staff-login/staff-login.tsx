@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import bgImage from '/BalayGinhawa/HotelLogoJpg.jpg'; // Use hotel logo as background
 import logo from '/BalayGinhawa/balaylogopng.png';
-import { useAttendance } from '../../../hooks/useAttendance';
-import type { Staff } from '../manage-staff/types';
+import { useAttendance, StaffWithAttendance } from '../../../hooks/useAttendance';
 
 const EmployeeTimeClock = () => {
   const navigate = useNavigate();
-  const [rfid, setRfid] = useState('');
+  // Removed rfid state, using ref for uncontrolled input
   const [formData, setFormData] = useState({
     name: '',
     rfid: '',
@@ -16,193 +14,201 @@ const EmployeeTimeClock = () => {
     date: '',
   });
   const [showWarningModal, setShowWarningModal] = useState(false);
-  const [recentClockInTime, setRecentClockInTime] = useState<Date | null>(null);
-  const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
+  const [lastScanned, setLastScanned] = useState<{ rfid: string; time: Date } | null>(null);
+  const [currentInput, setCurrentInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const scanTimeout = useRef<NodeJS.Timeout | null>(null);
+  const accumulatedRFID = useRef('');
+  const clearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isProcessing = useRef(false);
 
   const { loading, error, handleRFIDScan } = useAttendance();
 
+  // Focus input on component mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const handleRFIDChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value;
-    console.log('Input changed, raw value:', JSON.stringify(rawValue));
-    setRfid(rawValue);
 
-    // Process RFID immediately when we have a complete value (10+ characters or contains newline/carriage return)
-    const cleanValue = rawValue.replace(/[\n\r]/g, '').trim();
-    console.log('Clean RFID value:', JSON.stringify(cleanValue));
 
-    if (cleanValue && (cleanValue.length >= 10 || rawValue.includes('\n') || rawValue.includes('\r'))) {
-      console.log('Processing RFID scan for:', JSON.stringify(cleanValue));
+  // Core scan logic
+  const processRFID = async (cleanValue: string) => {
+    if (isProcessing.current) {
+      return;
+    }
 
+    isProcessing.current = true;
+
+    try {
       const now = new Date();
 
-      // Check if scanned within 5 seconds of any previous scan (not just clock in)
-      if (lastScanTime && (now.getTime() - lastScanTime.getTime()) < 5000) {
-        console.log('Duplicate scan detected within 5 seconds, showing warning modal');
+      // Prevent duplicate scans of the same RFID within 5 seconds
+      if (lastScanned && lastScanned.rfid === cleanValue && now.getTime() - lastScanned.time.getTime() < 5000) {
         setShowWarningModal(true);
-        // Update last scan time even for duplicates to maintain the 5-second window
-        setLastScanTime(now);
-        setRfid('');
-        inputRef.current?.focus();
         return;
       }
-
-      // Update last scan time for successful scans
-      setLastScanTime(now);
+      setLastScanned({ rfid: cleanValue, time: now });
 
       const result = await handleRFIDScan(cleanValue);
-      console.log('RFID scan result:', result);
 
       if (result.success && result.staff) {
         if (result.message.includes('in')) {
-          const newFormData = {
+          // Clock in
+          setFormData({
             name: result.staff.fullName,
             rfid: cleanValue,
             timeIn: now.toLocaleTimeString(),
             timeOut: '',
             date: now.toLocaleDateString(),
-          };
-          console.log('Setting form data for clock in:', newFormData);
-          setFormData(newFormData);
-          setRecentClockInTime(now);
-          setTimeout(() => {
-            setRecentClockInTime(null);
-          }, 5000);
+          });
         } else if (result.message.includes('out')) {
-          setFormData(prev => {
-            const updated = {
-              ...prev,
-              timeOut: now.toLocaleTimeString(),
-            };
-            console.log('Updating form data for clock out:', updated);
-            return updated;
+          // Clock out - fetch data from database
+          const staffWithAttendance = result.staff as StaffWithAttendance;
+          setFormData({
+            name: staffWithAttendance.fullName,
+            rfid: cleanValue,
+            timeIn: staffWithAttendance.timeIn ? staffWithAttendance.timeIn.toDate().toLocaleTimeString() : "",
+            timeOut: now.toLocaleTimeString(),
+            date: staffWithAttendance.date || now.toLocaleDateString(),
           });
         }
+
+        // Clear form data after 3 seconds
+        clearTimeoutRef.current = setTimeout(() => {
+          setFormData({
+            name: '',
+            rfid: '',
+            timeIn: '',
+            timeOut: '',
+            date: '',
+          });
+        }, 3000);
       } else {
-        console.log('RFID scan failed:', result.message);
-        alert(result.message || 'RFID not found. Please register first.');
+        // Show inline error instead of alert
+        
       }
 
-      // Clear input after processing
-      setRfid('');
-      inputRef.current?.focus();
+      setCurrentInput('');
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    } finally {
+      isProcessing.current = false;
     }
   };
 
-  const handleScan = async () => {
-    if (recentClockInTime && (Date.now() - recentClockInTime.getTime()) < 5000) {
-      setShowWarningModal(true);
-      return;
+  const handleRFIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    
+
+    // Accumulate the input in ref
+    accumulatedRFID.current = rawValue.replace(/[\n\r]/g, '').trim();
+
+    // Update the state for controlled input
+    setCurrentInput(rawValue);
+
+    // Clear existing timeout
+    if (scanTimeout.current) {
+      clearTimeout(scanTimeout.current);
     }
-    if (rfid.trim()) {
-      await handleRFIDChange({ target: { value: rfid } } as any);
-    }
+
+    // Set timeout to process after 100ms (adjust as needed for your RFID reader speed)
+    scanTimeout.current = setTimeout(() => {
+      const cleanValue = accumulatedRFID.current;
+      
+
+      if (cleanValue.length >= 10) {
+        processRFID(cleanValue);
+      } else {
+        // Clear input if not long enough
+        setCurrentInput('');
+        accumulatedRFID.current = '';
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }
+    }, 100);
   };
 
   const closeWarningModal = () => {
     setShowWarningModal(false);
+    // Delay focus to ensure modal is fully closed
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
 
-
   return (
-    <div
-      className="fixed inset-0 w-full h-full flex flex-col bg-cover bg-center"
-      style={{ backgroundImage: `url(${bgImage})` }}
-    >
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-black/40"></div>
+    <div className="min-h-screen relative">
+      {/* Background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(10px)',
+        }}
+      ></div>
 
-
-      {/* Main Content Area - Centered */}
-      <div className="relative z-10 flex-1 flex items-center justify-center p-4">
-        {/* Time Clock Card */}
-        <div className="w-full max-w-md mx-auto overflow-hidden shadow-2xl bg-[#FBF0E4] rounded-lg">
-          {/* Header */}
-          <div className="bg-[#889D65] text-white text-center py-6 rounded-t-lg">
-            <div className="flex justify-center mb-4">
-              <img
-                src={logo}
-                alt="Balay Ginhawa Logo"
-                width={120}
-              />
+      {/* Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-7xl bg-white shadow-2xl rounded-lg overflow-hidden">
+          <div className="flex">
+            {/* Left: Logo */}
+            <div className="w-1/2 p-12 flex flex-col items-center justify-center bg-gray-50">
+              <img src={logo} alt="Balay Ginhawa Logo" width={250} />
+              <h1 className="text-5xl font-bold text-gray-800 mt-6 text-center">
+                Staff Login of Work Flow Management
+              </h1>
             </div>
-            <h1 className="admin-login-title text-2xl font-bold tracking-wide uppercase">EMPLOYEE LOGIN</h1>
-          </div>
 
-          {/* Form Container */}
-          <div className="px-6 pt-4 pb-6 space-y-4">
+            {/* Right: Form */}
+            <div className="w-1/2 p-12">
+              {/* Hidden RFID input */}
+              <input
+                ref={inputRef}
+                type="text"
+                value={currentInput}
+                onChange={handleRFIDChange}
+                className="opacity-0 absolute"
+                style={{ width: '200px', height: '40px', top: '0px', left: '0px' }}
+                aria-hidden="true"
+              />
 
-            {/* Hidden RFID Input for Reader */}
-            <input
-              ref={inputRef}
-              type="text"
-              value={rfid}
-              onChange={handleRFIDChange}
-              className="absolute opacity-0 pointer-events-none"
-              style={{ top: '-9999px', left: '-9999px' }}
-            />
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-100 border border-red-300 text-red-700 px-3 py-2 rounded-none text-xs">
-                {error}
-              </div>
-            )}
-
-            {/* Employee Info Form */}
-            <div className="bg-gray-50 border border-gray-200 rounded-none p-6 text-base space-y-4">
-              <h3 className="font-bold text-gray-800 mb-4 text-lg">Employee Information:</h3>
-              <div>
-                <label className="block text-gray-600 text-sm mb-2 font-medium">Employee Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  readOnly
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none bg-white text-gray-800 text-base font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-2 font-medium">Employee ID (RFID)</label>
-                <input
-                  type="text"
-                  value={formData.rfid}
-                  readOnly
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none bg-white text-gray-800 text-base font-medium"
-                />
-              </div>
-              <div className="flex space-x-3">
-                <div className="flex-1">
-                  <label className="block text-gray-600 text-sm mb-2 font-medium">Time In</label>
-                  <input
-                    type="text"
-                    value={formData.timeIn}
-                    readOnly
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none bg-white text-gray-800 text-base font-medium"
-                  />
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 text-sm mb-6">
+                  {error}
                 </div>
-                <div className="flex-1">
-                  <label className="block text-gray-600 text-sm mb-2 font-medium">Time Out</label>
-                  <input
-                    type="text"
-                    value={formData.timeOut}
-                    readOnly
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none bg-white text-gray-800 text-base font-medium"
-                  />
+              )}
+
+              {/* Employee Info */}
+              <div className="bg-gray-100 border border-gray-200 p-8 text-xl space-y-6">
+                <h3 className="font-bold text-gray-800 mb-6 text-3xl">Employee Information:</h3>
+                <div>
+                  <label className="block text-gray-600 text-xl mb-3 font-medium">Employee Name</label>
+                  <input type="text" value={formData.name} readOnly className="w-full px-5 py-4 border border-gray-300 bg-white text-xl font-medium" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-gray-600 text-sm mb-2 font-medium">Date</label>
-                <input
-                  type="text"
-                  value={formData.date}
-                  readOnly
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none bg-white text-gray-800 text-base font-medium"
-                />
+                <div>
+                  <label className="block text-gray-600 text-xl mb-3 font-medium">Employee ID (RFID)</label>
+                  <input type="text" value={formData.rfid} readOnly className="w-full px-5 py-4 border border-gray-300 bg-white text-xl font-medium" />
+                </div>
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <label className="block text-gray-600 text-xl mb-3 font-medium">Time In</label>
+                    <input type="text" value={formData.timeIn} readOnly className="w-full px-5 py-4 border border-gray-300 bg-white text-xl font-medium" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-gray-600 text-xl mb-3 font-medium">Time Out</label>
+                    <input type="text" value={formData.timeOut} readOnly className="w-full px-5 py-4 border border-gray-300 bg-white text-xl font-medium" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-gray-600 text-xl mb-3 font-medium">Date</label>
+                  <input type="text" value={formData.date} readOnly className="w-full px-5 py-4 border border-gray-300 bg-white text-xl font-medium" />
+                </div>
               </div>
             </div>
           </div>
@@ -214,34 +220,13 @@ const EmployeeTimeClock = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-sm w-full mx-4 shadow-2xl">
             <h2 className="text-lg font-semibold mb-2 text-gray-800">Duplicate Scan Detected</h2>
-            <p className="text-gray-600 mb-2">RFID scanned too quickly. All input data has been cleared.</p>
-            <p className="text-gray-600 mb-4">You need to wait 5 seconds before scanning again.</p>
-            <button
-              onClick={() => {
-                closeWarningModal();
-                // Clear all form data to make it look new
-                setFormData({
-                  name: '',
-                  rfid: '',
-                  timeIn: '',
-                  timeOut: '',
-                  date: '',
-                });
-              }}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold text-base shadow-md transition-colors"
-            >
-              OK
+            <p className="text-gray-600 mb-2">RFID scanned too quickly. Please wait 5 seconds before scanning again.</p>
+            <button onClick={closeWarningModal} className="mt-4 px-4 py-2 bg-gray-800 text-white rounded">
+              Close
             </button>
           </div>
         </div>
       )}
-
-
-
-      {/* Footer */}
-      <div className="relative z-10 w-full bg-[#889D65] text-white text-center py-4">
-        <p className="text-base font-bold">© 2025 Balay Ginhawa. All rights reserved.</p>
-      </div>
     </div>
   );
 };

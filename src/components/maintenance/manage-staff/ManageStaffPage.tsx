@@ -12,7 +12,8 @@ const ManageStaffPage: React.FC = () => {
   const [editStaff, setEditStaff] = useState<Staff | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterClassification, setFilterClassification] = useState("");
-  const { staff, addStaff, updateStaff, deleteStaff } = useStaff();
+  const [filterGender, setFilterGender] = useState("");
+  const { staff, addStaff, updateStaff, deleteStaff, getStaffById } = useStaff();
 
   const filteredStaff = useMemo(() => {
     return staff.filter((staffMember) => {
@@ -26,9 +27,13 @@ const ManageStaffPage: React.FC = () => {
         filterClassification === "" ||
         staffMember.classification === filterClassification;
 
-      return matchesSearch && matchesClassification;
+      const matchesGender =
+        filterGender === "" ||
+        staffMember.gender === filterGender;
+
+      return matchesSearch && matchesClassification && matchesGender;
     });
-  }, [staff, searchQuery, filterClassification]);
+  }, [staff, searchQuery, filterClassification, filterGender]);
 
   const handleAddStaff = () => {
     setEditStaff(null);
@@ -72,11 +77,15 @@ const ManageStaffPage: React.FC = () => {
           onSearchChange={setSearchQuery}
           filterClassification={filterClassification}
           onFilterChange={setFilterClassification}
+          filterGender={filterGender}
+          onGenderChange={setFilterGender}
         />
         <StaffGrid
           staff={filteredStaff}
           onEditStaff={handleEditStaff}
           onDeleteStaff={deleteStaff}
+          onAddStaff={handleAddStaff}
+          getStaffById={getStaffById}
         />
       </div>
 
