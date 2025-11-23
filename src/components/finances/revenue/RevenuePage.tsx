@@ -1,4 +1,5 @@
-import React, { useState, Suspense, useMemo } from 'react';
+import React, { useState, Suspense, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import RevenueDashboard from './RevenueDashboard';
 
 // OverviewCards is a named export — map it to default for React.lazy
@@ -9,8 +10,10 @@ const ProfitAnalysisCharts = React.lazy(() => import('../profitAnalytics/ProfitA
 import { getRevenueData, calculateChartMetrics } from '../dashboard/chartsLogic/revenueAnalyticsLogic';
 
 export const RevenuePage: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'revenue' | 'profit'>('revenue');
   const [activeTimeframe] = useState<'monthly' | 'yearly'>('monthly');
+  const navigate = useNavigate();
 
   // Compute revenue metrics for the Profit tab and pass to components
   const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
@@ -98,6 +101,23 @@ export const RevenuePage: React.FC = () => {
     }
   ], [metrics.totalRevenue, metrics.totalExpenses]);
 
+  // Read ?tab= or #hash on mount and switch tabs accordingly
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'profit') {
+        setActiveTab('profit');
+        return;
+      }
+      if (location.hash === '#profit') {
+        setActiveTab('profit');
+      }
+    } catch (e) {
+      // ignore malformed URL
+    }
+  }, [location.search, location.hash]);
+
   // no inline net pill; header will provide an action to open profit tab
 
   return (
@@ -143,7 +163,10 @@ export const RevenuePage: React.FC = () => {
                   role="tab"
                   aria-selected={activeTab === 'revenue'}
                   tabIndex={0}
-                  onClick={() => setActiveTab('revenue')}
+                  onClick={() => {
+                    setActiveTab('revenue');
+                    navigate(location.pathname, { replace: false });
+                  }}
                     className={`group z-20 flex items-center justify-center flex-1 text-center px-10 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/50 leading-tight ${
                       activeTab === 'revenue' 
                         ? 'text-emerald-900 scale-[1.02]' 
@@ -157,7 +180,11 @@ export const RevenuePage: React.FC = () => {
                   role="tab"
                   aria-selected={activeTab === 'profit'}
                   tabIndex={0}
-                  onClick={() => setActiveTab('profit')}
+                  onClick={() => {
+                    setActiveTab('profit');
+                    // deep-link the profit tab so layout/topbar can detect it
+                    navigate(`${location.pathname}?tab=profit`, { replace: false });
+                  }}
                   title="Net profit and margin analytics"
                   className={`group z-20 flex items-center justify-center flex-1 text-center px-10 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-300/50 leading-tight ${
                     activeTab === 'profit' 

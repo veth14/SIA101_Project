@@ -10,6 +10,15 @@ import {
   Area
 } from 'recharts';
 
+// Recharts typing workaround: cast components to a generic React component type
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+
 const DepartmentCharts: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Last 30 Days');
 
@@ -127,8 +136,8 @@ const DepartmentCharts: React.FC = () => {
         <div className="p-8">
           {/* Chart Container */}
           <div className="w-full h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart 
+            <RResponsiveContainer width="100%" height="100%">
+              <RAreaChart 
                 data={departmentData} 
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
@@ -155,9 +164,9 @@ const DepartmentCharts: React.FC = () => {
                   </linearGradient>
                 </defs>
                 
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <RCartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 
-                <XAxis 
+                <RXAxis 
                   dataKey="month" 
                   axisLine={false}
                   tickLine={false}
@@ -165,18 +174,18 @@ const DepartmentCharts: React.FC = () => {
                   dy={10}
                 />
                 
-                <YAxis 
+                <RYAxis 
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: '#6B7280' }}
                   dx={-10}
                 />
                 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Tooltip content={CustomTooltip} />
+                {/* Use casted RTooltip to avoid typing issues */}
+                <RTooltip content={<CustomTooltip />} />
                 
                 {/* Department Areas */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="housekeeping"
                   stroke="#3B82F6"
@@ -185,7 +194,7 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="frontoffice"
                   stroke="#10B981"
@@ -194,7 +203,7 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="fnb"
                   stroke="#F59E0B"
@@ -203,7 +212,7 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="maintenance"
                   stroke="#EF4444"
@@ -212,7 +221,7 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#EF4444', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#EF4444', strokeWidth: 2, fill: '#ffffff' }}
                 />
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="security"
                   stroke="#8B5CF6"
@@ -221,8 +230,8 @@ const DepartmentCharts: React.FC = () => {
                   dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#ffffff' }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}

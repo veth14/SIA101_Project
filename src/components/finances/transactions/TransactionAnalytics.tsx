@@ -1,6 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Recharts JSX typing aliases to avoid strict return-type JSX errors
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 // Type definitions
 interface TransactionDataPoint {
   day: string;
@@ -166,11 +175,16 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl group-hover:scale-105">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+              <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V7a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2"
+                />
+              </svg>
+            </div>
                 <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
               </div>
               <div>
@@ -255,9 +269,9 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
             
-            <ResponsiveContainer width="100%" height="100%">
-             
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+
+              <RAreaChart
                 data={chartData}
                 margin={{ top: 20, right: 40, left: 10, bottom: 40 }}
               >
@@ -268,7 +282,7 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   </linearGradient>
                 </defs>
                 
-                <XAxis 
+                <RXAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 11 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
@@ -278,21 +292,21 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   padding={{ left: 20, right: 20 }}
                 />
                 
-                <YAxis 
+                <RYAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <CartesianGrid 
+                <RCartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
                 
-                <Tooltip content={<CustomTooltip />} />
-                
-                <Area 
+                <RTooltip content={<CustomTooltip />} />
+
+                <RArea 
                   type="linear" 
                   dataKey="transactions" 
                   stroke="#82A33D" 
@@ -308,8 +322,8 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                     fill: 'white'
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}

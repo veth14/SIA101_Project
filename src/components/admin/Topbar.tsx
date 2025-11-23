@@ -25,7 +25,7 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     if (location.pathname.includes('/finances/transactions')) return 'Transactions';
     if (location.pathname === '/admin/reports') return 'Financial Reports';
     if (location.pathname === '/admin/expenses') return 'Expense Management';
-    if (location.pathname === '/admin/income') return 'Revenue Tracking';
+    // revenue title is handled below to allow ?tab=profit or #profit deep-links
     if (location.pathname === '/admin/payroll') return 'Payroll';
     if (location.pathname === '/admin/finances') return 'Finances';
     
@@ -54,6 +54,20 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     
     // General pages
     if (location.pathname.includes('/analytics')) return 'Analytics';
+
+    // If we're on the revenue page, respect the ?tab=profit or #profit deep-link
+    if (location.pathname === '/admin/income') {
+      try {
+        const params = new URLSearchParams(location.search);
+        if (params.get('tab') === 'profit' || location.hash === '#profit') {
+          return 'Profit & Margin';
+        }
+      } catch (e) {
+        // ignore malformed URL
+      }
+      return 'Revenue Tracking';
+    }
+
     return 'Dashboard';
   };
 
