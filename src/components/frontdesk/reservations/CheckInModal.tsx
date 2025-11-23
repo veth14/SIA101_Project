@@ -461,7 +461,7 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
               title="Complete this check-in"
             >
               <IconCheck />
-              Complete Check-In
+              Complete Check-In a
             </button>
           </div>
         </div>
