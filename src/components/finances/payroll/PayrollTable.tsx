@@ -303,8 +303,8 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                 </tr>
               );
             })}
-            {/* Fill empty rows to always show 10 rows */}
-            {Array.from({ length: Math.max(0, 10 - currentEmployees.length) }).map((_, index) => (
+            {/* Fill empty rows to always show up to 5 rows total */}
+            {Array.from({ length: Math.max(0, 5 - currentEmployees.length) }).map((_, index) => (
               <tr key={`empty-${index}`} style={{ height: '74px' }} className="border-gray-200 border-dashed bg-gray-50/30">
                 <td className="px-6 py-5" colSpan={7}>
                   <div className="flex items-center justify-center text-sm font-medium text-gray-300 opacity-60">

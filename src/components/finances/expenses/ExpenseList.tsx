@@ -308,104 +308,102 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
           </div>
 
           {/* Modern Filters Section */}
-          <div className="mt-5 space-y-3">
-            {/* Search Bar - Full Width */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                <svg className="w-5 h-5 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search by ID, description, vendor, or submitter..."
-                value={filters.searchTerm}
-                onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                className="w-full py-3.5 pl-12 pr-4 text-sm font-medium bg-white border-2 rounded-xl border-gray-200 focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 placeholder:text-gray-400 transition-all"
-              />
-            </div>
-
-            {/* Filter Dropdowns - Grid Layout */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Status Filter */}
-              <div className="relative">
-                <label className="block mb-1.5 text-xs font-bold text-gray-700 uppercase tracking-wide">Status</label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="w-full px-4 py-3 text-sm font-semibold text-gray-700 transition-all bg-white border-2 border-gray-200 appearance-none cursor-pointer rounded-xl focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20"
-                >
-                  <option value="all">All Status</option>
-                  <option value="pending">⏱ Pending</option>
-                  <option value="approved">✓ Approved</option>
-                  <option value="rejected">✗ Rejected</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 mt-6 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <div className="mt-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              {/* Search Bar */}
+              <div className="relative flex-1 min-w-[240px]">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
+                <input
+                  type="text"
+                  placeholder="Search by ID, description, vendor, or submitter..."
+                  value={filters.searchTerm}
+                  onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                  className="w-full py-3 pl-12 pr-4 text-sm font-medium bg-white border border-gray-200 rounded-xl focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 placeholder:text-gray-400 transition-all"
+                />
               </div>
 
-              {/* Category Filter */}
-              <div className="relative">
-                <label className="block mb-1.5 text-xs font-bold text-gray-700 uppercase tracking-wide">Category</label>
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full px-4 py-3 text-sm font-semibold text-gray-700 transition-all bg-white border-2 border-gray-200 appearance-none cursor-pointer rounded-xl focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="utilities">⚡ Utilities</option>
-                  <option value="supplies">📦 Supplies</option>
-                  <option value="maintenance">🔧 Maintenance</option>
-                  <option value="marketing">📢 Marketing</option>
-                  <option value="staff">👥 Staff</option>
-                  <option value="food">🍽 Food & Beverage</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 mt-6 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+              {/* Compact Filters */}
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                {/* Status Filter */}
+                <div className="relative">
+                  <select
+                    value={filters.status}
+                    onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                    className="min-w-[130px] px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none cursor-pointer hover:border-heritage-green focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">⏱ Pending</option>
+                    <option value="approved">✓ Approved</option>
+                    <option value="rejected">✗ Rejected</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
 
-              {/* Date Range Filter */}
-              <div className="relative">
-                <label className="block mb-1.5 text-xs font-bold text-gray-700 uppercase tracking-wide">Date Range</label>
-                <select
-                  value={filters.dateRange}
-                  onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
-                  className="w-full px-4 py-3 text-sm font-semibold text-gray-700 transition-all bg-white border-2 border-gray-200 appearance-none cursor-pointer rounded-xl focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20"
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 mt-6 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                {/* Category Filter */}
+                <div className="relative">
+                  <select
+                    value={filters.category}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="min-w-[150px] px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none cursor-pointer hover:border-heritage-green focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green"
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="utilities">⚡ Utilities</option>
+                    <option value="supplies">📦 Supplies</option>
+                    <option value="maintenance">🔧 Maintenance</option>
+                    <option value="marketing">📢 Marketing</option>
+                    <option value="staff">👥 Staff</option>
+                    <option value="food">🍽 Food & Beverage</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
 
-              {/* Sort By Filter */}
-              <div className="relative">
-                <label className="block mb-1.5 text-xs font-bold text-gray-700 uppercase tracking-wide">Sort By</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'date_desc' | 'amount_desc' | 'amount_asc')}
-                  className="w-full px-4 py-3 text-sm font-semibold text-gray-700 transition-all bg-white border-2 border-gray-200 appearance-none cursor-pointer rounded-xl focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20"
-                >
-                  <option value="date_desc">↓ Newest First</option>
-                  <option value="amount_desc">↓ Highest Amount</option>
-                  <option value="amount_asc">↑ Lowest Amount</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 mt-6 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                {/* Date Range Filter */}
+                <div className="relative">
+                  <select
+                    value={filters.dateRange}
+                    onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
+                    className="min-w-[130px] px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none cursor-pointer hover:border-heritage-green focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green"
+                  >
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Sort By Filter */}
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'date_desc' | 'amount_desc' | 'amount_asc')}
+                    className="min-w-[150px] px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm appearance-none cursor-pointer hover:border-heritage-green focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green"
+                  >
+                    <option value="date_desc">↓ Newest First</option>
+                    <option value="amount_desc">↓ Highest Amount</option>
+                    <option value="amount_asc">↑ Lowest Amount</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -413,9 +411,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
         </div>
 
         {/* Expense Cards - Fixed Height Container for 5 items */}
-        <div className="px-4 py-4 min-h-[550px]">
+        <div className="px-4 py-4">
           {sortedExpenses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[500px]">
+            <div className="flex flex-col items-center justify-center py-16">
               <div className="flex items-center justify-center w-20 h-20 mb-4 bg-gray-100 rounded-full">
                 <FileText className="w-10 h-10 text-gray-400" />
               </div>
@@ -423,157 +421,175 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
               <p className="text-sm text-gray-500">Try adjusting your filters or add a new expense</p>
             </div>
           ) : (
-            <div className="space-y-2 min-h-[500px]">{pagedExpenses.map((expense) => {
-                const statusConfig = getStatusConfig(expense.status);
-                const categoryConfig = getCategoryConfig(expense.category);
-                const isRejected = expense.status === 'rejected';
-                const isLocked = expense.status === 'rejected';
+            <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white/80 shadow-sm">
+              <table className="w-full text-sm">
+                <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                      Ref #
+                    </th>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                      Description
+                    </th>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                      Vendor
+                    </th>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                      Category
+                    </th>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
+                      Amount
+                    </th>
+                    <th className="px-6 py-4 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {pagedExpenses.map((expense, index) => {
+                    const statusConfig = getStatusConfig(expense.status);
+                    const categoryConfig = getCategoryConfig(expense.category);
+                    const isRejected = expense.status === 'rejected';
+                    const isLocked = expense.status === 'rejected';
 
-                return (
-                  <div
-                    key={expense.id}
-                    onClick={() => handleExpenseClick(expense)}
-                    className={`
-                      relative group transition-all duration-200 rounded-xl overflow-hidden
-                      ${isRejected ? 'opacity-80 cursor-pointer' : 'cursor-pointer'}
-                      ${!isRejected ? 'hover:shadow-lg hover:scale-[1.002] hover:ring-2 hover:ring-heritage-green/30' : ''}
-                    `}
-                  >
-                    <div className="absolute inset-0 transition-opacity duration-200 bg-white group-hover:bg-gradient-to-r group-hover:from-gray-50 group-hover:via-white group-hover:to-gray-50" />
-
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${categoryConfig.gradient} transition-all duration-200 group-hover:w-1.5`} />
-
-                    <div className="relative px-4 py-3">
-                      <div className="flex items-start gap-3">
-                        {/* Category Icon */}
-                        <div className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br ${categoryConfig.gradient} text-white shadow-md transition-all duration-200 group-hover:scale-105`}>
-                          {categoryConfig.icon}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-3 mb-1.5">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="mb-1 text-sm font-bold text-gray-900 truncate">
-                                {expense.description}
-                              </h3>
-                              <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                                <span className={`px-2 py-0.5 rounded border font-bold ${statusConfig.badge} flex items-center gap-1`}>
-                                  <span>{statusConfig.icon}</span>
-                                  <span>{statusConfig.label}</span>
-                                </span>
-                                <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-semibold">
-                                  {categoryConfig.label}
-                                </span>
-                                {expense.receiptUrl && (
-                                  <span className="px-2 py-0.5 rounded bg-green-50 text-green-700 font-semibold border border-green-200">
-                                    📎
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex-shrink-0 text-right">
-                              <div className="text-lg font-bold text-gray-900">
-                                {formatCurrency(expense.amount)}
-                              </div>
-                            </div>
+                    return (
+                      <tr
+                        key={expense.id}
+                        onClick={() => handleExpenseClick(expense)}
+                        style={{ animationDelay: `${index * 50}ms` }}
+                        className={`group cursor-pointer transition-all duration-300 hover:bg-gray-50/80 animate-fade-in ${
+                          isRejected ? 'opacity-80' : ''
+                        }`}
+                      >
+                        <td className="px-6 py-4 text-xs font-mono font-bold text-gray-600 whitespace-nowrap">
+                          #{expense.id}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-bold text-gray-900 group-hover:text-heritage-green transition-colors">
+                            {expense.description}
                           </div>
-
-                          <div className="flex flex-wrap items-center gap-2 mb-2 text-xs text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                              </svg>
-                              <span className="font-medium">{expense.vendor}</span>
+                          <div className="mt-0.5 text-xs text-gray-500">
+                            Submitted by <span className="font-medium">{expense.submittedBy}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2 text-sm text-gray-800">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span className="font-semibold">{expense.vendor}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-700">
+                            <span
+                              className={`flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br ${categoryConfig.gradient} text-white text-[10px] shadow`}
+                            >
+                              {categoryConfig.icon}
                             </span>
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              <span className="font-medium">{expense.date}</span>
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              <span className="font-medium">{expense.submittedBy}</span>
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-gray-100 font-mono text-[10px] font-bold text-gray-600">
-                              #{expense.id}
-                            </span>
+                            <span>{categoryConfig.label}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                          {expense.date}
+                        </td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          <span className="text-sm font-bold text-gray-900">
+                            {formatCurrency(expense.amount)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${statusConfig.badge}`}
+                          >
+                            <span>{statusConfig.icon}</span>
+                            <span>{statusConfig.label}</span>
                             {isLocked && (
-                              <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-bold">
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
+                              <span className="ml-1 text-[9px] font-black tracking-wide uppercase text-gray-500">
                                 LOCKED
                               </span>
                             )}
-                          </div>
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* Placeholder rows to keep table height consistent */}
+                  {Array.from({ length: Math.max(0, pageSize - pagedExpenses.length) }).map((_, index) => (
+                    <tr
+                      key={`empty-${index}`}
+                      style={{ height: '72px' }}
+                      className="border-gray-200 border-dashed bg-gray-50/40"
+                    >
+                      <td className="px-6 py-4" colSpan={7}>
+                        <div className="flex items-center justify-center text-xs font-medium text-gray-300 opacity-60">
+                          <div className="w-2 h-2 mr-2 bg-gray-300 rounded-full opacity-40" />
+                          Empty slot {index + 1}
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
         {sortedExpenses.length > 0 && (
-          <div className="px-8 py-6 border-t bg-gradient-to-r from-heritage-light/20 via-white to-heritage-light/20 border-heritage-neutral/20">
-            {/* Pagination controls centered */}
-            <div className="flex items-center justify-center gap-2">{/* Previous button */}
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className={`
-                  px-5 py-2.5 text-sm font-bold rounded-xl transition-all
-                  ${page === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white border-2 border-heritage-neutral/30 text-gray-700 hover:border-heritage-green hover:text-heritage-green hover:shadow-lg active:scale-95'
-                  }
-                `}
-              >
-                ← Previous
-              </button>
-              
-              {/* Page numbers */}
-              <div className="flex items-center gap-2">
-                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setPage(pageNum)}
-                      className={`
-                        w-11 h-11 rounded-xl text-sm font-bold transition-all
-                        ${page === pageNum
-                          ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-lg scale-110'
-                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-heritage-green hover:text-heritage-green hover:scale-105'
-                        }
-                      `}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
 
-              {/* Next button */}
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className={`
-                  px-5 py-2.5 text-sm font-bold rounded-xl transition-all
-                  ${page === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white border-2 border-heritage-neutral/30 text-gray-700 hover:border-heritage-green hover:text-heritage-green hover:shadow-lg active:scale-95'
-                  }
-                `}
-              >
-                Next →
-              </button>
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else {
+                      const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+                      pageNum = start + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                          pageNum === page
+                            ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}

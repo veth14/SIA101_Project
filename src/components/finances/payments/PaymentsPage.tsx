@@ -3,7 +3,6 @@ import PaymentList from './PaymentList';
 import PaymentDetails from './PaymentDetails';
 import type { Payment } from './PaymentList';
 import PaymentsStats from './PaymentsStats';
-import PaymentsActivity from './PaymentsActivity';
 
 export const PaymentsPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -100,7 +99,7 @@ export const PaymentsPage: React.FC = () => {
       </div>
 
       {/* Main Content Container */}
-  <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
+      <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
 
         {/* Stats */}
         <div className="w-full">
@@ -108,32 +107,27 @@ export const PaymentsPage: React.FC = () => {
         </div>
 
         {/* Main Grid */}
-            <div className="relative w-full">
-              <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
-                <div className="lg:col-span-2 h-full">
-                  <PaymentList 
-                    payments={payments}
-                    onPaymentSelect={handlePaymentSelect}
-                    selectedPayment={selectedPayment}
-                  />
-                </div>
-                <div className="col-span-1 h-full">
-                  <PaymentsActivity payments={payments} />
-                </div>
-              </div>
-
-              {/* Page-level shimmer overlay for the grid while loading */}
-              {/* loading overlay removed */}
+        <div className="relative w-full">
+          <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
+            <div className="lg:col-span-2 h-full">
+              <PaymentList 
+                payments={payments}
+                onPaymentSelect={handlePaymentSelect}
+                selectedPayment={selectedPayment}
+              />
             </div>
-      </div>
+            <div className="col-span-1 h-full">
+              <PaymentDetails 
+                payment={selectedPayment}
+                onClose={handleCloseDetails}
+              />
+            </div>
+          </div>
 
-      {/* Payment Details Modal */}
-      {selectedPayment && (
-        <PaymentDetails 
-          payment={selectedPayment}
-          onClose={handleCloseDetails}
-        />
-      )}
+          {/* Page-level shimmer overlay for the grid while loading */}
+          {/* loading overlay removed */}
+        </div>
+      </div>
     </div>
   );
 };
