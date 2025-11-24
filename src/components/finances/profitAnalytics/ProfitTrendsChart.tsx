@@ -131,16 +131,8 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className={`flex items-center justify-center w-12 h-12 shadow-2xl rounded-2xl transition-all duration-300 group-hover:scale-105 ${
-                  isProfitable 
-                    ? 'bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral' 
-                    : 'bg-gradient-to-br from-red-500 via-red-600 to-red-700'
-                }`}>
-                  {isProfitable ? (
-                    <TrendingUp className="w-6 h-6 text-white" strokeWidth={2.5} />
-                  ) : (
-                    <TrendingDown className="w-6 h-6 text-white" strokeWidth={2.5} />
-                  )}
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-[#82A33D]" />
                 </div>
                 <div className={`absolute -inset-2 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300 ${
                   isProfitable 
