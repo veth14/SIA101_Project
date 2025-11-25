@@ -43,17 +43,6 @@ Front Desk
     C.) Time Spent: 3 hours
     D.) Remarks: Still need to create a Roomtype collection, add function to the 4 other buttons
 
-5. DETERA (Lost and Found )
-    A.) Task/Feature: Separate Found Items Reports and Lost Item Reports 
-    B.) Status: Completed
-    C.) Time Spent: 7 hours
-    D.) Remarks: Added Navigation for Found items and Lost Items 
-
-6. DETERA (Lost and Found )
-    A.) Task/Feature: LostFoundGrid responsive for mobile devices
-    B.) Status: Completed
-    C.) Time Spent: 4 hours
-    D.) Remarks: Not fully responsive for some other tablet devices. 
 
 Inventory
 1.

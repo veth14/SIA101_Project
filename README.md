@@ -1239,4 +1239,4 @@ This project is part of an academic requirement for SIA101 course.
 
 **Built with ❤️ for Balay Ginhawa Hotel Management System**
 
-*Last Updated: November 10, 2025*
+*Last Updated: October 14, 2025*
