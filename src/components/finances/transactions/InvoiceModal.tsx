@@ -112,6 +112,58 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
 
     try {
       const totals = calculateTotals();
+      let invoiceStatus: 'paid' | 'pending' = 'pending';
+
+      // Prefer booking.paymentStatus if available
+      if (transaction.bookingId) {
+        try {
+          const bookingsRef = collection(db, 'bookings');
+          const q = query(bookingsRef, where('bookingId', '==', transaction.bookingId));
+          const snapshot = await getDocs(q);
+
+          if (!snapshot.empty) {
+            const booking: any = snapshot.docs[0].data();
+            const rawStatus = (booking.paymentStatus || '').toString().toLowerCase();
+            if (rawStatus === 'paid' || rawStatus === 'fully_paid' || rawStatus === 'fully paid') {
+              invoiceStatus = 'paid';
+            }
+          }
+        } catch (statusError) {
+          console.warn('Could not read booking paymentStatus for invoice status:', statusError);
+        }
+      }
+
+      // Fallback to transaction status if booking did not decide it
+      if (invoiceStatus === 'pending' && transaction.status === 'completed') {
+        invoiceStatus = 'paid';
+      }
+
+      // Enforce one invoice per transaction: if an invoice already exists for this
+      // transactionId, reuse it instead of creating a duplicate document.
+      try {
+        const invoicesRef = collection(db, 'invoices');
+        const existingQuery = query(invoicesRef, where('transactionId', '==', transaction.id));
+        const existingSnapshot = await getDocs(existingQuery);
+
+        if (!existingSnapshot.empty) {
+          const existingDoc = existingSnapshot.docs[0];
+          const existingData: any = existingDoc.data();
+          const existingInvoiceNumber: string = existingData.invoiceNumber || existingDoc.id;
+
+          try {
+            const txRef = doc(db, 'transactions', transaction.id);
+            await updateDoc(txRef, { hasInvoice: true });
+          } catch (markError) {
+            console.warn('Failed to mark transaction as invoiced (existing invoice):', markError);
+          }
+
+          setCreatedInvoiceNumber(existingInvoiceNumber);
+          setIsSuccessModalOpen(true);
+          return;
+        }
+      } catch (existingError) {
+        console.warn('Error checking for existing invoice for transaction:', existingError);
+      }
 
       await createInvoice({
         invoiceNumber: invoiceData.invoiceNumber,
@@ -124,7 +176,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
         taxAmount: totals.taxAmount,
         total: totals.total,
         dueDate: invoiceData.dueDate,
-        status: 'draft',
+        status: invoiceStatus,
         transactionId: transaction.id,
         transactionReference: transaction.reference,
         transactionDescription: transaction.description,
@@ -160,19 +212,49 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
     setIsSuccessModalOpen(false);
     onClose(); // Close the invoice modal
 
-    // Navigate to invoices page with the created invoice data
-    navigate('/admin/finances/invoices', { 
-      state: { 
-        newInvoice: {
-          invoiceNumber: createdInvoiceNumber,
-          transactionId: transaction?.id,
-          customerName: invoiceData.customerName,
-          amount: calculateTotals().total,
-          status: 'draft',
-          createdAt: new Date().toISOString()
+    const totals = calculateTotals();
+    let invoiceStatus: 'paid' | 'pending' = 'pending';
+
+    // Mirror the same logic used in handleCreateInvoice so UI matches backend
+    const decideStatusFromBooking = async () => {
+      if (transaction?.bookingId) {
+        try {
+          const bookingsRef = collection(db, 'bookings');
+          const q = query(bookingsRef, where('bookingId', '==', transaction.bookingId));
+          const snapshot = await getDocs(q);
+
+          if (!snapshot.empty) {
+            const booking: any = snapshot.docs[0].data();
+            const rawStatus = (booking.paymentStatus || '').toString().toLowerCase();
+            if (rawStatus === 'paid' || rawStatus === 'fully_paid' || rawStatus === 'fully paid') {
+              invoiceStatus = 'paid';
+            }
+          }
+        } catch (statusError) {
+          console.warn('Could not read booking paymentStatus for navigation invoice status:', statusError);
         }
-      } 
-    });
+      }
+
+      if (invoiceStatus === 'pending' && transaction?.status === 'completed') {
+        invoiceStatus = 'paid';
+      }
+
+      navigate('/admin/finances/invoices', { 
+        state: { 
+          newInvoice: {
+            invoiceNumber: createdInvoiceNumber,
+            transactionId: transaction?.id,
+            customerName: invoiceData.customerName,
+            amount: totals.total,
+            status: invoiceStatus,
+            createdAt: new Date().toISOString()
+          }
+        } 
+      });
+    };
+
+    // Fire and forget; navigation happens once status is decided
+    void decideStatusFromBooking();
   };
 
   const { subtotal, taxAmount, total } = calculateTotals();

@@ -92,7 +92,7 @@ const RevenueDistribution: React.FC<RevenueDistributionProps> = ({ revenueData }
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-semibold text-gray-500">
-                      ${item.amount.toLocaleString()}
+                      ₱{item.amount.toLocaleString()}
                     </span>
                     <span className="text-base font-black text-gray-900 min-w-[50px] text-right">
                       {item.percentage}%
@@ -155,7 +155,7 @@ const RevenueDistribution: React.FC<RevenueDistributionProps> = ({ revenueData }
             </div>
             <div className="text-right">
               <p className="text-2xl font-black text-heritage-green">
-                ${totalAmount.toLocaleString()}
+                ₱{totalAmount.toLocaleString()}
               </p>
               <p className="text-xs text-gray-500 font-semibold">100% Distribution</p>
             </div>
