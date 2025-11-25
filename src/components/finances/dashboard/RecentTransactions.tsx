@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CreditCard, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, MoreHorizontal, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { SkeletonCard } from '../../universalLoader/SkeletonLoader';
 
 // Sample transaction data with hotel-specific transactions
 const transactionData = [
@@ -69,19 +68,6 @@ const transactionData = [
 
 const RecentTransactions: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulate loading - synchronized with all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SkeletonCard />;
-  }
 
   return (
     <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">
@@ -94,8 +80,10 @@ const RecentTransactions: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl transition-all duration-300 group-hover:scale-105">
-                  <CreditCard className="w-6 h-6 text-white" strokeWidth={2.5} />
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
                 </div>
                 <div className="absolute -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>

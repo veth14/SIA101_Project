@@ -1,4 +1,5 @@
 import React from 'react';
+import { Users } from 'lucide-react';
 
 interface DepartmentProfit {
   department: string;
@@ -30,18 +31,22 @@ export const DepartmentCards: React.FC<DepartmentCardsProps> = ({ departmentProf
       
       <div className="relative z-10 p-8">
         {/* Header */}
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="relative">
-            <div className="w-12 h-12 bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+        <div className="flex items-center space-x-5">
+          <div className="relative group">
+            <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+              <Users className="w-6 h-6 text-[#82A33D]" />
             </div>
-            <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-lg opacity-60"></div>
+            <div className="absolute -inset-2 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20"></div>
           </div>
           <div>
-            <h3 className="text-xl font-black text-gray-900">Department Performance</h3>
-            <p className="text-sm font-semibold text-gray-600">Revenue and profitability overview</p>
+            <h3 className="text-2xl font-black text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text">
+              Department Performance
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm font-semibold text-gray-600">Revenue and profitability overview</p>
+              <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
+              <span className="text-sm font-bold text-heritage-green">November 2025</span>
+            </div>
           </div>
         </div>
 

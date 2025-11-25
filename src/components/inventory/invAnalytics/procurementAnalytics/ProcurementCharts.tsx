@@ -12,6 +12,24 @@ import {
 import useGetInvAnalytic from "@/api/getInvAnalytic";
 import { exportProcurementToPDF } from "@/utils/exportUtils";
 
+// Recharts JSX typing aliases (avoid strict JSX types from recharts)
+const RResponsiveContainer =
+  ResponsiveContainer as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
+const RAreaChart = AreaChart as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RTooltip = Tooltip as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 const ProcurementCharts: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("Last 30 Days");
   const { getInvProcurementAnalytics, loadingForGetInvProcurementAnalytics } =
@@ -59,16 +77,12 @@ const ProcurementCharts: React.FC = () => {
       0
     );
     const avgSuppliers = Math.round(
-      exportData.reduce(
-        (sum, item) => sum + item["Active Suppliers"],
-        0
-      ) / exportData.length
+      exportData.reduce((sum, item) => sum + item["Active Suppliers"], 0) /
+        exportData.length
     );
     const avgOnTime = Math.round(
-      exportData.reduce(
-        (sum, item) => sum + item["On-time Delivery (%)"],
-        0
-      ) / exportData.length
+      exportData.reduce((sum, item) => sum + item["On-time Delivery (%)"], 0) /
+        exportData.length
     );
 
     // Add summary row
@@ -117,7 +131,10 @@ const ProcurementCharts: React.FC = () => {
               },
               index: number
             ) => (
-              <div key={index} className="flex items-center mb-1 space-x-2">
+              <div
+                key={`tooltip-${index}`}
+                className="flex items-center mb-1 space-x-2"
+              >
                 <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: entry.color }}
@@ -125,10 +142,8 @@ const ProcurementCharts: React.FC = () => {
                 <p className="text-sm font-medium text-gray-700">
                   {entry.dataKey === "orders" && `Orders: ${entry.value}`}
                   {entry.dataKey === "value" && `Value: ₱${entry.value}K`}
-                  {entry.dataKey === "suppliers" &&
-                    `Suppliers: ${entry.value}`}
-                  {entry.dataKey === "onTime" &&
-                    `On-time: ${entry.value}%`}
+                  {entry.dataKey === "suppliers" && `Suppliers: ${entry.value}`}
+                  {entry.dataKey === "onTime" && `On-time: ${entry.value}%`}
                 </p>
               </div>
             )
@@ -205,9 +220,7 @@ const ProcurementCharts: React.FC = () => {
                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              {loadingForGetInvProcurementAnalytics
-                ? "Loading..."
-                : "Export"}
+              {loadingForGetInvProcurementAnalytics ? "Loading..." : "Export"}
             </button>
           </div>
         </div>
@@ -217,10 +230,8 @@ const ProcurementCharts: React.FC = () => {
       <div className="p-8">
         {/* Chart Container */}
         <div className="w-full h-80">
-          {/* @ts-expect-error - Recharts typing issue */}
-          <ResponsiveContainer width="100%" height="100%">
-            {/* @ts-expect-error - Recharts typing issue */}
-            <AreaChart
+          <RResponsiveContainer width="100%" height="100%">
+            <RAreaChart
               data={procurementData}
               margin={{
                 top: 20,
@@ -230,41 +241,13 @@ const ProcurementCharts: React.FC = () => {
               }}
             >
               <defs>
-                <linearGradient
-                  id="ordersGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="#3B82F6"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#3B82F6"
-                    stopOpacity={0.05}
-                  />
+                <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
                 </linearGradient>
-                <linearGradient
-                  id="valueGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="#10B981"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#10B981"
-                    stopOpacity={0.05}
-                  />
+                <linearGradient id="valueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.05} />
                 </linearGradient>
                 <linearGradient
                   id="suppliersGradient"
@@ -273,40 +256,17 @@ const ProcurementCharts: React.FC = () => {
                   x2="0"
                   y2="1"
                 >
-                  <stop
-                    offset="5%"
-                    stopColor="#F59E0B"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#F59E0B"
-                    stopOpacity={0.05}
-                  />
+                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.05} />
                 </linearGradient>
-                <linearGradient
-                  id="onTimeGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="#8B5CF6"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#8B5CF6"
-                    stopOpacity={0.05}
-                  />
+                <linearGradient id="onTimeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+              <RCartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <XAxis
+              <RXAxis
                 dataKey="month"
                 axisLine={false}
                 tickLine={false}
@@ -314,19 +274,16 @@ const ProcurementCharts: React.FC = () => {
                 dy={10}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <YAxis
+              <RYAxis
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: "#6B7280" }}
                 dx={-10}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <Tooltip content={CustomTooltip} />
+              <RTooltip content={<CustomTooltip />} />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="orders"
                 stroke="#3B82F6"
@@ -341,8 +298,7 @@ const ProcurementCharts: React.FC = () => {
                 }}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="value"
                 stroke="#10B981"
@@ -357,8 +313,7 @@ const ProcurementCharts: React.FC = () => {
                 }}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="suppliers"
                 stroke="#F59E0B"
@@ -373,8 +328,7 @@ const ProcurementCharts: React.FC = () => {
                 }}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="onTime"
                 stroke="#8B5CF6"
@@ -388,8 +342,8 @@ const ProcurementCharts: React.FC = () => {
                   fill: "#ffffff",
                 }}
               />
-            </AreaChart>
-          </ResponsiveContainer>
+            </RAreaChart>
+          </RResponsiveContainer>
         </div>
 
         {/* Chart Legend */}

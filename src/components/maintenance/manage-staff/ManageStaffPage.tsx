@@ -1,5 +1,4 @@
 import React from 'react';
-import StaffHeader from './StaffHeader';
 import StaffStats from './StaffStats';
 import StaffFilters from './StaffFilters';
 import StaffGrid from './StaffGrid';
@@ -25,7 +24,6 @@ const ManageStaffPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        <StaffHeader />
         <StaffStats />
         <StaffFilters />
         <StaffGrid />

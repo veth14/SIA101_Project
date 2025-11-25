@@ -135,7 +135,8 @@ const SuppliersPage: React.FC = () => {
     totalSuppliers: suppliers.length,
     activeSuppliers: suppliers.filter((s) => s.status === "active").length,
     inactiveSuppliers: suppliers.filter((s) => s.status === "inactive").length,
-    suspendedSuppliers: suppliers.filter((s) => s.status === "suspended").length,
+    suspendedSuppliers: suppliers.filter((s) => s.status === "suspended")
+      .length,
     totalValue: suppliers.reduce((sum, s) => sum + (s.totalValue || 0), 0),
   };
 

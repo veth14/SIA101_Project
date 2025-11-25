@@ -1,22 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import PaymentsHeader from './PaymentsHeader';
+import React, { useState } from 'react';
 import PaymentList from './PaymentList';
 import PaymentDetails from './PaymentDetails';
 import type { Payment } from './PaymentList';
 import PaymentsStats from './PaymentsStats';
-import PaymentsActivity from './PaymentsActivity';
 
 export const PaymentsPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Centralized loading state - synchronized for all components
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Unified 2-second loading time
-    return () => clearTimeout(timer);
-  }, []);
+  // NOTE: removed artificial loading/skeletons so components render immediately
 
   // Sample payment data (moved from PaymentList)
   const payments: Payment[] = [
@@ -109,47 +99,35 @@ export const PaymentsPage: React.FC = () => {
       </div>
 
       {/* Main Content Container */}
-  <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
-        {/* Header */}
-        <PaymentsHeader isLoading={isLoading} />
+      <div className="relative z-10 w-full px-4 py-4 space-y-6 lg:px-6">
 
         {/* Stats */}
         <div className="w-full">
-          <PaymentsStats payments={payments} isLoading={isLoading} />
+          <PaymentsStats payments={payments} />
         </div>
 
         {/* Main Grid */}
-            <div className="relative w-full">
-              <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
-                <div className="lg:col-span-2 h-full">
-                  <PaymentList 
-                    payments={payments}
-                    onPaymentSelect={handlePaymentSelect}
-                    selectedPayment={selectedPayment}
-                    isLoading={isLoading}
-                  />
-                </div>
-                <div className="col-span-1 h-full">
-                  <PaymentsActivity payments={payments} isLoading={isLoading} />
-                </div>
-              </div>
-
-              {/* Page-level shimmer overlay for the grid while loading */}
-              {isLoading && (
-                <div className="absolute inset-0 z-20 pointer-events-none flex items-start">
-                  <div className="w-full h-full bg-gradient-to-r from-white/60 via-white/40 to-white/60 animate-pulse backdrop-blur-sm rounded-3xl"></div>
-                </div>
-              )}
+        <div className="relative w-full">
+          <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
+            <div className="lg:col-span-2 h-full">
+              <PaymentList 
+                payments={payments}
+                onPaymentSelect={handlePaymentSelect}
+                selectedPayment={selectedPayment}
+              />
             </div>
-      </div>
+            <div className="col-span-1 h-full">
+              <PaymentDetails 
+                payment={selectedPayment}
+                onClose={handleCloseDetails}
+              />
+            </div>
+          </div>
 
-      {/* Payment Details Modal */}
-      {selectedPayment && (
-        <PaymentDetails 
-          payment={selectedPayment}
-          onClose={handleCloseDetails}
-        />
-      )}
+          {/* Page-level shimmer overlay for the grid while loading */}
+          {/* loading overlay removed */}
+        </div>
+      </div>
     </div>
   );
 };

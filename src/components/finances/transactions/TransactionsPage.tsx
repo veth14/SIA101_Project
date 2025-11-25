@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { TransactionsHeader } from './TransactionsHeader';
 import TransactionAnalytics from './TransactionAnalytics';
 import RecentTransactions from './RecentTransactions';
 import TransactionDetails from './TransactionDetails';
@@ -97,8 +96,6 @@ export const TransactionsPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-  <TransactionsHeader isLoading={isLoading} />
 
         {/* Transaction Stats Component */}
         <TransactionStats
@@ -135,6 +132,12 @@ export const TransactionsPage: React.FC = () => {
                 setCurrentPage(1); // Reset to first page when toggling
               }}
               isLoading={isLoading}
+              statusFilter={filters.status}
+              typeFilter={filters.type}
+              categoryFilter={filters.category}
+              onStatusFilterChange={(status) => setFilters({ ...filters, status })}
+              onTypeFilterChange={(type) => setFilters({ ...filters, type })}
+              onCategoryFilterChange={(category) => setFilters({ ...filters, category })}
             />
           </div>
 

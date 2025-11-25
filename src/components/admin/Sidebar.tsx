@@ -21,7 +21,7 @@ interface NavItem {
   roles: string[];
 }
 
-const navigation: NavItem[] = [
+export const navigation: NavItem[] = [
   { 
     name: 'Dashboard', 
     href: '/admin/dashboard', 
@@ -427,32 +427,33 @@ export const Sidebar = ({ }: SidebarProps) => {
 
   const isSubItemActive = (href: string) => location.pathname === href;
 
+const exactCreamGradient = 'linear-gradient(180deg, #ffffff 0%, #ffffff 100%)';
+
   return (
-    <div className="flex relative z-10 flex-col w-72 h-full bg-gradient-to-b from-white border-r-2 shadow-2xl via-heritage-light/50 to-heritage-light border-heritage-green/20 shadow-heritage-green/10">
-      {/* Header */}
-      <div className="flex items-center px-5 py-4 bg-gradient-to-r from-white border-b-2 shadow-sm to-heritage-light/30 border-heritage-green/15">
+    <div style={{ backgroundImage: exactCreamGradient }} className="fixed left-0 top-0 z-50 flex flex-col h-screen border-r-2 shadow-2xl w-72 border-heritage-green/20 shadow-heritage-green/10">
+      
+      {/* Sidebar Header */}
+      <div className="flex items-center px-6 py-4 border-b-2 bg-transparent border-heritage-green/15">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-12 h-12 p-1.5 bg-gradient-to-br from-heritage-green to-heritage-green/80 rounded-xl shadow-lg border border-heritage-green/20">
-            <img 
-              src="/BalayGinhawa/balaylogopng.png" 
-              alt="Balay Ginhawa Hotel Logo" 
-              className="object-contain w-full h-full filter brightness-0 invert"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+            <div className="flex items-center justify-center w-12 h-12 p-1.5 bg-gradient-to-br from-heritage-green to-heritage-green/80 rounded-xl shadow-lg border border-heritage-green/20">
+              <img
+                src="/BalayGinhawa/balaylogopng.png"
+                alt="Balay Ginhawa Hotel Logo"
+                className="object-contain w-full h-full filter brightness-0 invert"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+            <div className="ml-3">
+              <h1 className="font-serif text-lg font-bold leading-tight text-heritage-green">Balay Ginhawa</h1>
+              <p className="text-xs font-medium text-heritage-neutral">Hotel Management System</p>
+            </div>
           </div>
-          <div className="ml-3">
-            <h1 className="font-serif text-lg font-bold leading-tight text-heritage-green">
-              Balay Ginhawa
-            </h1>
-            <p className="text-xs font-medium text-heritage-neutral">Hotel Management System</p>
-          </div>
-        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-3 space-y-2 bg-gradient-to-b from-heritage-light/30 to-heritage-light/70">{filteredNavigation.map((item) => {
+      <nav className="flex-1 px-4 py-3 mt-2 space-y-2 overflow-y-auto bg-transparent">{filteredNavigation.map((item) => {
           const isActive = isItemActive(item);
           // Check if item should be expanded based on state or current page
           // Only auto-expand when no dropdowns are currently open (to allow animations)

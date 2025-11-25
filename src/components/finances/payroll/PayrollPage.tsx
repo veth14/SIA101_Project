@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import PayrollHeader from './PayrollHeader';
 import { PayrollStats } from './PayrollStats';
 import { PayrollTable, type EmployeePayroll } from './PayrollTable';
 import PayrollDetailsPanel from './PayrollDetailsPanel';
+import PayrollInsights from './PayrollInsights';
 import { calculatePayroll, type PayrollBreakdown } from '../../../utils/philippineTaxCalculations';
 import { employeePayrollData } from '../../../data/employeePayrollData';
 
@@ -131,8 +131,6 @@ export const PayrollPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header */}
-        <PayrollHeader />
         
         {/* Stats Cards */}
         <PayrollStats
@@ -141,6 +139,9 @@ export const PayrollPage: React.FC = () => {
           totalDeductions={stats.totalDeductions}
           pendingPayrolls={stats.pendingPayrolls}
         />
+        
+        {/* Payroll Insights - Top Paid Employees */}
+        <PayrollInsights employees={employees} />
 
         {/* Two-Column Layout: Perfect Height Alignment */}
         <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -162,6 +163,8 @@ export const PayrollPage: React.FC = () => {
             />
           </div>
         </div>
+
+        
       </div>
     </div>
   );

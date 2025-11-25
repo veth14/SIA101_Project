@@ -1,0 +1,30 @@
+{{
+
+  "name": "functions",  "name": "functions-disabled",
+
+  "private": true,  "version": "0.0.0",
+
+  "version": "0.0.0",  "private": true,
+
+  "scripts": {  "scripts": {},
+
+    "build": "tsc -p tsconfig.json",  "dependencies": {},
+
+    "serve": "npm run build && firebase emulators:start --only functions,firestore",  "devDependencies": {}
+
+    "shell": "npm run build && firebase functions:shell",}
+
+    "logs": "firebase functions:log",
+    "lint:check": "eslint . || true"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

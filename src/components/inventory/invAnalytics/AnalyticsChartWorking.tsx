@@ -18,6 +18,24 @@ import {
 import useGetInvAnalytic from "@/api/getInvAnalytic";
 import { exportToPDF } from "@/utils/exportUtils";
 
+// Recharts JSX typing aliases (avoid strict JSX return types)
+const RResponsiveContainer =
+  ResponsiveContainer as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
+const RAreaChart = AreaChart as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RTooltip = Tooltip as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 // Sample data for inventory analytics
 // const chartData = [
 //   { month: "Jan", linens: 2400, cleaning: 1400, food: 2400, maintenance: 800 },
@@ -106,7 +124,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         <p className="mb-2 font-medium text-gray-900">{label}</p>
         {payload.map((entry: TooltipPayload, index: number) => (
           <div
-            key={index}
+            key={`tooltip-${index}`}
             className="flex items-center justify-between gap-4 mb-1"
           >
             <div className="flex items-center gap-2">
@@ -165,26 +183,44 @@ export function AnalyticsChart(): React.ReactElement {
       "Linens & Textiles": item.linens || 0,
       "Cleaning Supplies": item.cleaning || 0,
       "Food & Beverage": item.food || 0,
-      "Maintenance": item.maintenance || 0,
-      "Total": (item.linens || 0) + (item.cleaning || 0) + (item.food || 0) + (item.maintenance || 0)
+      Maintenance: item.maintenance || 0,
+      Total:
+        (item.linens || 0) +
+        (item.cleaning || 0) +
+        (item.food || 0) +
+        (item.maintenance || 0),
     }));
 
     // Add summary row
     const totals = {
       Month: "TOTAL",
-      "Linens & Textiles": exportData.reduce((sum, item) => sum + item["Linens & Textiles"], 0),
-      "Cleaning Supplies": exportData.reduce((sum, item) => sum + item["Cleaning Supplies"], 0),
-      "Food & Beverage": exportData.reduce((sum, item) => sum + item["Food & Beverage"], 0),
-      "Maintenance": exportData.reduce((sum, item) => sum + item["Maintenance"], 0),
-      "Total": exportData.reduce((sum, item) => sum + item.Total, 0)
+      "Linens & Textiles": exportData.reduce(
+        (sum, item) => sum + item["Linens & Textiles"],
+        0
+      ),
+      "Cleaning Supplies": exportData.reduce(
+        (sum, item) => sum + item["Cleaning Supplies"],
+        0
+      ),
+      "Food & Beverage": exportData.reduce(
+        (sum, item) => sum + item["Food & Beverage"],
+        0
+      ),
+      Maintenance: exportData.reduce(
+        (sum, item) => sum + item["Maintenance"],
+        0
+      ),
+      Total: exportData.reduce((sum, item) => sum + item.Total, 0),
     };
 
     exportData.push(totals);
 
     // Export to PDF with title
     exportToPDF(
-      exportData, 
-      `inventory_usage_trends_${selectedPeriod.toLowerCase().replace(/\s+/g, '_')}`,
+      exportData,
+      `inventory_usage_trends_${selectedPeriod
+        .toLowerCase()
+        .replace(/\s+/g, "_")}`,
       `Inventory Usage Trends - ${selectedPeriod}`
     );
   };
@@ -302,9 +338,13 @@ export function AnalyticsChart(): React.ReactElement {
                   <option value="All Time">All Time</option>
                 </select>
               </div>
-              <button 
+              <button
                 onClick={handleExport}
-                disabled={loadingForGetInvAnalyticsChart || !chartData || chartData.length === 0}
+                disabled={
+                  loadingForGetInvAnalyticsChart ||
+                  !chartData ||
+                  chartData.length === 0
+                }
                 className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
@@ -330,10 +370,8 @@ export function AnalyticsChart(): React.ReactElement {
         <div className="p-8">
           {/* Chart Container */}
           <div className="w-full h-80">
-            {/* @ts-expect-error - Recharts typing issue */}
-            <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts typing issue */}
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+              <RAreaChart
                 data={chartData}
                 margin={{
                   top: 20,
@@ -378,10 +416,9 @@ export function AnalyticsChart(): React.ReactElement {
                     <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <RCartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <XAxis
+                <RXAxis
                   dataKey="month"
                   axisLine={false}
                   tickLine={false}
@@ -389,19 +426,16 @@ export function AnalyticsChart(): React.ReactElement {
                   dy={10}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <YAxis
+                <RYAxis
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "#6B7280" }}
                   dx={-10}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Tooltip content={CustomTooltip} />
+                <RTooltip content={<CustomTooltip />} />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="linens"
                   stroke="#10B981"
@@ -416,8 +450,7 @@ export function AnalyticsChart(): React.ReactElement {
                   }}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="cleaning"
                   stroke="#3B82F6"
@@ -432,8 +465,7 @@ export function AnalyticsChart(): React.ReactElement {
                   }}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="food"
                   stroke="#F59E0B"
@@ -448,8 +480,7 @@ export function AnalyticsChart(): React.ReactElement {
                   }}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="maintenance"
                   stroke="#8B5CF6"
@@ -463,8 +494,8 @@ export function AnalyticsChart(): React.ReactElement {
                     fill: "#ffffff",
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
 
           {/* Chart Legend */}

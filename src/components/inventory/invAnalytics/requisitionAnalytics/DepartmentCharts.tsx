@@ -31,6 +31,24 @@ export interface DepartmentPerformance {
   color: string; // e.g., "bg-blue-500"
 }
 
+// Recharts typing workaround: cast components to a generic React component type
+const RResponsiveContainer =
+  ResponsiveContainer as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
+const RAreaChart = AreaChart as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+const RTooltip = Tooltip as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+
 const DepartmentCharts: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("Last 30 Days");
   const [departmentData, setDepartmentData] = useState<DepartmentMonthlyData[]>(
@@ -65,24 +83,37 @@ const DepartmentCharts: React.FC = () => {
     // Prepare monthly data for export
     const monthlyData = departmentData.map((item: any) => ({
       Month: item.month,
-      "Housekeeping": item.housekeeping || 0,
+      Housekeeping: item.housekeeping || 0,
       "Front Office": item.frontoffice || 0,
       "Food & Beverage": item.fnb || 0,
-      "Maintenance": item.maintenance || 0,
-      "Security": item.security || 0,
-      "Total": (item.housekeeping || 0) + (item.frontoffice || 0) + 
-               (item.fnb || 0) + (item.maintenance || 0) + (item.security || 0)
+      Maintenance: item.maintenance || 0,
+      Security: item.security || 0,
+      Total:
+        (item.housekeeping || 0) +
+        (item.frontoffice || 0) +
+        (item.fnb || 0) +
+        (item.maintenance || 0) +
+        (item.security || 0),
     }));
 
     // Add totals row
     const totals = {
       Month: "TOTAL",
-      "Housekeeping": monthlyData.reduce((sum, item) => sum + item.Housekeeping, 0),
-      "Front Office": monthlyData.reduce((sum, item) => sum + item["Front Office"], 0),
-      "Food & Beverage": monthlyData.reduce((sum, item) => sum + item["Food & Beverage"], 0),
-      "Maintenance": monthlyData.reduce((sum, item) => sum + item.Maintenance, 0),
-      "Security": monthlyData.reduce((sum, item) => sum + item.Security, 0),
-      "Total": monthlyData.reduce((sum, item) => sum + item.Total, 0)
+      Housekeeping: monthlyData.reduce(
+        (sum, item) => sum + item.Housekeeping,
+        0
+      ),
+      "Front Office": monthlyData.reduce(
+        (sum, item) => sum + item["Front Office"],
+        0
+      ),
+      "Food & Beverage": monthlyData.reduce(
+        (sum, item) => sum + item["Food & Beverage"],
+        0
+      ),
+      Maintenance: monthlyData.reduce((sum, item) => sum + item.Maintenance, 0),
+      Security: monthlyData.reduce((sum, item) => sum + item.Security, 0),
+      Total: monthlyData.reduce((sum, item) => sum + item.Total, 0),
     };
 
     monthlyData.push(totals);
@@ -91,7 +122,9 @@ const DepartmentCharts: React.FC = () => {
     exportDepartmentToPDF(
       monthlyData,
       departmentPerformance,
-      `department_request_trends_${selectedPeriod.toLowerCase().replace(/\s+/g, '_')}`,
+      `department_request_trends_${selectedPeriod
+        .toLowerCase()
+        .replace(/\s+/g, "_")}`,
       `Department Request Trends - ${selectedPeriod}`
     );
   };
@@ -185,9 +218,13 @@ const DepartmentCharts: React.FC = () => {
                   <option value="All Time">All Time</option>
                 </select>
               </div>
-              <button 
+              <button
                 onClick={handleExport}
-                disabled={loadingForGetInvDepartmentCharts || !departmentData || departmentData.length === 0}
+                disabled={
+                  loadingForGetInvDepartmentCharts ||
+                  !departmentData ||
+                  departmentData.length === 0
+                }
                 className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
@@ -213,10 +250,8 @@ const DepartmentCharts: React.FC = () => {
         <div className="p-8">
           {/* Chart Container */}
           <div className="w-full h-80">
-            {/* @ts-expect-error - Recharts typing issue */}
-            <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts typing issue */}
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+              <RAreaChart
                 data={departmentData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
@@ -267,10 +302,9 @@ const DepartmentCharts: React.FC = () => {
                   </linearGradient>
                 </defs>
 
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <RCartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <XAxis
+                <RXAxis
                   dataKey="month"
                   axisLine={false}
                   tickLine={false}
@@ -278,20 +312,18 @@ const DepartmentCharts: React.FC = () => {
                   dy={10}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <YAxis
+                <RYAxis
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "#6B7280" }}
                   dx={-10}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Tooltip content={CustomTooltip} />
+                {/* Use casted RTooltip to avoid typing issues */}
+                <RTooltip content={<CustomTooltip />} />
 
                 {/* Department Areas */}
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="housekeeping"
                   stroke="#3B82F6"
@@ -305,8 +337,7 @@ const DepartmentCharts: React.FC = () => {
                     fill: "#ffffff",
                   }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="frontoffice"
                   stroke="#10B981"
@@ -320,8 +351,7 @@ const DepartmentCharts: React.FC = () => {
                     fill: "#ffffff",
                   }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="fnb"
                   stroke="#F59E0B"
@@ -335,8 +365,7 @@ const DepartmentCharts: React.FC = () => {
                     fill: "#ffffff",
                   }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="maintenance"
                   stroke="#EF4444"
@@ -350,8 +379,7 @@ const DepartmentCharts: React.FC = () => {
                     fill: "#ffffff",
                   }}
                 />
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="security"
                   stroke="#8B5CF6"
@@ -365,8 +393,8 @@ const DepartmentCharts: React.FC = () => {
                     fill: "#ffffff",
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
 
           {/* Chart Legend */}

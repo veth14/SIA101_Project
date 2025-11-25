@@ -100,108 +100,247 @@ const NewExpenseModal: React.FC<NewExpenseModalProps> = ({ isOpen, onClose, onCr
 
   return (
   <>
-  <ExpenseModal isOpen={isOpen} onClose={onClose}>
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-heritage-green to-heritage-neutral flex items-center justify-center shadow-md">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+    <ExpenseModal isOpen={isOpen} onClose={onClose}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <div className="flex flex-col">
+              <h2 className="text-lg font-semibold text-emerald-700 md:text-2xl">Create New Expense</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Capture expense details quickly. Finance will review and process.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Create New Expense</h2>
-            <p className="text-sm text-gray-500">Capture expense details quickly. Finance will review and process.</p>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="inline-flex items-center justify-center w-9 h-9 text-emerald-700 bg-emerald-50 rounded-md ring-1 ring-emerald-100"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2 space-y-3">
-            <label className="block text-xs font-semibold text-gray-600">Description</label>
-            <input value={form.description} onChange={(e)=>setForm({...form, description: e.target.value})} className="w-full p-3 border rounded-lg" placeholder="e.g. Monthly electricity bill" />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600">Vendor</label>
-                <input value={form.vendor} onChange={(e)=>setForm({...form, vendor: e.target.value})} className="w-full p-3 border rounded-lg" />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600">Amount</label>
-                <input type="number" value={String(form.amount ?? '')} onChange={(e)=>setForm({...form, amount: Number(e.target.value)})} className="w-full p-3 border rounded-lg" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600">Category</label>
-                <select value={form.category} onChange={(e)=>setForm({...form, category: e.target.value as Expense['category']})} className="w-full p-3 border rounded-lg">
-                  <option value="utilities">Utilities</option>
-                  <option value="supplies">Supplies</option>
-                  <option value="maintenance">Maintenance</option>
-                  <option value="marketing">Marketing</option>
-                  <option value="staff">Staff</option>
-                  <option value="food">Food & Beverage</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600">Date</label>
-                <input type="date" value={form.date} onChange={(e)=>setForm({...form, date: e.target.value})} className="w-full p-3 border rounded-lg" />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600">Payment Method</label>
-                <input value={form.paymentMethod} onChange={(e)=>setForm({...form, paymentMethod: e.target.value})} className="w-full p-3 border rounded-lg" placeholder="Cash, Card, Transfer" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600">Notes</label>
-              <textarea value={form.notes} onChange={(e)=>setForm({...form, notes: e.target.value})} className="w-full p-3 border rounded-lg h-28" placeholder="Add context for the approver (optional)" />
-            </div>
-          </div>
-
-          <aside className="space-y-3">
-            <div className="p-3 border rounded-lg bg-gray-50">
-              <label className="block text-xs font-semibold text-gray-600 mb-2">Accounting</label>
-              <input value={form.accountCode} onChange={(e)=>setForm({...form, accountCode: e.target.value})} placeholder="Account code" className="w-full p-2 border rounded-md mb-2" />
-              <input value={form.costCenter} onChange={(e)=>setForm({...form, costCenter: e.target.value})} placeholder="Cost center" className="w-full p-2 border rounded-md mb-2" />
-              <input value={form.project} onChange={(e)=>setForm({...form, project: e.target.value})} placeholder="Project" className="w-full p-2 border rounded-md" />
-            </div>
-
-            <div className="p-3 border rounded-lg bg-white">
-              <label className="block text-xs font-semibold text-gray-600 mb-2">Identifiers</label>
-              <input value={form.invoiceNumber ?? ''} onChange={(e)=>setForm({...form, invoiceNumber: e.target.value})} placeholder="Invoice #" className="w-full p-2 border rounded-md mb-2" />
-              <input value={form.purchaseOrder ?? ''} onChange={(e)=>setForm({...form, purchaseOrder: e.target.value})} placeholder="PO #" className="w-full p-2 border rounded-md" />
-            </div>
-
-            <div className="p-3 border rounded-lg bg-white">
-              <label className="block text-xs font-semibold text-gray-600 mb-2">Attachments</label>
-              <div className="border-dashed border-2 border-gray-200 rounded-md p-3 text-center">
-                <p className="text-xs text-gray-500">Drag & drop files here or</p>
-                <div className="mt-2">
-                  <input ref={fileRef} type="file" multiple onChange={(e)=>onFiles(e.target.files)} className="hidden" />
-                  <button onClick={() => fileRef.current?.click()} className="px-3 py-2 bg-white border rounded-md">Upload files</button>
+        {/* Body */}
+        <div className="space-y-5">
+          {/* Summary banner */}
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 ring-1 ring-black/5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl text-emerald-600">💸</div>
+                <div>
+                  <h3 className="text-base font-semibold text-emerald-700">Expense summary</h3>
+                  <p className="text-sm text-emerald-600">Review the current amount before submitting.</p>
                 </div>
               </div>
-
-              {attachments.length > 0 && (
-                <ul className="mt-2 text-sm text-gray-700">
-                  {attachments.map((f, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2">
-                      <span className="truncate">{f.name}</span>
-                      <button onClick={() => removeAttachment(i)} className="text-xs text-red-600">Remove</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="text-right">
+                <p className="text-xs font-medium text-gray-500">Current Amount</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ₱{Number(form.amount || 0).toLocaleString()}
+                </p>
+              </div>
             </div>
-          </aside>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* Left column: main expense details */}
+            <div className="md:col-span-2">
+              <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                <h4 className="text-sm font-semibold text-gray-900">Expense Details</h4>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600">Description</label>
+                  <input
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                    placeholder="e.g. Monthly electricity bill"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600">Vendor</label>
+                    <input
+                      value={form.vendor}
+                      onChange={(e) => setForm({ ...form, vendor: e.target.value })}
+                      className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600">Amount</label>
+                    <input
+                      type="number"
+                      value={String(form.amount ?? '')}
+                      onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
+                      className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600">Category</label>
+                    <select
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value as Expense['category'] })}
+                      className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                    >
+                      <option value="utilities">Utilities</option>
+                      <option value="supplies">Supplies</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="marketing">Marketing</option>
+                      <option value="staff">Staff</option>
+                      <option value="food">Food &amp; Beverage</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600">Date</label>
+                    <input
+                      type="date"
+                      value={form.date}
+                      onChange={(e) => setForm({ ...form, date: e.target.value })}
+                      className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600">Payment Method</label>
+                    <input
+                      value={form.paymentMethod}
+                      onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
+                      className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                      placeholder="Cash, Card, Transfer"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600">Notes</label>
+                  <textarea
+                    value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg h-28 resize-none focus:ring-2 focus:ring-[#82A33D]/40 focus:border-[#82A33D]"
+                    placeholder="Add context for the approver (optional)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Right column: side cards */}
+            <aside className="space-y-4">
+              <div className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                <label className="block mb-2 text-xs font-semibold text-gray-600">Accounting</label>
+                <input
+                  value={form.accountCode}
+                  onChange={(e) => setForm({ ...form, accountCode: e.target.value })}
+                  placeholder="Account code"
+                  className="w-full px-2 py-2 mb-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#82A33D]/30 focus:border-[#82A33D]"
+                />
+                <input
+                  value={form.costCenter}
+                  onChange={(e) => setForm({ ...form, costCenter: e.target.value })}
+                  placeholder="Cost center"
+                  className="w-full px-2 py-2 mb-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#82A33D]/30 focus:border-[#82A33D]"
+                />
+                <input
+                  value={form.project}
+                  onChange={(e) => setForm({ ...form, project: e.target.value })}
+                  placeholder="Project"
+                  className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#82A33D]/30 focus:border-[#82A33D]"
+                />
+              </div>
+
+              <div className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                <label className="block mb-2 text-xs font-semibold text-gray-600">Identifiers</label>
+                <input
+                  value={form.invoiceNumber ?? ''}
+                  onChange={(e) => setForm({ ...form, invoiceNumber: e.target.value })}
+                  placeholder="Invoice #"
+                  className="w-full px-2 py-2 mb-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#82A33D]/30 focus:border-[#82A33D]"
+                />
+                <input
+                  value={form.purchaseOrder ?? ''}
+                  onChange={(e) => setForm({ ...form, purchaseOrder: e.target.value })}
+                  placeholder="PO #"
+                  className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#82A33D]/30 focus:border-[#82A33D]"
+                />
+              </div>
+
+              <div className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                <label className="block mb-2 text-xs font-semibold text-gray-600">Attachments</label>
+                <div className="p-3 text-center border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="text-xs text-gray-500">Drag &amp; drop files here or</p>
+                  <div className="mt-2">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      multiple
+                      onChange={(e) => onFiles(e.target.files)}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      className="px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Upload files
+                    </button>
+                  </div>
+                </div>
+
+                {attachments.length > 0 && (
+                  <ul className="mt-2 text-sm text-gray-700">
+                    {attachments.map((f, i) => (
+                      <li key={i} className="flex items-center justify-between gap-2">
+                        <span className="truncate">{f.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(i)}
+                          className="text-xs font-semibold text-red-600 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </aside>
+          </div>
         </div>
 
-  {errors && <div className="mt-3 text-sm text-red-600">{errors}</div>}
+        {errors && <div className="mt-3 text-sm text-red-600">{errors}</div>}
 
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 bg-white border rounded-lg">Cancel</button>
-          <button onClick={submit} className="px-4 py-2 rounded-lg bg-gradient-to-r from-heritage-green to-heritage-neutral text-white font-bold shadow">Create Expense</button>
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md bg-gradient-to-r from-[#82A33D] to-heritage-neutral hover:from-[#6d8735] hover:to-emerald-700"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create Expense
+          </button>
         </div>
       </div>
     </ExpenseModal>

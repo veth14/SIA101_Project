@@ -1,6 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Skeleton } from '../../universalLoader/SkeletonLoader';
+
+// Recharts JSX typing aliases to avoid strict return-type JSX errors
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
 
 // Type definitions
 interface TransactionDataPoint {
@@ -133,78 +141,11 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
   const transactionData = useMemo(() => getTransactionData(activeTimeframe), [activeTimeframe]);
   const metrics = useMemo(() => calculateChartMetrics(transactionData), [transactionData]);
 
-  // Loading state is now managed by parent component
-  
   // Transform data for recharts
   const chartData = transactionData.map((item) => ({
     day: item.day,
     transactions: item.transactions
   }));
-
-  if (isLoading) {
-    return (
-      <div className="relative overflow-hidden shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60"></div>
-        
-        <div className="relative z-10">
-          {/* Header Skeleton */}
-          <div className="px-8 border-b py-7 bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-5">
-                <Skeleton className="w-12 h-12 rounded-2xl" />
-                <div>
-                  <Skeleton className="w-48 h-8 mb-2" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="w-32 h-4" />
-                    <Skeleton className="w-1 h-1 rounded-full" />
-                    <Skeleton className="w-24 h-4" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex space-x-4">
-                <div className="flex p-1.5 bg-gradient-to-r from-heritage-light/40 to-heritage-light/60 rounded-2xl">
-                  <Skeleton className="w-20 h-10 mr-2 rounded-xl" />
-                  <Skeleton className="w-20 h-10 mr-2 rounded-xl" />
-                  <Skeleton className="w-20 h-10 rounded-xl" />
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Filters Skeleton */}
-          <div className="px-8 py-4 border-b bg-gradient-to-r from-heritage-light/20 to-heritage-light/30 border-gray-200/30">
-            <div className="flex items-center gap-4">
-              <Skeleton className="w-12 h-4" />
-              <Skeleton className="w-32 h-10 rounded-xl" />
-              <Skeleton className="w-40 h-10 rounded-xl" />
-            </div>
-          </div>
-          
-          {/* Chart Skeleton */}
-          <div className="px-4 py-6">
-            <div className="h-[320px] w-full">
-              <Skeleton className="w-full h-full rounded-2xl" />
-            </div>
-            <div className="flex items-center justify-center pb-2 mt-2">
-              <Skeleton className="w-32 h-4" />
-            </div>
-          </div>
-          
-          {/* Stats Skeleton */}
-          <div className="grid grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 md:grid-cols-4">
-            {[...Array(4)].map((_, index) => (
-              <div key={index} className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
-                <Skeleton className="w-20 h-4 mb-2" />
-                <Skeleton className="w-24 h-8 mb-2" />
-                <Skeleton className="w-16 h-3" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -234,11 +175,16 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl group-hover:scale-105">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+              <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V7a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2"
+                />
+              </svg>
+            </div>
                 <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
               </div>
               <div>
@@ -322,10 +268,10 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
         {/* Chart Area */}
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
-            {/* @ts-expect-error - Recharts types compatibility issue */}
-            <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts types compatibility issue */}
-              <AreaChart
+            
+            <RResponsiveContainer width="100%" height="100%">
+
+              <RAreaChart
                 data={chartData}
                 margin={{ top: 20, right: 40, left: 10, bottom: 40 }}
               >
@@ -335,8 +281,8 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                     <stop offset="95%" stopColor="#ABAD8A" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                {/* @ts-expect-error - Recharts types compatibility issue */}
-                <XAxis 
+                
+                <RXAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 11 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
@@ -345,22 +291,22 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   height={40}
                   padding={{ left: 20, right: 20 }}
                 />
-                {/* @ts-expect-error - Recharts types compatibility issue */}
-                <YAxis 
+                
+                <RYAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <CartesianGrid 
+                <RCartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
-                {/* @ts-expect-error - Recharts types compatibility issue */}
-                <Tooltip content={<CustomTooltip />} />
-                {/* @ts-expect-error - Recharts types compatibility issue */}
-                <Area 
+                
+                <RTooltip content={<CustomTooltip />} />
+
+                <RArea 
                   type="linear" 
                   dataKey="transactions" 
                   stroke="#82A33D" 
@@ -376,8 +322,8 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                     fill: 'white'
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}

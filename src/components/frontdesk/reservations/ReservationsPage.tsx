@@ -1,220 +1,127 @@
 import { useState, useEffect } from 'react';
-// --- UPDATED ---
-// Timestamp is needed for the new data structure
 import { 
-  collection, getDocs, doc, updateDoc, addDoc, deleteDoc, 
-  serverTimestamp, setDoc, query, where, Timestamp 
+  collection, getDocs, doc, updateDoc, addDoc,
+  serverTimestamp, query, Timestamp, onSnapshot, orderBy, limit,
+  writeBatch, where, WriteBatch
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
-import { ROOMS_DATA } from '../../../data/roomsData';
+
+// --- Import from the new separate file ---
+import { 
+  RoomsContext, 
+  BookingData, 
+  IRoom 
+} from './ReservationsContext';
+
 import { CheckInModal } from './CheckInModal';
-import { WalkInModal } from './WalkInModal';
 import { ReservationDetailsModal } from './ReservationDetailsModal';
 import { EditReservationModal } from './EditReservationModal';
-import { ConfirmDialog } from '../../admin/ConfirmDialog';
+import { ConfirmCheckOutModal } from './ConfirmCheckOutModal';
+import { ConfirmCancelModal } from './ConfirmCancelModal';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
 import ModernReservationsTable from './ModernReservationsTable';
+import { updateBookingCount, updateRevenue, updateArrivals, updateCurrentGuests } from '../../../lib/statsHelpers';
 
-// --- UPDATED ---
-// This is our new "source of truth" interface.
-// The old 'Reservation' interface is removed.
-interface BookingData {
-  additionalGuestPrice: number;
-  baseGuests: number;
-  basePrice: number;
-  bookingId: string; // This will be the document ID
-  checkIn: string;
-  checkOut: string;
-  createdAt: Timestamp;
-  guests: number;
-  nights: number;
-  paymentDetails: {
-    cardLast4: string | null;
-    cardholderName: string | null;
-    gcashName: string | null;
-    gcashNumber: string | null;
-    paidAt: Timestamp | null;
-    paymentMethod: string;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
-  };
-  roomName: string;
-  roomNumber: string | null;
-  roomPricePerNight: number;
-  roomType: string;
-  status: 'confirmed' | 'checked-in' | 'checked-out' | 'cancelled';
-  subtotal: number;
-  tax: number;
-  taxRate: number;
-  totalAmount: number;
-  updatedAt: Timestamp;
-  userEmail: string;
-  userId: string;
-  userName: string;
-}
-// --- END UPDATED ---
-
+// --- HELPER FOR ROOM UPDATES ---
+const updateRoomStatusInBatch = (
+  batch: WriteBatch, 
+  roomId: string, 
+  status: 'occupied' | 'available' | 'cleaning', 
+  isActive: boolean, 
+  currentReservation: string | null
+) => {
+  const roomRef = doc(db, 'rooms', roomId);
+  batch.set(roomRef, {
+    status,
+    isActive,
+    currentReservation,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
 
 export const ReservationsPage = () => {
   const { user } = useAuth();
-  // --- UPDATED ---
-  // All state now uses the new BookingData interface
   const [reservations, setReservations] = useState<BookingData[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<BookingData[]>([]);
   const [selectedReservation, setSelectedReservation] = useState<BookingData | null>(null);
-  // --- END UPDATED ---
-  
+
+  // Master Room List State
+  const [rooms, setRooms] = useState<IRoom[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(true);
+
+  // Modal States
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [reservationToCancel, setReservationToCancel] = useState<string | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [reservationToDelete, setReservationToDelete] = useState<string | null>(null);
+  const [showCheckOutModal, setShowCheckOutModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  
   const [loading, setLoading] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState<{
+    totalBookings?: number;
+    monthlyCount?: number;
+  } | null>(null);
 
-  // Fetch reservations from Firebase
+  // --- Fetch Rooms ---
+  const fetchRooms = async () => {
+    setRoomsLoading(true);
+    try {
+      const snap = await getDocs(collection(db, 'rooms'));
+      const roomsData = snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as Omit<IRoom, 'id'>)
+      }));
+      setRooms(roomsData as IRoom[]);
+    } catch (err) {
+      console.error("Failed to fetch rooms:", err);
+    } finally {
+      setRoomsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      fetchReservations();
-    } else {
-      console.log('No user authenticated, skipping fetch');
-      setLoading(false);
+      fetchRooms();
     }
   }, [user]);
 
-// --- UPDATED ---
-  // Auto-checkout: Now also sets isActive: false
-  useEffect(() => {
-    let mounted = true;
-    const autoCheckoutAndCleanRooms = async () => {
-      try {
-        const bookingsCol = collection(db, 'bookings');
-        const q = query(bookingsCol, where('status', 'in', ['confirmed', 'checked-in']));
-        const snap = await getDocs(q);
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        for (const d of snap.docs) {
-          const data: any = d.data();
-          let checkOutVal = data.checkOut; 
-          let checkOutDate: Date | null = null;
-          
-          if (checkOutVal && typeof checkOutVal === 'string') {
-            const parsed = new Date(checkOutVal);
-            if (!isNaN(parsed.getTime())) checkOutDate = parsed;
-          }
-          else if (checkOutVal?.toDate) { 
-            checkOutDate = checkOutVal.toDate();
-          }
-
-          if (!checkOutDate) continue;
-          
-          const co = new Date(checkOutDate);
-          co.setHours(0,0,0,0);
-          
-          if (co < today) {
-            try {
-              await updateDoc(doc(db, 'bookings', d.id), { 
-                status: 'checked-out', 
-                updatedAt: serverTimestamp() 
-              });
-              
-              if (mounted) {
-                setReservations(prev => prev.map(r => r.bookingId === d.id ? { ...r, status: 'checked-out' as const } : r));
-              }
-
-              const roomNumber = data.roomNumber; 
-              if (roomNumber) {
-                try {
-                  const roomRef = doc(db, 'rooms', roomNumber);
-                  // --- FIX ---
-                  await updateDoc(roomRef, { 
-                    status: 'cleaning', 
-                    isActive: false, // Add this
-                    currentReservation: null, 
-                    updatedAt: serverTimestamp() 
-                  });
-                } catch (e) {
-                  try {
-                    // --- FIX ---
-                    await setDoc(doc(db, 'rooms', roomNumber), { 
-                      roomNumber, 
-                      status: 'cleaning', 
-                      isActive: false, // Add this
-                      currentReservation: null 
-                    }, { merge: true });
-                  } catch (err) {
-                    console.warn('Failed to mark room cleaning for', roomNumber, err);
-                  }
-                }
-              }
-            } catch (err) {
-              console.warn('Auto-checkout update failed for booking', d.id, err);
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Auto-checkout job failed', err);
-      }
-    };
-
-    if (user) {
-      autoCheckoutAndCleanRooms();
-      const iv = setInterval(autoCheckoutAndCleanRooms, 5 * 60 * 1000);
-      return () => { mounted = false; clearInterval(iv); };
-    }
-    return () => { mounted = false; };
-  }, [user]);
-  // --- END UPDATED ---
-
-  // --- UPDATED ---
-  // This is the most important fix.
-  // The fetchReservations function now correctly reads the new data structure.
+  // --- Fetch Reservations ---
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
-      
-      const bookingsData = bookingsSnapshot.docs.map(doc => {
-        const data = doc.data();
+      const bookingsQuery = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'), limit(20));
+      const bookingsSnapshot = await getDocs(bookingsQuery);
+
+      const bookingsData = bookingsSnapshot.docs.map(docSnapshot => {
+        const data = docSnapshot.data();
         
-        // Helper to parse dates ("YYYY-MM-DD" string or Timestamp)
-        const parseDate = (dateField: any): string => {
+        // FIXED: Improved type checking for dateField
+        const parseDate = (dateField: unknown): string => {
           if (!dateField) return '';
-          if (dateField.toDate) { // Handle Firestore Timestamp
-            return dateField.toDate().toISOString().split('T')[0];
+          // Check if it's a Firestore Timestamp (has toDate method)
+          if (typeof dateField === 'object' && 'toDate' in dateField) {
+            return (dateField as { toDate: () => Date }).toDate().toISOString().split('T')[0];
           }
-          if (typeof dateField === 'string') { // Handle "YYYY-MM-DD"
+          if (typeof dateField === 'string') {
             return dateField;
           }
-          return ''; // Fallback
+          return '';
         };
 
-        // This maps the Firestore document to our strict BookingData interface.
-        // It provides defaults for any fields that might be missing from old records.
         return {
-          // IDs
-          bookingId: doc.id, // Use the document ID as the bookingId
-          userId: data.userId || `U-UNKNOWN-${doc.id}`,
-          
-          // Guest Details
+          bookingId: docSnapshot.id,
+          userId: data.userId || `U-UNKNOWN-${docSnapshot.id}`,
           userName: data.userName || 'Unknown Guest',
           userEmail: data.userEmail || 'no-email@provided.com',
-          
-          // Stay Details
           checkIn: parseDate(data.checkIn),
           checkOut: parseDate(data.checkOut),
           guests: data.guests || 1,
           nights: data.nights || 1,
           status: data.status || 'confirmed',
-
-          // Room Details
           roomName: data.roomName || 'Unknown Room',
           roomType: data.roomType || 'standard',
           roomNumber: data.roomNumber || null,
-
-          // Pricing Details
           basePrice: data.basePrice || 0,
           baseGuests: data.baseGuests || 2,
           additionalGuestPrice: data.additionalGuestPrice || 0,
@@ -223,461 +130,454 @@ export const ReservationsPage = () => {
           tax: data.tax || 0,
           taxRate: data.taxRate || 0.12,
           totalAmount: data.totalAmount || 0,
-
-          // --- THIS FIXES THE BUG ---
-          // Read from the nested paymentDetails map
           paymentDetails: {
-            paymentStatus: data.paymentDetails?.paymentStatus || 'pending',
-            paymentMethod: data.paymentDetails?.paymentMethod || 'cash',
-            paidAt: data.paymentDetails?.paidAt || null,
-            gcashName: data.paymentDetails?.gcashName || null,
-            gcashNumber: data.paymentDetails?.gcashNumber || null,
-            cardholderName: data.paymentDetails?.cardholderName || null,
-            cardLast4: data.paymentDetails?.cardLast4 || null,
+            paymentStatus: data.paymentDetails?.paymentStatus || data.paymentStatus || 'pending',
+            paymentMethod: data.paymentDetails?.paymentMethod || data.paymentMethod || 'cash',
+            paidAt: data.paymentDetails?.paidAt || data.paidAt || null,
+            gcashName: data.paymentDetails?.gcashName || data.gcashName || null,
+            gcashNumber: data.paymentDetails?.gcashNumber || data.gcashNumber || null,
+            cardholderName: data.paymentDetails?.cardholderName || data.cardholderName || null,
+            cardLast4: data.paymentDetails?.cardLast4 || data.cardLast4 || null,
           },
-          // --- END BUG FIX ---
-
-          // Timestamps
           createdAt: data.createdAt || Timestamp.now(),
           updatedAt: data.updatedAt || Timestamp.now(),
-          
         } as BookingData;
       });
-      
+
       setReservations(bookingsData);
-      setFilteredReservations(bookingsData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching reservations:', error);
-      if (error?.code === 'permission-denied') {
-        alert(`Permission denied. Current user: ${user?.email || 'Not logged in'}\n\nPlease log in as: balayginhawaAdmin123@gmail.com`);
-      } else {
-        alert('Failed to load reservations. Please try again.');
-      }
       setReservations([]);
-      setFilteredReservations([]);
     } finally {
       setLoading(false);
     }
   };
-  // --- END UPDATED ---
 
-  // ensureRooms (useEffect remains the same)
   useEffect(() => {
-    let mounted = true;
-    const ensureRooms = async () => {
-      try {
-        const roomsSnap = await getDocs(collection(db, 'rooms'));
-        if (mounted && roomsSnap.empty) {
-          for (const r of ROOMS_DATA) {
-            try {
-              await setDoc(doc(db, 'rooms', r.roomNumber), {
-                roomNumber: r.roomNumber,
-                roomName: r.roomName,
-                type: r.roomType ? r.roomType.toLowerCase().replace(/\s+/g, '-') : 'standard',
-                status: r.status || 'available',
-                currentReservation: null
-              });
-            } catch (e) {
-              console.warn('Failed to populate room', r.roomNumber, e);
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Error ensuring rooms collection populated:', err);
-      }
-    };
-    if (user) ensureRooms();
-    return () => { mounted = false; };
+    if (user) fetchReservations();
+    else setLoading(false);
   }, [user]);
 
-  // useEffect for filters (remains the same)
+  // Filter Effect
   useEffect(() => {
     setFilteredReservations(reservations);
   }, [reservations]);
 
-  // --- UPDATED ---
-  // All handlers now use BookingData
-  const handleCheckIn = (reservation: BookingData) => {
-    setSelectedReservation(reservation);
-    setShowCheckInModal(true);
+  // Real-time Stats
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const statsRef = doc(db, 'stats', 'dashboard');
+      const unsub = onSnapshot(statsRef, (snap) => {
+        const data = snap.data() ?? {};
+        const today = new Date();
+        const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+        
+        setDashboardStats({
+          totalBookings: typeof data.totalBookings === 'number' ? Number(data.totalBookings) : undefined,
+          monthlyCount: typeof data.monthly?.[monthKey] === 'number' ? Number(data.monthly[monthKey]) : undefined,
+        });
+      });
+      return () => unsub();
+    } catch (err) {
+      console.warn('Error setting up stats listener', err);
+    }
+  }, [user]);
+
+  // Auto Checkout
+  useEffect(() => {
+    let mounted = true;
+    const autoCheckoutAndCleanRooms = async () => {
+      const lastRun = sessionStorage.getItem('autoCheckoutLastRun');
+      const now = Date.now();
+      const FIVE_MINUTES = 5 * 60 * 1000;
+
+      if (lastRun && (now - parseInt(lastRun)) < FIVE_MINUTES) {
+        return;
+      }
+
+      try {
+        const bookingsCol = collection(db, 'bookings');
+        const q = query(bookingsCol, where('status', 'in', ['confirmed', 'checked-in']));
+        const snap = await getDocs(q);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        sessionStorage.setItem('autoCheckoutLastRun', now.toString());
+
+        const batch = writeBatch(db);
+        let hasUpdates = false;
+
+        for (const d of snap.docs) {
+          const data = d.data();
+          let checkOutVal = data.checkOut;
+          let checkOutDate: Date | null = null;
+
+          if (checkOutVal && typeof checkOutVal === 'string') {
+            const parsed = new Date(checkOutVal);
+            if (!isNaN(parsed.getTime())) checkOutDate = parsed;
+          }
+          else if (checkOutVal?.toDate) {
+            checkOutDate = checkOutVal.toDate();
+          }
+
+          if (!checkOutDate) continue;
+
+          const co = new Date(checkOutDate);
+          co.setHours(0,0,0,0);
+
+          if (co < today) {
+            hasUpdates = true;
+            batch.update(doc(db, 'bookings', d.id), {
+              status: 'checked-out',
+              updatedAt: serverTimestamp()
+            });
+
+            if (data.roomNumber) {
+              // USED HELPER
+              updateRoomStatusInBatch(batch, data.roomNumber, 'cleaning', false, null);
+            }
+            
+            if (mounted) {
+               setReservations(prev => prev.map(r => r.bookingId === d.id ? { ...r, status: 'checked-out' as const } : r));
+            }
+          }
+        }
+
+        if (hasUpdates) {
+          await batch.commit();
+        }
+
+      } catch (err) {
+        console.warn('Auto-checkout job failed', err);
+      }
+    };
+
+    if (user) {
+      autoCheckoutAndCleanRooms();
+      return () => { mounted = false; };
+    }
+    return () => { mounted = false; };
+  }, [user]);
+
+
+  // --- HANDLERS ---
+
+  // 1. Handle Check-In (Atomic Batch Update)
+  const handleCheckInComplete = async (updatedReservation: BookingData) => {
+    try {
+      const batch = writeBatch(db);
+      
+      const bookingRef = doc(db, 'bookings', updatedReservation.bookingId);
+      batch.update(bookingRef, {
+        ...updatedReservation,
+        updatedAt: serverTimestamp()
+      });
+
+      const prevRoom = reservations.find(r => r.bookingId === updatedReservation.bookingId)?.roomNumber;
+      const newRoom = updatedReservation.roomNumber;
+
+      if (prevRoom && prevRoom !== newRoom) {
+        // USED HELPER
+        updateRoomStatusInBatch(batch, prevRoom, 'available', true, null);
+      }
+
+      if (newRoom) {
+        // USED HELPER
+        updateRoomStatusInBatch(batch, newRoom, 'occupied', false, updatedReservation.bookingId);
+      }
+
+      await batch.commit();
+
+      setReservations(prev => prev.map(r => r.bookingId === updatedReservation.bookingId ? updatedReservation : r));
+      
+      const wasStatus = reservations.find(r => r.bookingId === updatedReservation.bookingId)?.status;
+      if (wasStatus !== 'checked-in' && updatedReservation.status === 'checked-in') {
+        await updateCurrentGuests(1);
+      }
+      
+      await fetchRooms();
+
+      setShowCheckInModal(false);
+      setSelectedReservation(null);
+
+    } catch (error) {
+      console.error('Error checking in:', error);
+      alert('Failed to check in. Please try again.');
+    }
   };
 
-  const handleCheckOut = async (reservation: BookingData) => {
+  // 2. Handle Walk-In (Atomic Batch Update)
+  const handleWalkInBooking = async (newBooking: BookingData) => {
     try {
-      await updateDoc(doc(db, 'bookings', reservation.bookingId), { // Use bookingId
+      const batch = writeBatch(db);
+
+      const newBookingRef = doc(collection(db, 'bookings'));
+      const bookingId = newBookingRef.id;
+      
+      const bookingPayload = {
+        ...newBooking,
+        bookingId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      batch.set(newBookingRef, bookingPayload);
+
+      if (newBooking.roomNumber) {
+        // USED HELPER
+        updateRoomStatusInBatch(batch, newBooking.roomNumber, 'occupied', false, bookingId);
+      }
+
+      await batch.commit();
+
+      const bookingWithId = { ...newBooking, bookingId, createdAt: Timestamp.now(), updatedAt: Timestamp.now() };
+      setReservations(prev => [bookingWithId, ...prev]);
+
+      await updateBookingCount(1, newBooking.checkIn);
+      await updateRevenue(newBooking.totalAmount);
+      await updateArrivals(1, newBooking.checkIn);
+      if (newBooking.status === 'checked-in') await updateCurrentGuests(1);
+      
+      await fetchRooms();
+
+    } catch (error) {
+      console.error('Error adding walk-in:', error);
+      alert('Failed to create booking.');
+    }
+  };
+
+  // 3. Handle Manual Check-Out (Atomic Batch Update)
+  const handleConfirmCheckOut = async (reservation: BookingData) => {
+    if (!reservation.bookingId) return;
+    
+    try {
+      const batch = writeBatch(db);
+
+      const bookingRef = doc(db, 'bookings', reservation.bookingId);
+      batch.update(bookingRef, {
         status: 'checked-out',
         updatedAt: serverTimestamp()
       });
 
-      setReservations(prev =>
-        prev.map(r =>
-          r.bookingId === reservation.bookingId // Use bookingId
-            ? { ...r, status: 'checked-out' as const }
-            : r
-        )
-      );
+      if (reservation.roomNumber) {
+        // USED HELPER
+        updateRoomStatusInBatch(batch, reservation.roomNumber, 'cleaning', false, null);
+      }
+
+      await batch.commit();
+
+      setReservations(prev => prev.map(r => 
+        r.bookingId === reservation.bookingId ? { ...r, status: 'checked-out' } : r
+      ));
+
+      if (reservation.status === 'checked-in') {
+        await updateCurrentGuests(-1);
+      }
+
+      await fetchRooms();
+      
+      setShowCheckOutModal(false);
+      setSelectedReservation(null);
+
     } catch (error) {
-      console.error('Error checking out reservation:', error);
-      alert('Failed to check out reservation. Please try again.');
+      console.error('Error confirming check-out:', error);
+      alert('Failed to check out.');
     }
   };
 
-// --- UPDATED ---
-  // handleWalkInBooking now sets isActive: false
-  const handleWalkInBooking = async (newBooking: BookingData) => {
+  // 4. Handle Cancel (Atomic Batch Update)
+  const handleConfirmCancel = async (reservation: BookingData) => {
+    if (!reservation.bookingId) return;
+
     try {
-      const docRef = await addDoc(collection(db, 'bookings'), {
-        ...newBooking,
-        createdAt: serverTimestamp(),
+      const batch = writeBatch(db);
+
+      const bookingRef = doc(db, 'bookings', reservation.bookingId);
+      batch.update(bookingRef, {
+        status: 'cancelled',
         updatedAt: serverTimestamp()
       });
 
-      const bookingWithId: BookingData = { 
-        ...newBooking, 
-        bookingId: docRef.id,
-        createdAt: Timestamp.now(), 
-        updatedAt: Timestamp.now()
-      };
-      setReservations(prev => [...prev, bookingWithId]);
-
-      if (newBooking.roomNumber) {
-        try {
-          // --- FIX ---
-          await setDoc(doc(db, 'rooms', newBooking.roomNumber), {
-            roomNumber: newBooking.roomNumber,
-            status: 'occupied',
-            isActive: false, // Add this
-            currentReservation: docRef.id,
-          }, { merge: true });
-        } catch (err) {
-          console.warn('Failed to mark room occupied after walk-in booking:', err);
-        }
+      if (reservation.roomNumber) {
+        // USED HELPER
+        updateRoomStatusInBatch(batch, reservation.roomNumber, 'available', true, null);
       }
+
+      await batch.commit();
+
+      setReservations(prev => prev.map(r => 
+        r.bookingId === reservation.bookingId ? { ...r, status: 'cancelled' } : r
+      ));
+
+      if (reservation.status === 'checked-in') {
+        await updateCurrentGuests(-1);
+      }
+
+      await fetchRooms();
+
+      setShowCancelModal(false);
+      setSelectedReservation(null);
+
     } catch (error) {
-      console.error('Error adding walk-in booking:', error);
-      alert('Failed to create walk-in booking. Please try again.');
+      console.error('Error cancelling:', error);
+      alert('Failed to cancel reservation.');
     }
   };
 
-
-  const handleEditReservation = (reservation: BookingData) => {
-    setSelectedReservation(reservation);
-    setShowEditModal(true);
-  };
-
-  // --- UPDATED ---
-  // handleSaveReservation now saves the full BookingData object
-  // Note: This assumes EditReservationModal will ALSO be refactored.
+  // 5. Edit Handler
   const handleSaveReservation = async (updatedReservation: BookingData) => {
     try {
-      // Update in Firebase using the *entire* updated object
-      // This ensures the nested paymentDetails are saved correctly
       await updateDoc(doc(db, 'bookings', updatedReservation.bookingId), {
         ...updatedReservation,
-        updatedAt: serverTimestamp() // Set the update timestamp
+        updatedAt: serverTimestamp()
       });
 
-      // Update local state
-      setReservations(prev =>
-        prev.map(r =>
-          r.bookingId === updatedReservation.bookingId ? updatedReservation : r
-        )
-      );
+      setReservations(prev => prev.map(r => 
+        r.bookingId === updatedReservation.bookingId ? updatedReservation : r
+      ));
+
+      await fetchRooms();
       setShowEditModal(false);
       setSelectedReservation(null);
     } catch (error) {
-      console.error('Error updating reservation:', error);
-      alert('Failed to update reservation. Please try again.');
+      console.error('Error saving edit:', error);
+      alert('Failed to update reservation.');
     }
   };
 
-  const handleCancelReservation = (reservationId: string) => {
-    setReservationToCancel(reservationId);
-    setShowCancelDialog(true);
+  // --- UI Logic ---
+  const handleOpenCheckOutModal = (reservation: BookingData) => {
+    setSelectedReservation(reservation);
+    setShowCheckOutModal(true);
   };
 
-  const confirmCancelReservation = async () => {
-    if (reservationToCancel) {
-      try {
-        await updateDoc(doc(db, 'bookings', reservationToCancel), {
-          status: 'cancelled',
-          updatedAt: serverTimestamp()
-        });
-
-        setReservations(prev =>
-          prev.map(r =>
-            r.bookingId === reservationToCancel // Use bookingId
-              ? { ...r, status: 'cancelled' as const }
-              : r
-          )
-        );
-      } catch (error) {
-        console.error('Error cancelling reservation:', error);
-        alert('Failed to cancel reservation. Please try again.');
-      }
-    }
-    setShowCancelDialog(false);
-    setReservationToCancel(null);
+  const handleOpenCancelModal = (reservation: BookingData) => {
+    setSelectedReservation(reservation);
+    setShowCancelModal(true);
   };
 
-  // --- ADD THESE TWO FUNCTIONS ---
-
-  const handleDeleteReservation = (reservationId: string) => {
-    setReservationToDelete(reservationId);
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDeleteReservation = async () => {
-    if (reservationToDelete) {
-      try {
-        // Delete from Firebase
-        await deleteDoc(doc(db, 'bookings', reservationToDelete));
-
-        // Update local state
-        setReservations(prev =>
-          prev.filter(r => r.bookingId !== reservationToDelete)
-        );
-        
-      } catch (error) {
-        console.error('Error deleting reservation:', error);
-        alert('Failed to delete reservation. Please try again.');
-      }
-    }
-    setShowDeleteDialog(false);
-    setReservationToDelete(null);
-  };
-  // --- END ADD ---
-
-  // --- UPDATED ---
-  // Stats cards logic is now correct
   const statusCounts = {
-    all: reservations.length,
+    all: dashboardStats?.monthlyCount ?? reservations.length,
     confirmed: reservations.filter(r => r.status === 'confirmed').length,
     'checked-in': reservations.filter(r => r.status === 'checked-in').length,
     'checked-out': reservations.filter(r => r.status === 'checked-out').length,
   };
 
-  // --- JSX (No changes needed, but updated for clarity) ---
   return (
-    <div className="min-h-screen bg-[#F9F6EE]">
-      {/* Background Elements (no change) */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-heritage-green/5 to-emerald-100/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
-        <div className="absolute top-32 right-16 w-80 h-80 bg-gradient-to-r from-blue-100/20 to-indigo-100/20 rounded-full blur-3xl animate-pulse delay-1000 opacity-25"></div>
-        <div className="absolute bottom-16 left-1/4 w-72 h-72 bg-gradient-to-r from-heritage-light/10 to-heritage-neutral/10 rounded-full blur-3xl animate-pulse delay-2000 opacity-20"></div>
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(134, 134, 134, 0.1) 1px, transparent 0)',
-            backgroundSize: '50px 50px'
-          }}></div>
+    <RoomsContext.Provider value={{ rooms, loading: roomsLoading, refreshRooms: fetchRooms }}>
+      <div className="min-h-screen bg-[#F9F6EE]">
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-heritage-green/5 to-emerald-100/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
+          <div className="absolute top-32 right-16 w-80 h-80 bg-gradient-to-r from-blue-100/20 to-indigo-100/20 rounded-full blur-3xl animate-pulse delay-1000 opacity-25"></div>
+          <div className="absolute bottom-16 left-1/4 w-72 h-72 bg-gradient-to-r from-heritage-light/10 to-heritage-neutral/10 rounded-full blur-3xl animate-pulse delay-2000 opacity-20"></div>
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(134, 134, 134, 0.1) 1px, transparent 0)',
+              backgroundSize: '50px 50px'
+            }}></div>
+          </div>
         </div>
-      </div>
 
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header (no change) */}
-        <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden">
-          {/* ... header visual elements ... */}
-          <div className="relative p-10">
-            <div className="flex items-center justify-between">
-              {/* ... header content ... */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  {/* ... icon ... */}
-                  <div className="space-y-2">
-                    <h1 className="text-5xl font-black text-[#82A33D] drop-shadow-sm">
-                      Front Desk Operations
-                    </h1>
-                    <p className="text-xl text-gray-700 font-medium tracking-wide">
-                      Manage reservations and guest services
-                    </p>
-                    {/* ... status pills ... */}
-                  </div>
-                </div>
-              </div>
-              {/* ... time display ... */}
+        <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <FrontDeskStatsCard title="Total Reservations" value={statusCounts.all} icon="📋" color="blue" />
+            <FrontDeskStatsCard title="Pending Check-in" value={statusCounts.confirmed} icon="⏳" color="yellow" />
+            <FrontDeskStatsCard title="Checked In" value={statusCounts['checked-in']} icon="🏨" color="green" />
+            <FrontDeskStatsCard title="Checked Out" value={statusCounts['checked-out']} icon="✅" color="gray" />
+          </div>
+
+          {!user ? (
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+              <p className="text-gray-500">Please log in to view reservations.</p>
             </div>
-          </div>
-        </div>
-        
-        {/* Stats Cards Grid (no change) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          <FrontDeskStatsCard
-            title="Total Reservations"
-            value={statusCounts.all}
-            icon="📋"
-            color="blue"
-          />
-          <FrontDeskStatsCard
-            title="Pending Check-in"
-            value={statusCounts.confirmed}
-            icon="⏳"
-            color="yellow"
-          />
-          <FrontDeskStatsCard
-            title="Checked In"
-            value={statusCounts['checked-in']}
-            icon="🏨"
-            color="green"
-          />
-          <FrontDeskStatsCard
-            title="Checked Out"
-            value={statusCounts['checked-out']}
-            icon="✅"
-            color="gray"
-          />
+          ) : loading ? (
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+              <p className="text-gray-500">Loading reservations...</p>
+            </div>
+          ) : (
+            <ModernReservationsTable
+              reservations={filteredReservations}
+              onRowClick={(reservation: BookingData) => {
+                setSelectedReservation(reservation);
+                setShowDetailsModal(true);
+              }}
+              onCheckIn={(res) => {
+                setSelectedReservation(res);
+                setShowCheckInModal(true);
+              }}
+              onCheckOut={handleOpenCheckOutModal}
+              onEdit={(res) => {
+                setSelectedReservation(res);
+                setShowEditModal(true);
+              }}
+              onCancel={handleOpenCancelModal}
+              onAddReservation={handleWalkInBooking}
+            />
+          )}
         </div>
 
-        {/* --- UPDATED ---
-        // The table and modals will now receive the correct BookingData type,
-        // fixing all TypeScript errors.
-        */}
-        {!user ? (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            {/* ... Not logged in UI ... */}
-          </div>
-        ) : loading ? (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            {/* ... Loading UI ... */}
-          </div>
-        ) : (
-          <ModernReservationsTable
-          reservations={filteredReservations}
-          onRowClick={(reservation: BookingData) => { 
-            setSelectedReservation(reservation);
-            setShowDetailsModal(true);
-          }}
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
-          onEdit={handleEditReservation}
-          onCancel={(reservation: BookingData) => handleCancelReservation(reservation.bookingId)}
-          onAddReservation={handleWalkInBooking}
-          onDelete={(reservation: BookingData) => handleDeleteReservation(reservation.bookingId)} // <-- ADD THIS LINE
-        />
-        )}
-      </div>
-
-      {/* Check-in Modal */}
-      {showCheckInModal && selectedReservation && (
-        <CheckInModal
-          isOpen={showCheckInModal}
-          onClose={() => {
-            setShowCheckInModal(false);
-            setSelectedReservation(null);
-          }}
-          reservation={selectedReservation} // Prop is now BookingData
-          onCheckIn={async (updatedReservation) => { // Receives BookingData
-            try {
-              await updateDoc(doc(db, 'bookings', updatedReservation.bookingId), {
-                ...updatedReservation, 
-                updatedAt: serverTimestamp() 
-              });
-
-              setReservations(prev =>
-                prev.map(r =>
-                  r.bookingId === updatedReservation.bookingId ? updatedReservation : r
-                )
-              );
-              
-              // Update rooms collection
-              try {
-                const prevRoom = reservations.find(r => r.bookingId === updatedReservation.bookingId)?.roomNumber;
-                const newRoom = updatedReservation.roomNumber;
-                if (newRoom) {
-                  // --- FIX ---
-                  await setDoc(doc(db, 'rooms', newRoom), {
-                    roomNumber: newRoom,
-                    status: 'occupied',
-                    isActive: false, // Add this
-                    currentReservation: updatedReservation.bookingId
-                  }, { merge: true });
-                }
-                if (prevRoom && prevRoom !== newRoom) {
-                  // --- FIX ---
-                  await setDoc(doc(db, 'rooms', prevRoom), {
-                    roomNumber: prevRoom,
-                    status: 'available',
-                    isActive: true, // Add this
-                    currentReservation: null
-                  }, { merge: true });
-                }
-              } catch (err) {
-                console.warn('Failed to update rooms documents on check-in:', err);
-              }
-
+        {/* Modals */}
+        {showCheckInModal && selectedReservation && (
+          <CheckInModal
+            isOpen={showCheckInModal}
+            onClose={() => {
               setShowCheckInModal(false);
               setSelectedReservation(null);
-            } catch (error) {
-              console.error('Error checking in reservation:', error);
-              alert('Failed to check in reservation. Please try again.');
-            }
-          }}
-        />
-      )}
-      
-      {/* Reservation Details Modal */}
-      {showDetailsModal && selectedReservation && (
-        <ReservationDetailsModal
-          isOpen={showDetailsModal}
-          onClose={() => {
-            setShowDetailsModal(false);
-            setSelectedReservation(null);
-          }}
-          reservation={selectedReservation} // Prop is now BookingData
-          onEdit={handleEditReservation}
-          onCheckIn={handleCheckIn}
-          onCheckOut={(reservationId) => {
-            const reservation = reservations.find(r => r.bookingId === reservationId);
-            if (reservation) handleCheckOut(reservation);
-          }}
-          onCancel={handleCancelReservation}
-        />
-      )}
+            }}
+            reservation={selectedReservation}
+            onCheckIn={handleCheckInComplete}
+          />
+        )}
 
-      {/* Edit Reservation Modal */}
-      {showEditModal && selectedReservation && (
-        <EditReservationModal
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setSelectedReservation(null);
-          }}
-          reservation={selectedReservation} // Prop is now BookingData
-          onSave={handleSaveReservation} // Now expects BookingData
-        />
-      )}
+        {showDetailsModal && selectedReservation && (
+          <ReservationDetailsModal
+            isOpen={showDetailsModal}
+            onClose={() => setShowDetailsModal(false)}
+            reservation={selectedReservation}
+            onEdit={(res) => {
+              setSelectedReservation(res);
+              setShowEditModal(true);
+            }}
+            onCheckIn={(res) => {
+              setSelectedReservation(res);
+              setShowCheckInModal(true);
+            }}
+            onCheckOut={handleOpenCheckOutModal}
+            onCancel={handleOpenCancelModal}
+          />
+        )}
 
-      {/* Cancel Confirmation Dialog */}
-      {showCancelDialog && (
-        <ConfirmDialog
-          isOpen={showCancelDialog}
-          onClose={() => {
-            setShowCancelDialog(false);
-            setReservationToCancel(null);
-          }}
-          onConfirm={confirmCancelReservation}
-          title="Cancel Reservation"
-          message="Are you sure you want to cancel this reservation? This action cannot be undone."
-          confirmText="Cancel Reservation"
-        />
-      )}
+        {showEditModal && selectedReservation && (
+          <EditReservationModal
+            isOpen={showEditModal}
+            onClose={() => {
+              setShowEditModal(false);
+              setSelectedReservation(null);
+            }}
+            reservation={selectedReservation}
+            onSave={handleSaveReservation}
+          />
+        )}
 
-      {/* --- ADD THIS NEW DIALOG --- */}
-      {showDeleteDialog && (
-        <ConfirmDialog
-          isOpen={showDeleteDialog}
-          onClose={() => {
-            setShowDeleteDialog(false);
-            setReservationToDelete(null);
-          }}
-          onConfirm={confirmDeleteReservation}
-          title="Delete Reservation"
-          message="Are you sure you want to permanently delete this reservation? This action is irreversible."
-          confirmText="Delete"
-          type='danger' // <-- THIS IS THE FIX
-        />
-      )}
-      {/* --- END ADD --- */}
+        {showCheckOutModal && selectedReservation && (
+          <ConfirmCheckOutModal
+            isOpen={showCheckOutModal}
+            onClose={() => setShowCheckOutModal(false)}
+            reservation={selectedReservation}
+            onConfirmCheckOut={handleConfirmCheckOut}
+          />
+        )}
 
-    </div>
+        {showCancelModal && selectedReservation && (
+          <ConfirmCancelModal
+            isOpen={showCancelModal}
+            onClose={() => setShowCancelModal(false)}
+            reservation={selectedReservation}
+            onConfirmCancel={handleConfirmCancel}
+          />
+        )}
+      </div>
+    </RoomsContext.Provider>
   );
 };

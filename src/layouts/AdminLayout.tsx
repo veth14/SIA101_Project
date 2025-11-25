@@ -17,7 +17,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-heritage-light">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-heritage-green mx-auto"></div>
+          <div className="w-12 h-12 mx-auto border-t-2 border-b-2 rounded-full animate-spin border-heritage-green"></div>
           <p className="mt-4 text-sm text-gray-600">Loading...</p>
         </div>
       </div>
@@ -30,28 +30,29 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden">
-      {/* Sidebar */}
-      <div className="hidden md:flex md:flex-shrink-0">
-        <Sidebar isMobile={false} />
+    <div className="flex h-screen overflow-hidden bg-heritage-light/30">
+      {/* Fixed Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar />
       </div>
 
       {/* Mobile sidebar overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setMobileMenuOpen(false)}></div>
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-            <Sidebar isMobile={true} />
+          <div className="relative flex flex-col flex-1 w-full max-w-xs bg-white">
+            <Sidebar />
           </div>
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        <Topbar 
-          onSidebarToggle={() => setMobileMenuOpen(!mobileMenuOpen)} 
-        />
-        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
+      {/* Main content area - shifted right on desktop */}
+      <div className="flex flex-col flex-1 w-0 overflow-hidden md:ml-72">
+        {/* Topbar */}
+        <Topbar onSidebarToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
+
+        {/* Main content */}
+        <main className="relative z-0 flex-1 overflow-y-auto focus:outline-none">
           {children}
         </main>
       </div>

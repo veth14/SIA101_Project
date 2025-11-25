@@ -1,10 +1,11 @@
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
 export interface Room {
   id: string;
   roomNumber: string;
-  roomType: string;
+  roomName?: string; // Added: The display name (e.g., "Silid Payapa")
+  roomType: string;  // Functional category (e.g., "Standard Room")
   status: 'available' | 'occupied' | 'maintenance' | 'cleaning';
   basePrice: number;
   maxGuests: number;
@@ -16,6 +17,7 @@ export interface Room {
   floor?: number;
   roomSize?: string;
   description?: string;
+  isActive?: boolean;
 }
 
 export interface RoomStats {
@@ -35,9 +37,19 @@ export interface RoomFilters {
 
 /**
  * Fetch all rooms from Firebase with sorting (available first)
+ * OPTIMIZED: Cache results for 2 minutes to reduce Firestore reads
  */
-export const fetchRooms = async (): Promise<Room[]> => {
+let roomsCache: { data: Room[]; timestamp: number } | null = null;
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
+export const fetchRooms = async (forceRefresh = false): Promise<Room[]> => {
   try {
+    // Return cached data if still valid
+    if (!forceRefresh && roomsCache !== null && (Date.now() - roomsCache.timestamp) < CACHE_TTL) {
+      console.log('📦 Using cached rooms data');
+      return roomsCache.data;
+    }
+    
     console.log('🔄 Fetching rooms from Firebase...');
     
     const roomsQuery = query(
@@ -53,6 +65,7 @@ export const fetchRooms = async (): Promise<Room[]> => {
       roomsData.push({
         id: doc.id,
         roomNumber: data.roomNumber || '',
+        roomName: data.roomName || '', // Map the new field
         roomType: data.roomType || data.type || '',
         status: data.status || 'available',
         basePrice: data.basePrice || data.price || 0,
@@ -63,8 +76,9 @@ export const fetchRooms = async (): Promise<Room[]> => {
         checkIn: data.checkIn || undefined,
         checkOut: data.checkOut || undefined,
         floor: data.floor || undefined,
-        roomSize: data.roomSize || undefined,
-        description: data.description || undefined
+        roomSize: data.size || data.roomSize || undefined,
+        description: data.description || undefined,
+        isActive: data.isActive ?? true
       });
     });
     
@@ -77,6 +91,9 @@ export const fetchRooms = async (): Promise<Room[]> => {
       // Then sort by room number
       return a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true });
     });
+    
+    // Cache the results
+    roomsCache = { data: sortedRooms, timestamp: Date.now() };
     
     console.log(`✅ Loaded ${sortedRooms.length} rooms from Firebase`);
     return sortedRooms;
@@ -129,20 +146,20 @@ export const calculateRoomStats = (rooms: Room[]): RoomStats => {
  */
 export const filterRooms = (rooms: Room[], filters: RoomFilters): Room[] => {
   return rooms.filter(room => {
+    const term = filters.searchTerm.toLowerCase();
+    
+    // UPDATED: Include roomName in search capabilities
     const matchesSearch = filters.searchTerm === '' || 
-      room.roomNumber.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      room.roomType.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      room.guest?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      room.roomNumber.toLowerCase().includes(term) ||
+      room.roomType.toLowerCase().includes(term) ||
+      (room.roomName && room.roomName.toLowerCase().includes(term)) || 
+      room.guest?.toLowerCase().includes(term);
     
     const matchesStatus = filters.statusFilter === 'all' || room.status === filters.statusFilter;
     
-    // Improved room type matching
+    // We keep filtering by roomType as the logical category
     const matchesType = filters.roomTypeFilter === 'all' || 
-      room.roomType.toLowerCase().includes(filters.roomTypeFilter.toLowerCase()) ||
-      (filters.roomTypeFilter === 'standard' && room.roomType.toLowerCase().includes('standard')) ||
-      (filters.roomTypeFilter === 'deluxe' && room.roomType.toLowerCase().includes('deluxe')) ||
-      (filters.roomTypeFilter === 'suite' && room.roomType.toLowerCase().includes('suite')) ||
-      (filters.roomTypeFilter === 'family' && room.roomType.toLowerCase().includes('family'));
+      room.roomType.toLowerCase().includes(filters.roomTypeFilter.toLowerCase());
     
     return matchesSearch && matchesStatus && matchesType;
   });
@@ -192,36 +209,5 @@ export const updateRoomStatus = async (roomId: string, status: Room['status']): 
   } catch (error) {
     console.error('❌ Error updating room status:', error);
     throw new Error('Failed to update room status');
-  }
-};
-
-/**
- * Add new room
- */
-export const addRoom = async (roomData: Omit<Room, 'id'>): Promise<string> => {
-  try {
-    const docRef = await addDoc(collection(db, 'rooms'), {
-      ...roomData,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    console.log(`✅ Added new room with ID: ${docRef.id}`);
-    return docRef.id;
-  } catch (error) {
-    console.error('❌ Error adding room:', error);
-    throw new Error('Failed to add new room');
-  }
-};
-
-/**
- * Delete room
- */
-export const deleteRoom = async (roomId: string): Promise<void> => {
-  try {
-    await deleteDoc(doc(db, 'rooms', roomId));
-    console.log(`✅ Deleted room ${roomId}`);
-  } catch (error) {
-    console.error('❌ Error deleting room:', error);
-    throw new Error('Failed to delete room');
   }
 };
