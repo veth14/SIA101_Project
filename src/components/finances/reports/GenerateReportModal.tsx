@@ -79,29 +79,42 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl animate-scale-in">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
+      <div
+        className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
+        onClick={handleClose}
+        aria-label="Close overlay"
+      />
+
+      <div className="relative z-10 w-full max-w-4xl max-h-[80vh] mx-6 my-6 overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5 pb-2 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-heritage-green/5 to-heritage-neutral/5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-heritage-green/10 rounded-xl">
-              <FileText className="w-6 h-6 text-heritage-green" />
+        <div className="relative px-6 py-4 bg-white border-b border-gray-100 rounded-t-3xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-lg font-semibold text-emerald-700 md:text-2xl">Generate Financial Report</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Create a new financial report for your selected category and period.
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Generate Financial Report</h2>
-              <p className="text-sm text-gray-600">Create a new financial report for analysis</p>
-            </div>
+            <div aria-hidden />
           </div>
+
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Close"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
           >
-            <X className="w-6 h-6 text-gray-500" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6">
+        <div className="p-6 pb-10 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
           {reportExists ? (
             // Report Already Exists Warning
             <div className="space-y-6">
@@ -136,25 +149,25 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
           ) : isGenerated ? (
             // Success State
             <div className="space-y-6">
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="p-4 bg-emerald-100 rounded-full mb-4 animate-bounce">
+              <div className="flex flex-col items-center justify-center py-8 text-center bg-emerald-50/70 border border-emerald-100 rounded-2xl shadow-sm">
+                <div className="p-4 mb-4 bg-white border border-emerald-100 rounded-full shadow-sm">
                   <CheckCircle className="w-16 h-16 text-emerald-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Report Generated Successfully!</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="mb-2 text-2xl font-bold text-slate-900">Report Generated Successfully!</h3>
+                <p className="mb-6 text-sm text-slate-700">
                   Your {categories.find(c => c.value === selectedCategory)?.label} for {selectedMonth} {selectedYear} is ready.
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap items-center justify-center gap-3">
                   <button
                     onClick={() => alert('Downloading report...')}
-                    className="flex items-center gap-2 px-6 py-3 bg-heritage-green hover:bg-heritage-green/90 text-white font-semibold rounded-xl transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-emerald-700 border border-emerald-700/20 hover:shadow-lg hover:-translate-y-0.5 transition"
                   >
                     <Download className="w-5 h-5" />
-                    Download Report
+                    <span>Download Report</span>
                   </button>
                   <button
                     onClick={handleReset}
-                    className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
+                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Generate Another
                   </button>
@@ -240,31 +253,31 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
 
         {/* Footer */}
         {!isGenerated && !reportExists && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/80">
             <button
               onClick={handleClose}
-              className="px-6 py-3 bg-white hover:bg-gray-100 text-gray-700 font-semibold border border-gray-300 rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             >
               Cancel
             </button>
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className={`flex items-center gap-2 px-8 py-3 font-semibold rounded-xl transition-all ${
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-200 transition disabled:opacity-60 disabled:cursor-not-allowed ${
                 isGenerating
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white hover:shadow-lg hover:-translate-y-0.5'
+                  ? 'bg-gray-300 text-gray-600'
+                  : 'bg-gradient-to-r from-emerald-600 to-emerald-700 border border-emerald-700/20'
               }`}
             >
               {isGenerating ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Generating...
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Generating...</span>
                 </>
               ) : (
                 <>
-                  <FileText className="w-5 h-5" />
-                  Generate Report
+                  <FileText className="w-4 h-4" />
+                  <span>Generate Report</span>
                 </>
               )}
             </button>
