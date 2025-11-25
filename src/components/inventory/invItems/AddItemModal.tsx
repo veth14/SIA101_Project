@@ -125,7 +125,6 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
         style={{ zIndex: 99999 }}
       >
         <div
-          className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden"
           className="relative w-full max-w-4xl  bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden"
           style={{ zIndex: 99999 }}
         >
