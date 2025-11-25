@@ -47,9 +47,18 @@ const TicketsTasksPage: React.FC = () => {
     status: '',
   });
 
+  // Filter states for Completed Tickets
+  const [completedFilters, setCompletedFilters] = useState({
+    search: '',
+    category: '',
+    priority: '',
+    date: '',
+  });
+
   // Ticket data
   const [activeTickets, setActiveTickets] = useState<Ticket[]>([]);
   const [completedTickets, setCompletedTickets] = useState<Ticket[]>([]);
+  const [filteredCompletedTickets, setFilteredCompletedTickets] = useState<Ticket[]>([]);
   const [filteredActiveTickets, setFilteredActiveTickets] = useState<Ticket[]>([]);
 
   // Subscribe to real-time updates
@@ -87,6 +96,27 @@ const TicketsTasksPage: React.FC = () => {
 
     applyFilters();
   }, [filters, activeTickets]);
+
+  // Apply filters to completed tickets
+  useEffect(() => {
+    const applyCompletedFilters = async () => {
+      if (completedFilters.search || completedFilters.category || completedFilters.priority || completedFilters.date) {
+        const filtered = await searchTickets({
+          search: completedFilters.search,
+          category: completedFilters.category,
+          priority: completedFilters.priority,
+          // backend may support a date param; pass date as provided
+          date: completedFilters.date,
+          isCompleted: true,
+        } as any);
+        setFilteredCompletedTickets(filtered);
+      } else {
+        setFilteredCompletedTickets(completedTickets);
+      }
+    };
+
+    applyCompletedFilters();
+  }, [completedFilters, completedTickets]);
 
   const resetCreateForm = () => {
     setCreateTicketForm({
@@ -188,6 +218,15 @@ const TicketsTasksPage: React.FC = () => {
     });
   };
 
+  const handleClearCompletedFilters = () => {
+    setCompletedFilters({
+      search: '',
+      category: '',
+      priority: '',
+      date: '',
+    });
+  };
+
   const handleMarkCompleted = async (ticketId: string) => {
     setLoading(true);
     setError(null);
@@ -262,73 +301,74 @@ const TicketsTasksPage: React.FC = () => {
           <button 
             onClick={() => setIsCreateTicketModalOpen(true)}
             disabled={loading}
-            className="bg-heritage-green text-white px-4 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors disabled:opacity-50"
+            className="bg-gradient-to-r from-heritage-green to-emerald-500 text-white px-4 py-2 rounded-lg shadow-md hover:scale-[1.02] transition-transform disabled:opacity-50"
           >
             Create New Ticket
           </button>
         </div>
 
         {/* Active Tickets Section */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Active Tickets</h2>
-          </div>
-
-          {/* Filter Bar for Active Tickets */}
+        <div className="relative bg-white/95 rounded-3xl shadow-md overflow-hidden transition-all duration-300 group hover:shadow-lg">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <div className="flex flex-wrap gap-4 items-center">
-              {/* Search Bar */}
-              <div className="flex-1 min-w-[200px] max-w-md">
-                <input
-                  type="text"
-                  placeholder="Search tickets..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
-                />
+            <div className="flex items-center gap-4">
+              {/* left: title */}
+              <div className="flex items-center shrink-0">
+                <h2 className="text-lg font-medium text-gray-900">Active Tickets</h2>
               </div>
-              
-              {/* Category Filter */}
-              <select 
-                value={filters.category}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              >
-                <option value="">All Categories</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Housekeeping">Housekeeping</option>
-              </select>
 
-              {/* Priority Filter */}
-              <select 
-                value={filters.priority}
-                onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              >
-                <option value="">All Priority</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
+              {/* center: search */}
+              <div className="flex-1 flex justify-center">
+                <div className="w-full max-w-2xl">
+                  <input
+                    type="text"
+                    placeholder="Search tickets..."
+                    value={filters.search}
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
+                  />
+                </div>
+              </div>
 
-              {/* Status Filter */}
-              <select 
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              >
-                <option value="">All Status</option>
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-              </select>
-              
-              {/* Clear Filters Button */}
-              <button 
-                onClick={handleClearFilters}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
-              >
-                Clear Filters
-              </button>
+              {/* right: controls */}
+              <div className="flex items-center gap-3">
+                <select 
+                  value={filters.category}
+                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">All Categories</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Housekeeping">Housekeeping</option>
+                </select>
+
+                <select 
+                  value={filters.priority}
+                  onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">All Priority</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+
+                <select 
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">All Status</option>
+                  <option value="Open">Open</option>
+                  <option value="In Progress">In Progress</option>
+                </select>
+
+                <button 
+                  onClick={handleClearFilters}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
+                >
+                  Clear
+                </button>
+              </div>
             </div>
           </div>
 
@@ -406,24 +446,24 @@ const TicketsTasksPage: React.FC = () => {
                             <button 
                               onClick={() => handleUpdateStatus(ticket.id, 'In Progress')}
                               disabled={loading}
-                              className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors disabled:opacity-50"
+                              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-3 py-1 rounded text-xs shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50"
                             >
-                              Start Task
+                              Confirm Availability
                             </button>
                           )}
                           <button 
                             onClick={() => openReportComplicationModal(ticket)}
                             disabled={loading}
-                            className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 transition-colors disabled:opacity-50"
+                            className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-1 rounded text-xs shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50"
                           >
-                            Report Issue
+                            Report Complication
                           </button>
                           <button 
                             onClick={() => handleMarkCompleted(ticket.id)}
                             disabled={loading}
-                            className="bg-heritage-green text-white px-3 py-1 rounded text-xs hover:bg-heritage-green/90 transition-colors disabled:opacity-50"
+                            className="bg-gradient-to-r from-heritage-green to-emerald-500 text-white px-3 py-1 rounded text-xs shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50"
                           >
-                            Complete
+                            Mark as Completed
                           </button>
                         </div>
                       </td>
@@ -436,9 +476,65 @@ const TicketsTasksPage: React.FC = () => {
         </div>
 
         {/* Completed Tickets Section */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Completed Tickets</h2>
+        <div className="relative bg-white/95 rounded-3xl shadow-md overflow-hidden transition-all duration-300 group hover:shadow-lg">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-4">
+              {/* left: title */}
+              <div className="flex items-center shrink-0">
+                <h2 className="text-lg font-medium text-gray-900">Completed Tickets</h2>
+              </div>
+
+              {/* center: search */}
+              <div className="flex-1 flex justify-center">
+                <div className="w-full max-w-2xl">
+                  <input
+                    type="text"
+                    placeholder="Search completed tickets..."
+                    value={completedFilters.search}
+                    onChange={(e) => setCompletedFilters({ ...completedFilters, search: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-heritage-green/50"
+                  />
+                </div>
+              </div>
+
+              {/* right: controls */}
+              <div className="flex items-center gap-3">
+                <select
+                  value={completedFilters.category}
+                  onChange={(e) => setCompletedFilters({ ...completedFilters, category: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">All Categories</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Housekeeping">Housekeeping</option>
+                </select>
+
+                <select
+                  value={completedFilters.priority}
+                  onChange={(e) => setCompletedFilters({ ...completedFilters, priority: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="">All Priority</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+
+                <input
+                  type="date"
+                  value={completedFilters.date}
+                  onChange={(e) => setCompletedFilters({ ...completedFilters, date: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2"
+                />
+
+                <button
+                  onClick={handleClearCompletedFilters}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Completed Tickets Table */}
@@ -470,14 +566,14 @@ const TicketsTasksPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {completedTickets.length === 0 ? (
+                {filteredCompletedTickets.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
                       No completed tickets found
                     </td>
                   </tr>
                 ) : (
-                  completedTickets.map((ticket) => (
+                  filteredCompletedTickets.map((ticket) => (
                     <tr key={ticket.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {ticket.ticketNumber}
@@ -520,7 +616,7 @@ const TicketsTasksPage: React.FC = () => {
                               }
                             }}
                             disabled={loading}
-                            className="bg-gray-400 text-white px-3 py-1 rounded text-xs hover:bg-gray-500 transition-colors disabled:opacity-50"
+                            className="bg-gradient-to-r from-gray-400 to-gray-600 text-white px-3 py-1 rounded text-xs shadow-sm hover:scale-[1.02] transition-transform disabled:opacity-50"
                           >
                             Archive Ticket
                           </button>

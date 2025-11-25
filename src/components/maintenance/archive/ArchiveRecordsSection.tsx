@@ -1,10 +1,12 @@
 import React from 'react';
 import { ArchiveRecord, ArchiveStats, fetchArchiveRecordById } from './archiveService';
+import StatsCard from '../overview/StatsCard';
 
 interface Props {
   stats?: ArchiveStats | null;
   records: ArchiveRecord[];
   loading?: boolean;
+  staffCountToday?: number;
   onView?: (id: string) => void;
   onDownload?: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -12,7 +14,7 @@ interface Props {
 
 const PAGE_SIZE = 10;
 
-const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onView, onDownload, onDelete }) => {
+const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, staffCountToday, onView, onDownload, onDelete }) => {
   const [page, setPage] = React.useState(1);
   // Filters local to the archived records section
   const [search, setSearch] = React.useState('');
@@ -162,63 +164,43 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, onVie
 
   return (
     <div>
-      {/* Archive Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Records</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.totalRecords ?? 0}</p>
-            </div>
-          </div>
-        </div>
+      {/* Archive Stats - 3 cards matching overview/StatsCard style */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <StatsCard
+          index={0}
+          title="Total Records"
+          value={stats?.totalRecords ?? records.length ?? 0}
+          iconBg="bg-emerald-100"
+          icon={(
+            <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h3l2 3h6a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+            </svg>
+          )}
+        />
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Completed Tickets</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.completedTickets ?? 0}</p>
-            </div>
-          </div>
-        </div>
+        <StatsCard
+          index={1}
+          title="Completed Tickets"
+          value={stats?.completedTickets ?? 0}
+          iconBg="bg-blue-100"
+          icon={(
+            <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        />
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Staff Records</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.staffRecords ?? 0}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Equipment Logs</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.equipmentLogs ?? 0}</p>
-            </div>
-          </div>
-        </div>
+        <StatsCard
+          index={2}
+          title="Staff Records"
+          value={staffCountToday ?? stats?.staffRecords ?? 0}
+          iconBg="bg-purple-100"
+          icon={(
+            <svg className="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11c1.657 0 3-1.343 3-3S17.657 5 16 5s-3 1.343-3 3 1.343 3 3 3zM6 21v-2a4 4 0 014-4h4" />
+            </svg>
+          )}
+        />
       </div>
 
       {/* Archived Records Table */}

@@ -13,7 +13,7 @@ import {
   downloadArchiveRecord,
 } from './archiveService';
 import { subscribeArchivedRecords, fetchArchiveRecordById } from './archiveService';
-import Modal from '../../admin/Modal';
+import ArchivedTicketDetailModal from './ArchivedTicketDetailModal';
 import { ConfirmDialog } from '../../admin/ConfirmDialog';
 
 const ArchivePage: React.FC = () => {
@@ -97,6 +97,30 @@ const ArchivePage: React.FC = () => {
     }
   };
 
+  // Compute number of unique staff who timed in today (based on clock log timeInRaw or date)
+  const staffCountToday = React.useMemo(() => {
+    if (!logs || logs.length === 0) return 0;
+    const today = new Date();
+    const isSameDay = (d?: Date | null) => {
+      if (!d) return false;
+      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+    };
+
+    const set = new Set<string>();
+    for (const l of logs) {
+      let dt: Date | null = l.timeInRaw ?? l.timeOutRaw ?? null;
+      if (!dt) {
+        const parsed = l.date ? new Date(l.date) : null;
+        if (parsed && !isNaN(parsed.getTime())) dt = parsed;
+      }
+      if (!dt) continue;
+      if (!isSameDay(dt)) continue;
+      const id = l.staffId ?? l.staffMember ?? l.staffMember;
+      if (id) set.add(String(id));
+    }
+    return set.size;
+  }, [logs]);
+
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
@@ -106,6 +130,7 @@ const ArchivePage: React.FC = () => {
           stats={stats}
           records={records}
           loading={loading.records}
+          staffCountToday={staffCountToday}
           onDelete={handleDelete}
           onDownload={handleDownload}
           onView={handleView}
@@ -118,20 +143,12 @@ const ArchivePage: React.FC = () => {
         )}
         {/* View modal */}
         {viewing && (
-          <Modal isOpen={true} onClose={() => setViewing(null)} title={`Ticket ${viewing.id}`} size="lg">
-            {viewing.data ? (
-              <div className="space-y-3">
-                {Object.keys(viewing.data).sort().map((k) => (
-                  <div key={k} className="flex gap-4">
-                    <div className="text-sm text-gray-500 w-40">{k}</div>
-                    <div className="text-sm text-gray-900 break-words">{String(viewing.data?.[k])}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4">No data available for this ticket.</div>
-            )}
-          </Modal>
+          <ArchivedTicketDetailModal
+            isOpen={true}
+            onClose={() => setViewing(null)}
+            ticketId={viewing.id}
+            data={viewing.data ?? null}
+          />
         )}
 
         {/* Delete confirmation dialog */}
