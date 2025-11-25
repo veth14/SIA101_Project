@@ -23,6 +23,8 @@ export const PaymentPage = () => {
     baseGuests?: number;
     basePrice?: number;
     additionalGuestPrice?: number;
+    userName?: string;
+    userEmail?: string;
   }
   interface UserData {
     uid?: string;
@@ -268,6 +270,8 @@ export const PaymentPage = () => {
           type: 'booking',
           status: 'completed',
           paymentMethod: paymentMethod,
+          guestName: booking.userName || gcashName || cardholderName || userData.displayName || '',
+          userEmail: userData.email || '',
           description: `Booking for ${booking.roomName}`,
           createdAt: serverTimestamp(),
           completedAt: serverTimestamp()

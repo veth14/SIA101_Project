@@ -125,7 +125,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
           background: rgba(130, 163, 61, 0.5);
         }
       `}</style>
-  <div className="h-full min-h-0 p-5 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+  <div className="h-full min-h-0 p-5 border shadow-2xl bg-white rounded-3xl border-heritage-neutral/20 animate-slide-in-right overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Compact Header */}
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 via-white to-gray-50">
@@ -260,11 +260,25 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-white border border-gray-200/60 rounded-lg">
                     <label className="block mb-0.5 text-xs font-semibold tracking-wide uppercase text-gray-500">Subtotal</label>
-                    <p className="text-sm font-bold text-gray-900">{formatCurrency(invoice.totalAmount * 0.893)}</p>
+                    <p className="text-sm font-bold text-gray-900">
+                      {formatCurrency(
+                        typeof invoice.subtotal === 'number'
+                          ? invoice.subtotal
+                          : invoice.totalAmount * 0.893
+                      )}
+                    </p>
                   </div>
                   <div className="p-4 bg-white border border-gray-200/60 rounded-lg">
-                    <label className="block mb-0.5 text-xs font-semibold tracking-wide uppercase text-gray-500">Tax (12%)</label>
-                    <p className="text-sm font-bold text-gray-900">{formatCurrency(invoice.totalAmount * 0.107)}</p>
+                    <label className="block mb-0.5 text-xs font-semibold tracking-wide uppercase text-gray-500">
+                      Tax ({typeof invoice.taxRate === 'number' ? invoice.taxRate : 12}%)
+                    </label>
+                    <p className="text-sm font-bold text-gray-900">
+                      {formatCurrency(
+                        typeof invoice.taxAmount === 'number'
+                          ? invoice.taxAmount
+                          : invoice.totalAmount * 0.107
+                      )}
+                    </p>
                   </div>
                 </div>
 
@@ -273,13 +287,18 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
                       <span className="text-gray-600">Payment Method</span>
-                      <p className="font-semibold text-gray-900">Card Payment</p>
+                      <p className="font-semibold text-gray-900">{invoice.paymentMethod || '—'}</p>
                     </div>
                     <div>
                       <span className="text-gray-600">Invoice Date</span>
-                      <p className="font-semibold text-gray-900">{invoice.checkOut}</p>
+                      <p className="font-semibold text-gray-900">{invoice.dueDate || invoice.checkOut}</p>
                     </div>
                   </div>
+                  {invoice.reference && (
+                    <div className="text-xs text-gray-600 mt-1">
+                      <span className="font-semibold">Reference:</span> {invoice.reference}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
