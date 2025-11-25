@@ -16,6 +16,42 @@ import { subscribeArchivedRecords, fetchArchiveRecordById } from './archiveServi
 import ArchivedTicketDetailModal from './ArchivedTicketDetailModal';
 import { ConfirmDialog } from '../../admin/ConfirmDialog';
 
+// Minimal local ErrorBoundary to catch render-time errors inside this page.
+class LocalErrorBoundary extends React.Component<{}, { hasError: boolean; error?: Error | null; info?: any }> {
+  constructor(props: {}) {
+    super(props);
+    this.state = { hasError: false, error: null, info: null };
+  }
+
+  componentDidCatch(error: Error, info: any) {
+    // Store error so we can render a helpful message and avoid the red screen
+    // Log to console for developer inspection.
+    // eslint-disable-next-line no-console
+    console.error('LocalErrorBoundary caught error in ArchivePage child:', error, info);
+    this.setState({ hasError: true, error, info });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-red-50 border border-red-200 rounded-md">
+          <h3 className="text-lg font-semibold text-red-700">Archive page failed to render</h3>
+          <p className="text-sm text-red-600 mt-2">An error occurred while rendering the archive section. Details below:</p>
+          <pre className="mt-3 whitespace-pre-wrap text-sm text-gray-800 bg-white p-3 rounded">{String(this.state.error?.message ?? this.state.error)}</pre>
+          {this.state.info?.componentStack && (
+            <details className="mt-2 text-xs text-gray-600">
+              <summary className="cursor-pointer">Component stack</summary>
+              <pre className="whitespace-pre-wrap">{String(this.state.info.componentStack)}</pre>
+            </details>
+          )}
+        </div>
+      );
+    }
+    // @ts-ignore allow children
+    return this.props.children;
+  }
+}
+
 const ArchivePage: React.FC = () => {
   const [stats, setStats] = useState<ArchiveStats | null>(null);
   const [records, setRecords] = useState<ArchiveRecord[]>([]);
@@ -101,21 +137,30 @@ const ArchivePage: React.FC = () => {
   const staffCountToday = React.useMemo(() => {
     if (!logs || logs.length === 0) return 0;
     const today = new Date();
-    const isSameDay = (d?: Date | null) => {
-      if (!d) return false;
-      return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+
+    const toDateSafe = (v: any): Date | null => {
+      if (!v) return null;
+      if (v instanceof Date) return v;
+      // If it's an object that looks like { seconds, nanoseconds } we can't parse here reliably
+      // but most cached values will be ISO strings or numbers.
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const isSameDay = (d?: any) => {
+      const dt = toDateSafe(d);
+      if (!dt) return false;
+      return dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth() && dt.getDate() === today.getDate();
     };
 
     const set = new Set<string>();
     for (const l of logs) {
-      let dt: Date | null = l.timeInRaw ?? l.timeOutRaw ?? null;
-      if (!dt) {
-        const parsed = l.date ? new Date(l.date) : null;
-        if (parsed && !isNaN(parsed.getTime())) dt = parsed;
-      }
+      let dtRaw: any = l.timeInRaw ?? l.timeOutRaw ?? null;
+      if (!dtRaw && l.date) dtRaw = l.date;
+      const dt = toDateSafe(dtRaw);
       if (!dt) continue;
       if (!isSameDay(dt)) continue;
-      const id = l.staffId ?? l.staffMember ?? l.staffMember;
+      const id = l.staffId ?? l.staffMember ?? '';
       if (id) set.add(String(id));
     }
     return set.size;
@@ -126,15 +171,23 @@ const ArchivePage: React.FC = () => {
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
 
         {/* Pass data into the unified sections. Components are data-driven and contain no mock data. */}
-        <ArchiveRecordsSection
-          stats={stats}
-          records={records}
-          loading={loading.records}
-          staffCountToday={staffCountToday}
-          onDelete={handleDelete}
-          onDownload={handleDownload}
-          onView={handleView}
-        />
+        {/* Local error boundary so an exception in ArchiveRecordsSection doesn't crash the whole page */}
+        {/**
+         * Using a small inline ErrorBoundary here because the shared ErrorBoundary file
+         * was reportedly reverted and navigation to this page currently crashes.
+         * This will surface the actual error in the UI and prevent a blank page.
+         */}
+        <LocalErrorBoundary>
+          <ArchiveRecordsSection
+            stats={stats}
+            records={records}
+            loading={loading.records}
+            staffCountToday={staffCountToday}
+            onDelete={handleDelete}
+            onDownload={handleDownload}
+            onView={handleView}
+          />
+        </LocalErrorBoundary>
 
         <ClockLogsSection logs={logs} loading={loading.logs} />
 

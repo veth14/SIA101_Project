@@ -488,10 +488,11 @@ export function computeBaseSalaryForClockLogs(logs: ClockLog[]): ClockLog[] {
         accumulator = 0;
       }
 
-      // compute hours (use existing hoursWorked if present)
-      const hours = typeof l.hoursWorked === 'number' ? l.hoursWorked : hoursBetween(l.timeInRaw, l.timeOutRaw);
-      // Grant salary only when both timeIn and timeOut are present and hours > 0
-      const expectedSalary = (l.timeInRaw && l.timeOutRaw && hours > 0) ? RATE : 0;
+  // compute hours (use existing hoursWorked if present)
+  const hours = typeof l.hoursWorked === 'number' ? l.hoursWorked : hoursBetween(l.timeInRaw, l.timeOutRaw);
+  // Grant salary only when both timeIn and timeOut are present and hours >= 1
+  // (shifts under 1 hour are not considered successful/completed for payout)
+  const expectedSalary = (l.timeInRaw && l.timeOutRaw && typeof hours === 'number' && hours >= 1) ? RATE : 0;
 
       if (expectedSalary > 0) {
         accumulator += expectedSalary;
@@ -580,8 +581,9 @@ export async function computeSalaryShiftsForEmployee(
         accumulator = 0;
       }
 
-      const hours = hoursBetween(s.timeIn, s.timeOut);
-      const expectedSalary = (s.timeOut && hours > 0) ? 597 : 0;
+  const hours = hoursBetween(s.timeIn, s.timeOut);
+  // Only count completed shifts of at least 1 hour as eligible for base salary
+  const expectedSalary = (s.timeOut && hours >= 1) ? 597 : 0;
 
       // If this shift is completed (timeOut present) add to accumulator
       if (expectedSalary > 0) {
