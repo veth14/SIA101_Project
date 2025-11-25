@@ -126,6 +126,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
       >
         <div
           className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden"
+          className="relative w-full max-w-4xl  bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden"
           style={{ zIndex: 99999 }}
         >
           {/* Header */}
@@ -180,7 +181,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-heritage-light/30 via-white to-emerald-50/30">
+          <div className="overflow-y-auto max-h-[calc(100vh-250px)] bg-gradient-to-br from-heritage-light/30 via-white to-emerald-50/30">
             <div className="px-6 py-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/60 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -336,12 +337,11 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Description
                     </label>
-                    <textarea
+                    <input
                       value={newItem.description}
                       onChange={(e) =>
                         setNewItem({ ...newItem, description: e.target.value })
                       }
-                      rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                       placeholder="Enter item description"
                     />
