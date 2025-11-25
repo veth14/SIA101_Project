@@ -16,6 +16,14 @@ interface StatCard {
 
 const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
 
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+
   // Calculate stats
   const paidInvoices = invoices.filter(inv => inv.status === 'paid');
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending');
@@ -25,7 +33,7 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
   const stats: StatCard[] = [
     {
       title: 'Paid Invoices',
-      value: `$${paidInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+      value: formatCurrency(paidInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0)),
       change: `${paidInvoices.length} invoices paid`,
       changeType: 'positive',
       iconBg: 'bg-green-100',
@@ -37,7 +45,7 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
     },
     {
       title: 'Pending',
-      value: `$${pendingInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+      value: formatCurrency(pendingInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0)),
       change: `${pendingInvoices.length} awaiting payment`,
       changeType: 'neutral',
       iconBg: 'bg-yellow-100',
@@ -49,7 +57,7 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
     },
     {
       title: 'Overdue',
-      value: `$${overdueInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+      value: formatCurrency(overdueInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0)),
       change: `${overdueInvoices.length} past due`,
       changeType: 'negative',
       iconBg: 'bg-red-100',
@@ -61,7 +69,7 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
     },
     {
       title: 'Total Revenue',
-      value: `$${totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+      value: formatCurrency(totalRevenue),
       change: `${invoices.length} total invoices`,
       changeType: 'positive',
       iconBg: 'bg-purple-100',
