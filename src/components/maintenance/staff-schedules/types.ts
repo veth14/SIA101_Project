@@ -42,3 +42,18 @@ export interface Shift {
   value: string;
   label: string;
 }
+
+export interface LeaveRequest {
+  id: string;       
+  staffId: string;
+  fullName: string;
+  classification: string;
+  startDate: string;
+  endDate: string;
+  leaveType: string;
+  notes?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt?: any;
+  updatedAt?: any;
+}
+

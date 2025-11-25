@@ -15,7 +15,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   selectedClassification
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white rounded-lg shadow mb-8">
       <div className="px-6 py-4 border-b border-gray-200">
         <h2 className="text-lg font-medium text-gray-900">Weekly Schedule</h2>
       </div>
@@ -45,7 +45,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
               </tr>
             ) : (
               Object.entries(weeklySchedule).map(([staffId, data]) => (
-                <tr key={staffId}>
+                <tr key={staffId} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{data.staffName}</div>
                     <div className="text-sm text-gray-500">{data.classification}</div>
@@ -53,7 +53,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                   {DAYS.map(day => (
                     <td key={day} className="px-6 py-4 text-center">
                       {data.schedule[day] ? (
-                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
                           {data.schedule[day].shiftTime}
                         </div>
                       ) : (
