@@ -52,11 +52,22 @@ export const getRevenueData = (timeframe: 'weekly' | 'monthly' | 'yearly'): Reve
 };
 
 // Calculate metrics from revenue data
-export const calculateChartMetrics = (data: RevenueDataPoint[]): ChartMetrics => {
+export const calculateChartMetrics = (data: RevenueDataPoint[] | undefined): ChartMetrics => {
+  if (!data || data.length === 0) {
+    return {
+      totalRevenue: 0,
+      averageRevenue: 0,
+      maxRevenue: 0,
+      maxDay: '',
+      projectedRevenue: 0,
+      growthRate: 0,
+    };
+  }
+
   const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0);
   const averageRevenue = Math.round(totalRevenue / data.length);
-  
-  const maxEntry = data.reduce((max, item) => item.revenue > max.revenue ? item : max, data[0]);
+
+  const maxEntry = data.reduce((max, item) => (item.revenue > max.revenue ? item : max), data[0]);
   const maxRevenue = maxEntry.revenue;
   const maxDay = maxEntry.day;
   

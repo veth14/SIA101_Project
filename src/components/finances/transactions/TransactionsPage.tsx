@@ -44,7 +44,7 @@ export const TransactionsPage: React.FC = () => {
   const completedTransactions = transactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
   const pendingTransactions = transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
 
-  // Filter and paginate transactions
+  // Filter transactions
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
     const matchesStatus = filters.status === 'all' || transaction.status === filters.status;
@@ -53,11 +53,27 @@ export const TransactionsPage: React.FC = () => {
     return matchesSearch && matchesStatus && matchesType && matchesCategory;
   });
 
+  // Sort so that non-invoiced items appear first, then invoiced ones,
+  // while prioritizing most recent date/time within each group.
+  const sortedFilteredTransactions = [...filteredTransactions].sort((a, b) => {
+    const aHasInvoice = a.hasInvoice === true ? 1 : 0;
+    const bHasInvoice = b.hasInvoice === true ? 1 : 0;
+
+    if (aHasInvoice !== bHasInvoice) {
+      // 0 (no invoice) comes before 1 (invoiced)
+      return aHasInvoice - bHasInvoice;
+    }
+
+    const aDateTime = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+    const bDateTime = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+    return bDateTime - aDateTime;
+  });
+
   // Pagination logic - show all if showAll is true, otherwise paginate
-  const totalPages = showAll ? 1 : Math.ceil(filteredTransactions.length / itemsPerPage);
+  const totalPages = showAll ? 1 : Math.ceil(sortedFilteredTransactions.length / itemsPerPage);
   const paginatedTransactions = showAll 
-    ? filteredTransactions 
-    : filteredTransactions.slice(
+    ? sortedFilteredTransactions 
+    : sortedFilteredTransactions.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
       );

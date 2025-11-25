@@ -5,7 +5,9 @@ import InvoiceDetails from './InvoiceDetails';
 import InvoiceSuccessModal from './InvoiceSuccessModal';
 import type { Invoice } from './InvoiceList';
 import { printInvoiceDocument } from './printing/invoicePrinting';
-import { subscribeToInvoices, InvoiceRecord } from '../../../backend/invoices/invoicesService';
+import { InvoiceRecord } from '../../../backend/invoices/invoicesService';
+import { db } from '../../../config/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
 export const InvoicesPage: React.FC = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -23,16 +25,20 @@ export const InvoicesPage: React.FC = () => {
     const checkIn = record.transactionDate || createdDate || record.dueDate;
     const checkOut = record.dueDate || checkIn;
 
+    const rawStatus = (record.status || '').toString().toLowerCase();
     let status: Invoice['status'];
-    switch (record.status) {
+    switch (rawStatus) {
       case 'paid':
+      case 'fully_paid':
+      case 'fully paid':
       case 'completed':
         status = 'paid';
         break;
-      case 'pending':
       case 'overdue':
-        status = record.status;
+        status = 'overdue';
         break;
+      case 'pending':
+      case 'unpaid':
       default:
         // Treat any other status (e.g. 'draft') as pending for display
         status = 'pending';
@@ -76,10 +82,44 @@ export const InvoicesPage: React.FC = () => {
     };
   };
 
-  // Subscribe to Firestore invoices collection using a single snapshot listener
+  // Load invoices once on mount with a single Firestore query (no live snapshot listener)
   useEffect(() => {
-    const unsubscribe = subscribeToInvoices(
-      (records) => {
+    const loadInvoices = async () => {
+      try {
+        const q = query(collection(db, 'invoices'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+
+        const records: InvoiceRecord[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() as any;
+          let createdAtDate: Date | undefined;
+          if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+            createdAtDate = data.createdAt.toDate();
+          }
+
+          return {
+            id: docSnap.id,
+            invoiceNumber: data.invoiceNumber || docSnap.id,
+            customerName: data.customerName || '',
+            customerEmail: data.customerEmail || '',
+            customerAddress: data.customerAddress || '',
+            notes: data.notes || '',
+            taxRate: typeof data.taxRate === 'number' ? data.taxRate : 0,
+            subtotal: typeof data.subtotal === 'number' ? data.subtotal : 0,
+            taxAmount: typeof data.taxAmount === 'number' ? data.taxAmount : 0,
+            total: typeof data.total === 'number' ? data.total : 0,
+            dueDate: data.dueDate || '',
+            status: data.status || 'draft',
+            transactionId: data.transactionId,
+            transactionReference: data.transactionReference,
+            transactionDescription: data.transactionDescription,
+            transactionCategory: data.transactionCategory,
+            transactionMethod: data.transactionMethod,
+            transactionDate: data.transactionDate,
+            transactionTime: data.transactionTime,
+            createdAt: createdAtDate,
+          };
+        });
+
         // Order so that unpaid invoices show first and paid/completed go to the back
         const sorted = [...records].sort((a, b) => {
           const orderFor = (status: string | undefined) => {
@@ -99,13 +139,12 @@ export const InvoicesPage: React.FC = () => {
 
         const mapped = sorted.map(mapRecordToInvoice);
         setInvoices(mapped);
-      },
-      (error) => {
+      } catch (error) {
         console.error('Error loading invoices:', error);
       }
-    );
+    };
 
-    return unsubscribe;
+    void loadInvoices();
   }, []);
 
   // Auto-select first invoice for testing
