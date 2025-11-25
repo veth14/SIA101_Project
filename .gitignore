@@ -29,7 +29,6 @@ firebase-config.ts
 **/config/firebase.*
 serviceAccountKey.json
 firebase-adminsdk-*.json
-    
 
 # API keys and secrets
 api-keys.js
