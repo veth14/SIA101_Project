@@ -28,37 +28,41 @@ const ReportFoldersGrid: React.FC<ReportFoldersGridProps> = ({
     <div className="mb-8">
       {isLoading ? (
         // Header Skeleton
-        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-gray-200 animate-pulse">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gray-300 rounded-2xl"></div>
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-200 rounded-xl"></div>
             <div>
-              <div className="h-9 w-64 bg-gray-300 rounded mb-2"></div>
-              <div className="h-4 w-80 bg-gray-200 rounded"></div>
+              <div className="h-5 w-40 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 w-56 bg-gray-100 rounded"></div>
             </div>
           </div>
-          <div className="hidden md:flex h-10 w-48 bg-gray-200 rounded-full"></div>
+          <div className="hidden md:flex h-8 w-32 bg-gray-100 rounded-full"></div>
         </div>
       ) : (
-        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-gradient-to-r from-green-500/20 via-green-400/20 to-transparent">
-          <div className="flex items-center gap-4">
-            <div className="relative group">
-              <div className="w-14 h-14 bg-gradient-to-br from-[#82A33D] to-[#6d8a33] rounded-2xl flex items-center justify-center shadow-xl border border-[#82A33D]/30 group-hover:scale-110 transition-all duration-500">
-                <svg className="w-7 h-7 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-              </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+              <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
             </div>
-            <div>
-              <h2 className="text-3xl font-black text-[#82A33D] drop-shadow-sm">
-                Report Categories
+            <div className="flex flex-col items-start text-left">
+              <h2 className="text-2xl font-black text-slate-800">
+                Financial Reports
               </h2>
-              <p className="text-sm text-gray-700 mt-1 font-medium">Choose a category to explore financial reports</p>
+              <p className="mt-1 text-sm text-slate-500">Choose a category to explore financial reports</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 backdrop-blur-sm rounded-full border border-emerald-200">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-200">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-            <p className="text-sm font-semibold text-emerald-700">6 Categories Available</p>
+            <p className="text-xs font-semibold text-slate-600">
+              {filteredCategories.length} categories
+            </p>
           </div>
         </div>
       )}

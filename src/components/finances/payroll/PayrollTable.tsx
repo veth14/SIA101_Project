@@ -135,7 +135,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
           </div>
           <button
             onClick={handleExportToExcel}
-            className="flex items-center gap-2 px-5 py-3 text-sm font-bold text-white transition-all shadow-lg bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl hover:from-emerald-700 hover:to-emerald-800 hover:shadow-xl hover:scale-105"
+            className="flex items-center gap-2 px-5 py-3 text-sm font-bold text-white transition-all shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-xl hover:from-heritage-green hover:to-heritage-neutral hover:shadow-xl hover:scale-105"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -168,7 +168,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
             onChange={(e) => setDepartmentFilter(e.target.value)}
             className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
           >
-            <option value="all">🏢 All Departments</option>
+            <option value="all">All Departments</option>
             <option value="front_desk">Front Desk</option>
             <option value="housekeeping">Housekeeping</option>
             <option value="food_beverage">Food & Beverage</option>
@@ -183,10 +183,10 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
           >
-            <option value="all">📊 All Status</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="delayed">⚠️ Delayed</option>
-            <option value="paid">✅ Paid</option>
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="delayed">Delayed</option>
+            <option value="paid">Paid</option>
           </select>
 
           {/* Month Filter */}
@@ -195,7 +195,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
             onChange={(e) => setMonthFilter(e.target.value)}
             className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
           >
-            <option value="all">📅 All Months</option>
+            <option value="all">All Months</option>
             <option value="2024-10">October 2024</option>
             <option value="2024-09">September 2024</option>
             <option value="2024-08">August 2024</option>
@@ -303,8 +303,8 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                 </tr>
               );
             })}
-            {/* Fill empty rows to always show 10 rows */}
-            {Array.from({ length: Math.max(0, 10 - currentEmployees.length) }).map((_, index) => (
+            {/* Fill empty rows to always show up to 5 rows total */}
+            {Array.from({ length: Math.max(0, 5 - currentEmployees.length) }).map((_, index) => (
               <tr key={`empty-${index}`} style={{ height: '74px' }} className="border-gray-200 border-dashed bg-gray-50/30">
                 <td className="px-6 py-5" colSpan={7}>
                   <div className="flex items-center justify-center text-sm font-medium text-gray-300 opacity-60">
@@ -357,7 +357,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
                       className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                        pageNum === currentPage ? 'bg-heritage-green text-white' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                        pageNum === currentPage ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                       }`}
                     >
                       {pageNum}

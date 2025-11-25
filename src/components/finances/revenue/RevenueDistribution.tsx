@@ -56,8 +56,8 @@ const RevenueDistribution: React.FC<RevenueDistributionProps> = ({ revenueData }
         <div className="px-8 py-7 border-b bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
           <div className="flex items-center space-x-5">
             <div className="relative group">
-              <div className="flex items-center justify-center w-12 h-12 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl transition-all duration-300 group-hover:scale-105">
-                <PieChart className="w-6 h-6 text-white" strokeWidth={2.5} />
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <PieChart className="w-6 h-6 text-[#82A33D]" />
               </div>
               <div className="absolute -inset-2 bg-gradient-to-r from-heritage-neutral/20 to-heritage-green/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>

@@ -4,6 +4,7 @@ import InvoiceStats from './InvoiceStats';
 import InvoiceDetails from './InvoiceDetails';
 import InvoiceSuccessModal from './InvoiceSuccessModal';
 import type { Invoice } from './InvoiceList';
+import { printInvoiceDocument } from './printing/invoicePrinting';
 
 export const InvoicesPage: React.FC = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -154,6 +155,34 @@ export const InvoicesPage: React.FC = () => {
         { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
         { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
       ]
+    },
+    {
+      id: 'INV-2024-011',
+      guestName: 'Ian Angelo Valmores',
+      roomNumber: '307',
+      checkIn: '2024-10-14',
+      checkOut: '2024-10-16',
+      status: 'paid',
+      totalAmount: 1180.60,
+      items: [
+        { id: '1', description: 'Presidential Suite (2 nights)', category: 'room', quantity: 2, unitPrice: 500, total: 1000 },
+        { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
+      ]
+    },
+    {
+      id: 'INV-2024-012',
+      guestName: 'Macky Valmonte',
+      roomNumber: '309',
+      checkIn: '2024-10-14',
+      checkOut: '2024-10-16',
+      status: 'paid',
+      totalAmount: 1180.60,
+      items: [
+        { id: '1', description: 'Presidential Suite (2 nights)', category: 'room', quantity: 2, unitPrice: 500, total: 1000 },
+        { id: '2', description: 'Champagne Service', category: 'food', quantity: 1, unitPrice: 120, total: 120 },
+        { id: '3', description: 'Service Tax (5%)', category: 'taxes', quantity: 1, unitPrice: 60.60, total: 60.60 }
+      ]
     }
   ]);
 
@@ -201,66 +230,7 @@ export const InvoicesPage: React.FC = () => {
 
   const handlePrintInvoice = (invoice: Invoice) => {
     // Simple print functionality - in a real app, this would generate a proper invoice PDF
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Invoice ${invoice.id}</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .header { text-align: center; margin-bottom: 30px; }
-              .details { margin-bottom: 20px; }
-              .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              .items-table th { background-color: #f2f2f2; }
-              .total { margin-top: 20px; text-align: right; font-size: 18px; font-weight: bold; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>BALAY GINHAWA</h1>
-              <p>Heritage Hotel & Suites</p>
-              <h2>INVOICE ${invoice.id}</h2>
-            </div>
-            <div class="details">
-              <p><strong>Guest:</strong> ${invoice.guestName}</p>
-              <p><strong>Room:</strong> ${invoice.roomNumber}</p>
-              <p><strong>Check-in:</strong> ${invoice.checkIn}</p>
-              <p><strong>Check-out:</strong> ${invoice.checkOut}</p>
-              <p><strong>Status:</strong> ${invoice.status.toUpperCase()}</p>
-            </div>
-            <table class="items-table">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Category</th>
-                  <th>Quantity</th>
-                  <th>Unit Price</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${invoice.items.map(item => `
-                  <tr>
-                    <td>${item.description}</td>
-                    <td>${item.category}</td>
-                    <td>${item.quantity}</td>
-                    <td>$${item.unitPrice.toFixed(2)}</td>
-                    <td>$${item.total.toFixed(2)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-            <div class="total">
-              <p>Total Amount: $${invoice.totalAmount.toFixed(2)}</p>
-            </div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
+    printInvoiceDocument(invoice);
   };
 
   return (

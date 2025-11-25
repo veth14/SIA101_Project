@@ -319,11 +319,12 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                     <button
                       key={pageNum}
                       onClick={() => onPageChange(pageNum)}
-                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-all ${
                         pageNum === currentPage
-                          ? 'bg-heritage-green text-white'
+                          ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm'
                           : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                       }`}
+                      aria-current={pageNum === currentPage ? 'page' : undefined}
                     >
                       {pageNum}
                     </button>

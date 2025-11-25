@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Expense } from './types';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, FileText } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   getRevenueData, 
@@ -84,8 +84,11 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl group-hover:scale-105">
-                  <TrendingUp className="w-6 h-6 text-white" strokeWidth={2.5} />
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-6 h-6 text-[#82A33D]" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 8V6a2 2 0 00-2-2h-3a2 2 0 00-2 2v2H10V6a2 2 0 00-2-2H5a2 2 0 00-2 2v2M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h8M8 16h6" />
+                  </svg>
                 </div>
                 <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
               </div>
@@ -210,9 +213,7 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
               {formatCurrency(metrics?.totalRevenue || 85800)}
             </div>
             <div className="flex items-center gap-1 mt-1 text-xs font-medium text-emerald-600">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
+              <TrendingUp className="w-3 h-3" />
               <span>{metrics?.growthRate || 4}%</span>
             </div>
           </div>
