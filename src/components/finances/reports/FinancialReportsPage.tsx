@@ -27,6 +27,9 @@ const FinancialReportsPage: React.FC = () => {
     setSearchQuery('');
   };
 
+  const handleOpenReport = (report: any) => {
+  };
+
   return (
     <div className="relative min-h-screen bg-[#F9F6EE]">
       <style>{`@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in { animation: fade-in 360ms ease-out; animation-fill-mode: both; }`}</style>
@@ -150,7 +153,11 @@ const FinancialReportsPage: React.FC = () => {
                 </div>
 
                 {searchQuery.trim() ? (
-                  <SearchResults searchQuery={searchQuery} onClose={handleCloseSearch} />
+                  <SearchResults
+                    searchQuery={searchQuery}
+                    onClose={handleCloseSearch}
+                    onOpenReport={handleOpenReport}
+                  />
                 ) : (
                   <ReportFoldersGrid 
                     onFolderClick={handleFolderClick}
