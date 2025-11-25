@@ -112,12 +112,12 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-200/70 overflow-hidden h-full flex flex-col">
+    <div className="flex flex-col h-full overflow-hidden bg-white border shadow-md rounded-xl border-gray-200/70">
       {/* Header with Search and Filters */}
       <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+            <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">
               <div className="p-2 bg-[#82A33D]/10 rounded-xl">
                 <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -125,7 +125,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
               </div>
               Payroll Records
             </h3>
-            <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
+            <p className="flex items-center gap-2 mt-2 text-sm text-gray-600">
               <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
                 {startIndex + 1}-{Math.min(endIndex, filteredEmployees.length)} of {filteredEmployees.length}
               </span>
@@ -135,7 +135,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
           </div>
           <button
             onClick={handleExportToExcel}
-            className="px-5 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-sm font-bold rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+            className="flex items-center gap-2 px-5 py-3 text-sm font-bold text-white transition-all shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-xl hover:from-heritage-green hover:to-heritage-neutral hover:shadow-xl hover:scale-105"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -145,10 +145,10 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
         </div>
 
         {/* Search and Filter Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {/* Search */}
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
               <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -168,7 +168,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
             onChange={(e) => setDepartmentFilter(e.target.value)}
             className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
           >
-            <option value="all">🏢 All Departments</option>
+            <option value="all">All Departments</option>
             <option value="front_desk">Front Desk</option>
             <option value="housekeeping">Housekeeping</option>
             <option value="food_beverage">Food & Beverage</option>
@@ -183,10 +183,10 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
           >
-            <option value="all">📊 All Status</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="delayed">⚠️ Delayed</option>
-            <option value="paid">✅ Paid</option>
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="delayed">Delayed</option>
+            <option value="paid">Paid</option>
           </select>
 
           {/* Month Filter */}
@@ -195,7 +195,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
             onChange={(e) => setMonthFilter(e.target.value)}
             className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
           >
-            <option value="all">📅 All Months</option>
+            <option value="all">All Months</option>
             <option value="2024-10">October 2024</option>
             <option value="2024-09">September 2024</option>
             <option value="2024-08">August 2024</option>
@@ -204,33 +204,30 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto flex-1">
+      <div className="flex-1 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
             <tr>
-              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
                 Employee ID
               </th>
-              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
                 Name
               </th>
-              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
                 Position
               </th>
-              <th className="px-6 py-5 text-right text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
                 Basic Pay
               </th>
-              <th className="px-6 py-5 text-right text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
                 Total Deductions
               </th>
-              <th className="px-6 py-5 text-right text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
                 Net Pay
               </th>
-              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
                 Status
-              </th>
-              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
-                Actions
               </th>
             </tr>
           </thead>
@@ -258,33 +255,28 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                     <div className="text-sm font-bold text-gray-900">{employee.employeeId}</div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#82A33D] to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                        {employee.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">{employee.name}</div>
-                        <div className="text-xs text-gray-500 font-medium">{getDepartmentName(employee.department)}</div>
-                      </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">{employee.name}</div>
+                      <div className="text-xs font-medium text-gray-500">{getDepartmentName(employee.department)}</div>
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="text-sm font-semibold text-gray-700">{employee.position}</div>
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-right">
+                  <td className="px-6 py-5 text-right whitespace-nowrap">
                     <div className="text-sm font-bold text-gray-900">₱{payroll.basicPay.toLocaleString()}</div>
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-right">
-                    <div className="inline-flex items-center px-2 py-1 rounded-lg bg-red-50 text-red-700 text-sm font-bold">
+                  <td className="px-6 py-5 text-right whitespace-nowrap">
+                    <div className="inline-flex items-center px-2 py-1 text-sm font-bold text-red-700 rounded-lg bg-red-50">
                       -₱{payroll.totalDeductions.toLocaleString()}
                     </div>
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-right">
+                  <td className="px-6 py-5 text-right whitespace-nowrap">
                     <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#82A33D]/10 text-[#82A33D] text-sm font-black">
                       ₱{payroll.netPay.toLocaleString()}
                     </div>
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-center">
+                  <td className="px-6 py-5 text-center whitespace-nowrap">
                     {employee.status === 'paid' ? (
                       <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -308,30 +300,15 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-5 whitespace-nowrap text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEmployeeSelect(employee);
-                      }}
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white text-xs font-bold rounded-lg hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
-                    >
-                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View
-                    </button>
-                  </td>
                 </tr>
               );
             })}
-            {/* Fill empty rows to always show 10 rows */}
-            {Array.from({ length: Math.max(0, 10 - currentEmployees.length) }).map((_, index) => (
-              <tr key={`empty-${index}`} style={{ height: '74px' }} className="bg-gray-50/30 border-dashed border-gray-200">
-                <td className="px-6 py-5" colSpan={8}>
-                  <div className="flex items-center justify-center text-gray-300 text-sm font-medium opacity-60">
-                    <div className="w-2 h-2 rounded-full bg-gray-300 mr-2 opacity-40"></div>
+            {/* Fill empty rows to always show up to 5 rows total */}
+            {Array.from({ length: Math.max(0, 5 - currentEmployees.length) }).map((_, index) => (
+              <tr key={`empty-${index}`} style={{ height: '74px' }} className="border-gray-200 border-dashed bg-gray-50/30">
+                <td className="px-6 py-5" colSpan={7}>
+                  <div className="flex items-center justify-center text-sm font-medium text-gray-300 opacity-60">
+                    <div className="w-2 h-2 mr-2 bg-gray-300 rounded-full opacity-40"></div>
                     Empty slot {index + 1}
                   </div>
                 </td>
@@ -343,77 +320,59 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({ employees, onEmploye
 
       {/* Empty State */}
       {filteredEmployees.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-5xl mb-4">🔍</div>
-          <p className="text-gray-500 font-medium">No employees found</p>
-          <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
+        <div className="py-12 text-center">
+          <div className="mb-4 text-5xl text-gray-400">🔍</div>
+          <p className="font-medium text-gray-500">No employees found</p>
+          <p className="mt-1 text-sm text-gray-400">Try adjusting your search or filters</p>
         </div>
       )}
 
-      {/* Pagination - Centered */}
-      {filteredEmployees.length > 0 && (
-        <div className="px-6 py-4 border-t border-gray-200/70 bg-gradient-to-r from-gray-50/30 via-white to-gray-50/30">
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="text-sm font-semibold text-gray-600 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#82A33D] animate-pulse"></div>
-              Page {currentPage} of {totalPages} • Showing {Math.min(endIndex, filteredEmployees.length)} of {filteredEmployees.length} employees
-            </div>
+      {/* Pagination */}
+      {(
+        <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+          <div className="flex items-center justify-center">
             <div className="flex items-center gap-3">
-              {/* Previous Button */}
               <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
-                  currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-[#82A33D] hover:text-white shadow-sm hover:shadow-md border border-gray-200'
-                }`}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Previous
               </button>
 
-              {/* Page Numbers */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                // Show first page, last page, current page, and pages around current
-                if (
-                  page === 1 ||
-                  page === totalPages ||
-                  (page >= currentPage - 1 && page <= currentPage + 1)
-                ) {
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else {
+                    const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                    pageNum = start + i;
+                  }
                   return (
                     <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`min-w-[36px] px-3 py-2 rounded-full text-sm font-bold transition-all ${
-                        currentPage === page
-                          ? 'bg-[#82A33D] text-white shadow-md scale-105'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 hover:border-[#82A33D] shadow-sm'
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        pageNum === currentPage ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                       }`}
                     >
-                      {page}
+                      {pageNum}
                     </button>
                   );
-                } else if (page === currentPage - 2 || page === currentPage + 2) {
-                  return <span key={page} className="px-2 text-gray-400 font-bold">•••</span>;
-                }
-                return null;
-              })}
+                })}
+              </div>
 
-              {/* Next Button */}
               <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
-                  currentPage === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-[#82A33D] hover:text-white shadow-sm hover:shadow-md border border-gray-200'
-                }`}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Invoice } from './InvoiceList';
+import { printInvoiceDocument, downloadInvoicePdf } from './printing/invoicePrinting';
 
 interface InvoiceDetailsProps {
   invoice: Invoice | null;
@@ -28,7 +29,7 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
             animation: slide-in-right 0.7s ease-out;
           }
         `}</style>
-        <div className="h-[900px] p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+  <div className="h-full min-h-0 p-6 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
           <div className="relative flex flex-col items-center justify-center h-full overflow-hidden text-center">
             {/* Background Elements */}
             <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/3 via-heritage-light/10 to-heritage-neutral/5 rounded-3xl"></div>
@@ -83,144 +84,12 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
     if (onPrint) {
       onPrint(invoice);
     } else {
-      // Create print content in a hidden div
-      const printContent = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px;">
-          <!-- Header with Logo -->
-          <div style="text-align: center; margin-bottom: 40px; border-bottom: 3px solid #82a33d; padding-bottom: 20px;">
-            <div style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #82a33d 0%, #6b8533 100%); border-radius: 12px; margin-bottom: 15px;">
-              <h1 style="color: white; margin: 0; font-size: 32px; font-weight: bold; letter-spacing: 2px;">🏨 BALAY GINHAWA</h1>
-            </div>
-            <p style="color: #666; font-size: 16px; margin: 5px 0;">Heritage Hotel & Suites</p>
-            <p style="color: #999; font-size: 14px;">123 Heritage Street, Manila | +63 (02) 123-4567</p>
-          </div>
-
-          <!-- Invoice Title and ID -->
-          <div style="background: linear-gradient(135deg, #f8f9f5 0%, #e8f0d8 100%); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 2px solid #82a33d;">
-            <div style="text-align: center;">
-              <h2 style="color: #82a33d; margin: 0 0 10px 0; font-size: 28px;">INVOICE</h2>
-              <p style="color: #666; font-size: 18px; margin: 0;"><strong>Invoice #${invoice.id}</strong></p>
-              <div style="display: inline-block; margin-top: 10px; padding: 6px 16px; background: ${
-                invoice.status === 'paid' ? '#d4edda' : 
-                invoice.status === 'pending' ? '#fff3cd' : '#f8d7da'
-              }; color: ${
-                invoice.status === 'paid' ? '#155724' : 
-                invoice.status === 'pending' ? '#856404' : '#721c24'
-              }; border-radius: 20px; font-size: 14px; font-weight: bold;">
-                ${invoice.status.toUpperCase()}
-              </div>
-            </div>
-          </div>
-
-          <!-- Guest and Stay Details -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-            <div style="background: #fafbf8; padding: 20px; border-radius: 10px; border: 1px solid #e0e4d6;">
-              <h3 style="color: #82a33d; margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #82a33d; padding-bottom: 8px;">Guest Information</h3>
-              <p style="margin: 8px 0; color: #555;"><strong>Name:</strong> ${invoice.guestName}</p>
-              <p style="margin: 8px 0; color: #555;"><strong>Room:</strong> ${invoice.roomNumber}</p>
-            </div>
-            <div style="background: #fafbf8; padding: 20px; border-radius: 10px; border: 1px solid #e0e4d6;">
-              <h3 style="color: #82a33d; margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #82a33d; padding-bottom: 8px;">Stay Information</h3>
-              <p style="margin: 8px 0; color: #555;"><strong>Check-in:</strong> ${invoice.checkIn}</p>
-              <p style="margin: 8px 0; color: #555;"><strong>Check-out:</strong> ${invoice.checkOut}</p>
-            </div>
-          </div>
-
-          <!-- Invoice Items Table -->
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-            <thead>
-              <tr style="background: linear-gradient(135deg, #82a33d 0%, #6b8533 100%); color: white;">
-                <th style="padding: 12px; text-align: left; border: 1px solid #82a33d; font-size: 14px;">#</th>
-                <th style="padding: 12px; text-align: left; border: 1px solid #82a33d; font-size: 14px;">Description</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #82a33d; font-size: 14px;">Category</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #82a33d; font-size: 14px;">Qty</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #82a33d; font-size: 14px;">Unit Price</th>
-                <th style="padding: 12px; text-align: right; border: 1px solid #82a33d; font-size: 14px;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.items.map((item, index) => `
-                <tr style="background: ${index % 2 === 0 ? '#fafbf8' : 'white'};">
-                  <td style="padding: 10px; border: 1px solid #e0e4d6; color: #555;">${index + 1}</td>
-                  <td style="padding: 10px; border: 1px solid #e0e4d6; color: #555;">${item.description}</td>
-                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: center; color: #555;">${item.category}</td>
-                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: center; color: #555;">${item.quantity}</td>
-                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: right; color: #555;">${formatCurrency(item.unitPrice)}</td>
-                  <td style="padding: 10px; border: 1px solid #e0e4d6; text-align: right; color: #82a33d; font-weight: bold;">${formatCurrency(item.total)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <!-- Payment Summary -->
-          <div style="background: #fafbf8; padding: 20px; border-radius: 10px; border: 2px solid #82a33d; margin-bottom: 30px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #d0d6c4;">
-              <span style="color: #555;">Subtotal:</span>
-              <span style="color: #555; font-weight: bold;">${formatCurrency(invoice.totalAmount * 0.893)}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #82a33d;">
-              <span style="color: #555;">Tax (12%):</span>
-              <span style="color: #555; font-weight: bold;">${formatCurrency(invoice.totalAmount * 0.107)}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #82a33d; font-size: 20px; font-weight: bold;">TOTAL AMOUNT:</span>
-              <span style="color: #82a33d; font-size: 28px; font-weight: bold;">${formatCurrency(invoice.totalAmount)}</span>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div style="text-align: center; padding-top: 20px; border-top: 2px solid #82a33d; color: #666; font-size: 12px;">
-            <p style="margin: 5px 0;"><strong>Thank you for choosing Balay Ginhawa Hotel!</strong></p>
-            <p style="margin: 5px 0;">For inquiries, please contact us at info@balayginhawa.com or call +63 (02) 123-4567</p>
-            <p style="margin: 10px 0; color: #999;">Printed on: ${new Date().toLocaleDateString('en-PH', { 
-              year: 'numeric', month: 'long', day: 'numeric' 
-            })}</p>
-          </div>
-        </div>
-      `;
-
-      // Create or update print div
-      let printDiv = document.getElementById('invoice-print-content');
-      if (!printDiv) {
-        printDiv = document.createElement('div');
-        printDiv.id = 'invoice-print-content';
-        printDiv.style.display = 'none';
-        document.body.appendChild(printDiv);
-      }
-      printDiv.innerHTML = printContent;
-
-      // Add print styles if not already added
-      if (!document.getElementById('invoice-print-styles')) {
-        const style = document.createElement('style');
-        style.id = 'invoice-print-styles';
-        style.textContent = `
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #invoice-print-content,
-            #invoice-print-content * {
-              visibility: visible;
-            }
-            #invoice-print-content {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              display: block !important;
-            }
-            @page {
-              margin: 1cm;
-              size: A4;
-            }
-          }
-        `;
-        document.head.appendChild(style);
-      }
-
-      // Trigger print
-      window.print();
+      printInvoiceDocument(invoice);
     }
+  };
+
+  const handleDownload = () => {
+    downloadInvoicePdf(invoice);
   };
 
   return (
@@ -256,155 +125,205 @@ const InvoiceDetails: React.FC<InvoiceDetailsProps> = ({ invoice, onClose, onPri
           background: rgba(130, 163, 61, 0.5);
         }
       `}</style>
-      <div className="h-[900px] p-5 border shadow-2xl bg-white/70 backdrop-blur-2xl rounded-3xl border-heritage-neutral/20 animate-slide-in-right">
+  <div className="h-full min-h-0 p-5 border shadow-2xl bg-white rounded-3xl border-heritage-neutral/20 animate-slide-in-right overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Compact Header */}
-          <div className="flex items-center justify-between pb-4 mb-4 border-b border-heritage-neutral/20">
-            <h3 className="text-xl font-bold text-heritage-green">Invoice Details</h3>
-            <button
-              onClick={onClose}
-              className="p-1.5 transition-colors rounded-lg text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/10"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 via-white to-gray-50">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900">Invoice Details</h3>
+                  <p className="flex items-center gap-2 mt-1 text-sm text-gray-600">
+                    <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                      #{invoice.id}
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className="truncate max-w-[320px]">{invoice.guestName}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 transition-colors rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Content - Utilizing Full Space */}
-          <div className="flex-1 space-y-3">
-            {/* Invoice ID & Status Row */}
-            <div className="p-3 border bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 rounded-xl border-heritage-green/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-xs font-medium text-heritage-neutral/70">Invoice ID</label>
-                  <p className="text-base font-bold text-heritage-green">{invoice.id}</p>
-                </div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                  invoice.status === 'paid' 
-                    ? 'bg-emerald-100 text-emerald-800' 
-                    : invoice.status === 'pending'
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                    invoice.status === 'paid' ? 'bg-emerald-500' :
-                    invoice.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'
-                  }`}></div>
-                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                </span>
-              </div>
-            </div>
-
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Amount - Highlighted */}
-            <div className="p-4 text-center border bg-gradient-to-br from-heritage-green/10 to-heritage-neutral/5 rounded-xl border-heritage-green/30">
-              <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Total Amount</label>
-              <p className="text-3xl font-black text-heritage-green">{formatCurrency(invoice.totalAmount)}</p>
-              <p className="mt-1 text-xs text-heritage-neutral/60">{invoice.items.length} items included</p>
-            </div>
-
-            {/* Guest & Room Info - 2 Column Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
-                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Guest Name</label>
-                <p className="text-sm font-semibold text-heritage-green">{invoice.guestName}</p>
-              </div>
-              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
-                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Room</label>
-                <p className="text-sm font-semibold text-heritage-green">Room {invoice.roomNumber}</p>
-              </div>
-            </div>
-
-            {/* Check-in & Check-out - 2 Column Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
-                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Check-in</label>
-                <p className="text-sm font-semibold text-heritage-green">{invoice.checkIn}</p>
-              </div>
-              <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
-                <label className="block mb-1 text-xs font-medium text-heritage-neutral/70">Check-out</label>
-                <p className="text-sm font-semibold text-heritage-green">{invoice.checkOut}</p>
-              </div>
-            </div>
-
-            {/* Invoice Items Preview */}
-            <div className="p-3 bg-white border rounded-xl border-heritage-neutral/20">
-              <label className="block mb-2 text-xs font-medium text-heritage-neutral/70">Invoice Items</label>
-              <div className="space-y-1.5 max-h-32 overflow-y-auto invoice-items-scroll">
-                {invoice.items.slice(0, 4).map((item, index) => (
-                  <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-heritage-green/5">
-                    <div className="flex items-center space-x-2">
-                      <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white rounded-full bg-heritage-green">
-                        {index + 1}
-                      </span>
-                      <span className="text-xs font-medium text-heritage-green line-clamp-1">{item.description}</span>
-                    </div>
-                    <span className="text-xs font-bold text-heritage-green">{formatCurrency(item.total)}</span>
-                  </div>
-                ))}
-                {invoice.items.length > 4 && (
-                  <p className="pt-1 text-xs text-center text-heritage-neutral/60">
-                    +{invoice.items.length - 4} more items
+            <div className="flex-1 p-6 space-y-8 overflow-y-auto min-h-0">
+              <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-blue-100/50 flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold tracking-wide uppercase text-gray-600">Guest & Stay</p>
+                  <p className="text-base font-bold text-gray-900">{invoice.guestName}</p>
+                  <p className="text-xs text-gray-500">
+                    Room {invoice.roomNumber} • {invoice.checkIn} - {invoice.checkOut}
                   </p>
-                )}
-              </div>
-            </div>
-
-            {/* Payment Summary - 2 Column Grid */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 bg-white border rounded-lg border-heritage-neutral/20">
-                <label className="block mb-0.5 text-xs font-medium text-heritage-neutral/70">Subtotal</label>
-                <p className="text-sm font-bold text-heritage-green">{formatCurrency(invoice.totalAmount * 0.893)}</p>
-              </div>
-              <div className="p-2.5 bg-white border rounded-lg border-heritage-neutral/20">
-                <label className="block mb-0.5 text-xs font-medium text-heritage-neutral/70">Tax (12%)</label>
-                <p className="text-sm font-bold text-heritage-green">{formatCurrency(invoice.totalAmount * 0.107)}</p>
-              </div>
-            </div>
-
-            {/* Additional Info */}
-            <div className="p-2.5 border bg-gradient-to-r from-heritage-light/20 to-heritage-green/5 rounded-lg border-heritage-neutral/20">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-heritage-neutral/70">Payment Method:</span>
-                  <p className="font-semibold text-heritage-green">Card Payment</p>
                 </div>
-                <div>
-                  <span className="text-heritage-neutral/70">Invoice Date:</span>
-                  <p className="font-semibold text-heritage-green">{invoice.checkOut}</p>
+                <div className="text-right space-y-2">
+                  <p className="text-xs font-semibold tracking-wide uppercase text-gray-600">Total Amount</p>
+                  <p className="text-2xl font-black text-gray-900">{formatCurrency(invoice.totalAmount)}</p>
+                  <span
+                    className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${
+                      invoice.status === 'paid'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : invoice.status === 'pending'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : 'bg-red-100 text-red-800 border border-red-200'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full mr-2 ${
+                        invoice.status === 'paid'
+                          ? 'bg-emerald-500'
+                          : invoice.status === 'pending'
+                          ? 'bg-amber-500'
+                          : 'bg-red-500'
+                      }`}
+                    />
+                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-4 overflow-y-auto invoice-items-scroll min-h-0">
+                {/* Invoice ID & Status Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Invoice ID</label>
+                    <p className="text-base font-semibold text-gray-900">{invoice.id}</p>
+                  </div>
+                  <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Items</label>
+                    <p className="text-base font-semibold text-gray-900">{invoice.items.length} total items</p>
+                  </div>
+                </div>
+
+                {/* Guest & Room Info - 2 Column Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Guest Name</label>
+                    <p className="text-base font-semibold text-gray-900">{invoice.guestName}</p>
+                  </div>
+                  <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Room</label>
+                    <p className="text-base font-semibold text-gray-900">Room {invoice.roomNumber}</p>
+                  </div>
+                </div>
+
+                {/* Check-in & Check-out - 2 Column Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Check-in</label>
+                    <p className="text-base font-semibold text-gray-900">{invoice.checkIn}</p>
+                  </div>
+                  <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Check-out</label>
+                    <p className="text-base font-semibold text-gray-900">{invoice.checkOut}</p>
+                  </div>
+                </div>
+
+                {/* Invoice Items Preview */}
+                <div className="p-4 bg-white border border-gray-200/60 rounded-lg">
+                  <label className="block mb-2 text-xs font-semibold tracking-wide uppercase text-gray-500">Invoice Items</label>
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto">
+                    {invoice.items.slice(0, 4).map((item, index) => (
+                      <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-[#82A33D]/5">
+                        <div className="flex items-center space-x-2">
+                          <span className="flex items-center justify-center w-5 h-5 text-xs font-bold text-white rounded-full bg-[#82A33D]">
+                            {index + 1}
+                          </span>
+                          <span className="text-xs font-medium text-gray-900 line-clamp-1">{item.description}</span>
+                        </div>
+                        <span className="text-xs font-bold text-[#82A33D]">{formatCurrency(item.total)}</span>
+                      </div>
+                    ))}
+                    {invoice.items.length > 4 && (
+                      <p className="pt-1 text-xs text-center text-gray-500">
+                        +{invoice.items.length - 4} more items
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Payment Summary - 2 Column Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="block mb-0.5 text-xs font-semibold tracking-wide uppercase text-gray-500">Subtotal</label>
+                    <p className="text-sm font-bold text-gray-900">
+                      {formatCurrency(
+                        typeof invoice.subtotal === 'number'
+                          ? invoice.subtotal
+                          : invoice.totalAmount * 0.893
+                      )}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-white border border-gray-200/60 rounded-lg">
+                    <label className="block mb-0.5 text-xs font-semibold tracking-wide uppercase text-gray-500">
+                      Tax ({typeof invoice.taxRate === 'number' ? invoice.taxRate : 12}%)
+                    </label>
+                    <p className="text-sm font-bold text-gray-900">
+                      {formatCurrency(
+                        typeof invoice.taxAmount === 'number'
+                          ? invoice.taxAmount
+                          : invoice.totalAmount * 0.107
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="p-4 space-y-3 bg-gradient-to-br from-gray-50 to-gray-100/50 border border-gray-200/50 rounded-lg">
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-gray-600">Payment Method</span>
+                      <p className="font-semibold text-gray-900">{invoice.paymentMethod || '—'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Invoice Date</span>
+                      <p className="font-semibold text-gray-900">{invoice.dueDate || invoice.checkOut}</p>
+                    </div>
+                  </div>
+                  {invoice.reference && (
+                    <div className="text-xs text-gray-600 mt-1">
+                      <span className="font-semibold">Reference:</span> {invoice.reference}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-2 space-y-2 border-t border-heritage-neutral/20">
-              <button 
-                onClick={handlePrint}
-                className="w-full flex items-center justify-center space-x-2 px-5 py-3 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl hover:from-heritage-green/90 hover:to-heritage-neutral/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] group"
-              >
-                <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                <span className="text-sm font-semibold">Print Invoice</span>
-              </button>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  className="flex items-center justify-center px-3 py-2.5 space-x-1.5 transition-all duration-300 border shadow-sm bg-white/80 border-heritage-neutral/30 text-heritage-neutral rounded-lg hover:bg-heritage-neutral/5 hover:border-heritage-green hover:shadow-md"
+            <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handlePrint}
+                  className="flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl hover:from-heritage-green hover:to-heritage-neutral transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] group text-sm font-semibold"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  <span>Print Invoice</span>
+                </button>
+
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center space-x-2 px-4 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm hover:shadow-md transform hover:scale-[1.02] group text-sm font-semibold"
+                >
+                  <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span className="text-xs font-medium">Download</span>
-                </button>
-                
-                <button 
-                  className="flex items-center justify-center px-3 py-2.5 space-x-1.5 transition-all duration-300 border shadow-sm bg-white/80 border-heritage-neutral/30 text-heritage-neutral rounded-lg hover:bg-heritage-neutral/5 hover:border-heritage-green hover:shadow-md"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-xs font-medium">Email</span>
+                  <span>Download PDF</span>
                 </button>
               </div>
             </div>

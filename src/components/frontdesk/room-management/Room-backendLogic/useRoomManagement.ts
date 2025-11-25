@@ -29,13 +29,12 @@ export interface UseRoomManagementReturn {
   
   // Actions
   setFilters: (filters: Partial<RoomFilters>) => void;
-  refreshRooms: () => Promise<void>;
+  refreshRooms: (forceRefresh?: boolean) => Promise<void>;
   updateStatus: (roomId: string, status: Room['status']) => Promise<void>;
+  // NEW: Optimization helper
+  modifyRoomState: (updatedRoom: Room) => void;
 }
 
-/**
- * Custom hook for room management with Firebase integration
- */
 export const useRoomManagement = (): UseRoomManagementReturn => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,11 +53,11 @@ export const useRoomManagement = (): UseRoomManagementReturn => {
   /**
    * Fetch rooms from Firebase
    */
-  const loadRooms = useCallback(async () => {
+  const loadRooms = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       setError(null);
-      const roomsData = await fetchRooms();
+      const roomsData = await fetchRooms(forceRefresh);
       setRooms(roomsData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load rooms';
@@ -79,8 +78,8 @@ export const useRoomManagement = (): UseRoomManagementReturn => {
   /**
    * Refresh rooms data
    */
-  const refreshRooms = useCallback(async () => {
-    await loadRooms();
+  const refreshRooms = useCallback(async (forceRefresh = false) => {
+    await loadRooms(forceRefresh);
   }, [loadRooms]);
 
   /**
@@ -89,7 +88,6 @@ export const useRoomManagement = (): UseRoomManagementReturn => {
   const updateStatus = useCallback(async (roomId: string, status: Room['status']) => {
     try {
       await updateRoomStatus(roomId, status);
-      // Update local state immediately for better UX
       setRooms(prev => prev.map(room => 
         room.id === roomId ? { ...room, status } : room
       ));
@@ -99,26 +97,32 @@ export const useRoomManagement = (): UseRoomManagementReturn => {
     }
   }, []);
 
+  /**
+   * NEW: Optimistic Update Helper
+   * Updates the local state immediately without fetching from DB
+   */
+  const modifyRoomState = useCallback((updatedRoom: Room) => {
+    setRooms(prevRooms => 
+      prevRooms.map(room => (room.id === updatedRoom.id ? updatedRoom : room))
+    );
+  }, []);
+
   // Load rooms on mount
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
 
   return {
-    // Data
     rooms,
     filteredRooms,
     roomStats,
     filterOptions,
-    
-    // State
     loading,
     error,
     filters,
-    
-    // Actions
     setFilters,
     refreshRooms,
-    updateStatus
+    updateStatus,
+    modifyRoomState // Exporting the new helper
   };
 };

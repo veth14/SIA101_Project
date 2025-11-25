@@ -10,6 +10,15 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+// Recharts JSX typing aliases (avoid strict JSX types from recharts)
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 const ProcurementCharts: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('Last 30 Days');
 
@@ -48,7 +57,7 @@ const ProcurementCharts: React.FC = () => {
             dataKey: string;
             value: number;
           }, index: number) => (
-            <div key={index} className="flex items-center mb-1 space-x-2">
+            <div key={`tooltip-${index}`} className="flex items-center mb-1 space-x-2">
               <div 
                 className="w-3 h-3 rounded-full" 
                 style={{ backgroundColor: entry.color }}
@@ -116,8 +125,8 @@ const ProcurementCharts: React.FC = () => {
       <div className="p-8">
         {/* Chart Container */}
         <div className="w-full h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+          <RResponsiveContainer width="100%" height="100%">
+            <RAreaChart
               data={procurementData}
               margin={{
                 top: 20,
@@ -144,27 +153,26 @@ const ProcurementCharts: React.FC = () => {
                   <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              
-              <XAxis 
+              <RCartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+
+              <RXAxis 
                 dataKey="month" 
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#6B7280' }}
                 dy={10}
               />
-              
-              <YAxis 
+
+              <RYAxis 
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#6B7280' }}
                 dx={-10}
               />
-              
-              {/* @ts-expect-error - Recharts typing issue */}
-              <Tooltip content={CustomTooltip} />
-              
-              <Area
+
+              <RTooltip content={<CustomTooltip />} />
+
+              <RArea
                 type="monotone"
                 dataKey="orders"
                 stroke="#3B82F6"
@@ -174,7 +182,7 @@ const ProcurementCharts: React.FC = () => {
                 activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: '#ffffff' }}
               />
               
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="value"
                 stroke="#10B981"
@@ -184,7 +192,7 @@ const ProcurementCharts: React.FC = () => {
                 activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
               />
               
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="suppliers"
                 stroke="#F59E0B"
@@ -194,7 +202,7 @@ const ProcurementCharts: React.FC = () => {
                 activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2, fill: '#ffffff' }}
               />
               
-              <Area
+              <RArea
                 type="monotone"
                 dataKey="onTime"
                 stroke="#8B5CF6"
@@ -203,8 +211,8 @@ const ProcurementCharts: React.FC = () => {
                 dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#ffffff' }}
               />
-            </AreaChart>
-          </ResponsiveContainer>
+            </RAreaChart>
+          </RResponsiveContainer>
         </div>
 
         {/* Chart Legend */}

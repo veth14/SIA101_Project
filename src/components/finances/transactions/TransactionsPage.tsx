@@ -3,39 +3,17 @@ import TransactionAnalytics from './TransactionAnalytics';
 import RecentTransactions from './RecentTransactions';
 import TransactionDetails from './TransactionDetails';
 import TransactionStats from './TransactionStats';
+import { subscribeToTransactions, TransactionRecord } from '../../../backend/transactions/transactionsService';
 
-export interface Transaction {
-  id: string;
-  description: string;
-  amount: number;
-  type: 'credit' | 'debit';
-  date: string;
-  time: string;
-  category: string;
-  status: 'completed' | 'pending' | 'failed';
-  reference: string;
-  method: 'cash' | 'card' | 'transfer' | 'check';
-}
-
-// Sample transaction data
-const sampleTransactions: Transaction[] = [
-  { id: '1', description: 'Room Booking Payment', amount: 15254, type: 'credit', date: '2024-10-01', time: '10:30', category: 'booking', status: 'completed', reference: 'BK001', method: 'card' },
-  { id: '2', description: 'Spa Service Payment', amount: 8254, type: 'credit', date: '2024-10-02', time: '14:15', category: 'service', status: 'completed', reference: 'SP002', method: 'cash' },
-  { id: '3', description: 'Restaurant Bill', amount: 3250, type: 'credit', date: '2024-10-03', time: '19:45', category: 'food', status: 'pending', reference: 'FB003', method: 'card' },
-  { id: '4', description: 'Conference Hall Booking', amount: 25000, type: 'credit', date: '2024-10-04', time: '09:00', category: 'booking', status: 'completed', reference: 'CH004', method: 'transfer' },
-  { id: '5', description: 'Laundry Service', amount: 1200, type: 'credit', date: '2024-10-05', time: '11:20', category: 'service', status: 'failed', reference: 'LS005', method: 'cash' },
-  { id: '6', description: 'Wedding Package', amount: 85000, type: 'credit', date: '2024-10-06', time: '16:30', category: 'event', status: 'completed', reference: 'WP006', method: 'transfer' },
-  { id: '7', description: 'Room Service Order', amount: 2800, type: 'credit', date: '2024-10-07', time: '20:15', category: 'food', status: 'completed', reference: 'RS007', method: 'card' },
-  { id: '8', description: 'Gym Membership', amount: 5000, type: 'credit', date: '2024-10-08', time: '08:45', category: 'service', status: 'pending', reference: 'GM008', method: 'card' },
-  { id: '9', description: 'Event Catering', amount: 45000, type: 'credit', date: '2024-10-09', time: '12:00', category: 'food', status: 'completed', reference: 'EC009', method: 'transfer' },
-  { id: '10', description: 'Transportation Service', amount: 3500, type: 'credit', date: '2024-10-10', time: '07:30', category: 'service', status: 'completed', reference: 'TS010', method: 'cash' },
-];
+export type Transaction = TransactionRecord;
 
 export const TransactionsPage: React.FC = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
   const [filters, setFilters] = useState({
     dateRange: 'all',
     type: 'all',
@@ -46,20 +24,28 @@ export const TransactionsPage: React.FC = () => {
 
   // Centralized loading state - synchronized for all components
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Unified 2-second loading time
-    return () => clearTimeout(timer);
+    const unsubscribe = subscribeToTransactions(
+      (loaded) => {
+        setTransactions(loaded);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error('Error loading transactions:', error);
+        setIsLoading(false);
+      }
+    );
+
+    return unsubscribe;
   }, []);
 
   const itemsPerPage = 8; // Items per page when not showing all
 
-  const totalTransactions = sampleTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const completedTransactions = sampleTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
-  const pendingTransactions = sampleTransactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
+  const totalTransactions = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const completedTransactions = transactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
+  const pendingTransactions = transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
 
   // Filter and paginate transactions
-  const filteredTransactions = sampleTransactions.filter(transaction => {
+  const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
     const matchesStatus = filters.status === 'all' || transaction.status === filters.status;
     const matchesType = filters.type === 'all' || transaction.type === filters.type;
@@ -110,6 +96,7 @@ export const TransactionsPage: React.FC = () => {
           filters={{ status: filters.status, category: filters.category }}
           onFiltersChange={(newFilters) => setFilters({...filters, ...newFilters})}
           isLoading={isLoading}
+          transactions={transactions}
         />
 
         {/* Transaction Table and Details */}
@@ -132,6 +119,12 @@ export const TransactionsPage: React.FC = () => {
                 setCurrentPage(1); // Reset to first page when toggling
               }}
               isLoading={isLoading}
+              statusFilter={filters.status}
+              typeFilter={filters.type}
+              categoryFilter={filters.category}
+              onStatusFilterChange={(status) => setFilters({ ...filters, status })}
+              onTypeFilterChange={(type) => setFilters({ ...filters, type })}
+              onCategoryFilterChange={(category) => setFilters({ ...filters, category })}
             />
           </div>
 

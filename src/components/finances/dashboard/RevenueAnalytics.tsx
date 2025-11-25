@@ -79,8 +79,10 @@ const RevenueAnalytics: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl group-hover:scale-105">
-                  <TrendingUp className="w-6 h-6 text-white" strokeWidth={2.5} />
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
                 </div>
                 <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
               </div>

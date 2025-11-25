@@ -1,6 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Recharts JSX typing aliases to avoid strict return-type JSX errors
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 // Type definitions
 interface TransactionDataPoint {
   day: string;
@@ -20,37 +29,62 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-// Sample transaction data for the chart
-const getTransactionData = (timeframe: 'weekly' | 'monthly' | 'yearly') => {
-  const weeklyData = [
-    { day: 'Monday', transactions: 15254 },
-    { day: 'Tuesday', transactions: 8254 },
-    { day: 'Wednesday', transactions: 18254 },
-    { day: 'Thursday', transactions: 3254 },
-    { day: 'Friday', transactions: 25000 },
-    { day: 'Saturday', transactions: 12000 },
-    { day: 'Sunday', transactions: 16000 }
-  ];
+// Build chart data from real transactions
+const buildTransactionData = (
+  transactions: { date: string; amount: number; status: string; category: string }[],
+  timeframe: 'monthly' | 'yearly',
+  filters: { status: string; category: string }
+): TransactionDataPoint[] => {
+  const filtered = transactions.filter((t) => {
+    const matchesStatus = filters.status === 'all' || t.status === filters.status;
+    const matchesCategory = filters.category === 'all' || t.category === filters.category;
+    return matchesStatus && matchesCategory;
+  });
 
-  const monthlyData = [
-    { day: 'Week 1', transactions: 85000 },
-    { day: 'Week 2', transactions: 92000 },
-    { day: 'Week 3', transactions: 78000 },
-    { day: 'Week 4', transactions: 95000 }
-  ];
+  const parsed = filtered
+    .map((t) => {
+      const d = new Date(t.date);
+      if (Number.isNaN(d.getTime())) return null;
+      return { dateObj: d, amount: t.amount };
+    })
+    .filter((v): v is { dateObj: Date; amount: number } => v !== null);
 
-  const yearlyData = [
-    { day: 'Q1', transactions: 250000 },
-    { day: 'Q2', transactions: 280000 },
-    { day: 'Q3', transactions: 320000 },
-    { day: 'Q4', transactions: 290000 }
-  ];
-
-  switch (timeframe) {
-    case 'monthly': return monthlyData;
-    case 'yearly': return yearlyData;
-    default: return weeklyData;
+  if (parsed.length === 0) {
+    return [];
   }
+
+  // For yearly: group by calendar month (Jan, Feb, ...)
+  if (timeframe === 'yearly') {
+    const monthTotals = new Map<string, number>();
+    parsed.forEach(({ dateObj, amount }) => {
+      const monthIndex = dateObj.getMonth(); // 0-11
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const label = monthNames[monthIndex] || String(monthIndex + 1);
+      monthTotals.set(label, (monthTotals.get(label) || 0) + amount);
+    });
+
+    const orderedMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return orderedMonths
+      .filter((m) => monthTotals.has(m))
+      .map((m) => ({ day: m, transactions: monthTotals.get(m) || 0 }));
+  }
+
+  // For monthly: group by week-of-month (Week 1-5)
+  const weekTotals = new Map<number, number>();
+  parsed.forEach(({ dateObj, amount }) => {
+    const dayOfMonth = dateObj.getDate();
+    const weekOfMonth = Math.min(5, Math.floor((dayOfMonth - 1) / 7) + 1); // 1-5
+    weekTotals.set(weekOfMonth, (weekTotals.get(weekOfMonth) || 0) + amount);
+  });
+
+  const result: TransactionDataPoint[] = [];
+  for (let week = 1; week <= 5; week++) {
+    if (weekTotals.has(week)) {
+      result.push({ day: `Week ${week}`, transactions: weekTotals.get(week) || 0 });
+    }
+  }
+
+  return result;
 };
 
 const calculateChartMetrics = (data: TransactionDataPoint[]) => {
@@ -123,13 +157,22 @@ interface TransactionAnalyticsProps {
   };
   onFiltersChange: (filters: TransactionFilters) => void;
   isLoading: boolean;
+  transactions: {
+    date: string;
+    amount: number;
+    status: string;
+    category: string;
+  }[];
 }
 
-const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, onFiltersChange, isLoading }) => {
-  const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, onFiltersChange, isLoading, transactions }) => {
+  const [activeTimeframe, setActiveTimeframe] = useState<'monthly' | 'yearly'>('monthly');
   
   // Get data and metrics
-  const transactionData = useMemo(() => getTransactionData(activeTimeframe), [activeTimeframe]);
+  const transactionData = useMemo(
+    () => buildTransactionData(transactions, activeTimeframe, filters),
+    [transactions, activeTimeframe, filters]
+  );
   const metrics = useMemo(() => calculateChartMetrics(transactionData), [transactionData]);
 
   // Transform data for recharts
@@ -166,11 +209,16 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className="flex items-center justify-center w-12 h-12 transition-all duration-300 shadow-2xl bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral rounded-2xl group-hover:scale-105">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+              <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V7a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2"
+                />
+              </svg>
+            </div>
                 <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
               </div>
               <div>
@@ -188,16 +236,6 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
             {/* Toggle Buttons */}
             <div className="flex space-x-4">
               <div className="flex p-1.5 bg-gradient-to-r from-heritage-light/40 to-heritage-light/60 rounded-2xl shadow-inner backdrop-blur-sm border border-heritage-light/30">
-                <button 
-                  className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
-                    activeTimeframe === 'weekly' 
-                      ? 'text-white bg-gradient-to-r from-heritage-green to-heritage-neutral shadow-lg transform scale-105' 
-                      : 'text-gray-700 hover:text-heritage-green hover:bg-white/50'
-                  }`}
-                  onClick={() => setActiveTimeframe('weekly')}
-                >
-                  Weekly
-                </button>
                 <button 
                   className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
                     activeTimeframe === 'monthly' 
@@ -223,41 +261,13 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
           </div>
         </div>
         
-        {/* Filters Section */}
-        <div className="px-8 py-4 border-b bg-gradient-to-r from-heritage-light/20 to-heritage-light/30 border-gray-200/30">
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-semibold text-gray-600">Filters:</span>
-            <select 
-              value={filters.status}
-              onChange={(e) => onFiltersChange({...filters, status: e.target.value})}
-              className="px-4 py-2 text-sm font-bold border outline-none cursor-pointer rounded-xl bg-white/80 text-heritage-green border-heritage-neutral/30"
-            >
-              <option value="all">All Status</option>
-              <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </select>
-            <select 
-              value={filters.category}
-              onChange={(e) => onFiltersChange({...filters, category: e.target.value})}
-              className="px-4 py-2 text-sm font-bold border outline-none cursor-pointer rounded-xl bg-white/80 text-heritage-green border-heritage-neutral/30"
-            >
-              <option value="all">All Categories</option>
-              <option value="booking">Booking</option>
-              <option value="service">Service</option>
-              <option value="food">Food & Beverage</option>
-              <option value="event">Events</option>
-            </select>
-          </div>
-        </div>
-        
         {/* Chart Area */}
         <div className="px-4 py-6">
           <div className="h-[320px] w-full">
             
-            <ResponsiveContainer width="100%" height="100%">
-             
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+
+              <RAreaChart
                 data={chartData}
                 margin={{ top: 20, right: 40, left: 10, bottom: 40 }}
               >
@@ -268,7 +278,7 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   </linearGradient>
                 </defs>
                 
-                <XAxis 
+                <RXAxis 
                   dataKey="day" 
                   tick={{ fill: '#82A33D', fontSize: 11 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
@@ -278,21 +288,21 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                   padding={{ left: 20, right: 20 }}
                 />
                 
-                <YAxis 
+                <RYAxis 
                   tickFormatter={formatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
-                <CartesianGrid 
+                <RCartesianGrid 
                   strokeDasharray="3 3" 
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
                 
-                <Tooltip content={<CustomTooltip />} />
-                
-                <Area 
+                <RTooltip content={<CustomTooltip />} />
+
+                <RArea 
                   type="linear" 
                   dataKey="transactions" 
                   stroke="#82A33D" 
@@ -308,8 +318,8 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
                     fill: 'white'
                   }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}
@@ -341,7 +351,7 @@ const TransactionAnalytics: React.FC<TransactionAnalyticsProps> = ({ filters, on
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics?.averageTransactions || 14002)}
             </div>
-            <div className="text-xs text-gray-500">Per day</div>
+            <div className="text-xs text-gray-500">Per Week</div>
           </div>
           
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">

@@ -10,6 +10,15 @@ import {
   YAxis
 } from "recharts"
 
+// Recharts JSX typing aliases (avoid strict JSX return types)
+const RResponsiveContainer = ResponsiveContainer as unknown as React.ComponentType<Record<string, unknown>>;
+const RAreaChart = AreaChart as unknown as React.ComponentType<Record<string, unknown>>;
+const RXAxis = XAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RYAxis = YAxis as unknown as React.ComponentType<Record<string, unknown>>;
+const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<string, unknown>>;
+const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
+const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
+
 // Sample data for inventory analytics
 const chartData = [
   { month: "Jan", linens: 2400, cleaning: 1400, food: 2400, maintenance: 800 },
@@ -81,7 +90,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
       <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg p-4 min-w-[200px]">
         <p className="mb-2 font-medium text-gray-900">{label}</p>
         {payload.map((entry: TooltipPayload, index: number) => (
-          <div key={index} className="flex items-center justify-between gap-4 mb-1">
+          <div key={`tooltip-${index}`} className="flex items-center justify-between gap-4 mb-1">
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
@@ -203,8 +212,8 @@ export function AnalyticsChart(): React.ReactElement {
         <div className="p-8">
           {/* Chart Container */}
           <div className="w-full h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
+            <RResponsiveContainer width="100%" height="100%">
+              <RAreaChart
                 data={chartData}
                 margin={{
                   top: 20,
@@ -231,27 +240,26 @@ export function AnalyticsChart(): React.ReactElement {
                     <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.05}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-                
-                <XAxis 
+                <RCartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+
+                <RXAxis 
                   dataKey="month" 
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: '#6B7280' }}
                   dy={10}
                 />
-                
-                <YAxis 
+
+                <RYAxis 
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: '#6B7280' }}
                   dx={-10}
                 />
-                
-                {/* @ts-expect-error - Recharts typing issue */}
-                <Tooltip content={CustomTooltip} />
-                
-                <Area
+
+                <RTooltip content={<CustomTooltip />} />
+
+                <RArea
                   type="monotone"
                   dataKey="linens"
                   stroke="#10B981"
@@ -261,7 +269,7 @@ export function AnalyticsChart(): React.ReactElement {
                   activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#ffffff' }}
                 />
                 
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="cleaning"
                   stroke="#3B82F6"
@@ -271,7 +279,7 @@ export function AnalyticsChart(): React.ReactElement {
                   activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: '#ffffff' }}
                 />
                
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="food"
                   stroke="#F59E0B"
@@ -281,7 +289,7 @@ export function AnalyticsChart(): React.ReactElement {
                   activeDot={{ r: 6, stroke: '#F59E0B', strokeWidth: 2, fill: '#ffffff' }}
                 />
                 
-                <Area
+                <RArea
                   type="monotone"
                   dataKey="maintenance"
                   stroke="#8B5CF6"
@@ -290,8 +298,8 @@ export function AnalyticsChart(): React.ReactElement {
                   dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#ffffff' }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
+              </RAreaChart>
+            </RResponsiveContainer>
           </div>
 
           {/* Chart Legend */}

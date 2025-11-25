@@ -253,6 +253,85 @@ export const sampleReports: FinancialReport[] = [
     fileSize: '1.6 MB',
     status: 'archived',
     version: 1
+  },
+  // Additional Archived Reports for pagination demo
+  {
+    id: 'IR-2025-05-001',
+    name: 'IncomeReport-2025-05-v1.pdf',
+    category: 'income',
+    month: 5,
+    year: 2025,
+    dateGenerated: '2025-05-31',
+    preparedBy: 'Finance Team',
+    fileType: 'PDF',
+    fileSize: '2.0 MB',
+    status: 'archived',
+    version: 1
+  },
+  {
+    id: 'ER-2025-05-001',
+    name: 'ExpenseReport-2025-05-v1.pdf',
+    category: 'expense',
+    month: 5,
+    year: 2025,
+    dateGenerated: '2025-05-31',
+    preparedBy: 'Accounting Dept',
+    fileType: 'PDF',
+    fileSize: '1.7 MB',
+    status: 'archived',
+    version: 1
+  },
+  {
+    id: 'BS-2025-05-001',
+    name: 'BalanceSheet-2025-05-v1.xlsx',
+    category: 'balance',
+    month: 5,
+    year: 2025,
+    dateGenerated: '2025-05-31',
+    preparedBy: 'Accounting Dept',
+    fileType: 'Excel',
+    fileSize: '910 KB',
+    status: 'archived',
+    version: 1
+  },
+  {
+    id: 'PL-2025-05-001',
+    name: 'ProfitLoss-2025-05-v1.pdf',
+    category: 'profit-loss',
+    month: 5,
+    year: 2025,
+    dateGenerated: '2025-05-31',
+    preparedBy: 'Finance Team',
+    fileType: 'PDF',
+    fileSize: '1.4 MB',
+    status: 'archived',
+    version: 1
+  },
+  {
+    id: 'CR-2025-05-001',
+    name: 'CustomReport-2025-05-v1.pdf',
+    category: 'custom',
+    month: 5,
+    year: 2025,
+    dateGenerated: '2025-05-31',
+    preparedBy: 'Management',
+    fileType: 'PDF',
+    fileSize: '1.3 MB',
+    status: 'archived',
+    version: 1
+  },
+  {
+    id: 'PR-2025-05-001',
+    name: 'PayrollReport-2025-05-v1.pdf',
+    category: 'payroll',
+    month: 5,
+    year: 2025,
+    dateGenerated: '2025-05-31',
+    preparedBy: 'HR Department',
+    fileType: 'PDF',
+    fileSize: '3.0 MB',
+    status: 'archived',
+    version: 1
   }
 ];
 

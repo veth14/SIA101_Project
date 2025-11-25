@@ -61,7 +61,7 @@ const formatCurrency = formatCurrencyPH;
 const formatShortCurrency = formatShortCurrencyPH;
 
 // Custom tooltip component
-const CustomTooltip = ({ active, payload, label }: { active: boolean; payload: TooltipPayload[]; label: string }) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg p-4 min-w-[200px]">
@@ -131,16 +131,8 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-5">
               <div className="relative group">
-                <div className={`flex items-center justify-center w-12 h-12 shadow-2xl rounded-2xl transition-all duration-300 group-hover:scale-105 ${
-                  isProfitable 
-                    ? 'bg-gradient-to-br from-heritage-green via-heritage-green to-heritage-neutral' 
-                    : 'bg-gradient-to-br from-red-500 via-red-600 to-red-700'
-                }`}>
-                  {isProfitable ? (
-                    <TrendingUp className="w-6 h-6 text-white" strokeWidth={2.5} />
-                  ) : (
-                    <TrendingDown className="w-6 h-6 text-white" strokeWidth={2.5} />
-                  )}
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-[#82A33D]" />
                 </div>
                 <div className={`absolute -inset-2 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300 ${
                   isProfitable 
@@ -199,18 +191,14 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
         </div>
         
         {/* Chart Area */}
-        <div className="px-6 py-6">
-          <div className="h-[340px] w-full">
+        <div className="px-4 py-6">
+          <div className="h-[320px] w-full">
             <RResponsiveContainer width="100%" height="100%">
               <RAreaChart
                 data={profitData}
-                margin={{ top: 20, right: 30, left: 50, bottom: 40 }}
+                margin={{ top: 20, right: 10, left: 10, bottom: 20 }}
               >
                 <defs>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D97706" stopOpacity={0.7} />
-                    <stop offset="95%" stopColor="#FCD34D" stopOpacity={0.1} />
-                  </linearGradient>
                   <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#82A33D" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#ABAD8A" stopOpacity={0.1} />
@@ -218,13 +206,11 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                 </defs>
                 <RXAxis 
                   dataKey="period" 
-                  tick={{ fill: '#82A33D', fontSize: 11 }}
+                  tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={{ stroke: '#82A33D', strokeWidth: 1 }}
                   tickLine={false}
                   interval={0}
-                  height={60}
-                  angle={0}
-                  textAnchor="middle"
+                  padding={{ left: 0, right: 0 }}
                 />
 
                 <RYAxis 
@@ -239,11 +225,11 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                   vertical={false} 
                   stroke="#ABAD8A" 
                 />
-                <RTooltip content={<CustomTooltip active={false} payload={[]} label="" />} />
-                
+                <RTooltip content={<CustomTooltip />} />
+
                 {/* Profit Area - Primary (Top Layer) */}
                 <RArea 
-                  type="monotone" 
+                  type="linear" 
                   dataKey="profit" 
                   stroke="#82A33D" 
                   fillOpacity={1}
@@ -257,40 +243,22 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                   }}
                 />
                 
-                {/* Expenses Area - Secondary Layer */}
-                <RArea 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stroke="#D97706" 
-                  fillOpacity={0.7}
-                  fill="url(#colorExpenses)" 
-                  strokeWidth={2.5}
-                  activeDot={{ 
-                    r: 5, 
-                    stroke: '#D97706',
-                    strokeWidth: 2,
-                    fill: 'white'
-                  }}
-                />
+                {/* Expenses removed — use the dedicated Expenses page for expense charts */}
               </RAreaChart>
             </RResponsiveContainer>
           </div>
           
           {/* Chart Legend */}
-          <div className="flex items-center justify-center pb-2 mt-2 space-x-6">
+          <div className="flex items-center justify-center pb-2 mt-2">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <div className="w-3 h-0.5 bg-heritage-green rounded"></div>
               <span className="font-semibold">Net Profit</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-3 h-0.5 bg-amber-600 rounded"></div>
-              <span className="font-semibold">Total Expenses</span>
             </div>
           </div>
         </div>
         
         {/* Stats and Insights Section */}
-        <div className="grid grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 md:grid-cols-4">
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Total Profit</div>
             <div className={`text-2xl font-bold ${isProfitable ? 'text-heritage-green' : 'text-red-600'}`}>
@@ -319,13 +287,13 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
             </div>
             <div className="text-xs text-gray-500">{metrics.maxProfitPeriod}</div>
           </div>
-          
+
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
-            <div className="text-sm font-medium text-gray-500">Total Expenses</div>
-            <div className="text-2xl font-bold text-amber-600">
-              {formatCurrency(metrics.totalExpenses)}
+            <div className="text-sm font-medium text-gray-500">Projected</div>
+            <div className="text-2xl font-bold text-heritage-green">
+              {formatCurrency(metrics.totalProfit * 1.08)}
             </div>
-            <div className="text-xs text-gray-500">Operating costs</div>
+            <div className="text-xs text-gray-500">Next period</div>
           </div>
         </div>
       </div>
