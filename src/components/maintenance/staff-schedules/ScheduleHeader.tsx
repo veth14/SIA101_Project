@@ -188,14 +188,15 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({ weeklySchedules = [] })
 
   return (
     <>
-      <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden mb-8">
+      {/* Main Container */}
+      <div className="relative bg-gradient-to-br from-white via-green-50/20 to-green-500/5 rounded-3xl shadow-2xl border border-green-500/10 overflow-hidden mb-6">
         <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-green-600/5"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-green-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-green-100/15 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
         
         <div className="relative p-8">
           {/* Day Blocks */}
-          <div className="grid grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-5 gap-4">
             {weekDays.map((day) => {
               const staffCount = schedulesByDate[day.dateString]?.length || 0;
               
@@ -251,27 +252,27 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({ weeklySchedules = [] })
               );
             })}
           </div>
+        </div>
+      </div>
 
-          {/* Date and Time - Bottom Right */}
-          <div className="flex justify-end">
-            <div className="relative group">
-              <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-2xl px-6 py-4 border border-green-500/20 shadow-lg group-hover:scale-105 transition-all duration-500">
-                <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                <div className="relative flex items-center space-x-4">
-                  <div className="text-right">
-                    <p className="text-2xl font-black bg-gradient-to-r from-[#82A33D] to-green-600 bg-clip-text text-transparent">
-                      {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </p>
-                    <p className="text-xs text-gray-600 font-semibold mt-0.5">
-                      {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                  </div>
-                  <div className="flex flex-col space-y-1">
-                    <div className="w-1.5 h-1.5 bg-[#82A33D] rounded-full animate-ping"></div>
-                    <div className="w-1.5 h-1.5 bg-green-600 rounded-full animate-ping delay-75"></div>
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping delay-150"></div>
-                  </div>
-                </div>
+      {/* Date and Time - Below Container */}
+      <div className="flex justify-end mb-8">
+        <div className="relative group">
+          <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-2xl px-6 py-4 border border-green-500/20 shadow-lg group-hover:scale-105 transition-all duration-500">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+            <div className="relative flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-2xl font-black bg-gradient-to-r from-[#82A33D] to-green-600 bg-clip-text text-transparent">
+                  {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </p>
+                <p className="text-xs text-gray-600 font-semibold mt-0.5">
+                  {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+              <div className="flex flex-col space-y-1">
+                <div className="w-1.5 h-1.5 bg-[#82A33D] rounded-full animate-ping"></div>
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full animate-ping delay-75"></div>
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping delay-150"></div>
               </div>
             </div>
           </div>

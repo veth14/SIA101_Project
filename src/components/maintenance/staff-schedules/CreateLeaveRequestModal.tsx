@@ -1,12 +1,13 @@
 // src/components/maintenance/staff-schedules/CreateLeaveRequestModal.tsx
 import React, { useMemo, useState } from 'react';
-import { Staff } from './types';
+import { Staff, LeaveRequest } from './types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   staffList: Staff[];
   loadingStaff: boolean;
+  existingLeaveRequests?: LeaveRequest[]; // ✅ Optional to prevent crashes
   onCreate: (payload: {
     staffId: string;
     fullName: string;
@@ -20,36 +21,93 @@ interface Props {
 
 const leaveTypes = ['Vacation', 'Sick', 'Emergency', 'Maternity', 'Paternity', 'Bereavement', 'Other'];
 
-const CreateLeaveRequestModal: React.FC<Props> = ({ isOpen, onClose, staffList, loadingStaff, onCreate }) => {
+const CreateLeaveRequestModal: React.FC<Props> = ({ 
+  isOpen, 
+  onClose, 
+  staffList, 
+  loadingStaff, 
+  existingLeaveRequests = [], // ✅ Default to empty array
+  onCreate 
+}) => {
   const [staffId, setStaffId] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [leaveType, setLeaveType] = useState<string>(leaveTypes[0]);
   const [notes, setNotes] = useState<string>('');
 
-  const selectedStaff = useMemo(() => staffList.find(s => s.id === staffId), [staffId, staffList]);
+  const selectedStaff = useMemo(() => {
+    return staffList.find(s => s.id === staffId) || null;
+  }, [staffId, staffList]);
+
+  // ✅ Check if staff has an active leave request (with null checks)
+  const hasActiveLeaveRequest = useMemo(() => {
+    if (!staffId || !existingLeaveRequests) return false;
+    
+    try {
+      return existingLeaveRequests.some(request => 
+        request?.staffId === staffId && 
+        (request?.status === 'pending' || request?.status === 'approved')
+      );
+    } catch (error) {
+      console.error('Error checking active leave requests:', error);
+      return false;
+    }
+  }, [staffId, existingLeaveRequests]);
+
+  // ✅ Get the active leave request details if exists
+  const activeLeaveRequest = useMemo(() => {
+    if (!staffId || !existingLeaveRequests) return null;
+    
+    try {
+      return existingLeaveRequests.find(request => 
+        request?.staffId === staffId && 
+        (request?.status === 'pending' || request?.status === 'approved')
+      ) || null;
+    } catch (error) {
+      console.error('Error finding active leave request:', error);
+      return null;
+    }
+  }, [staffId, existingLeaveRequests]);
 
   const handleSubmit = async () => {
     if (!staffId || !startDate || !endDate || !leaveType) {
       alert('Please fill required fields.');
       return;
     }
-    await onCreate({
-      staffId,
-      fullName: selectedStaff?.fullName || '',
-      classification: selectedStaff?.classification || '',
-      startDate,
-      endDate,
-      leaveType,
-      notes
-    });
 
-    // reset
-    setStaffId('');
-    setStartDate('');
-    setEndDate('');
-    setLeaveType(leaveTypes[0]);
-    setNotes('');
+    // ✅ Check for active request
+    if (hasActiveLeaveRequest) {
+      alert('This staff member already has an active leave request. Please wait for it to be processed or rejected before creating a new one.');
+      return;
+    }
+
+    // ✅ Validate date range
+    if (new Date(endDate) < new Date(startDate)) {
+      alert('End date must be after start date.');
+      return;
+    }
+
+    try {
+      await onCreate({
+        staffId,
+        fullName: selectedStaff?.fullName || '',
+        classification: selectedStaff?.classification || '',
+        startDate,
+        endDate,
+        leaveType,
+        notes
+      });
+
+      // reset
+      setStaffId('');
+      setStartDate('');
+      setEndDate('');
+      setLeaveType(leaveTypes[0]);
+      setNotes('');
+    } catch (error) {
+      console.error('Error creating leave request:', error);
+      alert('Failed to create leave request. Please try again.');
+    }
   };
 
   if (!isOpen) return null;
@@ -57,76 +115,138 @@ const CreateLeaveRequestModal: React.FC<Props> = ({ isOpen, onClose, staffList, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6">
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">Add Leave Request</h3>
-          <button onClick={onClose} className="text-gray-500">Close</button>
+          <h3 className="text-xl font-bold text-gray-900">Add Leave Request</h3>
+          <button 
+            onClick={onClose} 
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium">Staff</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Staff <span className="text-red-500">*</span>
+            </label>
             <select
               value={staffId}
               onChange={(e) => setStaffId(e.target.value)}
-              className="w-full border rounded px-3 py-2 mt-1"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent"
             >
               <option value="">Select staff</option>
-              {loadingStaff ? <option>Loading...</option> : staffList.map(s => (
-                <option key={s.id} value={s.id}>{s.fullName} {s.classification ? `— ${s.classification}` : ''}</option>
-              ))}
+              {loadingStaff ? (
+                <option>Loading...</option>
+              ) : (
+                staffList.map(s => {
+                  // Check if this staff has active request
+                  const hasActive = existingLeaveRequests?.some(request => 
+                    request?.staffId === s.id && 
+                    (request?.status === 'pending' || request?.status === 'approved')
+                  );
+                  
+                  return (
+                    <option key={s.id} value={s.id} disabled={hasActive}>
+                      {s.fullName || 'Unnamed Staff'} 
+                      {s.classification ? ` — ${s.classification}` : ''} 
+                      {hasActive ? ' (Active Request)' : ''}
+                    </option>
+                  );
+                })
+              )}
             </select>
+            
+            {/* ✅ Warning message if staff has active leave */}
+            {hasActiveLeaveRequest && activeLeaveRequest && (
+              <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-yellow-800">Active Leave Request Exists</p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      {activeLeaveRequest.leaveType} ({activeLeaveRequest.status})
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      Please wait for this request to be processed before creating a new one.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
-            <label className="text-sm font-medium">Leave Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Leave Type <span className="text-red-500">*</span>
+            </label>
             <select
               value={leaveType}
               onChange={(e) => setLeaveType(e.target.value)}
-              className="w-full border rounded px-3 py-2 mt-1"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent"
             >
               {leaveTypes.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-sm font-medium">Start Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Start Date <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full border rounded px-3 py-2 mt-1"
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">End Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              End Date <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full border rounded px-3 py-2 mt-1"
+              min={startDate || new Date().toISOString().split('T')[0]}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="text-sm font-medium">Notes (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes (optional)
+            </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full border rounded px-3 py-2 mt-1"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent resize-none"
               rows={3}
+              placeholder="Additional information about the leave request..."
             />
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-end space-x-2">
-          <button onClick={onClose} className="px-4 py-2 rounded border">Cancel</button>
+        <div className="mt-6 flex items-center justify-end space-x-3">
+          <button 
+            onClick={onClose} 
+            className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+          >
+            Cancel
+          </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 rounded bg-heritage-green text-white hover:opacity-95"
+            disabled={hasActiveLeaveRequest || !staffId || !startDate || !endDate}
+            className="px-5 py-2 rounded-lg bg-[#82A33D] text-white hover:bg-[#6d8a33] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create
+            Create Leave Request
           </button>
         </div>
       </div>

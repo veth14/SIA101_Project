@@ -16,12 +16,16 @@ import {
 import LeaveRequestFilters from './LeaveRequestFilters';
 import LeaveRequestTable from './LeaveRequestTable';
 import CreateLeaveRequestModal from './CreateLeaveRequestModal';
+import LeaveRequestDetailsModal from './LeaveRequestDetailsModal'; // NEW IMPORT
 
 import { LeaveRequest, Staff } from './types';
 import { getWeekDateRange } from './utils';
 
 const LeaveRequestsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // NEW STATE
+  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null); // NEW STATE
+  
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,10 +46,9 @@ const LeaveRequestsPage: React.FC = () => {
       const col = collection(db, 'staff');
       const snap = await getDocs(col);
 
-      // Map docs to Staff (do NOT cast to LeaveRequest)
       const data: Staff[] = snap.docs.map(d => {
         const raw = d.data() as Staff;
-        const { id: _ignored, ...rest } = raw as any; // remove any id inside document data (safe)
+        const { id: _ignored, ...rest } = raw as any;
         return { id: d.id, ...rest } as Staff;
       });
 
@@ -70,7 +73,7 @@ const LeaveRequestsPage: React.FC = () => {
 
       const fetched: LeaveRequest[] = snap.docs.map(d => {
         const raw = d.data() as LeaveRequest;
-        const { id: _ignored, ...rest } = raw as any; // strip id if present in doc data
+        const { id: _ignored, ...rest } = raw as any;
         return { id: d.id, ...rest } as LeaveRequest;
       });
 
@@ -153,6 +156,19 @@ const LeaveRequestsPage: React.FC = () => {
   };
 
   // ------------------------------
+  // NEW: Handle View Details
+  // ------------------------------
+  const handleViewDetails = (leaveRequest: LeaveRequest) => {
+    setSelectedLeaveRequest(leaveRequest);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedLeaveRequest(null);
+  };
+
+  // ------------------------------
   // Apply Filters
   // ------------------------------
   const filtered = leaveRequests.filter((r) => {
@@ -210,6 +226,7 @@ const LeaveRequestsPage: React.FC = () => {
           onApprove={(id: string) => handleUpdateStatus(id, 'approved')}
           onReject={(id: string) => handleUpdateStatus(id, 'rejected')}
           onRefresh={fetchLeaveRequests}
+          onView={handleViewDetails} // NEW PROP
         />
 
         <CreateLeaveRequestModal
@@ -218,6 +235,13 @@ const LeaveRequestsPage: React.FC = () => {
           staffList={staffList}
           loadingStaff={loading}
           onCreate={handleCreateLeaveRequest}
+        />
+
+        {/* NEW: Details Modal */}
+        <LeaveRequestDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={handleCloseDetailsModal}
+          leaveRequest={selectedLeaveRequest}
         />
       </div>
     </div>
