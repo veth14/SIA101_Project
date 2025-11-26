@@ -8,6 +8,7 @@ interface Props {
   onApprove: (id: string) => Promise<void> | void;
   onReject: (id: string) => Promise<void> | void;
   onRefresh: () => Promise<void> | void;
+  onView: (leaveRequest: LeaveRequest) => void; // NEW: callback to view details
 }
 
 const statusBadge = (status?: string) => {
@@ -21,7 +22,14 @@ const statusBadge = (status?: string) => {
   }
 };
 
-const LeaveRequestTable: React.FC<Props> = ({ leaveRequests, loading, onApprove, onReject, onRefresh }) => {
+const LeaveRequestTable: React.FC<Props> = ({ 
+  leaveRequests, 
+  loading, 
+  onApprove, 
+  onReject, 
+  onRefresh,
+  onView // NEW
+}) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -67,21 +75,34 @@ const LeaveRequestTable: React.FC<Props> = ({ leaveRequests, loading, onApprove,
                   <td className="px-6 py-4 text-sm text-gray-700">{req.leaveType}</td>
                   <td className="px-6 py-4 text-center">{statusBadge(req.status)}</td>
                   <td className="px-6 py-4 text-center space-x-2">
-                    {req.status !== 'approved' && (
+                    {req.status === 'approved' ? (
+                      // Show "View" button for approved requests
                       <button
-                        onClick={() => onApprove(req.id)}
-                        className="px-3 py-1 rounded bg-green-50 text-green-700 text-sm"
+                        onClick={() => onView(req)}
+                        className="px-3 py-1 rounded bg-blue-50 text-blue-700 text-sm hover:bg-blue-100 transition-colors"
                       >
-                        Approve
+                        View
                       </button>
-                    )}
-                    {req.status !== 'rejected' && (
-                      <button
-                        onClick={() => onReject(req.id)}
-                        className="px-3 py-1 rounded bg-red-50 text-red-700 text-sm"
-                      >
-                        Reject
-                      </button>
+                    ) : (
+                      // Show Approve/Reject buttons for pending/rejected requests
+                      <>
+                        {req.status === 'pending' && (
+                          <button
+                            onClick={() => onApprove(req.id)}
+                            className="px-3 py-1 rounded bg-green-50 text-green-700 text-sm hover:bg-green-100 transition-colors"
+                          >
+                            Approve
+                          </button>
+                        )}
+                        {req.status === 'pending' && (
+                          <button
+                            onClick={() => onReject(req.id)}
+                            className="px-3 py-1 rounded bg-red-50 text-red-700 text-sm hover:bg-red-100 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>

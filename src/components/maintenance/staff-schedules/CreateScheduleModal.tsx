@@ -1,6 +1,6 @@
-// CreateScheduleModal.tsx
-import React from 'react';
-import { Staff } from './types';
+// CreateScheduleModal.tsx - UPDATED WITH LEAVE REQUEST CHECKING
+import React, { useMemo } from 'react';
+import { Staff, LeaveRequest } from './types';
 import { SHIFTS } from './constants';
 import { formatDateForDisplay } from './utils';
 
@@ -16,6 +16,7 @@ interface CreateScheduleModalProps {
   staffList: Staff[];
   loading: boolean;
   onSubmit: () => void;
+  leaveRequests: LeaveRequest[]; // ✅ NEW: Receive leave requests
 }
 
 const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
@@ -29,8 +30,41 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
   handleStaffToggle,
   staffList,
   loading,
-  onSubmit
+  onSubmit,
+  leaveRequests
 }) => {
+  // ✅ NEW: Check which staff members are on approved leave for the selected date
+  const staffOnLeaveMap = useMemo(() => {
+    if (!selectedDate) return new Map<string, LeaveRequest>();
+    
+    const scheduleDate = new Date(selectedDate);
+    const onLeaveMap = new Map<string, LeaveRequest>();
+    
+    leaveRequests.forEach(request => {
+      if (request.status !== 'approved') return;
+      
+      const leaveStart = new Date(request.startDate);
+      const leaveEnd = new Date(request.endDate);
+      
+      // Check if schedule date falls within leave period
+      if (scheduleDate >= leaveStart && scheduleDate <= leaveEnd) {
+        onLeaveMap.set(request.staffId, request);
+      }
+    });
+    
+    return onLeaveMap;
+  }, [selectedDate, leaveRequests]);
+
+  // ✅ NEW: Helper function to check if staff is on leave
+  const isStaffOnLeave = (staffId: string): boolean => {
+    return staffOnLeaveMap.has(staffId);
+  };
+
+  // ✅ NEW: Get leave request details for a staff member
+  const getLeaveDetails = (staffId: string): LeaveRequest | undefined => {
+    return staffOnLeaveMap.get(staffId);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -140,33 +174,88 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
                   <label className="block text-sm font-semibold text-gray-600 mb-2">
                     Select Staff Members
                   </label>
+                  
+                  {/* ✅ NEW: Warning if date not selected */}
+                  {!selectedDate && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <p className="text-sm text-blue-700">
+                          Please select a date first to check staff availability
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ✅ NEW: Show count of staff on leave */}
+                  {selectedDate && staffOnLeaveMap.size > 0 && (
+                    <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <svg className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <p className="text-sm text-orange-700 font-medium">
+                          {staffOnLeaveMap.size} staff member{staffOnLeaveMap.size !== 1 ? 's' : ''} on approved leave for this date
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2 max-h-[400px] overflow-y-auto border border-gray-200 rounded-xl p-4 bg-white">
                     {staffList.length === 0 ? (
                       <p className="text-center text-gray-500 py-4">No staff members found</p>
                     ) : (
-                      staffList.map(staff => (
-                        <label
-                          key={staff.id}
-                          className="flex items-start p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedStaff.includes(staff.id)}
-                            onChange={() => handleStaffToggle(staff.id)}
-                            className="w-4 h-4 text-[#9CB347] rounded focus:ring-[#9CB347] border-gray-300 mt-0.5"
-                          />
-                          <div className="ml-3">
-                            <div className="text-sm font-semibold text-gray-900">
-                              {staff.fullName || 'Unnamed Staff'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {staff.classification || 'No classification'}
-                            </div>
+                      staffList.map(staff => {
+                        const onLeave = isStaffOnLeave(staff.id);
+                        const leaveDetails = getLeaveDetails(staff.id);
+                        
+                        return (
+                          <div key={staff.id}>
+                            <label
+                              className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors ${
+                                onLeave 
+                                  ? 'bg-red-50 border border-red-200 opacity-60 cursor-not-allowed' 
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedStaff.includes(staff.id)}
+                                onChange={() => handleStaffToggle(staff.id)}
+                                disabled={onLeave}
+                                className="w-4 h-4 text-[#9CB347] rounded focus:ring-[#9CB347] border-gray-300 mt-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                              />
+                              <div className="ml-3 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm font-semibold text-gray-900">
+                                    {staff.fullName || 'Unnamed Staff'}
+                                  </div>
+                                  {onLeave && (
+                                    <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                                      On Leave
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {staff.classification || 'No classification'}
+                                </div>
+                                
+                                {/* ✅ NEW: Show leave details */}
+                                {onLeave && leaveDetails && (
+                                  <div className="mt-1 text-xs text-red-600">
+                                    {leaveDetails.leaveType} • {new Date(leaveDetails.startDate).toLocaleDateString()} - {new Date(leaveDetails.endDate).toLocaleDateString()}
+                                  </div>
+                                )}
+                              </div>
+                            </label>
                           </div>
-                        </label>
-                      ))
+                        );
+                      })
                     )}
                   </div>
+                  
                   {selectedStaff.length > 0 && (
                     <div className="mt-3 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
                       <p className="text-sm text-green-700 font-medium">

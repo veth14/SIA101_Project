@@ -1,4 +1,4 @@
-// StaffSchedulesPage.tsx - OPTIMIZED VERSION
+// StaffSchedulesPage.tsx - UPDATED WITH LEAVE REQUEST CHECKING
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../../../config/firebase';
 import { 
@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 
 // Import types
-import { Staff, Schedule, WeeklySchedule } from './types';
+import { Staff, Schedule, WeeklySchedule, LeaveRequest } from './types';
 
 // Import utilities
 import {
@@ -49,6 +49,9 @@ const StaffSchedulesPage: React.FC = () => {
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [currentWeekOffset, setCurrentWeekOffset] = useState<number>(0);
+
+  // ✅ NEW: State for leave requests
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
   // ✅ OPTIMIZATION: Memoize computed values
   const currentWeekRange = useMemo(() => getWeekDateRange(currentWeekOffset), [currentWeekOffset]);
@@ -120,6 +123,26 @@ const StaffSchedulesPage: React.FC = () => {
   }, [weeklySchedules]);
 
   // ---------------- Fetching Logic ----------------
+
+  /**
+   * ✅ NEW: Fetch leave requests
+   */
+  const fetchLeaveRequests = useCallback(async (): Promise<void> => {
+    try {
+      const leaveCollection = collection(db, 'leave_requests');
+      const leaveSnapshot = await getDocs(leaveCollection);
+      
+      const leaveData: LeaveRequest[] = leaveSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as LeaveRequest));
+
+      setLeaveRequests(leaveData);
+    } catch (error) {
+      console.error('Error fetching leave requests:', error);
+      // Don't alert, just log - leave requests are optional
+    }
+  }, []);
 
   /**
    * ✅ OPTIMIZATION: Only fetch staff when modal opens AND list is empty
@@ -199,12 +222,13 @@ const StaffSchedulesPage: React.FC = () => {
     fetchSchedules();
   }, [fetchSchedules]);
 
-  // ✅ Lazy load staff only when modal opens
+  // ✅ Lazy load staff and leave requests only when modal opens
   useEffect(() => {
     if (isModalOpen) {
       fetchStaff();
+      fetchLeaveRequests();
     }
-  }, [isModalOpen, fetchStaff]);
+  }, [isModalOpen, fetchStaff, fetchLeaveRequests]);
 
   // ---------------- Event Handlers ----------------
 
@@ -227,6 +251,30 @@ const StaffSchedulesPage: React.FC = () => {
 
       if (selectedStaff.length === 0) {
         alert('Please select at least one staff member.');
+        return;
+      }
+
+      // ✅ NEW: Check if any selected staff has approved leave on this date
+      const scheduleDate = new Date(selectedDate);
+      const staffOnLeave = selectedStaff.filter(staffId => {
+        return leaveRequests.some(request => {
+          if (request.staffId !== staffId || request.status !== 'approved') {
+            return false;
+          }
+          
+          const leaveStart = new Date(request.startDate);
+          const leaveEnd = new Date(request.endDate);
+          
+          return scheduleDate >= leaveStart && scheduleDate <= leaveEnd;
+        });
+      });
+
+      if (staffOnLeave.length > 0) {
+        const staffNames = staffOnLeave
+          .map(id => staffList.find(s => s.id === id)?.fullName || 'Unknown')
+          .join(', ');
+        
+        alert(`Cannot schedule the following staff members as they have approved leave on this date:\n${staffNames}`);
         return;
       }
 
@@ -358,7 +406,8 @@ const StaffSchedulesPage: React.FC = () => {
               handleStaffToggle={handleStaffToggle} 
               staffList={staffList} 
               loading={loading} 
-              onSubmit={handleSubmit} 
+              onSubmit={handleSubmit}
+              leaveRequests={leaveRequests} // ✅ NEW: Pass leave requests
             />
           </div>
         )}
