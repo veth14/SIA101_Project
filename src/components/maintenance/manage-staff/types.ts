@@ -22,3 +22,9 @@ export interface StaffFormData {
   phoneNumber: string
   rfid: string
 }
+
+export interface StaffWithAttendance extends Staff {
+  timeIn?: any; // Firebase Timestamp
+  timeOut?: any; // Firebase Timestamp
+  date?: string;
+}

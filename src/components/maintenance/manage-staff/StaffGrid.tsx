@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Staff } from './types';
 
@@ -5,18 +6,37 @@ interface StaffGridProps {
   staff: Staff[];
   onEditStaff: (staff: Staff) => void;
   onDeleteStaff: (id: string) => Promise<{ success: boolean; error?: string }>;
+  onAddStaff: () => void;
+  getStaffById: (id: string) => Promise<Staff | null>;
 }
 
-const StaffGrid: React.FC<StaffGridProps> = ({ staff, onEditStaff, onDeleteStaff }) => {
+const StaffGrid: React.FC<StaffGridProps> = ({ staff, onEditStaff, onDeleteStaff, onAddStaff, getStaffById }) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [classificationFilter, setClassificationFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState('all');
+  const itemsPerPage = 10;
+
+  // Filtering logic
+  const filteredStaff = staff.filter((staffMember) => {
+    const matchesSearch = staffMember.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         staffMember.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesClassification = classificationFilter === 'all' || staffMember.classification === classificationFilter;
+    const matchesGender = genderFilter === 'all' || staffMember.gender === genderFilter;
+    return matchesSearch && matchesClassification && matchesGender;
+  });
 
   // Pagination logic
-  const totalPages = Math.ceil(staff.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentStaff = staff.slice(startIndex, endIndex);
+  const currentStaff = filteredStaff.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, classificationFilter, genderFilter]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -42,96 +62,210 @@ const StaffGrid: React.FC<StaffGridProps> = ({ staff, onEditStaff, onDeleteStaff
 
 
   return (
-    <div className="relative">
-      <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-3xl blur opacity-15"></div>
-      <div className="relative bg-gradient-to-br from-white/95 to-green-50/30 backdrop-blur-xl rounded-3xl border border-green-200/40 shadow-2xl overflow-hidden">
-
-        {/* Header */}
-        <div className="px-8 py-6 border-b border-green-200/50 bg-gradient-to-r from-green-50/50 to-emerald-50/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#82A33D] to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="bg-white rounded-xl shadow-md border border-gray-200/70 overflow-hidden h-full flex flex-col">
+      {/* Header with Search and Filters */}
+      <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <strong>
-                <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                  Staff Directory
-                </h2>
-              </strong>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <span className="font-medium">{staff.length} members</span>
-              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-              <span>{staff.length} active</span>
-            </div>
+              Staff Directory
+            </h3>
+            <p className="text-sm text-gray-600 mt-2 flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                {startIndex + 1}-{Math.min(endIndex, filteredStaff.length)} of {filteredStaff.length}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span>Active Staff Members</span>
+            </p>
           </div>
+             <button
+            onClick={onAddStaff}
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white text-sm font-bold rounded-lg hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add New Staff
+          </button>
         </div>
 
-        {/* Staff Table */}
-        <div className="p-8">
-          {staff.length === 0 ? (
-            <div className="text-center py-12">
-              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        {/* Search and Filter Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Search */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-500 mb-2">No staff members found</h3>
-              <p className="text-gray-400">Add your first staff member to get started.</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Classification</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Age</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Gender</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Phone</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xl font-bold text-black uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentStaff.map((staffMember) => (
-                    <tr key={staffMember.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-xl text-black">{staffMember.fullName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl text-black">{staffMember.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl text-black">{staffMember.classification}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl text-black">{staffMember.age}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl text-black">{staffMember.gender || 'Unknown'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl text-black">{staffMember.phoneNumber}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-lg text-gray-500">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => onEditStaff(staffMember)}
-                            className="px-4 py-2 bg-gray-500 text-white text-xl font-bold rounded hover:bg-gray-400"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(staffMember.id)}
-                            disabled={deletingId === staffMember.id}
-                            className="px-4 py-2 bg-gray-500 text-white text-xl font-bold rounded hover:bg-gray-400 disabled:opacity-50"
-                          >
-                            {deletingId === staffMember.id ? 'Deleting...' : 'Delete'}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            <input
+              type="text"
+              placeholder="Search staff..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+            />
+          </div>
+
+          {/* Classification Filter */}
+          <select
+            value={classificationFilter}
+            onChange={(e) => setClassificationFilter(e.target.value)}
+            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+          >
+            <option value="all">🏢 All Classifications</option>
+            <option value="Housekeeping">Housekeeping</option>
+            <option value="Maintenance">Maintenance</option>
+          </select>
+
+          {/* Gender Filter */}
+          <select
+            value={genderFilter}
+            onChange={(e) => setGenderFilter(e.target.value)}
+            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
+          >
+            <option value="all">👥 All Genders</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
         </div>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto flex-1">
+        <table className="w-full">
+          <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
+            <tr>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Classification
+              </th>
+              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+                Age
+              </th>
+              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+                Gender
+              </th>
+              <th className="px-6 py-5 text-left text-xs font-black text-gray-700 uppercase tracking-wider">
+                Phone
+              </th>
+              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-5 text-center text-xs font-black text-gray-700 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentStaff.map((staffMember, index) => (
+              <tr
+                key={staffMember.id}
+                style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
+                className={`group cursor-pointer transition-all duration-300 hover:shadow-sm animate-fade-in hover:bg-gray-50`}
+              >
+                <td className="px-6 py-5 whitespace-nowrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#82A33D] to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                      {staffMember.fullName.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">{staffMember.fullName}</div>
+                      <div className="text-xs text-gray-500 font-medium">{staffMember.classification}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap">
+                  <div className="text-sm font-semibold text-gray-700">{staffMember.email}</div>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap">
+                  <div className="text-sm font-semibold text-gray-700">{staffMember.classification}</div>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap text-center">
+                  <div className="text-sm font-bold text-gray-900">{staffMember.age}</div>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap text-center">
+                  <div className="text-sm font-semibold text-gray-700">{staffMember.gender}</div>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap">
+                  <div className="text-sm font-semibold text-gray-700">{staffMember.phoneNumber}</div>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap text-center">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Active
+                  </span>
+                </td>
+                <td className="px-6 py-5 whitespace-nowrap text-center">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const freshStaff = await getStaffById(staffMember.id);
+                      // Removed console.log for fetched staff to clean up console output
+                          if (freshStaff) {
+                            onEditStaff(freshStaff);
+                          } else {
+                            console.warn('getStaffById returned null, falling back to passed staff data');
+                            onEditStaff(staffMember);
+                          }
+                        } catch (error) {
+                          console.error('Error fetching staff details:', error);
+                          alert('Failed to fetch staff details, opening with cached data');
+                          onEditStaff(staffMember);
+                        }
+                      }}
+                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white text-xs font-bold rounded-lg hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
+                    >
+                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(staffMember.id);
+                      }}
+                      disabled={deletingId === staffMember.id}
+                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50"
+                    >
+                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      {deletingId === staffMember.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {/* Fill empty rows to always show 10 rows */}
+            {Array.from({ length: Math.max(0, 10 - currentStaff.length) }).map((_, index) => (
+              <tr key={`empty-${index}`} style={{ height: '74px' }} className="bg-gray-50/30 border-dashed border-gray-200">
+                <td className="px-6 py-5" colSpan={8}>
+                  <div className="flex items-center justify-center text-gray-300 text-sm font-medium opacity-60">
+                    <div className="w-2 h-2 rounded-full bg-gray-300 mr-2 opacity-40"></div>
+                    Empty slot {index + 1}
+                  </div>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+        </table>
+      </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -192,7 +326,6 @@ const StaffGrid: React.FC<StaffGridProps> = ({ staff, onEditStaff, onDeleteStaff
           </div>
         )}
 
-      </div>
     </div>
   );
 };

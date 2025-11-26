@@ -1,17 +1,29 @@
+
 import { useState } from 'react';
 import { collection, getDocs, addDoc, query, where, Timestamp, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Staff } from '../components/maintenance/manage-staff/types';
 
+
+
+
 export interface AttendanceRecord {
   id?: string;
   staffId: string;
   rfid: string;
-  fullName: string;
+  staffName: string;
   timeIn: Date;
   timeOut?: Date;
   date: string;
 }
+
+export interface StaffWithAttendance extends Staff {
+  timeIn: Timestamp;
+  timeOut: Timestamp;
+  date: string;
+}
+
+
 
 export function useAttendance() {
   const [loading, setLoading] = useState(false);
@@ -47,7 +59,7 @@ export function useAttendance() {
       };
 
       const now = new Date();
-      const today = now.toDateString();
+      const today = now.toISOString().split('T')[0];
 
       // Check for existing attendance record for today
       const attendanceQuery = query(
@@ -58,23 +70,60 @@ export function useAttendance() {
       const attendanceSnapshot = await getDocs(attendanceQuery);
 
       if (attendanceSnapshot.empty) {
-        // Clock in
+        // No record exists, clock in
         await addDoc(collection(db, 'attendance'), {
           staffId: staff.id,
           rfid: rfid,
           fullName: staff.fullName,
+           classification: staff.classification,
           timeIn: Timestamp.fromDate(now),
           date: today,
         });
         return { success: true, message: 'Clocked in successfully', staff };
       } else {
-        // Clock out
-        const attendanceDoc = attendanceSnapshot.docs[0];
-        const attendanceRef = doc(db, 'attendance', attendanceDoc.id);
-        await updateDoc(attendanceRef, {
-          timeOut: Timestamp.fromDate(now),
+        // Find the most recent record without timeOut
+        let latestRecordId: string | null = null;
+        let latestTime = new Date(0);
+
+        attendanceSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          if (!data.timeOut && data.timeIn.toDate() > latestTime) {
+            latestRecordId = doc.id;
+            latestTime = data.timeIn.toDate();
+          }
         });
-        return { success: true, message: 'Clocked out successfully', staff };
+
+        if (latestRecordId) {
+          // Has timeIn but no timeOut, clock out
+          const attendanceRef = doc(db, 'attendance', latestRecordId);
+          const attendanceData = attendanceSnapshot.docs.find(doc => doc.id === latestRecordId)?.data();
+
+          await updateDoc(attendanceRef, {
+            timeOut: Timestamp.fromDate(now),
+            classification: staff.classification,
+          });
+
+          // Return staff with attendance data for display
+          const staffWithAttendance: StaffWithAttendance = {
+            ...staff,
+            timeIn: attendanceData?.timeIn,
+            timeOut: Timestamp.fromDate(now),
+            date: attendanceData?.date,
+          };
+
+          return { success: true, message: 'Clocked out successfully', staff: staffWithAttendance };
+        } else {
+          // All records have timeOut, allow new clock in
+          await addDoc(collection(db, 'attendance'), {
+            staffId: staff.id,
+            rfid: rfid,
+            staffName: staff.fullName,
+            classification: staff.classification,
+            timeIn: Timestamp.fromDate(now),
+            date: today,
+          });
+          return { success: true, message: 'Clocked in successfully', staff };
+        }
       }
     } catch (err) {
       console.error('Error handling RFID scan:', err);
@@ -85,6 +134,8 @@ export function useAttendance() {
     }
   };
 
+
+  
   return {
     loading,
     error,
