@@ -18,7 +18,6 @@ interface AddStaffModalProps {
 function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminName = "Administrator" }: AddStaffModalProps) {
   const rfidInputRef = useRef<HTMLInputElement>(null)
   const { userData } = useAuth();
-
   const [formData, setFormData] = useState<StaffFormData>({
     adminId: "",
     fullName: "",
@@ -222,7 +221,6 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
   return createPortal(
     <>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-
         <div
           className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
           onClick={onCloseWrapper}
@@ -230,7 +228,6 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
         />
 
         <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
-
           <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
