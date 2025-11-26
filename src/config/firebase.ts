@@ -12,7 +12,7 @@ const firebaseConfig = {
   storageBucket: "hotel-management-d5827.firebasestorage.app",
   messagingSenderId: "207200611187",
   appId: "1:207200611187:web:72d4a57e3e4abcbc44b306",
-  measurementId: "G-KH6S7HLEK7"
+  measurementId: "G-KH6S7HLEK7" 
 };
 
 // Initialize Firebase

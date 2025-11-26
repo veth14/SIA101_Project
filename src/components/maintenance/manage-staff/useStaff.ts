@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp, query, where } from "firebase/firestore";
-import { db } from '../../../lib/firebase';
+import { db } from '../../../config/firebase';
 import { Staff, StaffFormData } from './types';
 
 export function useStaff() {

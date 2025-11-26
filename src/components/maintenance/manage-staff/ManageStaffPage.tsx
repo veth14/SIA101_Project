@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import StaffStats from './StaffStats';
 import StaffFilters from './StaffFilters';
@@ -10,7 +10,24 @@ import { Staff } from './types';
 const ManageStaffPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editStaff, setEditStaff] = useState<Staff | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterClassification, setFilterClassification] = useState("");
   const { staff, addStaff, updateStaff, deleteStaff } = useStaff();
+
+  // Filter staff based on search query and classification
+  const filteredStaff = useMemo(() => {
+    return staff.filter((staffMember) => {
+      const matchesSearch = searchQuery === "" ||
+        staffMember.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        staffMember.classification.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        staffMember.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesClassification = filterClassification === "" ||
+        staffMember.classification === filterClassification;
+
+      return matchesSearch && matchesClassification;
+    });
+  }, [staff, searchQuery, filterClassification]);
 
   const handleAddStaff = () => {
     setEditStaff(null);
@@ -47,11 +64,17 @@ const ManageStaffPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-       
+     
         <StaffStats staff={staff} />
-        <StaffFilters onAddStaff={handleAddStaff} />
+        <StaffFilters
+          onAddStaff={handleAddStaff}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filterClassification={filterClassification}
+          onFilterChange={setFilterClassification}
+        />
         <StaffGrid
-          staff={staff}
+          staff={filteredStaff}
           onEditStaff={handleEditStaff}
           onDeleteStaff={deleteStaff}
         />
