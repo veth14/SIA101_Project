@@ -122,6 +122,12 @@ export function useStaff() {
         updateData.age = Number.parseInt(staffData.age);
       }
       await updateDoc(staffRef, updateData);
+      // Update local state
+      setStaff(prevStaff =>
+        prevStaff.map(s =>
+          s.id === id ? { ...s, ...staffData, age: staffData.age ? Number.parseInt(staffData.age) : s.age } : s
+        )
+      );
       return { success: true };
     } catch (err) {
       console.error('Error updating staff:', err);
