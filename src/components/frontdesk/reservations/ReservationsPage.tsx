@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   collection, getDocs, doc, updateDoc, addDoc,
   serverTimestamp, query, Timestamp, onSnapshot, orderBy, limit,
-  writeBatch, where, WriteBatch
+  writeBatch, where, WriteBatch, runTransaction
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -345,42 +345,72 @@ export const ReservationsPage = () => {
       try {
         const guestProfilesRef = collection(db, 'guestprofiles');
         const emailToCheck = (newBooking.userEmail || (newBooking as any).email || '').toString().toLowerCase();
-        let existingSnap = null;
-        if (emailToCheck) {
-          const q = query(guestProfilesRef, where('email', '==', emailToCheck), limit(1));
-          existingSnap = await getDocs(q);
-        }
+        const amountNum = Number(newBooking.totalAmount) || 0;
+        const earned = Math.floor(amountNum / 100);
 
-        if (existingSnap && !existingSnap.empty) {
-          const existingDoc = existingSnap.docs[0];
-          const existingData = existingDoc.data() as any;
-          const prevTotal = Number(existingData.totalBookings || 0);
-          const prevSpent = Number(existingData.totalSpent || 0);
-          await updateDoc(existingDoc.ref, {
-            fullName: newBooking.userName || (newBooking as any).guestName || existingData.fullName || '',
-            email: emailToCheck || existingData.email || '',
-            phone: (newBooking as any).phone || existingData.phone || '',
-            totalBookings: prevTotal + 1,
-            totalSpent: prevSpent + (Number(newBooking.totalAmount) || 0),
-            lastBookingDate: serverTimestamp(),
-            updatedAt: serverTimestamp()
+        if (emailToCheck) {
+          // Use email-based deterministic ID as an idempotency key to avoid duplicates/races
+          const safeId = `guest_${emailToCheck.replace(/[^a-z0-9]/g, '_')}`;
+          const guestRef = doc(db, 'guestprofiles', safeId);
+
+          await runTransaction(db, async (tx) => {
+            const snap = await tx.get(guestRef as any);
+            if (snap.exists()) {
+              const current = snap.data() as any;
+              const prevTotal = Number(current.totalBookings || 0);
+              const prevSpent = Number(current.totalSpent || 0);
+              const currentPoints = Number(current.loyaltyPoints || 0);
+              const newPoints = currentPoints + earned;
+
+              tx.update(guestRef as any, {
+                fullName: newBooking.userName || (newBooking as any).guestName || current.fullName || '',
+                email: emailToCheck || current.email || '',
+                phone: (newBooking as any).phone || current.phone || '',
+                totalBookings: prevTotal + 1,
+                totalSpent: prevSpent + amountNum,
+                loyaltyPoints: newPoints,
+                membershipTier: computeTierFromPoints(newPoints),
+                lastBookingDate: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+            } else {
+              // create new guest profile with deterministic id
+              tx.set(guestRef as any, {
+                fullName: newBooking.userName || (newBooking as any).guestName || '',
+                firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
+                lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
+                email: emailToCheck || '',
+                phone: (newBooking as any).phone || '',
+                totalBookings: 1,
+                totalSpent: amountNum,
+                loyaltyPoints: earned,
+                membershipTier: computeTierFromPoints(earned),
+                lastBookingDate: serverTimestamp(),
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                status: 'Active'
+              });
+            }
           });
         } else {
-          // create new guest profile document
-          await addDoc(guestProfilesRef, {
-            fullName: newBooking.userName || (newBooking as any).guestName || '',
-            firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
-            lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
-            email: emailToCheck || '',
-            phone: (newBooking as any).phone || '',
-            totalBookings: 1,
-            totalSpent: Number(newBooking.totalAmount) || 0,
-            loyaltyPoints: 0,
-            membershipTier: 'Bronze',
-            lastBookingDate: serverTimestamp(),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            status: 'Active'
+          // No email available — create a new guest profile document inside a transaction
+          const guestRef = doc(guestProfilesRef);
+          await runTransaction(db, async (tx) => {
+            tx.set(guestRef as any, {
+              fullName: newBooking.userName || (newBooking as any).guestName || '',
+              firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
+              lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
+              email: '',
+              phone: (newBooking as any).phone || '',
+              totalBookings: 1,
+              totalSpent: amountNum,
+              loyaltyPoints: earned,
+              membershipTier: computeTierFromPoints(earned),
+              lastBookingDate: serverTimestamp(),
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              status: 'Active'
+            });
           });
         }
       } catch (err) {
@@ -625,4 +655,12 @@ export const ReservationsPage = () => {
       </div>
     </RoomsContext.Provider>
   );
+};
+
+// Compute membership tier from points (same rules as loyalty service)
+const computeTierFromPoints = (points: number) => {
+  if (points >= 7000) return 'Platinum';
+  if (points >= 3000) return 'Gold';
+  if (points >= 1000) return 'Silver';
+  return 'Bronze';
 };

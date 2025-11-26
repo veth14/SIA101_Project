@@ -18,7 +18,7 @@ export const Header = () => {
   ];
 
   // Pages where header should always be solid (not transparent)
-  const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
+  const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
   
   // Mobile menu should be solid on auth pages for better visibility
@@ -245,9 +245,9 @@ export const Header = () => {
 
                             <button
                               onClick={() => {
-                                setShowUserDropdown(false);
-                                navigate('/mybookings');
-                              }}
+                                  setShowUserDropdown(false);
+                                  navigate('/my-bookings');
+                                }}
                               className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
                               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Modal from '../../admin/Modal';
-import loyaltyService, { GuestProfile } from '../../../services/loyaltyService';
+import loyaltyService, { GuestProfile, RewardRedemption } from '../../../services/loyaltyService';
+import { getTimeValue } from '../../../lib/utils';
 import { useAuth } from '../../../hooks/useAuth';
 
 type LoyaltyMember = {
@@ -23,24 +24,15 @@ export const LoyaltyProgram: React.FC = () => {
   const [loyaltyMembers, setLoyaltyMembers] = useState<LoyaltyMember[]>([]);
   const { user } = useAuth();
   // Pagination state (match invoices design: 6 rows per page)
-  const PAGE_SIZE = 6;
-  const [pageIndex, setPageIndex] = useState(0);
-  const [cursors, setCursors] = useState<Array<unknown>>([null]);
-  const [isLastPage, setIsLastPage] = useState(false);
+  // Load all members (no pagination)
 
-  const loadGuestsPage = useCallback(async (index: number) => {
+  const loadGuests = useCallback(async () => {
     try {
-      const startAfterValue = cursors[index] || undefined;
-      const guests = await loyaltyService.getGuests({ limitResults: PAGE_SIZE, startAfterValue });
+      // Limit initial load to a reasonable number to avoid excessive reads
+      const guests = await loyaltyService.getGuests({ limitResults: 500 });
       const normalizeTimestamp = (v: unknown): string | undefined => {
-        if (!v) return undefined;
-        if (typeof v === 'object' && v !== null) {
-          if ('toDate' in v && typeof (v as { toDate?: unknown }).toDate === 'function') {
-            return (v as { toDate: () => Date }).toDate().toISOString();
-          }
-          return String(v);
-        }
-        return String(v);
+        const ms = getTimeValue(v);
+        return ms ? new Date(ms).toISOString() : undefined;
       };
       const mapped = (guests as GuestProfile[]).map((g: GuestProfile) => ({
         id: g.id || '',
@@ -56,33 +48,14 @@ export const LoyaltyProgram: React.FC = () => {
         rewardsClaimed: []
       }));
       setLoyaltyMembers(mapped);
-
-      // Manage cursor for pagination: store lastBookingDate (or createdAt) of last item
-      const last = (guests as GuestProfile[]).length ? (guests as GuestProfile[])[(guests as GuestProfile[]).length - 1] : null;
-      const lastCursorValue = last ? (last.lastBookingDate ?? last.createdAt ?? null) : null;
-      // If we fetched a full page, assume there may be a next page and store cursor
-      if (index === cursors.length - 1) {
-        if ((guests as GuestProfile[]).length === PAGE_SIZE && lastCursorValue) {
-          setCursors(prev => {
-            const next = [...prev];
-            next.push(lastCursorValue);
-            return next;
-          });
-          setIsLastPage(false);
-        } else {
-          setIsLastPage(true);
-        }
-      } else {
-        setIsLastPage((guests as GuestProfile[]).length < PAGE_SIZE);
-      }
     } catch (err) {
       console.error('Failed to load guests', err);
     }
-  }, [cursors]);
+  }, []);
 
   useEffect(() => {
-    loadGuestsPage(pageIndex);
-  }, [pageIndex, loadGuestsPage]);
+    loadGuests();
+  }, [loadGuests]);
 
   // Redeem modal state
   const [isRedeemOpen, setIsRedeemOpen] = useState(false);
@@ -117,6 +90,20 @@ export const LoyaltyProgram: React.FC = () => {
         // optimistic update: reload or update local entry
         setLoyaltyMembers(prev => prev.map(m => m.id === memberId ? { ...m, points: Math.max(0, m.points - reward.cost), rewardsClaimed: [...(m.rewardsClaimed || []), reward.label] } : m));
         setRedeemMember(prev => prev ? { ...prev, points: Math.max(0, prev.points - reward.cost), rewardsClaimed: [...(prev.rewardsClaimed || []), reward.label] } : prev);
+        // If the profile modal is open for this member, optimistically prepend to history
+        if (activeMember && activeMember.id === memberId) {
+          setRedemptions(prev => [
+            {
+              id: `temp-${Date.now()}`,
+              guestId: memberId,
+              rewardLabel: reward.label,
+              cost: reward.cost,
+              redeemedBy: String(by),
+              timestamp: new Date().toISOString()
+            } as unknown as RewardRedemption,
+            ...prev
+          ]);
+        }
       })
       .catch((err: unknown) => {
         const msg = (typeof err === 'object' && err !== null && 'message' in err) ? (err as { message?: string }).message : String(err);
@@ -133,6 +120,9 @@ export const LoyaltyProgram: React.FC = () => {
   // Track initial form state to detect changes (dirty) for edit flows
   const [formInitial, setFormInitial] = useState<Partial<LoyaltyMember> | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
+  // Reward redemptions (history) — loaded lazily when edit modal opens
+  const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
+  const [redemptionsLoading, setRedemptionsLoading] = useState<boolean>(false);
   // Add Points modal state (replaces prompt/alert flows for consistency)
   const [isAddPointsOpen, setIsAddPointsOpen] = useState(false);
   const [addPointsMember, setAddPointsMember] = useState<LoyaltyMember | null>(null);
@@ -161,6 +151,8 @@ export const LoyaltyProgram: React.FC = () => {
     setFormMember(null);
     setFormInitial(null);
     setIsFormDirty(false);
+    setRedemptions([]);
+    setRedemptionsLoading(false);
   };
 
   const updateMemberStatus = (status: LoyaltyMember['status']) => {
@@ -180,7 +172,7 @@ export const LoyaltyProgram: React.FC = () => {
             // Do NOT allow updating totalSpent from the UI; it's lifetime spend and read-only
             status: member.status
           });
-          await loadGuestsPage(pageIndex);
+          await loadGuests();
         } else {
           // Manual creation of loyalty members via UI has been removed.
           // Members are now created automatically from walk-in reservations.
@@ -227,6 +219,23 @@ export const LoyaltyProgram: React.FC = () => {
     }
   }, [formMember, formInitial, activeMember]);
 
+  // Load reward redemption history when the edit modal opens for a member
+  React.useEffect(() => {
+    (async () => {
+      if (!isAddOpen || !activeMember) return;
+      try {
+        setRedemptionsLoading(true);
+        const rows = await loyaltyService.getRedemptionsByGuest(activeMember.id, { limitResults: 20 });
+        setRedemptions(rows || []);
+      } catch (err) {
+        console.error('Failed to load reward history', err);
+        setRedemptions([]);
+      } finally {
+        setRedemptionsLoading(false);
+      }
+    })();
+  }, [isAddOpen, activeMember]);
+
   // Confirm adding points via modal
   const confirmAddPoints = async () => {
     setAddPointsError(null);
@@ -239,7 +248,7 @@ export const LoyaltyProgram: React.FC = () => {
     const reason = addPointsReason || 'Points added by admin';
     try {
       await loyaltyService.adjustPoints(addPointsMember.id, delta, reason, user?.email || user?.uid || 'admin');
-      await loadGuestsPage(pageIndex);
+      await loadGuests();
       setIsAddPointsOpen(false);
       setAddPointsMember(null);
     } catch (err: unknown) {
@@ -277,6 +286,45 @@ export const LoyaltyProgram: React.FC = () => {
     (selectedTier === 'all' || member.tier === selectedTier) &&
     (search.trim() === '' || member.name.toLowerCase().includes(search.toLowerCase()) || member.email.toLowerCase().includes(search.toLowerCase()))
   );
+
+  // Pagination (match reservations table design)
+  const itemsPerPage = 6;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const totalPages = Math.max(1, Math.ceil(filteredMembers.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
+
+  // Cache of latest checkout per email, fetched lazily for the current page
+  const [latestCheckoutByEmail, setLatestCheckoutByEmail] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      const emailsToFetch = paginatedMembers
+        .map(m => m.email)
+        .filter((e): e is string => Boolean(e && !latestCheckoutByEmail[e]));
+      if (emailsToFetch.length === 0) return;
+      const unique = Array.from(new Set(emailsToFetch));
+      const results = await Promise.all(unique.map(async (email) => {
+        try {
+          const iso = await loyaltyService.getLatestCheckoutByEmail(email);
+          return { email, iso } as { email: string; iso: string | null };
+        } catch {
+          return { email, iso: null } as { email: string; iso: string | null };
+        }
+      }));
+      setLatestCheckoutByEmail(prev => {
+        const next = { ...prev } as Record<string, string>;
+        results.forEach(r => { if (r.iso) next[r.email] = r.iso; });
+        return next;
+      });
+    })();
+  }, [paginatedMembers, latestCheckoutByEmail]);
+
+  // Reset page when filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedTier, search]);
 
   return (
     <div className="space-y-6">
@@ -325,7 +373,7 @@ export const LoyaltyProgram: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredMembers.map((member) => (
+              {paginatedMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -356,7 +404,12 @@ export const LoyaltyProgram: React.FC = () => {
                     <div className="text-xs text-gray-500">lifetime value</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-700">{member.lastStay ? new Date(member.lastStay).toLocaleDateString() : '—'}</div>
+                    <div className="text-sm text-gray-700">
+                      {(() => {
+                        const iso = (member.email && latestCheckoutByEmail[member.email]) || member.lastStay || null;
+                        return iso ? new Date(iso).toLocaleDateString() : '—';
+                      })()}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
@@ -372,14 +425,57 @@ export const LoyaltyProgram: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination controls (6 items per page) */}
-      <div className="flex items-center justify-end px-6 py-3 bg-white">
-        <div className="flex items-center space-x-2">
-          <button disabled={pageIndex === 0} onClick={() => setPageIndex(p => Math.max(0, p - 1))} className={`px-3 py-1 rounded-md text-sm border ${pageIndex === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}>Prev</button>
-          <div className="text-sm text-gray-600">Page {pageIndex + 1}</div>
-          <button disabled={isLastPage} onClick={() => setPageIndex(p => p + 1)} className={`px-3 py-1 rounded-md text-sm border ${isLastPage ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}>Next</button>
+      {/* Pagination (matching reservations table design) */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
+              .map((page, i, arr) => {
+                const isGap = i > 0 && page - arr[i - 1] > 1;
+                return (
+                  <React.Fragment key={page}>
+                    {isGap && <span className="text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        currentPage === page
+                          ? 'bg-heritage-green text-white'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+              }`}
+            >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {filteredMembers.length === 0 && (
         <div className="text-center py-12">
@@ -543,6 +639,32 @@ export const LoyaltyProgram: React.FC = () => {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
+            </div>
+
+            {/* Reward History */}
+            <div className="pt-2">
+              <div className="text-sm font-semibold text-gray-700 mb-2">Reward History</div>
+              {redemptionsLoading ? (
+                <div className="text-sm text-gray-500">Loading history…</div>
+              ) : redemptions.length === 0 ? (
+                <div className="text-sm text-gray-500">No rewards redeemed yet.</div>
+              ) : (
+                <div className="max-h-56 overflow-auto border border-gray-100 rounded-xl divide-y">
+                  {redemptions.map((r) => {
+                    const ms = getTimeValue(r.timestamp);
+                    const when = ms ? new Date(ms).toLocaleString() : '';
+                    return (
+                      <div key={r.id} className="p-3 flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{r.rewardLabel}</div>
+                          <div className="text-xs text-gray-500">Redeemed by {r.redeemedBy || '—'}{when ? ` • ${when}` : ''}</div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900">-{r.cost} pts</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end space-x-3 pt-3">

@@ -23,10 +23,13 @@ export const GuestAssistance: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Start with no static requests; we'll load `contactRequests` from Firestore
   const [assistanceRequests, setAssistanceRequests] = useState<AssistanceRequest[]>([]);
   
+  const assistanceRef = useRef<AssistanceRequest[]>([]);
+
   const [selectedRequest, setSelectedRequest] = useState<AssistanceRequest | null>(null);
   const [modalMode, setModalMode] = useState<'create' | 'view'>('create');
   const [status, setStatus] = useState<AssistanceRequest['status']>('pending');
@@ -248,7 +251,6 @@ export const GuestAssistance: React.FC = () => {
   }, []);
 
   // Keep a ref of assistanceRequests to use inside intervals without adding it to deps
-  const assistanceRef = useRef<AssistanceRequest[]>([]);
   useEffect(() => {
     assistanceRef.current = assistanceRequests;
   }, [assistanceRequests]);
@@ -272,9 +274,22 @@ export const GuestAssistance: React.FC = () => {
         return '15 minutes';
       case 'maintenance':
         return '30 minutes';
+      case 'electrical':
+        return '30 minutes';
+      case 'plumbing':
+        return '30 minutes';
       default:
         return '30 minutes';
     }
+  };
+
+  const getDefaultAssigneeForType = (type: string) => {
+    const t = (type || '').toLowerCase();
+    if (t === 'housekeeping') return 'Housekeeping Team';
+    if (t === 'maintenance') return 'Maintenance Team';
+    if (t === 'electrical') return 'Electrical Team';
+    if (t === 'plumbing') return 'Plumbing Team';
+    return 'Front Desk';
   };
 
   const resetForm = () => {
@@ -583,8 +598,20 @@ export const GuestAssistance: React.FC = () => {
     const typeMatch = selectedType === 'all' || request.requestType === selectedType;
     const statusMatch = selectedStatus === 'all' || request.status === selectedStatus;
     const priorityMatch = selectedPriority === 'all' || request.priority === selectedPriority;
-    return typeMatch && statusMatch && priorityMatch;
+    const s = (searchTerm || '').toLowerCase().trim();
+    const searchMatch = !s || (request.guestName && request.guestName.toLowerCase().includes(s)) || (request.roomNumber && request.roomNumber.toLowerCase().includes(s)) || (request.description && request.description.toLowerCase().includes(s));
+    return typeMatch && statusMatch && priorityMatch && searchMatch;
   });
+
+  // Pagination (match reservations design)
+  const itemsPerPage = 6;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+
+  useEffect(() => { setCurrentPage(1); }, [selectedType, selectedStatus, selectedPriority, searchTerm]);
 
   const formatTime = (timeString: string) => {
     return new Date(timeString).toLocaleString('en-US', {
@@ -606,6 +633,8 @@ export const GuestAssistance: React.FC = () => {
             </svg>
             <input
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search requests, guests, or rooms..."
               className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
             />
@@ -692,7 +721,15 @@ export const GuestAssistance: React.FC = () => {
                 {modalMode === 'view' ? (
                   <input value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white" />
                 ) : (
-                  <select value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
+                  <select
+                    value={requestType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setRequestType(val);
+                      setAssignedTo(getDefaultAssigneeForType(val));
+                    }}
+                    className="mt-1 w-full px-3 py-2 border rounded-lg bg-white"
+                  >
                     <option value="housekeeping">Housekeeping</option>
                     <option value="maintenance">Maintenance</option>
                     <option value="electrical">Electrical</option>
@@ -747,7 +784,11 @@ export const GuestAssistance: React.FC = () => {
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-600">Assign To <span className="text-rose-500">*</span></label>
-                <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
+                <select
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border rounded-lg bg-white"
+                >
                   <option value="Unassigned">Unassigned</option>
                   <option value="Front Desk">Front Desk</option>
                   <option value="Housekeeping Team">Housekeeping Team</option>
@@ -787,7 +828,7 @@ export const GuestAssistance: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredRequests.map((request) => (
+              {paginatedRequests.map((request) => (
                 <tr key={request.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -856,6 +897,57 @@ export const GuestAssistance: React.FC = () => {
             </svg>
           </div>
           <p className="text-gray-500 font-medium">No assistance requests found for the selected filters.</p>
+        </div>
+      )}
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
+              .map((page, i, arr) => {
+                const isGap = i > 0 && page - arr[i - 1] > 1;
+                return (
+                  <React.Fragment key={page}>
+                    {isGap && <span className="text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        currentPage === page
+                          ? 'bg-heritage-green text-white'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+              }`}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

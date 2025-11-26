@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ReviewForm, ReviewData } from '../../components/reviews/ReviewForm';
 import { LoadingOverlay } from '../../components/shared/LoadingSpinner';
 import { CheckCircle } from 'lucide-react';
+import { getTimeValue } from '../../lib/utils';
 
 export const SubmitReviewPage = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -58,9 +59,9 @@ export const SubmitReviewPage = () => {
         );
         const reviewsSnapshot = await getDocs(reviewsQuery);
         
-        if (!reviewsSnapshot.empty) {
-          setExistingReview(reviewsSnapshot.docs[0].data());
-        }
+            if (!reviewsSnapshot.empty) {
+              setExistingReview(reviewsSnapshot.docs[0].data());
+            }
 
       } catch (err) {
         console.error('Error fetching booking:', err);
@@ -110,6 +111,8 @@ export const SubmitReviewPage = () => {
         roomName: booking.roomName,
         rating: reviewData.rating,
         category: reviewData.category,
+        // Backwards-compat: older schema used `title` for category
+        title: reviewData.category,
         review: reviewData.review,
         photos: photoUrls,
         guestName: userData.displayName || userData.email?.split('@')[0] || 'Guest',
@@ -132,9 +135,9 @@ export const SubmitReviewPage = () => {
       // Show success
       setSuccess(true);
 
-      // Redirect after 3 seconds (route is /mybookings)
+      // Redirect after 3 seconds (route is /my-bookings)
       setTimeout(() => {
-        navigate('/mybookings');
+        navigate('/my-bookings');
       }, 3000);
 
     } catch (err) {
@@ -171,8 +174,9 @@ export const SubmitReviewPage = () => {
   }
 
   if (existingReview) {
-    // Show the submitted review and any response from staff
-    const respDate = existingReview.responseDate ? (existingReview.responseDate.seconds ? new Date(existingReview.responseDate.seconds * 1000) : new Date(existingReview.responseDate)) : null;
+  // Show the submitted review and any response from staff
+  const respMs = getTimeValue(existingReview.responseDate);
+  const respDate = respMs ? new Date(respMs) : null;
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pt-20 sm:pt-24">
         <div className="w-full max-w-3xl p-6 sm:p-8">
@@ -185,7 +189,10 @@ export const SubmitReviewPage = () => {
                     <h3 className="text-lg font-semibold text-gray-900">{userData?.displayName || userData?.email?.split('@')[0] || 'Guest'}</h3>
                     <div className="text-sm text-gray-500">{booking?.roomName || booking?.roomType}</div>
                   </div>
-                  <div className="text-sm text-gray-500">{existingReview.submittedAt && existingReview.submittedAt.toDate ? existingReview.submittedAt.toDate().toLocaleString() : existingReview.submittedAt || ''}</div>
+                    <div className="text-sm text-gray-500">{(() => {
+                      const submittedMs = getTimeValue(existingReview.submittedAt);
+                      return submittedMs ? new Date(submittedMs).toLocaleString() : (existingReview.submittedAt || '');
+                    })()}</div>
                 </div>
 
                 <div className="mt-4">
@@ -227,8 +234,8 @@ export const SubmitReviewPage = () => {
                     )}
                   </div>
 
-                  <div className="mt-6 flex justify-end">
-                    <button onClick={() => navigate('/mybookings')} className="px-5 py-2 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90">Back to My Bookings</button>
+                    <div className="mt-6 flex justify-end">
+                    <button onClick={() => navigate('/my-bookings')} className="px-5 py-2 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90">Back to My Bookings</button>
                   </div>
                 </div>
               </div>

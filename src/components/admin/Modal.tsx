@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 interface ModalProps {
@@ -31,19 +31,74 @@ export const Modal: React.FC<ModalProps> = ({
   headerContent,
   subtitle
 }) => {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+  const titleIdRef = useRef<string>(`modal-title-${Math.random().toString(36).slice(2,9)}`);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const container = dialogRef.current;
+      if (!container) return;
+      const focusable = Array.from(container.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+      if (focusable.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    };
+
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      // Save previously focused element to restore on close
+      previousActiveElement.current = document.activeElement as HTMLElement | null;
+      // Prevent body scroll
       document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleKeyDown);
+
+      // Move focus into the dialog once on open (prefer inputs over close button)
+      requestAnimationFrame(() => {
+        const container = dialogRef.current;
+        if (container) {
+          const allFocusable = Array.from(container.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+            .filter(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+          const closeBtn = container.querySelector<HTMLElement>('button[aria-label="Close"]');
+          // Prefer element marked with data-autofocus, then first input/select/textarea, then first focusable not the close button
+          const preferred = container.querySelector<HTMLElement>('[data-autofocus="true"]')
+            || allFocusable.find(el => ['INPUT','SELECT','TEXTAREA'].includes(el.tagName))
+            || allFocusable.find(el => el !== closeBtn)
+            || allFocusable[0];
+          if (preferred) preferred.focus();
+          else container.focus();
+        }
+      });
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
+      // Restore focus to the previously focused element
+      try {
+        previousActiveElement.current?.focus();
+      } catch (e) {
+        // ignore
+      }
     };
   }, [isOpen, onClose]);
 
@@ -69,7 +124,14 @@ export const Modal: React.FC<ModalProps> = ({
       `}</style>
 
       <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45 backdrop-blur-lg overflow-y-auto" onClick={handleBackdropClick}>
-        <div className={`relative z-10 w-full ${size === 'xl' ? 'max-w-5xl' : size === 'lg' ? 'max-w-2xl' : size === 'sm' ? 'max-w-md' : 'max-w-4xl'} rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5 transform transition-all duration-300 animate-slideInUp`}>
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleIdRef.current}
+          tabIndex={-1}
+          className={`relative z-10 w-full ${size === 'xl' ? 'max-w-5xl' : size === 'lg' ? 'max-w-2xl' : size === 'sm' ? 'max-w-md' : 'max-w-4xl'} rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5 transform transition-all duration-300 animate-slideInUp`}
+        >
 
           {/* Header */}
           <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
@@ -84,7 +146,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <h3 className="text-lg font-semibold text-heritage-green md:text-2xl">{title}</h3>
+                    <h3 id={titleIdRef.current} className="text-lg font-semibold text-heritage-green md:text-2xl">{title}</h3>
                     {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { db } from '../../config/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoadingOverlay } from '../../components/shared/LoadingSpinner';
+import { getTimeValue } from '../../lib/utils';
 
 export const SubmitReviewIndexPage: React.FC = () => {
   const { userData } = useAuth();
@@ -32,8 +33,8 @@ export const SubmitReviewIndexPage: React.FC = () => {
           const booking = { id: doc.id, ...data } as any;
 
           // Only consider past bookings (checkout before now)
-          const checkOutTime = booking.checkOut ? Date.parse(booking.checkOut) : null;
-          if (checkOutTime && checkOutTime < now) {
+          const checkOutTime = getTimeValue(booking.checkOut);
+          if (checkOutTime !== null && checkOutTime < now) {
             // Check if a review already exists for this booking
             const reviewsQ = query(
               collection(db, 'guestReview'),
@@ -103,7 +104,7 @@ export const SubmitReviewIndexPage: React.FC = () => {
                   <div className="bg-gradient-to-br from-white to-slate-50/50 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200/50 p-6 text-center">
                     <p className="text-gray-700 mb-4">No past bookings found for review.</p>
                     <button
-                      onClick={() => navigate('/mybookings')}
+                      onClick={() => navigate('/my-bookings')}
                       className="mt-2 px-6 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-colors"
                     >
                       View My Bookings

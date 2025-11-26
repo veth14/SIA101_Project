@@ -103,7 +103,7 @@ function App() {
             } 
           />
           <Route 
-            path="/mybookings"
+            path="/my-bookings"
             element={
               <ProtectedRoute allowedRoles={['guest']}>
                 <GuestLayout><MyBookingsPage /></GuestLayout>

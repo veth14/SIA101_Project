@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../../admin/Modal';
+import { useAuth } from '../../../contexts/AuthContext';
 import { db } from '../../../config/firebase';
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, QueryConstraint, serverTimestamp, limit } from 'firebase/firestore';
+import { getTimeValue } from '../../../lib/utils';
 
 interface FeedbackItem {
   id: string;
@@ -14,43 +16,67 @@ interface FeedbackItem {
   status: 'new' | 'reviewed' | 'responded';
   response?: string;
   respondedBy?: string;
-  responseDate?: string;
+  responseDate?: number | string;
 }
 
 export const GuestFeedback: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // removed pagination — load matching feedback in a single query
+  const { userData } = useAuth();
 
   // feedbackData is loaded from Firestore `guestReview` collection
   const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>([]);
 
   useEffect(() => {
-    // listen for guest reviews in real-time, newest first
-    const q = query(collection(db, 'guestReview'), orderBy('submittedAt', 'desc'));
+    // Paginated, optionally filtered real-time listener.
+    const col = collection(db, 'guestReview');
+    const clauses: QueryConstraint[] = [];
+    if (selectedStatus && selectedStatus !== 'all') clauses.push(where('status', '==', selectedStatus));
+    if (selectedCategory && selectedCategory !== 'all') clauses.push(where('category', '==', selectedCategory));
+
+    // single real-time query (ordered newest first) — cap results to avoid unbounded reads
+    const q = query(col, ...clauses, orderBy('submittedAt', 'desc'), limit(500));
+
     const unsub = onSnapshot(q, (snapshot) => {
       const items: FeedbackItem[] = snapshot.docs.map(docSnap => {
-        const d = docSnap.data() as any;
+        const d = docSnap.data() as Record<string, unknown>;
+        const submittedMs = getTimeValue(d['submittedAt']);
+        const responseMs = getTimeValue(d['responseDate']);
+        const guestName = (d['guestName'] as string) || (d['guestEmail'] as string) || 'Guest';
+        const roomNumber = (d['roomName'] as string) || (d['roomType'] as string) || '';
+        const rating = Number(d['rating'] as number) || 0;
+        const category = ((d['category'] as string) || (d['title'] as string) || 'general').toString().toLowerCase() as FeedbackItem['category'];
+        const feedback = (d['review'] as string) || '';
+        const date = submittedMs ? new Date(submittedMs).toISOString() : ((d['stayDate'] as string) || new Date().toISOString());
+        const status = (((d['status'] as string) || 'new') as FeedbackItem['status']);
+        const response = (d['response'] as string) || '';
+        const respondedBy = (d['respondedBy'] as string) || '';
+
         return {
           id: docSnap.id,
-          guestName: d.guestName || d.guestEmail || 'Guest',
-          roomNumber: d.roomName || d.roomType || '',
-          rating: d.rating || 0,
-          category: (d.category || d.title || 'general').toString().toLowerCase() as FeedbackItem['category'],
-          feedback: d.review || '',
-          date: d.submittedAt && d.submittedAt.toDate ? d.submittedAt.toDate().toISOString() : (d.stayDate || new Date().toISOString()),
-          status: d.status || 'new',
-          response: d.response || '',
-          respondedBy: d.respondedBy || '',
-          responseDate: d.responseDate || ''
+          guestName,
+          roomNumber,
+          rating,
+          category,
+          feedback,
+          date,
+          status,
+          response,
+          respondedBy,
+          responseDate: responseMs ?? ''
         };
       });
+
       setFeedbackData(items);
     }, (err) => {
       console.error('guestReview onSnapshot error', err);
     });
 
     return () => unsub();
-  }, []);
+  }, [selectedCategory, selectedStatus]);
   
 
   const getCategoryColor = (category: string) => {
@@ -93,8 +119,21 @@ export const GuestFeedback: React.FC = () => {
   const filteredFeedback = feedbackData.filter(item => {
     const categoryMatch = selectedCategory === 'all' || item.category === selectedCategory;
     const statusMatch = selectedStatus === 'all' || item.status === selectedStatus;
-    return categoryMatch && statusMatch;
+    const search = (searchTerm || '').toLowerCase().trim();
+    const searchMatch = !search || item.guestName.toLowerCase().includes(search) || item.roomNumber.toLowerCase().includes(search) || item.feedback.toLowerCase().includes(search);
+    return categoryMatch && statusMatch && searchMatch;
   });
+
+  // Pagination (reservations design)
+  const itemsPerPage = 5;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const totalPages = Math.max(1, Math.ceil(filteredFeedback.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFeedback = filteredFeedback.slice(startIndex, endIndex);
+
+  // Reset page when filters/search change
+  useEffect(() => { setCurrentPage(1); }, [selectedCategory, selectedStatus, searchTerm]);
 
   // details modal state
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -157,16 +196,15 @@ export const GuestFeedback: React.FC = () => {
 
   const submitResponse = () => {
     if (!respondTarget) return;
-    const timestamp = new Date().toISOString();
-    const adminUser = 'Admin User';
+    const adminUser = userData?.displayName || userData?.email || userData?.uid || 'Admin';
 
-    // update Firestore document for this review
+    // update Firestore document for this review, store server timestamp
     const reviewRef = doc(db, 'guestReview', respondTarget.id);
     updateDoc(reviewRef, {
       status: 'responded',
       response: responseDraft || respondTarget.response || '',
       respondedBy: adminUser,
-      responseDate: timestamp
+      responseDate: serverTimestamp()
     }).then(() => {
       closeRespondModal();
     }).catch(err => {
@@ -183,11 +221,13 @@ export const GuestFeedback: React.FC = () => {
             <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
-              type="text"
-              placeholder="Search feedback, guest names, or rooms..."
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
-            />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search feedback, guest names, or rooms..."
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
+              />
           </div>
           <select
             value={selectedCategory}
@@ -211,6 +251,7 @@ export const GuestFeedback: React.FC = () => {
             <option value="reviewed">Reviewed</option>
             <option value="responded">Responded</option>
           </select>
+          {/* no pagination controls — showing all matching feedback */}
         </div>
       </div>
 
@@ -229,7 +270,7 @@ export const GuestFeedback: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredFeedback.slice(0, 5).map((item) => (
+              {paginatedFeedback.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -290,6 +331,58 @@ export const GuestFeedback: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination (matching reservations design) */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
+              .map((page, i, arr) => {
+                const isGap = i > 0 && page - arr[i - 1] > 1;
+                return (
+                  <React.Fragment key={page}>
+                    {isGap && <span className="text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        currentPage === page
+                          ? 'bg-heritage-green text-white'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Feedback Details Modal */}
       <Modal isOpen={isModalOpen} onClose={closeModal} title="Feedback Details" size="md">

@@ -12,7 +12,10 @@ import {
   limit,
   runTransaction,
   startAfter,
+  Timestamp,
+  where,
 } from 'firebase/firestore';
+import { getTimeValue } from '../lib/utils';
 
 export type GuestProfile = {
   id?: string;
@@ -47,23 +50,78 @@ export const computeTierFromPoints = (points: number) => {
   return 'Bronze';
 };
 
-export async function getGuests({ limitResults = 200, startAfterValue }: { limitResults?: number; startAfterValue?: any } = {}) {
+// Normalize guest document data into a plain GuestProfile with safe numeric fields
+function normalizeGuestData(data: any, id?: string): GuestProfile {
+  const totalSpent = Number(data?.totalSpent) || 0;
+  const loyaltyPoints = Number(data?.loyaltyPoints) || 0;
+  const totalBookings = Number(data?.totalBookings) || 0;
+  return {
+    id: id || data?.id,
+    guestId: data?.guestId,
+    fullName: data?.fullName || '',
+    firstName: data?.firstName || '',
+    lastName: data?.lastName || '',
+    email: data?.email || '',
+    phone: data?.phone || '',
+    totalSpent,
+    loyaltyPoints,
+    membershipTier: data?.membershipTier || computeTierFromPoints(loyaltyPoints),
+    totalBookings,
+    lastBookingDate: data?.lastBookingDate || null,
+    status: data?.status || 'Active',
+    createdAt: data?.createdAt || null,
+  } as GuestProfile;
+}
+
+export type RewardRedemption = {
+  id: string;
+  guestId: string;
+  rewardLabel: string;
+  cost: number;
+  redeemedBy: string;
+  timestamp?: any;
+};
+
+export async function getRedemptionsByGuest(
+  guestId: string,
+  { limitResults = 20, startAfterValue }: { limitResults?: number; startAfterValue?: number | any } = {}
+) {
+  const col = collection(db, REDEMPTIONS);
+  let q;
+  if (startAfterValue) {
+    const startVal = typeof startAfterValue === 'number' ? Timestamp.fromMillis(startAfterValue) : startAfterValue;
+    q = query(col, where('guestId', '==', guestId), orderBy('timestamp', 'desc'), startAfter(startVal), limit(limitResults));
+  } else {
+    q = query(col, where('guestId', '==', guestId), orderBy('timestamp', 'desc'), limit(limitResults));
+  }
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })) as RewardRedemption[];
+}
+
+/**
+ * Get list of guest profiles.
+ * @param limitResults maximum results to return
+ * @param startAfterValue optional - either a millisecond timestamp (number) or a DocumentSnapshot to startAfter (for pagination)
+ */
+export async function getGuests({ limitResults = 200, startAfterValue }: { limitResults?: number; startAfterValue?: number | any } = {}) {
   const col = collection(db, GUESTS);
   let q;
   if (startAfterValue) {
-    q = query(col, orderBy('lastBookingDate', 'desc'), startAfter(startAfterValue), limit(limitResults));
+    // Accept a millisecond timestamp or a DocumentSnapshot; convert number -> Timestamp
+    const startVal = typeof startAfterValue === 'number' ? Timestamp.fromMillis(startAfterValue) : startAfterValue;
+    q = query(col, orderBy('lastBookingDate', 'desc'), startAfter(startVal), limit(limitResults));
   } else {
     q = query(col, orderBy('lastBookingDate', 'desc'), limit(limitResults));
   }
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() })) as GuestProfile[];
+  return snap.docs.map(d => normalizeGuestData(d.data(), d.id));
 }
 
 export async function getGuestById(id: string) {
   const ref = doc(db, GUESTS, id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() } as GuestProfile;
+  return normalizeGuestData(snap.data(), snap.id);
 }
 
 export async function createGuest(payload: Partial<GuestProfile>) {
@@ -84,7 +142,10 @@ export async function createGuest(payload: Partial<GuestProfile>) {
     createdAt: serverTimestamp()
   };
   const docRef = await addDoc(col, toSave);
-  return { id: docRef.id, ...toSave };
+  // Read back the created document so serverTimestamp() is resolved to a real Timestamp
+  const snap = await getDoc(docRef);
+  const raw = snap.exists() ? snap.data() : toSave;
+  return normalizeGuestData(raw, docRef.id);
 }
 
 export async function updateGuest(id: string, patch: Partial<GuestProfile>) {
@@ -105,6 +166,11 @@ export async function updateGuest(id: string, patch: Partial<GuestProfile>) {
     }
 
     // If loyaltyPoints provided, allow update (points balance can go up or down via adjust/redeem)
+    if (toUpdate.loyaltyPoints !== undefined) {
+      const lp = Number(toUpdate.loyaltyPoints) || 0;
+      toUpdate.loyaltyPoints = lp;
+      toUpdate.membershipTier = computeTierFromPoints(lp);
+    }
     tx.update(ref as any, toUpdate);
     await tx.get(ref as any); // ensure transaction completes
     return getGuestById(id);
@@ -119,14 +185,15 @@ export async function adjustPoints(guestId: string, delta: number, reason: strin
     if (!guestSnap.exists()) throw new Error('Guest not found');
     const current = guestSnap.data() as any;
     const currentPoints = Number(current.loyaltyPoints ?? 0);
-    const newPoints = Math.max(0, currentPoints + delta);
+    const deltaNum = Number(delta) || 0;
+    const newPoints = Math.max(0, currentPoints + deltaNum);
 
     tx.update(guestRef as any, { loyaltyPoints: newPoints, membershipTier: computeTierFromPoints(newPoints) });
 
     const adjRef = doc(adjustmentCol);
     tx.set(adjRef, {
       guestId,
-      delta,
+      delta: deltaNum,
       reason,
       adjustedBy,
       timestamp: serverTimestamp()
@@ -144,16 +211,17 @@ export async function redeemReward(guestId: string, cost: number, rewardLabel: s
     if (!guestSnap.exists()) throw new Error('Guest not found');
     const current = guestSnap.data() as any;
     const currentPoints = Number(current.loyaltyPoints ?? 0);
-    if (currentPoints < cost) throw new Error('Insufficient points');
+    const costNum = Number(cost) || 0;
+    if (currentPoints < costNum) throw new Error('Insufficient points');
 
-    const newPoints = currentPoints - cost;
+    const newPoints = currentPoints - costNum;
     tx.update(guestRef as any, { loyaltyPoints: newPoints, membershipTier: computeTierFromPoints(newPoints) });
 
     const rdRef = doc(redemptionCol);
     tx.set(rdRef, {
       guestId,
       rewardLabel,
-      cost,
+      cost: costNum,
       redeemedBy,
       timestamp: serverTimestamp()
     });
@@ -169,10 +237,11 @@ export async function applyCheckoutUpdate(guestId: string, bookingTotal: number)
     const guestSnap = await tx.get(guestRef as any);
     if (!guestSnap.exists()) throw new Error('Guest not found');
     const current = guestSnap.data() as any;
-    const newTotalSpent = (current.totalSpent ?? 0) + bookingTotal;
-    const newTotalBookings = (current.totalBookings ?? 0) + 1;
+    const bookingNum = Number(bookingTotal) || 0;
+    const newTotalSpent = (Number(current.totalSpent ?? 0)) + bookingNum;
+    const newTotalBookings = (Number(current.totalBookings ?? 0)) + 1;
     // Points are earned per transaction — compute points for this booking and add to existing points
-    const earned = computePointsFromTransaction(bookingTotal);
+    const earned = computePointsFromTransaction(bookingNum);
     const currentPoints = Number(current.loyaltyPoints ?? 0);
     const newPoints = currentPoints + earned;
     const newTier = computeTierFromPoints(newPoints);
@@ -188,6 +257,38 @@ export async function applyCheckoutUpdate(guestId: string, bookingTotal: number)
   });
 }
 
+/**
+ * Get latest checkout date for a user by email from bookings collection.
+ * Returns ISO string, or null when none.
+ */
+export async function getLatestCheckoutByEmail(email: string): Promise<string | null> {
+  if (!email) return null;
+  const col = collection(db, 'bookings');
+  try {
+    const q = query(col, where('userEmail', '==', email), orderBy('checkOut', 'desc'), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const d = snap.docs[0].data() as any;
+    const ms = getTimeValue(d?.checkOut);
+    if (ms) return new Date(ms).toISOString();
+    return typeof d?.checkOut === 'string' ? d.checkOut : null;
+  } catch (err) {
+    try {
+      const q2 = query(col, where('userEmail', '==', email), orderBy('createdAt', 'desc'), limit(5));
+      const snap2 = await getDocs(q2);
+      let best: number | null = null;
+      snap2.forEach(docSnap => {
+        const data = docSnap.data() as any;
+        const t = getTimeValue(data?.checkOut);
+        if (t && (best === null || t > best)) best = t;
+      });
+      return best ? new Date(best).toISOString() : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export default {
   getGuests,
   getGuestById,
@@ -198,5 +299,7 @@ export default {
   applyCheckoutUpdate,
   computePointsFromTotal,
   computePointsFromTransaction,
-  computeTierFromPoints
+  computeTierFromPoints,
+  getRedemptionsByGuest,
+  getLatestCheckoutByEmail
 };
