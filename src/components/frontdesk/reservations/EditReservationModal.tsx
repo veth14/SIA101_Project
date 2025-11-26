@@ -89,7 +89,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         checkIn: reservation.checkIn,
         checkOut: reservation.checkOut,
         guests: reservation.guests,
-        paymentMethod: reservation.paymentDetails.paymentMethod || 'cash',
+        paymentMethod: reservation.paymentMethod || 'cash',
         paymentReceived: 0, // Set by the effect below
         gcashName: reservation.paymentDetails.gcashName || '',
         gcashNumber: reservation.paymentDetails.gcashNumber || '',
@@ -110,7 +110,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     const newPricing = calculatePricing(); // Uses formData, so must be after state is set
     const newTotalAmount = newPricing.totalAmount;
     
-    const previouslyPaidAmount = reservation.paymentDetails.paymentStatus === 'paid' ? reservation.totalAmount : 0;
+    const previouslyPaidAmount = reservation.paymentStatus === 'paid' ? reservation.totalAmount : 0;
     
     let balanceDue = newTotalAmount - previouslyPaidAmount;
     if (balanceDue < 0) balanceDue = 0; 
@@ -355,14 +355,14 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     const newRoomName = roomTypeData ? roomTypeData.name : 'Unknown Room';
 
     // 4. Determine new payment status
-    const previouslyPaidAmount = reservation.paymentDetails.paymentStatus === 'paid' ? reservation.totalAmount : 0;
+    const previouslyPaidAmount = reservation.paymentStatus === 'paid' ? reservation.totalAmount : 0;
     const amountPaidNow = Number(formData.paymentReceived) || 0;
     const totalPaid = previouslyPaidAmount + amountPaidNow;
 
     const newPaymentStatus = totalPaid >= newTotalAmount ? 'paid' : 'pending';
     
     let newPaidAt: Timestamp | null = reservation.paymentDetails.paidAt;
-    if (newPaymentStatus === 'paid' && reservation.paymentDetails.paymentStatus === 'pending') {
+    if (newPaymentStatus === 'paid' && reservation.paymentStatus === 'pending') {
       newPaidAt = Timestamp.now();
     }
     if (newPaymentStatus === 'pending') {
@@ -372,6 +372,9 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
     // 5. Build final object
     const updatedReservation: BookingData = {
       ...reservation,
+      // Keep original identifiers intact when saving edits
+      bookingId: reservation.bookingId,
+      userId: reservation.userId,
       userName: formData.guestName,
       userEmail: formData.email,
       checkIn: formData.checkIn,
@@ -381,14 +384,14 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
       roomName: newRoomName,
       roomNumber: newRoom,
       ...newPricing,
+      paymentMethod: formData.paymentMethod,
+      paymentStatus: newPaymentStatus,
       paymentDetails: {
         ...reservation.paymentDetails,
         cardLast4: formData.paymentMethod === 'card' ? formData.cardNumber.slice(-4) : (formData.paymentMethod === 'gcash' ? null : reservation.paymentDetails.cardLast4),
         cardholderName: formData.paymentMethod === 'card' ? formData.cardholderName : (formData.paymentMethod === 'gcash' ? null : reservation.paymentDetails.cardholderName),
         gcashName: formData.paymentMethod === 'gcash' ? formData.gcashName : (formData.paymentMethod === 'card' ? null : reservation.paymentDetails.gcashName),
         gcashNumber: formData.paymentMethod === 'gcash' ? formData.gcashNumber : (formData.paymentMethod === 'card' ? null : reservation.paymentDetails.gcashNumber),
-        paymentMethod: formData.paymentMethod, 
-        paymentStatus: newPaymentStatus,
         paidAt: newPaidAt,
       },
     };
@@ -734,8 +737,8 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                     </div>
                     <div className="flex justify-between">
                       <span>Payment Status:</span>
-                      <span className={`font-medium ${reservation.paymentDetails.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
-                        {reservation.paymentDetails.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                      <span className={`font-medium ${reservation.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {reservation.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                       </span>
                     </div>
                     <hr className="my-2"/>

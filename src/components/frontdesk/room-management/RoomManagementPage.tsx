@@ -6,6 +6,7 @@ import { useRoomManagement } from './Room-backendLogic/useRoomManagement';
 import { EditRoomModal } from './EditRoomModal';
 import { ViewRoomDetailsModal } from './ViewRoomDetailsModal';
 import type { Room } from './Room-backendLogic/roomService';
+import { invalidateRoomsCache } from './Room-backendLogic/roomService';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 
@@ -84,7 +85,10 @@ const RoomManagementPage: React.FC = () => {
       await updateDoc(roomRef, updatePayload);
       console.log('Room updated successfully (Firestore)');
       
-      // 3. OPTIMISTIC UPDATE (Cost: 0 Reads)
+      // 3. Invalidate cache to ensure fresh data on next load
+      invalidateRoomsCache();
+      
+      // 4. OPTIMISTIC UPDATE (Cost: 0 Reads)
       // We construct the full Room object for the local UI state
       // effectively bypassing the need to re-fetch the whole list
       const updatedRoomLocal: Room = {
