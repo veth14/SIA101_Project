@@ -1,6 +1,7 @@
 import React from 'react';
 import StatsCard from '../overview/StatsCard';
 import { UsersIcon } from '../shared/icons';
+import { Staff } from './types';
 
 // Staff-specific icon
 const HousekeepingIcon = () => (
@@ -16,25 +17,33 @@ const MaintenanceIcon = () => (
   </svg>
 );
 
-const StaffStats: React.FC = () => {
+interface StaffStatsProps {
+  staff: Staff[];
+}
+
+const StaffStats: React.FC<StaffStatsProps> = ({ staff }) => {
+  const totalStaff = staff.length;
+  const housekeepingCount = staff.filter((s) => s.classification === "Housekeeping").length;
+  const maintenanceCount = staff.filter((s) => s.classification === "Maintenance").length;
+
   const statsData = [
     {
       title: "Total Staff",
-      value: 8,
+      value: totalStaff,
       badge: "All Departments",
       icon: <UsersIcon />,
       iconBg: 'bg-green-100'
     },
     {
       title: "Housekeeping",
-      value: 2,
+      value: housekeepingCount,
       badge: "Active",
       icon: <HousekeepingIcon />,
       iconBg: 'bg-blue-100'
     },
     {
       title: "Maintenance",
-      value: 5,
+      value: maintenanceCount,
       badge: "On Duty",
       icon: <MaintenanceIcon />,
       iconBg: 'bg-purple-100'

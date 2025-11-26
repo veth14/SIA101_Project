@@ -73,9 +73,12 @@ Maintenance
     B.)Status: Completed
     C.)Time Spent: 1 hour
     D.)Remarks: No backend logic yet.
-3.
-4.
-5.
+3.Mamaril (Manage Staff)
+    A.) Task/Feature: CRUD for staff
+    B.) Status: Complete
+    C.) Time Spent: 2hrs
+    D.) Remarks: Naka connect sa database ko pero working na yung crud, can also add staff using rfid but no authentication
+
 
 ## Finance
 ## Completed:
