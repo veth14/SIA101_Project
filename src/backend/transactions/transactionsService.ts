@@ -16,6 +16,7 @@ export interface TransactionRecord {
   userEmail?: string;
   hasInvoice?: boolean;
   bookingId?: string;
+  source?: 'transaction' | 'requisition' | 'purchase_order';
 }
 
 export const subscribeToTransactions = (
@@ -97,6 +98,7 @@ export const subscribeToTransactions = (
           userEmail: data.userEmail || data.email || '',
           hasInvoice: data.hasInvoice === true,
           bookingId: data.bookingId,
+          source: 'transaction',
         };
       });
 

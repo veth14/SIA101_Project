@@ -52,15 +52,6 @@ export const reportCategories = [
     description: 'Operating costs and expenditures'
   },
   {
-    id: 'payroll',
-    name: 'Payroll Summaries',
-    icon: '👥',
-    color: 'from-blue-50 to-white',
-    borderColor: 'border-blue-100',
-    hoverColor: 'hover:border-blue-300',
-    description: 'Employee salary reports'
-  },
-  {
     id: 'profit-loss',
     name: 'Profit & Loss',
     icon: '📈',

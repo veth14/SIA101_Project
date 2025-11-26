@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, Calendar, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import { createReport, checkReportExists, ReportCreateData } from '@/backend/reports/reportsService';
 
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onReportCreated?: (reportId: string) => void;
 }
 
-const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClose }) => {
+const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClose, onReportCreated }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('2025');
@@ -18,7 +20,6 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
   const categories = [
     { value: 'income', label: 'Income Report', icon: '💰' },
     { value: 'expense', label: 'Expense Report', icon: '📊' },
-    { value: 'payroll', label: 'Payroll Summary', icon: '👥' },
     { value: 'profit-loss', label: 'Profit & Loss Statement', icon: '📈' },
     { value: 'balance', label: 'Balance Sheet', icon: '⚖️' },
     { value: 'custom', label: 'Custom Report', icon: '📋' }
@@ -31,35 +32,58 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ isOpen, onClo
 
   const years = ['2025', '2024', '2023', '2022', '2021'];
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!selectedCategory || !selectedMonth || !selectedYear) {
       alert('Please select all fields');
       return;
     }
 
-    // Check if report already exists (simulate check)
-    const monthIndex = months.indexOf(selectedMonth) + 1;
-    const existingReports = [
-      { category: 'income', month: 10, year: 2025 },
-      { category: 'expense', month: 10, year: 2025 },
-      { category: 'payroll', month: 10, year: 2025 }
-    ];
+    try {
+      const monthIndex = months.indexOf(selectedMonth) + 1;
+      const yearNum = parseInt(selectedYear, 10);
 
-    const exists = existingReports.some(
-      r => r.category === selectedCategory && r.month === monthIndex && r.year === parseInt(selectedYear)
-    );
+      // Real existence check against Firestore
+      const exists = await checkReportExists(selectedCategory, monthIndex, yearNum);
+      if (exists) {
+        setReportExists(true);
+        return;
+      }
 
-    if (exists) {
-      setReportExists(true);
-      return;
-    }
+      setIsGenerating(true);
 
-    // Simulate report generation
-    setIsGenerating(true);
-    setTimeout(() => {
+      const categoryLabel = categories.find(c => c.value === selectedCategory)?.label || 'Report';
+      const safeCategoryPrefix = categoryLabel.split(' ')[0] || 'Report';
+      const paddedMonth = String(monthIndex).padStart(2, '0');
+      const name = `${safeCategoryPrefix.replace(/[^A-Za-z]/g, '')}Report-${yearNum}-${paddedMonth}-v1.pdf`;
+
+      const today = new Date();
+      const dateGenerated = today.toISOString().split('T')[0];
+
+      const payload: ReportCreateData = {
+        name,
+        category: selectedCategory,
+        month: monthIndex,
+        year: yearNum,
+        dateGenerated,
+        preparedBy: 'Finance Team',
+        fileType: 'PDF',
+        fileSize: '1.0 MB',
+        status: 'active',
+        version: 1,
+      };
+
+      const id = await createReport(payload);
+
       setIsGenerating(false);
       setIsGenerated(true);
-    }, 2000);
+      if (id && typeof onReportCreated === 'function') {
+        onReportCreated(id);
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      setIsGenerating(false);
+      alert('Failed to generate report. Please try again.');
+    }
   };
 
   const handleReset = () => {

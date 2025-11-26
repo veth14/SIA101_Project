@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, FolderOpen } from 'lucide-react';
-import { reportCategories, getMonthDataForCategory, getReportsByMonth } from '../../../data/financialReportsData';
+import { reportCategories, months, type FinancialReport } from '../../../data/financialReportsData';
 import MonthFolderCard from './MonthFolderCard';
 import ReportList from './ReportList';
-import { FinancialReport } from '../../../data/financialReportsData';
 
 interface FolderViewProps {
   categoryId: string;
   onBack: () => void;
+  // Optional live reports from Firestore; kept for future use
+  reports?: FinancialReport[];
 }
 
-const FolderView: React.FC<FolderViewProps> = ({ categoryId, onBack }) => {
+const FolderView: React.FC<FolderViewProps> = ({ categoryId, onBack, reports }) => {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const category = reportCategories.find(c => c.id === categoryId);
-  const monthData = getMonthDataForCategory(categoryId);
+  const categoryReports: FinancialReport[] = (reports || []).filter(r => r.category === categoryId);
+  const monthData = months.map((m) => ({
+    month: m.month,
+    name: m.name,
+    reportCount: categoryReports.filter(r => r.month === m.month).length,
+  }));
   
   if (!category) return null;
 
@@ -44,7 +50,7 @@ const FolderView: React.FC<FolderViewProps> = ({ categoryId, onBack }) => {
 
   // If viewing specific month's reports
   if (selectedMonth !== null) {
-    const reports = getReportsByMonth(categoryId, selectedMonth);
+    const reportsForMonth = categoryReports.filter(r => r.month === selectedMonth);
     const monthName = monthData.find(m => m.month === selectedMonth)?.name || '';
 
     return (
@@ -85,7 +91,7 @@ const FolderView: React.FC<FolderViewProps> = ({ categoryId, onBack }) => {
                   {monthName} {category.name}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  {reports.length} {reports.length === 1 ? 'report' : 'reports'} in this month
+                  {reportsForMonth.length} {reportsForMonth.length === 1 ? 'report' : 'reports'} in this month
                 </p>
               </div>
             </div>
@@ -94,7 +100,7 @@ const FolderView: React.FC<FolderViewProps> = ({ categoryId, onBack }) => {
 
         {/* Reports List */}
         <ReportList
-          reports={reports}
+          reports={reportsForMonth}
           onView={handleViewReport}
           onDownload={handleDownloadReport}
           onDelete={handleDeleteReport}

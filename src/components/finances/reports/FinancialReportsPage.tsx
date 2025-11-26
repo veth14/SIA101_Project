@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReportsFilter from './ReportsFilter';
 import ReportFoldersGrid from './ReportFoldersGrid';
 import FolderView from './FolderView';
 import ArchiveSection from './ArchiveSection';
 import GenerateReportModal from './GenerateReportModal';
 import SearchResults from './SearchResults';
+import { subscribeToReports, ReportRecord } from '@/backend/reports/reportsService';
+import type { FinancialReport } from '@/data/financialReportsData';
 
 const FinancialReportsPage: React.FC = () => {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -13,7 +15,41 @@ const FinancialReportsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState<'reports' | 'archive'>('reports');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reports, setReports] = useState<FinancialReport[]>([]);
   // removed artificial loading/skeleton delay — render immediately
+
+  // Subscribe to Firestore reports collection
+  useEffect(() => {
+    const unsubscribe = subscribeToReports(
+      (records: ReportRecord[]) => {
+        try {
+          const mapped: FinancialReport[] = records.map((r) => ({
+            id: r.id,
+            name: r.name,
+            category: r.category,
+            month: r.month,
+            year: r.year,
+            dateGenerated: r.dateGenerated,
+            preparedBy: r.preparedBy,
+            fileType: r.fileType,
+            fileSize: r.fileSize,
+            status: r.status,
+            version: r.version,
+          }));
+          setReports(mapped);
+        } catch (error) {
+          console.error('Error mapping reports from Firestore:', error);
+          setReports([]);
+        }
+      },
+      (error) => {
+        console.error('Error subscribing to reports:', error);
+        setReports([]);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
 
   const handleFolderClick = (categoryId: string) => {
     setSelectedFolder(categoryId);
@@ -129,7 +165,7 @@ const FinancialReportsPage: React.FC = () => {
                   />
                 </div>
 
-                <FolderView categoryId={selectedFolder} onBack={handleBackToFolders} />
+                <FolderView categoryId={selectedFolder} onBack={handleBackToFolders} reports={reports} />
               </div>
             </div>
           ) : (
@@ -187,7 +223,7 @@ const FinancialReportsPage: React.FC = () => {
                 />
               </div>
 
-              <ArchiveSection searchQuery={searchQuery} />
+              <ArchiveSection searchQuery={searchQuery} reports={reports} />
             </div>
           </div>
         )}

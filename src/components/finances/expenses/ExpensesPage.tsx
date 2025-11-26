@@ -1,13 +1,19 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ExpenseList from '@/components/finances/expenses/ExpenseList';
 import type { Expense } from '@/components/finances/expenses/types';
 import ExpensesStats from '@/components/finances/expenses/ExpensesStats';
 import ExpensesAnalytics from '@/components/finances/expenses/ExpensesAnalytics';
 import { getCurrentPayrollTotal } from '@/services/payrollService';
 import { expenses as seedExpenses } from '@/components/finances/expenses/expensesData';
+import { subscribeToRequisitions, RequisitionRecord } from '@/backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, PurchaseOrderRecord } from '@/backend/purchaseOrders/purchaseOrdersService';
 
 export const ExpensesPage: React.FC = () => {
-  const [expenses, setExpenses] = useState<Expense[]>(seedExpenses);
+  // Base/manual expenses managed locally on this page
+  const [baseExpenses, setBaseExpenses] = useState<Expense[]>(seedExpenses);
+  // Derived expenses coming from requisitions and purchase orders
+  const [requisitionExpenses, setRequisitionExpenses] = useState<Expense[]>([]);
+  const [purchaseOrderExpenses, setPurchaseOrderExpenses] = useState<Expense[]>([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type?: 'success' | 'error' | 'info' }>>([]);
@@ -40,8 +46,10 @@ export const ExpensesPage: React.FC = () => {
 
   const updateStatus = useCallback((ids: string[], status: Expense['status']) => {
     if (ids.length === 0) return;
-    setExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
-    // Update selectedExpense if its status changed
+    // Only mutate base/manual expenses; requisitions and purchase orders are
+    // read-only views here and are kept in their own state.
+    setBaseExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
+    // Update selectedExpense if it is a base expense whose status changed
     setSelectedExpense(prev => (prev && ids.includes(prev.id) ? { ...prev, status } : prev));
     addToast(`${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Marked as Paid'} ${ids.length} item${ids.length > 1 ? 's' : ''}`);
     // Clear selection after action
@@ -69,7 +77,138 @@ export const ExpensesPage: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedIds, selectedExpense, handleApprove, handleReject, handleMarkPaid]);
-  
+
+  // Map requisitions to Expense rows for this view
+  const mapRequisitionToExpense = (req: RequisitionRecord): Expense => {
+    const rawStatus = (req.status || '').toString().toLowerCase();
+    let status: Expense['status'];
+    if (rawStatus === 'approved') status = 'approved';
+    else if (rawStatus === 'fulfilled') status = 'paid';
+    else if (rawStatus === 'rejected') status = 'rejected';
+    else status = 'pending';
+
+    const dateSource = req.approvedDate || req.requiredDate || req.requestDate;
+    let date = '';
+    if (dateSource) {
+      const d = new Date(dateSource);
+      if (!Number.isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
+      }
+    }
+
+    return {
+      id: `REQ-${req.id || req.requestNumber}`,
+      description: `Requisition ${req.requestNumber} - ${req.department}`,
+      category: 'supplies',
+      amount: typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0,
+      vendor: req.department || 'Internal Department',
+      date,
+      status,
+      submittedBy: req.requestedBy || 'Unknown',
+      approvedBy: req.approvedBy,
+      purchaseOrder: undefined,
+      invoiceNumber: undefined,
+    };
+  };
+
+  // Map purchase orders to Expense rows for this view
+  const mapPurchaseOrderToExpense = (po: PurchaseOrderRecord): Expense => {
+    const rawStatus = (po.status || '').toString().toLowerCase();
+    let status: Expense['status'];
+    if (rawStatus === 'approved') status = 'approved';
+    else if (rawStatus === 'received') status = 'paid';
+    else if (rawStatus === 'cancelled') status = 'rejected';
+    else status = 'pending';
+
+    const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
+    let date = '';
+    if (dateSource) {
+      const d = new Date(dateSource);
+      if (!Number.isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
+      }
+    }
+
+    return {
+      id: `PO-${po.id || po.orderNumber}`,
+      description: `PO ${po.orderNumber} - ${po.supplier}`,
+      category: 'supplies',
+      amount: typeof po.totalAmount === 'number' ? po.totalAmount : 0,
+      vendor: po.supplier || 'Supplier',
+      date,
+      status,
+      submittedBy: po.approvedBy || 'Purchasing',
+      approvedBy: po.approvedBy,
+      purchaseOrder: po.orderNumber,
+      invoiceNumber: undefined,
+    };
+  };
+
+  // Subscribe to requisitions from Firestore and project into expenses
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (requisitions) => {
+        try {
+          const relevant = requisitions.filter((req) => {
+            const s = (req.status || '').toString().toLowerCase();
+            return s === 'approved' || s === 'fulfilled' || s === 'pending' || s === 'rejected';
+          });
+          const mapped = relevant.map(mapRequisitionToExpense);
+          setRequisitionExpenses(mapped);
+        } catch (error) {
+          console.error('Error mapping requisitions to expenses:', error);
+          setRequisitionExpenses([]);
+        }
+      },
+      (error) => {
+        console.error('Error loading requisitions for expenses view:', error);
+        setRequisitionExpenses([]);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  // Subscribe to purchase orders from Firestore and project into expenses
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (orders) => {
+        try {
+          const relevant = orders.filter((po) => {
+            const s = (po.status || '').toString().toLowerCase();
+            return s === 'approved' || s === 'received' || s === 'pending' || s === 'cancelled';
+          });
+          const mapped = relevant.map(mapPurchaseOrderToExpense);
+          setPurchaseOrderExpenses(mapped);
+        } catch (error) {
+          console.error('Error mapping purchase orders to expenses:', error);
+          setPurchaseOrderExpenses([]);
+        }
+      },
+      (error) => {
+        console.error('Error loading purchase orders for expenses view:', error);
+        setPurchaseOrderExpenses([]);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  // Combined list used for stats, analytics, and the main table
+  const allExpenses = useMemo<Expense[]>(
+    () => [
+      ...baseExpenses,
+      ...requisitionExpenses,
+      ...purchaseOrderExpenses,
+    ],
+    [baseExpenses, requisitionExpenses, purchaseOrderExpenses]
+  );
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
@@ -93,15 +232,15 @@ export const ExpensesPage: React.FC = () => {
       <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
         
   {/* Stats Section */}
-  <ExpensesStats expenses={expenses} />
+  <ExpensesStats expenses={allExpenses} />
 
   {/* Category Breakdown Analytics */}
-  <ExpensesAnalytics expenses={expenses} staffFromPayroll={getCurrentPayrollTotal()} />
+  <ExpensesAnalytics expenses={allExpenses} staffFromPayroll={getCurrentPayrollTotal()} />
 
         {/* Expense List - Full Width */}
         <div className="w-full">
           <ExpenseList 
-            expenses={expenses}
+            expenses={allExpenses}
             onExpenseSelect={handleExpenseSelect}
             selectedExpense={selectedExpense}
             selectedIds={selectedIds}

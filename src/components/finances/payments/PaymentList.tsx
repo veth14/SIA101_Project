@@ -340,9 +340,12 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
                             : ''
                         }`}
                       >
+                        {/* Ref # */}
                         <td className="px-6 py-4 text-xs font-mono font-bold text-gray-600 whitespace-nowrap">
                           {payment.id}
                         </td>
+
+                        {/* Guest + description */}
                         <td className="px-6 py-4">
                           <div className="text-sm font-bold text-gray-900 group-hover:text-heritage-green transition-colors">
                             {payment.guestName}
@@ -359,26 +362,46 @@ const PaymentList: React.FC<PaymentListProps> = ({ payments, onPaymentSelect, se
                             <span className="truncate">{payment.description}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{payment.roomNumber}</td>
+
+                        {/* Room */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {payment.roomNumber}
+                        </td>
+
+                        {/* Method */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2 text-sm text-gray-800">
                             {getMethodIcon(payment.paymentMethod)}
-                            <span className="capitalize text-xs font-semibold text-gray-700">
-                              {payment.paymentMethod.replace('_', ' ')}
+                            <span className="text-xs font-semibold text-gray-700">
+                              {payment.paymentMethod === 'cash'
+                                ? 'Cash'
+                                : payment.paymentMethod === 'card'
+                                ? 'Credit Card'
+                                : payment.paymentMethod === 'digital'
+                                ? 'GCash'
+                                : payment.paymentMethod === 'bank_transfer'
+                                ? 'Bank Transfer'
+                                : 'Cash'}
                             </span>
                           </div>
                         </td>
+
+                        {/* Date / Time */}
                         <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
                           <div className="flex flex-col">
                             <span>{payment.transactionDate}</span>
                             <span className="text-xs text-gray-500">{payment.transactionTime}</span>
                           </div>
                         </td>
+
+                        {/* Amount */}
                         <td className="px-6 py-4 text-right whitespace-nowrap">
                           <span className="text-sm font-bold text-gray-900">
                             ₱{payment.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                         </td>
+
+                        {/* Status */}
                         <td className="px-6 py-4 text-center whitespace-nowrap">{getStatusBadge(payment.status)}</td>
                       </tr>
                     ))}
