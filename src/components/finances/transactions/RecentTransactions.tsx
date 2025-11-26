@@ -15,6 +15,7 @@ export interface Transaction {
   userEmail?: string;
   hasInvoice?: boolean;
   bookingId?: string;
+  source?: 'transaction' | 'requisition' | 'purchase_order';
 }
 
 interface RecentTransactionsProps {

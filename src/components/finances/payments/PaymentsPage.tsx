@@ -1,76 +1,99 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PaymentList from './PaymentList';
 import PaymentDetails from './PaymentDetails';
 import type { Payment } from './PaymentList';
 import PaymentsStats from './PaymentsStats';
+import { subscribeToInvoices, InvoiceRecord } from '../../../backend/invoices/invoicesService';
 
 export const PaymentsPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
-  // NOTE: removed artificial loading/skeletons so components render immediately
+  const [payments, setPayments] = useState<Payment[]>([]);
 
-  // Sample payment data (moved from PaymentList)
-  const payments: Payment[] = [
-    {
-      id: 'PAY-2024-001',
-      guestName: 'John Smith',
-      roomNumber: '204',
-      amount: 580.50,
-      paymentMethod: 'card',
-      status: 'completed',
-      transactionDate: '2024-10-07',
-      transactionTime: '14:30:00',
-      reference: 'TXN-4567890123',
-      description: 'Room booking payment for 2 nights'
-    },
-    {
-      id: 'PAY-2024-002',
-      guestName: 'Sarah Johnson',
-      roomNumber: '301',
-      amount: 420.75,
-      paymentMethod: 'digital',
-      status: 'pending',
-      transactionDate: '2024-10-08',
-      transactionTime: '09:15:00',
-      reference: 'TXN-4567890124',
-      description: 'Room service and accommodation charges'
-    },
-    {
-      id: 'PAY-2024-003',
-      guestName: 'Michael Brown',
-      roomNumber: '105',
-      amount: 890.25,
-      paymentMethod: 'cash',
-      status: 'completed',
-      transactionDate: '2024-10-06',
-      transactionTime: '16:45:00',
-      reference: 'TXN-4567890125',
-      description: 'Full payment including spa services'
-    },
-    {
-      id: 'PAY-2024-004',
-      guestName: 'Emily Davis',
-      roomNumber: '208',
-      amount: 125.00,
-      paymentMethod: 'card',
-      status: 'failed',
-      transactionDate: '2024-10-08',
-      transactionTime: '11:20:00',
-      reference: 'TXN-4567890126',
-      description: 'Room service payment - card declined'
-    },
-    {
-      id: 'PAY-2024-005',
-      guestName: 'Robert Wilson',
-      roomNumber: '402',
-      amount: 320.00,
-      paymentMethod: 'bank_transfer',
-      status: 'refunded',
-      transactionDate: '2024-10-05',
-      transactionTime: '13:10:00',
-      reference: 'TXN-4567890127',
-      description: 'Cancelled booking refund'
-    }
-  ];
+  useEffect(() => {
+    const mapInvoiceToPayment = (record: InvoiceRecord): Payment | null => {
+      const rawStatus = (record.status || '').toString().toLowerCase();
+
+      // Only treat fully paid/completed invoices as payments for this view
+      const isPaid =
+        rawStatus === 'paid' ||
+        rawStatus === 'fully_paid' ||
+        rawStatus === 'fully paid' ||
+        rawStatus === 'completed';
+
+      if (!isPaid) {
+        return null;
+      }
+
+      let paymentMethod: Payment['paymentMethod'];
+      const rawMethod = (record.transactionMethod || '').toString().toLowerCase();
+
+      switch (rawMethod) {
+        case 'card':
+        case 'credit_card':
+        case 'debit_card':
+          paymentMethod = 'card';
+          break;
+        case 'cash':
+        case 'cash_payment':
+          paymentMethod = 'cash';
+          break;
+        case 'gcash':
+        case 'g-cash':
+        case 'digital':
+        case 'wallet':
+          paymentMethod = 'digital';
+          break;
+        case 'transfer':
+        case 'bank_transfer':
+        case 'bank-transfer':
+          paymentMethod = 'bank_transfer';
+          break;
+        default:
+          paymentMethod = 'cash';
+      }
+
+      const createdDate = record.createdAt
+        ? record.createdAt.toISOString().split('T')[0]
+        : '';
+
+      const transactionDate =
+        record.transactionDate || createdDate || record.dueDate || '';
+      const transactionTime = record.transactionTime || '00:00';
+
+      return {
+        id: record.invoiceNumber,
+        guestName: record.customerName || 'Guest',
+        roomNumber: (record.transactionReference as string) || '-',
+        amount: record.total,
+        paymentMethod,
+        status: 'completed',
+        transactionDate,
+        transactionTime,
+        reference: (record.transactionReference as string) || record.invoiceNumber,
+        description: record.transactionDescription || 'Invoice payment',
+      };
+    };
+
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        try {
+          const mapped = records
+            .map(mapInvoiceToPayment)
+            .filter((p): p is Payment => p !== null);
+          setPayments(mapped);
+        } catch (error) {
+          console.error('Error mapping invoices to payments:', error);
+          setPayments([]);
+        }
+      },
+      (error) => {
+        console.error('Error loading invoices for payments view:', error);
+        setPayments([]);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
 
   const handlePaymentSelect = (payment: Payment) => {
     setSelectedPayment(payment);

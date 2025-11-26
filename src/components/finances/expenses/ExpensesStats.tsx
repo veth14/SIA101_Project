@@ -10,7 +10,12 @@ interface StatCard {
   iconBg: string;
 }
 
-const currency = (n: number) => `$${n.toFixed(2)}`;
+const currency = (n: number) =>
+  new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+  }).format(n);
 
 type Props = { expenses: Expense[] };
 

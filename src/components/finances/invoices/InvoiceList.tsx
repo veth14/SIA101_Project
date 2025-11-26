@@ -276,7 +276,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                   Guest
                 </th>
                 <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
-                  Room
+                  Reference
                 </th>
                 <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
                   Status

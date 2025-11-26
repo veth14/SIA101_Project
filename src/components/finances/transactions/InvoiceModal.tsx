@@ -150,11 +150,23 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
           const existingData: any = existingDoc.data();
           const existingInvoiceNumber: string = existingData.invoiceNumber || existingDoc.id;
 
+          // Mark the underlying source document as invoiced so it won't
+          // produce duplicate invoices. For legacy/normal transactions we
+          // update the 'transactions' collection. For requisitions and
+          // purchase orders we update their respective collections.
           try {
-            const txRef = doc(db, 'transactions', transaction.id);
-            await updateDoc(txRef, { hasInvoice: true });
+            if (!transaction.source || transaction.source === 'transaction') {
+              const txRef = doc(db, 'transactions', transaction.id);
+              await updateDoc(txRef, { hasInvoice: true });
+            } else if (transaction.source === 'requisition') {
+              const reqRef = doc(db, 'requisitions', transaction.id);
+              await updateDoc(reqRef, { hasInvoice: true });
+            } else if (transaction.source === 'purchase_order') {
+              const poRef = doc(db, 'purchaseOrders', transaction.id);
+              await updateDoc(poRef, { hasInvoice: true });
+            }
           } catch (markError) {
-            console.warn('Failed to mark transaction as invoiced (existing invoice):', markError);
+            console.warn('Failed to mark source document as invoiced (existing invoice):', markError);
           }
 
           setCreatedInvoiceNumber(existingInvoiceNumber);
@@ -186,12 +198,22 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
         transactionTime: transaction.time,
       });
 
-      // Mark the transaction as having an invoice to prevent duplicates
+      // Mark the underlying source document as having an invoice to prevent
+      // duplicates. For requisitions and purchase orders, update their own
+      // collections instead of 'transactions'.
       try {
-        const txRef = doc(db, 'transactions', transaction.id);
-        await updateDoc(txRef, { hasInvoice: true });
+        if (!transaction.source || transaction.source === 'transaction') {
+          const txRef = doc(db, 'transactions', transaction.id);
+          await updateDoc(txRef, { hasInvoice: true });
+        } else if (transaction.source === 'requisition') {
+          const reqRef = doc(db, 'requisitions', transaction.id);
+          await updateDoc(reqRef, { hasInvoice: true });
+        } else if (transaction.source === 'purchase_order') {
+          const poRef = doc(db, 'purchaseOrders', transaction.id);
+          await updateDoc(poRef, { hasInvoice: true });
+        }
       } catch (markError) {
-        console.warn('Failed to mark transaction as invoiced:', markError);
+        console.warn('Failed to mark source document as invoiced:', markError);
       }
 
       setCreatedInvoiceNumber(invoiceData.invoiceNumber);

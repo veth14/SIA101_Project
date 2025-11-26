@@ -4,11 +4,97 @@ import RecentTransactions from './RecentTransactions';
 import TransactionDetails from './TransactionDetails';
 import TransactionStats from './TransactionStats';
 import { subscribeToTransactions, TransactionRecord } from '../../../backend/transactions/transactionsService';
+import { subscribeToRequisitions, RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
 export type Transaction = TransactionRecord;
 
+const mapRequisitionToTransaction = (req: RequisitionRecord): Transaction => {
+  const dateSource = req.approvedDate || req.requiredDate || req.requestDate;
+  let date = '';
+  let time = '';
+
+  if (dateSource) {
+    const d = new Date(dateSource);
+    if (!Number.isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      date = `${year}-${month}-${day}`;
+      time = `${hours}:${minutes}`;
+    }
+  }
+
+  return {
+    id: req.id || req.requestNumber,
+    description: `${req.department} requisition ${req.requestNumber}`,
+    amount: typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0,
+    type: 'debit',
+    date,
+    time,
+    category: 'requisition',
+    // Treat requisition transactions as pending so invoices start as unpaid
+    status: 'pending',
+    reference: req.requestNumber,
+    method: 'transfer',
+    hasInvoice: req.hasInvoice === true,
+    // Use department as the customer name hint so invoices auto-fill
+    guestName: req.department || undefined,
+    userEmail: undefined,
+    bookingId: undefined,
+    source: 'requisition',
+  };
+};
+
+const mapPurchaseOrderToTransaction = (po: PurchaseOrderRecord): Transaction => {
+  const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
+  let date = '';
+  let time = '';
+
+  if (dateSource) {
+    const d = new Date(dateSource);
+    if (!Number.isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      date = `${year}-${month}-${day}`;
+      time = `${hours}:${minutes}`;
+    }
+  }
+
+  const rawStatus = (po.status || '').toString().toLowerCase();
+  // Keep purchase orders as pending so supplier invoices start as unpaid.
+  const status: Transaction['status'] = rawStatus === 'failed' ? 'failed' : 'pending';
+
+  return {
+    id: po.id || po.orderNumber,
+    description: `PO ${po.orderNumber} • ${po.supplier}`,
+    amount: typeof po.totalAmount === 'number' ? po.totalAmount : 0,
+    type: 'debit',
+    date,
+    time,
+    category: 'purchase_order',
+    status,
+    reference: po.orderNumber,
+    method: 'transfer',
+    hasInvoice: po.hasInvoice === true,
+    // Use supplier as the customer name hint so invoices auto-fill
+    guestName: po.supplier || undefined,
+    userEmail: undefined,
+    bookingId: undefined,
+    source: 'purchase_order',
+  };
+};
+
 export const TransactionsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [requisitionTransactions, setRequisitionTransactions] = useState<Transaction[]>([]);
+  const [purchaseOrderTransactions, setPurchaseOrderTransactions] = useState<Transaction[]>([]);
+
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
@@ -38,14 +124,60 @@ export const TransactionsPage: React.FC = () => {
     return unsubscribe;
   }, []);
 
+  // Subscribe to purchase orders so approved/received POs can appear in the
+  // transactions table for invoicing to suppliers.
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (orders) => {
+        const relevant = orders.filter((po) => {
+          const s = (po.status || '').toString().toLowerCase();
+          return s === 'approved' || s === 'received';
+        });
+        const mapped = relevant.map(mapPurchaseOrderToTransaction);
+        setPurchaseOrderTransactions(mapped);
+      },
+      (error) => {
+        console.error('Error loading purchase orders for transactions view:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  // Also subscribe to requisitions so approved and fulfilled requests can appear in the
+  // transactions table for invoicing.
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (requisitions) => {
+        const relevant = requisitions.filter((req) => {
+          const s = (req.status || '').toString().toLowerCase();
+          return s === 'approved' || s === 'fulfilled';
+        });
+        const mapped = relevant.map(mapRequisitionToTransaction);
+        setRequisitionTransactions(mapped);
+      },
+      (error) => {
+        console.error('Error loading requisitions for transactions view:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
   const itemsPerPage = 8; // Items per page when not showing all
 
-  const totalTransactions = transactions.reduce((sum, t) => sum + t.amount, 0);
-  const completedTransactions = transactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
-  const pendingTransactions = transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
+  const allTransactions: Transaction[] = [
+    ...transactions,
+    ...requisitionTransactions,
+    ...purchaseOrderTransactions,
+  ];
+
+  const totalTransactions = allTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const completedTransactions = allTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
+  const pendingTransactions = allTransactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
 
   // Filter transactions
-  const filteredTransactions = transactions.filter(transaction => {
+  const filteredTransactions = allTransactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
     const matchesStatus = filters.status === 'all' || transaction.status === filters.status;
     const matchesType = filters.type === 'all' || transaction.type === filters.type;
@@ -112,7 +244,7 @@ export const TransactionsPage: React.FC = () => {
           filters={{ status: filters.status, category: filters.category }}
           onFiltersChange={(newFilters) => setFilters({...filters, ...newFilters})}
           isLoading={isLoading}
-          transactions={transactions}
+          transactions={allTransactions}
         />
 
         {/* Transaction Table and Details */}
