@@ -1,6 +1,6 @@
-import React from 'react';
-import DepartmentMetrics from './DepartmentMetrics';
-import DepartmentCharts from './DepartmentCharts';
+import React from "react";
+import DepartmentMetrics from "./DepartmentMetrics";
+import DepartmentCharts from "./DepartmentCharts";
 
 const RequisitionAnalyticsPage: React.FC = () => {
   return (

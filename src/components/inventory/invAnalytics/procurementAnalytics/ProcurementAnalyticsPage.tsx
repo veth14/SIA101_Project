@@ -1,6 +1,6 @@
-import React from 'react';
-import ProcurementMetrics from './ProcurementMetrics';
-import ProcurementCharts from './ProcurementCharts';
+import React from "react";
+import ProcurementMetrics from "./ProcurementMetrics";
+import ProcurementCharts from "./ProcurementCharts";
 
 const ProcurementAnalyticsPage: React.FC = () => {
   return (
