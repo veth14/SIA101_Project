@@ -99,6 +99,31 @@ const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = {
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
 
+// --- Security Helper Functions ---
+const maskCardNumber = (cardNumber: string): string => {
+  const digits = cardNumber.replace(/\D/g, '');
+  if (digits.length < 4) return '';
+  return `•••• •••• •••• ${digits.slice(-4)}`;
+};
+
+const formatCardNumber = (value: string): string => {
+  const digits = value.replace(/\D/g, '').slice(0, 16);
+  const groups = digits.match(/.{1,4}/g) || [];
+  return groups.join(' ');
+};
+
+const formatExpiry = (value: string): string => {
+  const digits = value.replace(/\D/g, '').slice(0, 4);
+  if (digits.length >= 2) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+  return digits;
+};
+
+const formatCVV = (value: string): string => {
+  return value.replace(/\D/g, '').slice(0, 4);
+};
+
 // --- Props Interface ---
 interface WalkInModalProps {
   isOpen: boolean;
@@ -133,6 +158,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     cardNumber: '', cardExpiry: '', cardCvv: '', specialRequests: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [tempCardData, setTempCardData] = useState({
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvv: '',
+  });
 
   // --- Availability Query ---
   useEffect(() => {
@@ -310,19 +340,19 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     }
     if (formData.paymentMethod === 'card') {
       if (!formData.cardholderName.trim()) newErrors.cardholderName = 'Cardholder name is required';
-      if (!formData.cardNumber.trim()) {
+      if (!tempCardData.cardNumber.trim()) {
         newErrors.cardNumber = 'Card number is required';
-      } else if (formData.cardNumber.replace(/\D/g, '').length < 15) {
+      } else if (tempCardData.cardNumber.replace(/\D/g, '').length < 15) {
         newErrors.cardNumber = 'Must be a valid card number';
       }
-      if (!formData.cardExpiry.trim()) {
+      if (!tempCardData.cardExpiry.trim()) {
         newErrors.cardExpiry = 'Expiry date is required';
-      } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.cardExpiry)) {
+      } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(tempCardData.cardExpiry)) {
         newErrors.cardExpiry = 'Must be MM/YY format';
       }
-      if (!formData.cardCvv.trim()) {
+      if (!tempCardData.cardCvv.trim()) {
         newErrors.cardCvv = 'CVV is required';
-      } else if (formData.cardCvv.replace(/\D/g, '').length < 3) {
+      } else if (tempCardData.cardCvv.replace(/\D/g, '').length < 3) {
         newErrors.cardCvv = 'Must be 3-4 digits';
       }
     }
@@ -383,6 +413,8 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       gcashName: '', gcashNumber: '', cardholderName: '',
       cardNumber: '', cardExpiry: '', cardCvv: '',
     });
+    // Clear sensitive card data from memory
+    setTempCardData({ cardNumber: '', cardExpiry: '', cardCvv: '' });
     setErrors({});
     onClose(); 
   };
@@ -416,14 +448,14 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       createdAt: firestoreTimestamp,
       guests: Number(formData.guests),
       nights,
+      paymentMethod: formData.paymentMethod,
+      paymentStatus,
       paymentDetails: {
-        cardLast4: formData.paymentMethod === 'card' ? formData.cardNumber.slice(-4) : null,
+        cardLast4: formData.paymentMethod === 'card' ? tempCardData.cardNumber.replace(/\D/g, '').slice(-4) : null,
         cardholderName: formData.paymentMethod === 'card' ? formData.cardholderName : null,
         gcashName: formData.paymentMethod === 'gcash' ? formData.gcashName : null,
         gcashNumber: formData.paymentMethod === 'gcash' ? formData.gcashNumber : null,
         paidAt: paymentStatus === 'paid' ? firestoreTimestamp : null,
-        paymentMethod: formData.paymentMethod,
-        paymentStatus,
       },
       roomName, roomPricePerNight, roomType, roomNumber,
       status: bookingStatus,
@@ -623,6 +655,13 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
 
   const renderCardForm = () => (
     <div className="space-y-4 mt-4 border-t border-gray-200 pt-4">
+      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+        <p className="text-xs text-amber-700 flex items-start gap-2">
+          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+          <span>Card data is for display only. Full card details are never stored for security.</span>
+        </p>
+      </div>
+      
       <FormItem label="Cardholder Name" required error={errors.cardholderName}>
         <FormInput
           type="text"
@@ -632,32 +671,46 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           hasError={!!errors.cardholderName}
         />
       </FormItem>
+      
       <FormItem label="Card Number" required error={errors.cardNumber}>
-        <FormInput
-          type="tel"
-          value={formData.cardNumber}
-          onChange={(e) => setFormData(prev => ({ ...prev, cardNumber: e.target.value }))}
-          placeholder="0000 0000 0000 0000"
-          hasError={!!errors.cardNumber}
-        />
+        <div className="space-y-2">
+          <FormInput
+            type="text"
+            value={formatCardNumber(tempCardData.cardNumber)}
+            onChange={(e) => setTempCardData(prev => ({ ...prev, cardNumber: e.target.value }))}
+            placeholder="0000 0000 0000 0000"
+            hasError={!!errors.cardNumber}
+            maxLength={19}
+            autoComplete="off"
+          />
+          {tempCardData.cardNumber && (
+            <p className="text-xs text-gray-500">Masked: {maskCardNumber(tempCardData.cardNumber)}</p>
+          )}
+        </div>
       </FormItem>
+      
       <div className="grid grid-cols-2 gap-4">
         <FormItem label="Expiry Date" required error={errors.cardExpiry}>
           <FormInput
             type="text"
-            value={formData.cardExpiry}
-            onChange={(e) => setFormData(prev => ({ ...prev, cardExpiry: e.target.value }))}
+            value={formatExpiry(tempCardData.cardExpiry)}
+            onChange={(e) => setTempCardData(prev => ({ ...prev, cardExpiry: e.target.value }))}
             placeholder="MM/YY"
             hasError={!!errors.cardExpiry}
+            maxLength={5}
+            autoComplete="off"
           />
         </FormItem>
+        
         <FormItem label="CVV" required error={errors.cardCvv}>
           <FormInput
-            type="tel"
-            value={formData.cardCvv}
-            onChange={(e) => setFormData(prev => ({ ...prev, cardCvv: e.target.value }))}
-            placeholder="123"
+            type="password"
+            value={formatCVV(tempCardData.cardCvv)}
+            onChange={(e) => setTempCardData(prev => ({ ...prev, cardCvv: e.target.value }))}
+            placeholder="•••"
             hasError={!!errors.cardCvv}
+            maxLength={4}
+            autoComplete="off"
           />
         </FormItem>
       </div>

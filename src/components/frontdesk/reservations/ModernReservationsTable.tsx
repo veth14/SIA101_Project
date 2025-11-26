@@ -427,7 +427,7 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                   {getStatusBadge(reservation.status)}
                 </td>
                 <td className="px-6 py-4 text-center">
-                  {getPaymentBadge(reservation.paymentDetails.paymentStatus)}
+                  {getPaymentBadge(reservation.paymentStatus)}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="font-bold text-gray-900 text-lg">

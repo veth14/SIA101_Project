@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { db } from '../../config/firebase';
-import { doc, updateDoc, serverTimestamp, query, collection, where, getDocs, addDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, query, collection, where, getDocs, addDoc, getDoc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const PaymentPage = () => {
@@ -258,13 +258,15 @@ export const PaymentPage = () => {
           updatedAt: serverTimestamp()
         };
 
-        // Create booking document in Firebase
-        const bookingDocRef = await addDoc(collection(db, 'bookings'), bookingDataWithPayment);
+        // Create booking document in Firebase using BK-prefixed bookingId
+        const bookingIdToUse = booking.bookingId || `BK${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
+        const bookingRef = doc(db, 'bookings', bookingIdToUse);
+        await setDoc(bookingRef, bookingDataWithPayment);
 
         // Create transaction record
         const transactionData = {
           transactionId: `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
-          bookingId: booking.bookingId,
+          bookingId: bookingIdToUse,
           userId: userData.uid,
           amount: booking.totalAmount,
           type: 'booking',
@@ -307,8 +309,8 @@ export const PaymentPage = () => {
           // Don't fail the entire booking if room update fails
         }
 
-        // Update booking state with the new document ID
-        setBooking({ ...bookingDataWithPayment, id: bookingDocRef.id });
+        // Update booking state with the new document ID (we used bookingIdToUse)
+        setBooking({ ...bookingDataWithPayment, id: bookingIdToUse });
 
       } else {
         // OLD FLOW: Update existing booking payment status

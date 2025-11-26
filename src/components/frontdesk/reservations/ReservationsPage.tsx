@@ -130,9 +130,9 @@ export const ReservationsPage = () => {
           tax: data.tax || 0,
           taxRate: data.taxRate || 0.12,
           totalAmount: data.totalAmount || 0,
+          paymentMethod: data.paymentDetails?.paymentMethod || data.paymentMethod || 'cash',
+          paymentStatus: data.paymentDetails?.paymentStatus || data.paymentStatus || 'pending',
           paymentDetails: {
-            paymentStatus: data.paymentDetails?.paymentStatus || data.paymentStatus || 'pending',
-            paymentMethod: data.paymentDetails?.paymentMethod || data.paymentMethod || 'cash',
             paidAt: data.paymentDetails?.paidAt || data.paidAt || null,
             gcashName: data.paymentDetails?.gcashName || data.gcashName || null,
             gcashNumber: data.paymentDetails?.gcashNumber || data.gcashNumber || null,
@@ -312,9 +312,9 @@ export const ReservationsPage = () => {
     try {
       const batch = writeBatch(db);
 
-      const newBookingRef = doc(collection(db, 'bookings'));
-      const bookingId = newBookingRef.id;
-      
+      const bookingId = `BK${Date.now()}${Math.random().toString(36).substring(2, 9)}`;
+      const newBookingRef = doc(db, 'bookings', bookingId);
+
       const bookingPayload = {
         ...newBooking,
         bookingId,
