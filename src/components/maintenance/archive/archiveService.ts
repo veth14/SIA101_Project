@@ -48,7 +48,6 @@ export type ClockLog = {
   // raw Date objects preserved for computations
   timeInRaw?: Date | null;
   timeOutRaw?: Date | null;
-  baseSalary?: number; // running total for UI
 };
 
 // IMPORTANT: minimize Firestore reads by using listeners, pagination, and caching.
@@ -226,7 +225,6 @@ function mapAttendanceDoc(docSnap: QueryDocumentSnapshot): ClockLog {
     staffId: d.staffId ?? d.staff_id ?? d.staff ?? undefined,
     timeInRaw: parsedTimeIn,
     timeOutRaw: parsedTimeOut,
-    baseSalary: 0,
   };
 }
 
@@ -315,12 +313,7 @@ export function subscribeClockLogs(
       return getLogTimeMs(b) - getLogTimeMs(a);
     });
 
-    // Enrich full logs with baseSalary running totals per staff and payout periods
-    try {
-      full = computeBaseSalaryForClockLogs(full);
-    } catch (e) {
-      console.error('Error computing base salary for clock logs', e);
-    }
+    // NOTE: base-salary running totals have been removed from the live clock logs payload.
 
     clockLogsManager.cached = full;
 
@@ -441,71 +434,9 @@ function firstSaturdayOnOrAfter(d: Date): Date {
  * Compute running baseSalary for an array of ClockLog entries.
  * Groups by staffId and iterates chronologically to apply cutoff/payout rules.
  */
-export function computeBaseSalaryForClockLogs(logs: ClockLog[]): ClockLog[] {
-  const RATE = 597;
-
-  // Clone logs to avoid mutating input
-  const cloned = logs.map(l => ({ ...l }));
-
-  // Group by staffId (fallback to staffMember if missing)
-  const groups = new Map<string, ClockLog[]>();
-  for (const l of cloned) {
-    // Use a composite key of staffId and staffMember to avoid accidental collisions when staffId is missing
-    const key = `${l.staffId ?? ''}::${(l.staffMember ?? '__unknown__').trim()}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(l);
-  }
-
-  // Process each group
-  for (const [key, arr] of groups.entries()) {
-    // sort by timeInRaw (fallback to parsed date field) ascending
-    arr.sort((a, b) => {
-      const at = a.timeInRaw ? a.timeInRaw.getTime() : (a.timeOutRaw ? a.timeOutRaw.getTime() : 0);
-      const bt = b.timeInRaw ? b.timeInRaw.getTime() : (b.timeOutRaw ? b.timeOutRaw.getTime() : 0);
-      return at - bt;
-    });
-
-    let currentPayoutKey: string | null = null;
-    let accumulator = 0;
-
-    for (const l of arr) {
-      const refDate = l.timeInRaw ?? (l.timeOutRaw ?? null) ?? null;
-      const dayOfMonth = refDate ? refDate.getDate() : 1;
-      const cutoff: 'A' | 'B' = dayOfMonth <= 15 ? 'A' : 'B';
-
-      const cutoffAnchor = cutoff === 'A'
-        ? new Date((refDate ?? new Date()).getFullYear(), (refDate ?? new Date()).getMonth(), 15)
-        : new Date((refDate ?? new Date()).getFullYear(), (refDate ?? new Date()).getMonth() + 1, 0);
-      const payoutSaturday = firstSaturdayOnOrAfter(cutoffAnchor);
-      const payoutKey = String(payoutSaturday.getTime());
-
-      if (currentPayoutKey === null) {
-        currentPayoutKey = payoutKey;
-        accumulator = 0;
-      } else if (currentPayoutKey !== payoutKey) {
-        // reset when crossing into next payout period
-        currentPayoutKey = payoutKey;
-        accumulator = 0;
-      }
-
-  // compute hours (use existing hoursWorked if present)
-  const hours = typeof l.hoursWorked === 'number' ? l.hoursWorked : hoursBetween(l.timeInRaw, l.timeOutRaw);
-  // Grant salary only when both timeIn and timeOut are present and hours >= 1
-  // (shifts under 1 hour are not considered successful/completed for payout)
-  const expectedSalary = (l.timeInRaw && l.timeOutRaw && typeof hours === 'number' && hours >= 1) ? RATE : 0;
-
-      if (expectedSalary > 0) {
-        accumulator += expectedSalary;
-      }
-
-      l.baseSalary = accumulator;
-      // keep hoursWorked normalized
-      l.hoursWorked = hours;
-    }
-  }
-
-  return cloned;
-}
+// computeBaseSalaryForClockLogs removed: the live clock log payload no longer includes a running
+// baseSalary total. Payroll-specific computations should use computeSalaryShiftsForEmployee
+// or a dedicated payroll worker instead of embedding running totals into the logs stream.
 
 /**
  * Fetch attendance for a staffId and compute per-shift salary info in-memory.

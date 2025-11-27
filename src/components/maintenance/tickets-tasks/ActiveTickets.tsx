@@ -25,7 +25,10 @@ const ActiveTickets: React.FC<Props> = ({ tickets, loading, onConfirmAvailabilit
   // NOTE: filtering is client-side here; when wiring backend pass filters into query
   const filtered = tickets.filter((t) => {
     if (!t) return false;
-    if (search && !(t.title + ' ' + (t.description ?? '') + ' ' + (t.location ?? '')).toLowerCase().includes(search.toLowerCase())) return false;
+    // normalize fields: Ticket uses taskTitle and roomNumber in the service/type
+    const title = (t as any).taskTitle ?? (t as any).title ?? '';
+    const location = (t as any).roomNumber ?? (t as any).location ?? '';
+    if (search && !(title + ' ' + (t.description ?? '') + ' ' + (location ?? '')).toLowerCase().includes(search.toLowerCase())) return false;
     if (statusFilter !== 'All' && (t.status ?? 'Unknown') !== statusFilter) return false;
     if (priorityFilter !== 'All' && (t.priority ?? '') !== priorityFilter) return false;
     if (categoryFilter !== 'All' && (t.category ?? '') !== categoryFilter) return false;
@@ -91,8 +94,8 @@ const ActiveTickets: React.FC<Props> = ({ tickets, loading, onConfirmAvailabilit
               {filtered.map((t) => (
                 <tr key={t.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{t.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.location ?? '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(t as any).taskTitle ?? (t as any).title ?? '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{(t as any).roomNumber ?? (t as any).location ?? '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.category ?? '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap"><span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{t.priority ?? '-'}</span></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t.assignedTo ?? '-'}</td>

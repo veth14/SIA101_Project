@@ -118,7 +118,6 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time In</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Out</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours Worked</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Salary</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
@@ -131,7 +130,6 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.timeIn ?? '--'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.timeOut ?? '--'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.hoursWorked ?? '--'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{typeof log.baseSalary === 'number' ? new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(log.baseSalary) : '--'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{log.status ?? 'On-Duty'}</span>
                   </td>
