@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { db } from "../../../config/firebase";
 import {
   collection,
@@ -6,8 +6,8 @@ import {
   where,
   getDocs,
   Timestamp,
+  limit,
 } from "firebase/firestore";
-
 
 interface AttendanceRecord {
   id: string;
@@ -21,27 +21,47 @@ interface AttendanceRecord {
   working: boolean;
 }
 
+
+let attendanceCache: AttendanceRecord[] | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; 
+
 const OnDutyStaffPage: React.FC = () => {
   const [staff, setStaff] = useState<AttendanceRecord[]>([]);
   const [onDutyCount, setOnDutyCount] = useState(0);
-  const [onBreakCount, setOnBreakCount] = useState(0);
   const [offDutyCount, setOffDutyCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const isFetching = useRef(false);
 
   useEffect(() => {
     const fetchStaff = async () => {
+      
+      if (isFetching.current) return;
+      isFetching.current = true;
+
       try {
-        const today = new Date();
         
+        const now = Date.now();
+        if (attendanceCache && (now - cacheTimestamp) < CACHE_DURATION) {
+          console.log("📦 Using cached attendance data");
+          processStaffData(attendanceCache);
+          isFetching.current = false;
+          return;
+        }
+
+        const today = new Date();
         const todayString = today.toISOString().split('T')[0];
         
         
         const attendanceRef = collection(db, "attendance");
         const q = query(
           attendanceRef,
-          where("date", ">=", new Date(todayString)), 
-          where("working", "==", true) 
+          where("date", ">=", new Date(todayString)),
+          where("working", "==", true),
+          limit(100)
         );
 
+        console.log("🔥 Fetching fresh data from Firestore...");
         const querySnapshot = await getDocs(q);
         const staffList: AttendanceRecord[] = [];
 
@@ -60,39 +80,52 @@ const OnDutyStaffPage: React.FC = () => {
           });
         });
 
-        setStaff(staffList);
-
         
-        const currentTime = new Date();
-        const onDuty = staffList.filter((s) => {
-          const timeIn = s.TimeIn.toDate();
-          const timeOut = s.TimeOut ? s.TimeOut.toDate() : null;
-          
-          
-          if (!timeOut) return true;
-          
-          
-          return currentTime >= timeIn && currentTime <= timeOut;
-        }).length;
-
+        attendanceCache = staffList;
+        cacheTimestamp = now;
         
-        const onBreak = 0;
-        
-        const offDuty = staffList.length - onDuty - onBreak;
-
-        setOnDutyCount(onDuty);
-        setOnBreakCount(onBreak);
-        setOffDutyCount(offDuty);
+        processStaffData(staffList);
+        setLastUpdated(new Date());
 
       } catch (error) {
         console.error("Error fetching attendance records:", error);
+        
+        if (attendanceCache) {
+          processStaffData(attendanceCache);
+        }
+      } finally {
+        isFetching.current = false;
       }
     };
 
+    const processStaffData = (staffList: AttendanceRecord[]) => {
+      setStaff(staffList);
+
+      
+      const currentTime = new Date();
+      const onDuty = staffList.filter((s) => {
+        const timeIn = s.TimeIn.toDate();
+        const timeOut = s.TimeOut ? s.TimeOut.toDate() : null;
+        
+        if (!timeOut) return true; 
+        return currentTime >= timeIn && currentTime <= timeOut;
+      }).length;
+
+      const offDuty = staffList.length - onDuty;
+
+      setOnDutyCount(onDuty);
+      setOffDutyCount(offDuty);
+    };
+
     fetchStaff();
+
+    
+    const interval = setInterval(fetchStaff, 10 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
-  
+ 
   const getStaffStatus = (staff: AttendanceRecord): string => {
     const currentTime = new Date();
     const timeIn = staff.TimeIn.toDate();
@@ -133,8 +166,13 @@ const OnDutyStaffPage: React.FC = () => {
     <div className="min-h-screen bg-[#F9F6EE]">
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
 
-        {/* Status Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Last updated indicator */}
+        <div className="text-right text-sm text-gray-500">
+          Last updated: {lastUpdated.toLocaleTimeString()}
+        </div>
+
+        {/* Status Summary Cards - Now only 2 cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
@@ -145,20 +183,6 @@ const OnDutyStaffPage: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Currently On Duty</p>
                 <p className="text-2xl font-bold text-gray-900">{onDutyCount}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">On Break</p>
-                <p className="text-2xl font-bold text-gray-900">{onBreakCount}</p>
               </div>
             </div>
           </div>
@@ -211,8 +235,6 @@ const OnDutyStaffPage: React.FC = () => {
                     className={`px-2 py-1 text-xs font-semibold rounded-full ${
                       status === "present"
                         ? "bg-green-100 text-green-800"
-                        : status === "break"
-                        ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
                     }`}
                   >
