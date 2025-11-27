@@ -7,7 +7,8 @@ export default function InvProcurement() {
   const [statCards, setStatCards] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { getInvProcurementOrder, getInvProcurementStats } = useGetInvProcurement();
+  const { getInvProcurementOrder, getInvProcurementStats } =
+    useGetInvProcurement();
 
   const fetchData = async () => {
     const ordersResponse = await getInvProcurementOrder();
@@ -31,7 +32,7 @@ export default function InvProcurement() {
   }, [refreshKey]);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -50,11 +51,11 @@ export default function InvProcurement() {
         </div>
 
         {/* Procurement Grid */}
-        <ProcurementGrid 
+        {/* <ProcurementGrid 
           purchaseOrders={purchaseOrders} 
           statCards={statCards}
           onSuccess={handleRefresh}
-        />
+        /> */}
       </div>
     </div>
   );

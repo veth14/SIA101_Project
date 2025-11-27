@@ -1,0 +1,10 @@
+export declare const RoomIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const CalendarIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const UserIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const CheckInIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const CheckOutIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const SearchIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const FilterIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const ReservationIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const MoneyIcon: () => import("react/jsx-runtime").JSX.Element;
+export declare const ClockIcon: () => import("react/jsx-runtime").JSX.Element;

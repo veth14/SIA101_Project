@@ -1,0 +1,154 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+export const AmenitiesPage = () => {
+    const navigate = useNavigate();
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    // Scroll to top when component mounts
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, []);
+    const amenities = [
+        {
+            id: 1,
+            name: 'Free Wi-Fi',
+            category: 'connectivity',
+            description: 'High-speed internet access throughout the entire property, ensuring you stay connected during your visit.',
+            icon: '📶',
+            features: ['High-speed broadband', 'Available in all rooms', 'Lobby and common areas', '24/7 technical support'],
+            image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '24/7'
+        },
+        {
+            id: 2,
+            name: 'Infinity Pool',
+            category: 'recreation',
+            description: 'Stunning infinity pool with breathtaking Manila Bay views, perfect for relaxation and recreation.',
+            icon: '🏊',
+            features: ['Manila Bay view', 'Temperature controlled', 'Pool bar service', 'Lounge chairs', 'Towel service'],
+            image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2080&q=80',
+            availability: '6:00 AM - 10:00 PM'
+        },
+        {
+            id: 3,
+            name: 'Spa Services',
+            category: 'wellness',
+            description: 'Traditional Filipino spa treatments and modern wellness therapies for ultimate relaxation.',
+            icon: '🌿',
+            features: ['Traditional Filipino treatments', 'Aromatherapy sessions', 'Couples massage rooms', 'Wellness consultations'],
+            image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '9:00 AM - 9:00 PM'
+        },
+        {
+            id: 4,
+            name: 'Restaurant',
+            category: 'dining',
+            description: 'Authentic local and international cuisine prepared by our expert culinary team.',
+            icon: '🍽️',
+            features: ['Local Filipino cuisine', 'International dishes', 'Fresh seafood', 'Vegetarian options', 'Room service'],
+            image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '6:00 AM - 11:00 PM'
+        },
+        {
+            id: 5,
+            name: 'Events Hall',
+            category: 'events',
+            description: 'Modern function rooms perfect for meetings, conferences, and special celebrations.',
+            icon: '🎉',
+            features: ['Audio-visual equipment', 'Flexible seating arrangements', 'Catering services', 'Event planning assistance'],
+            image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80',
+            availability: 'By reservation'
+        },
+        {
+            id: 6,
+            name: 'Fitness Center',
+            category: 'wellness',
+            description: 'Fully equipped gym with modern exercise equipment and personal training services.',
+            icon: '💪',
+            features: ['Modern equipment', 'Personal trainers', 'Group classes', 'Locker rooms', 'Towel service'],
+            image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '5:00 AM - 11:00 PM'
+        },
+        {
+            id: 7,
+            name: 'Business Center',
+            category: 'business',
+            description: 'Complete business facilities including computers, printers, and meeting rooms.',
+            icon: '💼',
+            features: ['Computer workstations', 'Printing services', 'Meeting rooms', 'High-speed internet', 'Secretarial services'],
+            image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80',
+            availability: '24/7'
+        },
+        {
+            id: 8,
+            name: 'Concierge Service',
+            category: 'service',
+            description: 'Professional concierge team to assist with tours, reservations, and local recommendations.',
+            icon: '🛎️',
+            features: ['Tour arrangements', 'Restaurant reservations', 'Transportation booking', 'Local recommendations'],
+            image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '24/7'
+        },
+        {
+            id: 9,
+            name: 'Laundry Service',
+            category: 'service',
+            description: 'Professional laundry and dry cleaning services for your convenience.',
+            icon: '👔',
+            features: ['Same-day service', 'Dry cleaning', 'Pressing service', 'Pickup and delivery'],
+            image: 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '7:00 AM - 7:00 PM'
+        },
+        {
+            id: 10,
+            name: 'Airport Shuttle',
+            category: 'transportation',
+            description: 'Complimentary shuttle service to and from Ninoy Aquino International Airport.',
+            icon: '🚐',
+            features: ['Complimentary service', 'Scheduled departures', 'Professional drivers', 'Luggage assistance'],
+            image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80',
+            availability: 'Scheduled times'
+        },
+        {
+            id: 11,
+            name: 'Gift Shop',
+            category: 'shopping',
+            description: 'Curated selection of local crafts, souvenirs, and travel essentials.',
+            icon: '🛍️',
+            features: ['Local handicrafts', 'Souvenirs', 'Travel essentials', 'Filipino delicacies'],
+            image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+            availability: '8:00 AM - 8:00 PM'
+        },
+        {
+            id: 12,
+            name: 'Rooftop Bar',
+            category: 'dining',
+            description: 'Elegant rooftop bar with panoramic city views and signature cocktails.',
+            icon: '🍸',
+            features: ['Panoramic city views', 'Signature cocktails', 'Light snacks', 'Live music weekends'],
+            image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80',
+            availability: '5:00 PM - 1:00 AM'
+        }
+    ];
+    const categories = [
+        { id: 'all', name: 'All Amenities', icon: '🏨' },
+        { id: 'recreation', name: 'Recreation', icon: '🏊' },
+        { id: 'dining', name: 'Dining', icon: '🍽️' },
+        { id: 'wellness', name: 'Wellness', icon: '🌿' },
+        { id: 'business', name: 'Business', icon: '💼' },
+        { id: 'service', name: 'Services', icon: '🛎️' },
+        { id: 'connectivity', name: 'Connectivity', icon: '📶' },
+        { id: 'events', name: 'Events', icon: '🎉' },
+        { id: 'transportation', name: 'Transport', icon: '🚐' },
+        { id: 'shopping', name: 'Shopping', icon: '🛍️' }
+    ];
+    const filteredAmenities = selectedCategory === 'all'
+        ? amenities
+        : amenities.filter(amenity => amenity.category === selectedCategory);
+    return (_jsxs("div", { className: "min-h-screen bg-gradient-to-br from-heritage-light/30 via-white to-heritage-neutral/20 pt-16 sm:pt-20", children: [_jsxs("div", { className: "relative py-16 sm:py-24 md:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-heritage-green/95 via-heritage-neutral/90 to-heritage-green/95 text-white overflow-hidden", children: [_jsxs("div", { className: "absolute inset-0 opacity-10", children: [_jsx("div", { className: "absolute top-20 left-20 w-64 h-64 bg-white rounded-full blur-3xl" }), _jsx("div", { className: "absolute bottom-20 right-20 w-48 h-48 bg-heritage-light rounded-full blur-2xl" }), _jsx("div", { className: "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl" })] }), _jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" }), _jsxs("div", { className: "relative max-w-5xl mx-auto text-center", children: [_jsx("div", { className: "mb-8", children: _jsx("div", { className: "inline-flex items-center justify-center w-20 h-1 bg-heritage-light rounded-full mb-6" }) }), _jsx("h1", { className: "text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold mb-6 sm:mb-8 tracking-tight leading-tight", children: _jsx("span", { className: "bg-gradient-to-r from-white via-heritage-light to-white bg-clip-text text-transparent", children: "Premium Amenities" }) }), _jsx("p", { className: "text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-heritage-light/90 max-w-4xl mx-auto leading-relaxed font-light mb-8 sm:mb-12 px-4", children: "Experience world-class facilities designed to make your stay unforgettable" }), _jsxs("div", { className: "flex justify-center items-center space-x-2 text-heritage-light/70", children: [_jsx("div", { className: "w-2 h-2 bg-heritage-light rounded-full animate-pulse" }), _jsx("span", { className: "text-sm uppercase tracking-widest font-medium", children: "Discover Our Exceptional Facilities" }), _jsx("div", { className: "w-2 h-2 bg-heritage-light rounded-full animate-pulse delay-500" })] })] })] }), _jsx("div", { className: "bg-gradient-to-b from-white via-heritage-light/5 to-white border-y border-heritage-green/10", children: _jsx("div", { className: "max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8", children: _jsx("div", { className: "flex flex-wrap gap-2 sm:gap-3 justify-center", children: categories.map((category) => (_jsx("button", { onClick: () => setSelectedCategory(category.id), className: `px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg text-xs sm:text-sm md:text-base font-semibold transition-all duration-300 ${selectedCategory === category.id
+                                ? 'bg-heritage-green text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-200 hover:border-heritage-green hover:text-heritage-green active:scale-95'}`, children: category.name }, category.id))) }) }) }), _jsx("div", { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16", children: _jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8", children: filteredAmenities.map((amenity, index) => (_jsxs("div", { className: "group bg-white rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden transform sm:hover:-translate-y-2 active:scale-95 sm:active:scale-100", style: { animationDelay: `${index * 100}ms` }, children: [_jsxs("div", { className: "relative h-48 sm:h-56 md:h-64 overflow-hidden", children: [_jsx("img", { src: amenity.image, alt: amenity.name, className: "w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" }), _jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" }), _jsx("div", { className: "absolute top-3 sm:top-4 left-3 sm:left-4 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg", children: _jsx("span", { className: "text-2xl sm:text-2xl md:text-3xl", children: amenity.icon }) }), _jsx("div", { className: "absolute top-3 sm:top-4 right-3 sm:right-4 bg-heritage-green/90 backdrop-blur-sm text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium", children: amenity.availability })] }), _jsxs("div", { className: "p-5 sm:p-6 md:p-8", children: [_jsxs("div", { className: "mb-3 sm:mb-4", children: [_jsx("h3", { className: "text-xl sm:text-2xl font-bold text-gray-900 mb-2", children: amenity.name }), _jsx("div", { className: "w-10 sm:w-12 h-1 bg-heritage-green rounded-full" })] }), _jsx("p", { className: "text-sm sm:text-base text-gray-600 leading-relaxed mb-4 sm:mb-6", children: amenity.description }), _jsxs("div", { className: "space-y-2 sm:space-y-3", children: [_jsxs("h4", { className: "text-sm sm:text-base font-semibold text-gray-900 flex items-center", children: [_jsx("span", { className: "w-2 h-2 bg-heritage-green rounded-full mr-2" }), "Features"] }), _jsx("div", { className: "space-y-1.5 sm:space-y-2", children: amenity.features.map((feature, idx) => (_jsxs("div", { className: "flex items-start text-xs sm:text-sm text-gray-600", children: [_jsx("svg", { className: "w-3.5 h-3.5 sm:w-4 sm:h-4 text-heritage-green mr-2 flex-shrink-0 mt-0.5", fill: "currentColor", viewBox: "0 0 20 20", children: _jsx("path", { fillRule: "evenodd", d: "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z", clipRule: "evenodd" }) }), _jsx("span", { children: feature })] }, idx))) })] })] })] }, amenity.id))) }) }), _jsx("div", { className: "bg-gradient-to-r from-heritage-green/10 via-heritage-light/10 to-heritage-green/10 py-12 sm:py-16 md:py-20", children: _jsxs("div", { className: "max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8", children: [_jsx("h2", { className: "text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4 sm:mb-6", children: "Ready to Experience Our Amenities?" }), _jsx("p", { className: "text-base sm:text-lg md:text-xl text-gray-700 mb-8 sm:mb-10 leading-relaxed", children: "Book your stay at Balay Ginhawa and enjoy access to all our premium facilities and services." }), _jsxs("div", { className: "flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center", children: [_jsxs("button", { onClick: () => navigate('/rooms'), className: "group relative bg-gradient-to-r from-heritage-green to-heritage-green/90 hover:from-heritage-green/90 hover:to-heritage-green text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl transition-all duration-500 hover:shadow-2xl hover:shadow-heritage-green/25 transform active:scale-95 sm:hover:scale-105 text-base sm:text-lg overflow-hidden", children: [_jsxs("span", { className: "relative z-10 flex items-center justify-center", children: ["View Our Rooms", _jsx("svg", { className: "ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M17 8l4 4m0 0l-4 4m4-4H3" }) })] }), _jsx("div", { className: "absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000" })] }), _jsx("button", { onClick: () => {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        setTimeout(() => navigate('/'), 300);
+                                    }, className: "group bg-white text-heritage-green font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl border-2 border-heritage-green hover:bg-heritage-green hover:text-white transition-all duration-300 text-base sm:text-lg active:scale-95", children: _jsxs("span", { className: "flex items-center justify-center", children: ["Back to Home", _jsx("svg", { className: "ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" }) })] }) })] })] }) })] }));
+};

@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
-import { UltraPremiumDepartmentGrid } from "../../components/inventory/invDepartments/DepartmentGrid";
+// import { UltraPremiumDepartmentGrid } from "../../components/inventory/invDepartments/DepartmentGrid";
 import { UltraPremiumRequestTable } from "../../components/inventory/invDepartments/DepartmentRequestTracking";
 import useGetInvDepartment from "../../api/getInvDepartment";
 
 export default function InvDepartments() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("All Departments");
   const [departments, setDepartments] = useState([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { getInvDepartment, loadingForGetInvDepartment } = useGetInvDepartment();
+  const { getInvDepartment, loadingForGetInvDepartment } =
+    useGetInvDepartment();
 
   const fetchData = async () => {
     const response = await getInvDepartment();
@@ -27,7 +29,7 @@ export default function InvDepartments() {
   }, [refreshKey]);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -46,17 +48,17 @@ export default function InvDepartments() {
         </div>
 
         {/* Department Grid */}
-        <UltraPremiumDepartmentGrid departments={departments} />
+        {/* <UltraPremiumDepartmentGrid departments={departments} /> */}
 
         {/* Request Tracking Table */}
-        <UltraPremiumRequestTable
+        {/* <UltraPremiumRequestTable
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           selectedDepartment={selectedDepartment}
           onDepartmentChange={setSelectedDepartment}
           requests={maintenanceRequests}
           onSuccess={handleRefresh}
-        />
+        /> */}
       </div>
     </div>
   );
