@@ -10,6 +10,16 @@ export interface Staff {
   rfid?: string;
   adminId?: string;
   createdAt?: any;
+  
+  // ✅ NEW: Leave balance tracking
+  annualLeaveEntitlement?: number; // Default: 25 days per year
+  leaveBalance?: {
+    year: number; // Current year (e.g., 2025)
+    totalEntitlement: number; // Total days allowed (e.g., 25)
+    used: number; // Days already used (approved leaves)
+    pending: number; // Days in pending requests
+    remaining: number; // Available days
+  };
 }
 
 export interface Schedule {
@@ -55,5 +65,16 @@ export interface LeaveRequest {
   status: 'pending' | 'approved' | 'rejected';
   createdAt?: any;
   updatedAt?: any;
+  
+  // ✅ NEW: Track days for this request
+  totalDays?: number; // Number of days for this leave request
 }
 
+// ✅ NEW: Helper type for leave balance calculation
+export interface LeaveBalanceInfo {
+  totalEntitlement: number;
+  used: number;
+  pending: number;
+  remaining: number;
+  year: number;
+}

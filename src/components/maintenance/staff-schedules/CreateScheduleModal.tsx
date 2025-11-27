@@ -65,6 +65,11 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
     return staffOnLeaveMap.get(staffId);
   };
 
+  const selectedValidStaff = useMemo(() => {
+  return selectedStaff.filter(id => !isStaffOnLeave(id));
+}, [selectedStaff, staffOnLeaveMap]);
+
+
   if (!isOpen) return null;
 
   return (
@@ -256,13 +261,14 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
                     )}
                   </div>
                   
-                  {selectedStaff.length > 0 && (
-                    <div className="mt-3 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-sm text-green-700 font-medium">
-                        {selectedStaff.length} staff member{selectedStaff.length !== 1 ? 's' : ''} selected
-                      </p>
-                    </div>
-                  )}
+{selectedValidStaff.length > 0 && (
+  <div className="mt-3 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+    <p className="text-sm text-green-700 font-medium">
+      {selectedValidStaff.length} staff member{selectedValidStaff.length !== 1 ? 's' : ''} selected
+    </p>
+  </div>
+)}
+
                 </div>
               </div>
             </div>

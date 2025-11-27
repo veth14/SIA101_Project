@@ -13,18 +13,17 @@ import {
   DocumentReference
 } from 'firebase/firestore';
 
-import LeaveRequestFilters from './LeaveRequestFilters';
 import LeaveRequestTable from './LeaveRequestTable';
 import CreateLeaveRequestModal from './CreateLeaveRequestModal';
-import LeaveRequestDetailsModal from './LeaveRequestDetailsModal'; // NEW IMPORT
+import LeaveRequestDetailsModal from './LeaveRequestDetailsModal';
 
 import { LeaveRequest, Staff } from './types';
 import { getWeekDateRange } from './utils';
 
 const LeaveRequestsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // NEW STATE
-  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null); // NEW STATE
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveRequest | null>(null);
   
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
@@ -107,6 +106,7 @@ const LeaveRequestsPage: React.FC = () => {
     endDate: string;
     leaveType: string;
     notes?: string;
+    totalDays?: number;
   }) => {
     try {
       const col = collection(db, 'leave_requests');
@@ -121,13 +121,15 @@ const LeaveRequestsPage: React.FC = () => {
         endDate: payload.endDate,
         leaveType: payload.leaveType,
         notes: payload.notes || '',
+        totalDays: payload.totalDays,
         status: 'pending',
         createdAt: serverTimestamp(),
+        deductedFromBalance: false,
       });
 
       setIsModalOpen(false);
       await fetchLeaveRequests();
-      alert('Leave request created.');
+      alert('Leave request created successfully.');
     } catch (err) {
       console.error('Error creating leave request:', err);
       alert('Failed to create leave request.');
@@ -149,6 +151,12 @@ const LeaveRequestsPage: React.FC = () => {
       });
 
       await fetchLeaveRequests();
+      
+      if (status === 'approved') {
+        alert('Leave request approved successfully.');
+      } else if (status === 'rejected') {
+        alert('Leave request rejected.');
+      }
     } catch (err) {
       console.error('Error updating status:', err);
       alert('Failed to update status.');
@@ -156,7 +164,7 @@ const LeaveRequestsPage: React.FC = () => {
   };
 
   // ------------------------------
-  // NEW: Handle View Details
+  // Handle View Details
   // ------------------------------
   const handleViewDetails = (leaveRequest: LeaveRequest) => {
     setSelectedLeaveRequest(leaveRequest);
@@ -193,57 +201,55 @@ const LeaveRequestsPage: React.FC = () => {
     return true;
   });
 
+  // Get unique classifications from leaveRequests
+  const uniqueClassifications = Array.from(
+    new Set(
+      leaveRequests
+        .map(r => (r.classification ?? '').toString())
+        .filter(c => c.trim() !== '')
+    )
+  ).sort();
+
   // ------------------------------
   // RENDER
   // ------------------------------
   return (
-    <div className="min-h-screen bg-[#F9F6EE]">
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
+    <div className="space-y-6">
+      <LeaveRequestTable
+        leaveRequests={filtered}
+        loading={loading}
+        onApprove={(id: string) => handleUpdateStatus(id, 'approved')}
+        onReject={(id: string) => handleUpdateStatus(id, 'rejected')}
+        onRefresh={fetchLeaveRequests}
+        onView={handleViewDetails}
+        onAdd={() => setIsModalOpen(true)}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        classificationFilter={classificationFilter}
+        setClassificationFilter={setClassificationFilter}
+        uniqueClassifications={uniqueClassifications}
+        currentWeekOffset={currentWeekOffset}
+        setCurrentWeekOffset={setCurrentWeekOffset}
+        currentWeekRange={currentWeekRange}
+      />
 
-        <LeaveRequestFilters
-          onAdd={() => setIsModalOpen(true)}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          classificationFilter={classificationFilter}
-          setClassificationFilter={setClassificationFilter}
-          uniqueClassifications={Array.from(
-            new Set(
-              staffList
-                .map(s => (s.classification ?? '').toString())
-                .filter(c => c.trim() !== '')
-            )
-          )}
-          currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={setCurrentWeekOffset}
-          currentWeekRange={currentWeekRange}
-        />
+      <CreateLeaveRequestModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        staffList={staffList}
+        loadingStaff={loading}
+        existingLeaveRequests={leaveRequests}
+        onCreate={handleCreateLeaveRequest}
+      />
 
-        <LeaveRequestTable
-          leaveRequests={filtered}
-          loading={loading}
-          onApprove={(id: string) => handleUpdateStatus(id, 'approved')}
-          onReject={(id: string) => handleUpdateStatus(id, 'rejected')}
-          onRefresh={fetchLeaveRequests}
-          onView={handleViewDetails} // NEW PROP
-        />
-
-        <CreateLeaveRequestModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          staffList={staffList}
-          loadingStaff={loading}
-          onCreate={handleCreateLeaveRequest}
-        />
-
-        {/* NEW: Details Modal */}
-        <LeaveRequestDetailsModal
-          isOpen={isDetailsModalOpen}
-          onClose={handleCloseDetailsModal}
-          leaveRequest={selectedLeaveRequest}
-        />
-      </div>
+      {/* Details Modal */}
+      <LeaveRequestDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        leaveRequest={selectedLeaveRequest}
+      />
     </div>
   );
 };

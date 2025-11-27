@@ -1,4 +1,4 @@
-// StaffSchedulesPage.tsx - UPDATED WITH LEAVE REQUEST CHECKING
+// StaffSchedulesPage.tsx - UPDATED WITH MERGED SCHEDULE TABLE
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../../../config/firebase';
 import { 
@@ -27,8 +27,7 @@ import {
 
 // Import existing components
 import ScheduleHeader from './ScheduleHeader';
-import ScheduleFilters from './ScheduleFilters';
-import ScheduleTable from './ScheduleTable';
+import ScheduleTable from './ScheduleTable'; // ✅ Now includes filters
 import CreateScheduleModal from './CreateScheduleModal';
 
 // ✅ Import Leave Request Page
@@ -49,6 +48,7 @@ const StaffSchedulesPage: React.FC = () => {
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [currentWeekOffset, setCurrentWeekOffset] = useState<number>(0);
+
 
   // ✅ NEW: State for leave requests
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
@@ -348,51 +348,55 @@ const StaffSchedulesPage: React.FC = () => {
         <ScheduleHeader weeklySchedules={headerSchedules} />
 
         {/* ✅ TAB NAVIGATION - After header, before filters */}
-        <div className="flex border-b border-gray-300 mb-6">
-          <button
-            onClick={() => setActiveTab("schedule")}
-            className={`px-6 py-3 font-semibold transition-all focus:outline-none ${
-              activeTab === "schedule"
-                ? "border-b-4 border-[#82A33D] text-[#82A33D]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Staff Scheduling
-          </button>
+{/* ===================== TAB NAVIGATION WITH REAL-TIME CLOCK ===================== */}
+<div className="w-full flex justify-center mb-8">
+  <div className="flex w-[600px] bg-gradient-to-br from-[#f6fff6] to-[#e8f6e8] p-2 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    
+    {/* Staff Scheduling Tab */}
+    <button
+      onClick={() => setActiveTab("schedule")}
+      className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300
+        ${activeTab === "schedule"
+          ? "bg-white shadow-md text-[#2F6D2F]"
+          : "text-[#338833] opacity-70 hover:opacity-100"
+        }`}
+    >
+      Staff Scheduling
+    </button>
 
-          <button
-            onClick={() => setActiveTab("leave")}
-            className={`px-6 py-3 font-semibold transition-all focus:outline-none ${
-              activeTab === "leave"
-                ? "border-b-4 border-[#82A33D] text-[#82A33D]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Leave Requests
-          </button>
-        </div>
+    {/* Leave Requests Tab */}
+    <button
+      onClick={() => setActiveTab("leave")}
+      className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300
+        ${activeTab === "leave"
+          ? "bg-white shadow-md text-[#2F6D2F]"
+          : "text-[#338833] opacity-70 hover:opacity-100"
+        }`}
+    >
+      Leave Requests
+    </button>
+
+</div>
+</div>
+
 
         {/* ✅ Conditional Page Rendering */}
         {activeTab === "leave" ? (
           <LeaveRequestsPage />
         ) : (
           <div className="space-y-6">
-            <ScheduleFilters
-              onCreateSchedule={() => setIsModalOpen(true)}
-              currentWeekOffset={currentWeekOffset}
-              setCurrentWeekOffset={setCurrentWeekOffset}
-              currentWeekRange={currentWeekRange}
+            {/* ✅ UPDATED: ScheduleTable now includes filters */}
+            <ScheduleTable
+              weeklySchedule={filteredWeeklySchedule}
               selectedDepartment={selectedDepartment}
               setSelectedDepartment={setSelectedDepartment}
               selectedClassification={selectedClassification}
               setSelectedClassification={setSelectedClassification}
               uniqueClassifications={uniqueClassifications}
-            />
-
-            <ScheduleTable
-              weeklySchedule={filteredWeeklySchedule}
-              selectedDepartment={selectedDepartment}
-              selectedClassification={selectedClassification}
+              currentWeekOffset={currentWeekOffset}
+              setCurrentWeekOffset={setCurrentWeekOffset}
+              currentWeekRange={currentWeekRange}
+              onCreateSchedule={() => setIsModalOpen(true)}
             />
 
             <CreateScheduleModal 

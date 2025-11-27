@@ -255,29 +255,6 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({ weeklySchedules = [] })
         </div>
       </div>
 
-      {/* Date and Time - Below Container */}
-      <div className="flex justify-end mb-8">
-        <div className="relative group">
-          <div className="bg-gradient-to-br from-white/90 to-green-500/5 backdrop-blur-xl rounded-2xl px-6 py-4 border border-green-500/20 shadow-lg group-hover:scale-105 transition-all duration-500">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-            <div className="relative flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-2xl font-black bg-gradient-to-r from-[#82A33D] to-green-600 bg-clip-text text-transparent">
-                  {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </p>
-                <p className="text-xs text-gray-600 font-semibold mt-0.5">
-                  {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
-                </p>
-              </div>
-              <div className="flex flex-col space-y-1">
-                <div className="w-1.5 h-1.5 bg-[#82A33D] rounded-full animate-ping"></div>
-                <div className="w-1.5 h-1.5 bg-green-600 rounded-full animate-ping delay-75"></div>
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping delay-150"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Day Schedule Modal */}
       {selectedDay && (

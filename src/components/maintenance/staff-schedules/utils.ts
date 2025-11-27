@@ -1,6 +1,7 @@
 // utils.ts
 import { DAYS, MAINTENANCE_CLASSIFICATIONS, HOUSEKEEPING_CLASSIFICATIONS } from './constants';
 import { Schedule } from './types';
+import { Staff, LeaveRequest } from './types';
 
 export const getDayFromDate = (dateString: string): string => {
   if (!dateString) return '';
@@ -87,4 +88,109 @@ export const getShiftTime = (shift: string): string => {
     case '11pm-7am': return '23:00-07:00';
     default: return '07:00-15:00';
   }
+};
+
+/**
+ * Calculate working days between two dates (excluding weekends)
+ */
+export const calculateLeaveDays = (startDate: string, endDate: string): number => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  let count = 0;
+  const currentDate = new Date(start);
+  
+  while (currentDate <= end) {
+    const dayOfWeek = currentDate.getDay();
+    // 0 = Sunday, 6 = Saturday
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      count++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return count;
+};
+
+/**
+ * Calculate leave balance for a staff member
+ * Default yearly allocation: 25 days
+ */
+export const calculateLeaveBalance = (
+  staff: Staff,
+  allLeaveRequests: LeaveRequest[]
+): {
+  totalEntitlement: number;
+  used: number;
+  pending: number;
+  remaining: number;
+  year: number;
+} => {
+  const currentYear = new Date().getFullYear();
+  const yearlyAllocation = 25; // Default 25 days per year
+
+  // Filter leave requests for this staff and current year
+  const staffLeaveRequests = allLeaveRequests.filter(request => {
+    if (request.staffId !== staff.id) return false;
+    
+    const requestYear = new Date(request.startDate).getFullYear();
+    return requestYear === currentYear;
+  });
+
+  // Calculate used days (approved leaves only)
+  const usedDays = staffLeaveRequests
+    .filter(request => request.status === 'approved')
+    .reduce((total, request) => {
+      const days = request.totalDays || calculateLeaveDays(request.startDate, request.endDate);
+      return total + days;
+    }, 0);
+
+  // Calculate pending days
+  const pendingDays = staffLeaveRequests
+    .filter(request => request.status === 'pending')
+    .reduce((total, request) => {
+      const days = request.totalDays || calculateLeaveDays(request.startDate, request.endDate);
+      return total + days;
+    }, 0);
+
+  // Calculate remaining days
+  const remainingDays = yearlyAllocation - usedDays - pendingDays;
+
+  return {
+    totalEntitlement: yearlyAllocation,
+    used: usedDays,
+    pending: pendingDays,
+    remaining: Math.max(0, remainingDays), // Ensure it doesn't go negative
+    year: currentYear
+  };
+};
+
+/**
+ * Get color class for leave balance display
+ */
+export const getLeaveBalanceColor = (remaining: number): string => {
+  if (remaining <= 0) return 'text-red-600';
+  if (remaining <= 5) return 'text-orange-600';
+  if (remaining <= 10) return 'text-yellow-600';
+  return 'text-green-600';
+};
+
+/**
+ * Get background color class for leave balance display
+ */
+export const getLeaveBalanceBackground = (remaining: number): string => {
+  if (remaining <= 0) return 'bg-red-50 border-red-200';
+  if (remaining <= 5) return 'bg-orange-50 border-orange-200';
+  if (remaining <= 10) return 'bg-yellow-50 border-yellow-200';
+  return 'bg-green-50 border-green-200';
+};
+
+/**
+ * Get message for leave balance status
+ */
+export const getLeaveBalanceMessage = (remaining: number): string => {
+  if (remaining <= 0) return 'No leave days remaining';
+  if (remaining <= 5) return 'Low leave balance - consider planning carefully';
+  if (remaining <= 10) return 'Moderate leave balance available';
+  return 'Good leave balance available';
 };
