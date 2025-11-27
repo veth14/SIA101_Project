@@ -13,7 +13,12 @@ export interface Transaction {
   category: string;
   status: 'completed' | 'pending' | 'failed';
   reference: string;
-  method: 'cash' | 'card' | 'transfer' | 'check';
+  method: 'cash' | 'card' | 'transfer' | 'check' | 'gcash';
+  guestName?: string;
+  userEmail?: string;
+  hasInvoice?: boolean;
+  bookingId?: string;
+  source?: 'transaction' | 'requisition' | 'purchase_order';
 }
 
 interface TransactionDetailsProps {
@@ -144,6 +149,12 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
               <div className="space-y-1">
                 <p className="text-xs font-semibold tracking-wide uppercase text-gray-600">Description</p>
                 <p className="text-base font-bold text-gray-900">{transaction.description}</p>
+                {transaction.guestName && (
+                  <p className="text-xs text-gray-600">Guest: {transaction.guestName}</p>
+                )}
+                {transaction.userEmail && (
+                  <p className="text-xs text-gray-500">Email: {transaction.userEmail}</p>
+                )}
                 <p className="text-xs text-gray-500">
                   {transaction.date} • {transaction.time || '—'}
                 </p>
@@ -197,7 +208,40 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
 
                 <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
                   <label className="text-xs font-semibold tracking-wide uppercase text-gray-500">Payment Method</label>
-                  <p className="text-base font-semibold capitalize text-gray-900">{transaction.method}</p>
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-4 h-4 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {transaction.method === 'card' ? (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                        />
+                      ) : transaction.method === 'cash' ? (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      ) : transaction.method === 'gcash' ? (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2zm5 14h.01M12 8a3 3 0 00-3 3"
+                        />
+                      ) : (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      )}
+                    </svg>
+                    <span className="text-base font-semibold capitalize text-gray-900">{transaction.method}</span>
+                  </div>
                 </div>
 
                 <div className="p-4 space-y-2 bg-white border border-gray-200/60 rounded-lg">
@@ -249,12 +293,15 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
 
                 <button
                   onClick={() => handleCreateInvoice(transaction)}
-                  className="w-full flex items-center justify-center space-x-3 px-6 py-4 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white rounded-xl hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] group"
+                  disabled={transaction.hasInvoice}
+                  className="w-full flex items-center justify-center space-x-3 px-6 py-4 bg-gradient-to-r from-[#82A33D] to-emerald-600 text-white rounded-xl hover:from-[#6d8735] hover:to-emerald-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span className="font-semibold">Create Invoice</span>
+                  <span className="font-semibold">
+                    {transaction.hasInvoice ? 'Invoice Already Created' : 'Create Invoice'}
+                  </span>
                 </button>
 
                 <div className="grid grid-cols-2 gap-3 pt-2">
@@ -382,6 +429,13 @@ const TransactionDetails: React.FC<TransactionDetailsProps> = ({
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    ) : transaction.method === 'gcash' ? (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2zm5 14h.01M12 8a3 3 0 00-3 3"
                       />
                     ) : (
                       <path

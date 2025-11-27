@@ -216,7 +216,7 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
   }, [items, searchTerm, selectedStatus]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredItems.slice(startIndex, endIndex);
@@ -259,18 +259,8 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
     return pages;
   };
 
-  // Show empty state if no items
-  if (items.length === 0) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
-        </div>
-      </div>
-    );
-  }
+  // Note: don't early-return when items is empty; keep layout visible
+  const isEmptyAfterFilter = filteredItems.length === 0;
 
   return (
     <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
@@ -332,7 +322,7 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
       {/* Items Table */}
       {/* Mobile: show stacked cards */}
   <div className="min-[1370px]:hidden px-4 py-4">
-        {currentItems.length === 0 ? (
+        {isEmptyAfterFilter ? (
           <div className="text-center text-sm text-gray-500">No items to display</div>
         ) : (
           <div className="space-y-4">
@@ -379,7 +369,11 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {/* Always render exactly 6 rows */}
+            {isEmptyAfterFilter && (
+              <tr className="h-20">
+                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">No items to display</td>
+              </tr>
+            )}
             {Array.from({ length: 6 }).map((_, index) => {
               const item = currentItems[index];
               if (item) {
@@ -398,10 +392,8 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
                         <span className="text-sm font-medium text-gray-900">{item.itemName}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-heritage-green/10 text-heritage-green border border-heritage-green/20">
-                        📂 {item.category}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">{item.category}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">{item.location}</span>
@@ -417,33 +409,18 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
                     </td>
                   </tr>
                 );
-              } else {
-                return (
-                  <tr key={`empty-${index}`} className="h-16">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                  </tr>
-                );
               }
+              return (
+                <tr key={`empty-${index}`} className="h-16">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                </tr>
+              );
             })}
           </tbody>
         </table>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   collection, getDocs, doc, updateDoc, addDoc,
   serverTimestamp, query, Timestamp, onSnapshot, orderBy, limit,
-  writeBatch, where, WriteBatch
+  writeBatch, where, WriteBatch, runTransaction
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -130,9 +130,9 @@ export const ReservationsPage = () => {
           tax: data.tax || 0,
           taxRate: data.taxRate || 0.12,
           totalAmount: data.totalAmount || 0,
+          paymentMethod: data.paymentDetails?.paymentMethod || data.paymentMethod || 'cash',
+          paymentStatus: data.paymentDetails?.paymentStatus || data.paymentStatus || 'pending',
           paymentDetails: {
-            paymentStatus: data.paymentDetails?.paymentStatus || data.paymentStatus || 'pending',
-            paymentMethod: data.paymentDetails?.paymentMethod || data.paymentMethod || 'cash',
             paidAt: data.paymentDetails?.paidAt || data.paidAt || null,
             gcashName: data.paymentDetails?.gcashName || data.gcashName || null,
             gcashNumber: data.paymentDetails?.gcashNumber || data.gcashNumber || null,
@@ -312,9 +312,9 @@ export const ReservationsPage = () => {
     try {
       const batch = writeBatch(db);
 
-      const newBookingRef = doc(collection(db, 'bookings'));
-      const bookingId = newBookingRef.id;
-      
+      const bookingId = `BK${Date.now()}${Math.random().toString(36).substring(2, 9)}`;
+      const newBookingRef = doc(db, 'bookings', bookingId);
+
       const bookingPayload = {
         ...newBooking,
         bookingId,
@@ -341,6 +341,81 @@ export const ReservationsPage = () => {
       
       await fetchRooms();
 
+      // Upsert a guest profile for this walk-in so loyalty members are sourced from reservations
+      try {
+        const guestProfilesRef = collection(db, 'guestprofiles');
+        const emailToCheck = (newBooking.userEmail || (newBooking as any).email || '').toString().toLowerCase();
+        const amountNum = Number(newBooking.totalAmount) || 0;
+        const earned = Math.floor(amountNum / 100);
+
+        if (emailToCheck) {
+          // Use email-based deterministic ID as an idempotency key to avoid duplicates/races
+          const safeId = `guest_${emailToCheck.replace(/[^a-z0-9]/g, '_')}`;
+          const guestRef = doc(db, 'guestprofiles', safeId);
+
+          await runTransaction(db, async (tx) => {
+            const snap = await tx.get(guestRef as any);
+            if (snap.exists()) {
+              const current = snap.data() as any;
+              const prevTotal = Number(current.totalBookings || 0);
+              const prevSpent = Number(current.totalSpent || 0);
+              const currentPoints = Number(current.loyaltyPoints || 0);
+              const newPoints = currentPoints + earned;
+
+              tx.update(guestRef as any, {
+                fullName: newBooking.userName || (newBooking as any).guestName || current.fullName || '',
+                email: emailToCheck || current.email || '',
+                phone: (newBooking as any).phone || current.phone || '',
+                totalBookings: prevTotal + 1,
+                totalSpent: prevSpent + amountNum,
+                loyaltyPoints: newPoints,
+                membershipTier: computeTierFromPoints(newPoints),
+                lastBookingDate: serverTimestamp(),
+                updatedAt: serverTimestamp()
+              });
+            } else {
+              // create new guest profile with deterministic id
+              tx.set(guestRef as any, {
+                fullName: newBooking.userName || (newBooking as any).guestName || '',
+                firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
+                lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
+                email: emailToCheck || '',
+                phone: (newBooking as any).phone || '',
+                totalBookings: 1,
+                totalSpent: amountNum,
+                loyaltyPoints: earned,
+                membershipTier: computeTierFromPoints(earned),
+                lastBookingDate: serverTimestamp(),
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                status: 'Active'
+              });
+            }
+          });
+        } else {
+          // No email available — create a new guest profile document inside a transaction
+          const guestRef = doc(guestProfilesRef);
+          await runTransaction(db, async (tx) => {
+            tx.set(guestRef as any, {
+              fullName: newBooking.userName || (newBooking as any).guestName || '',
+              firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
+              lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
+              email: '',
+              phone: (newBooking as any).phone || '',
+              totalBookings: 1,
+              totalSpent: amountNum,
+              loyaltyPoints: earned,
+              membershipTier: computeTierFromPoints(earned),
+              lastBookingDate: serverTimestamp(),
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              status: 'Active'
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to upsert guest profile from walk-in booking:', err);
+      }
     } catch (error) {
       console.error('Error adding walk-in:', error);
       alert('Failed to create booking.');
@@ -580,4 +655,12 @@ export const ReservationsPage = () => {
       </div>
     </RoomsContext.Provider>
   );
+};
+
+// Compute membership tier from points (same rules as loyalty service)
+const computeTierFromPoints = (points: number) => {
+  if (points >= 7000) return 'Platinum';
+  if (points >= 3000) return 'Gold';
+  if (points >= 1000) return 'Silver';
+  return 'Bronze';
 };

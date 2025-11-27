@@ -18,7 +18,7 @@ export const Header = () => {
   ];
 
   // Pages where header should always be solid (not transparent)
-  const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/mybookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
+  const solidHeaderPages = ['/booking', '/submit-review', '/myrequests', '/payment', '/my-bookings', '/profile', '/rooms', '/amenities', '/help', '/faqs', '/privacy-policy', '/terms-conditions', '/contact', '/about'];
   const shouldUseSolidHeader = solidHeaderPages.some(page => location.pathname.startsWith(page));
   
   // Mobile menu should be solid on auth pages for better visibility
@@ -245,9 +245,9 @@ export const Header = () => {
 
                             <button
                               onClick={() => {
-                                setShowUserDropdown(false);
-                                navigate('/mybookings');
-                              }}
+                                  setShowUserDropdown(false);
+                                  navigate('/my-bookings');
+                                }}
                               className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
                               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,6 +256,22 @@ export const Header = () => {
                               <div className="text-left">
                                 <div className="font-medium">My Bookings</div>
                                 <div className="text-sm text-gray-500">View your reservations</div>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setShowUserDropdown(false);
+                                navigate('/submit-review');
+                              }}
+                              className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.284 3.95a1 1 0 00.95.69h4.16c.969 0 1.371 1.24.588 1.81l-3.37 2.45a1 1 0 00-.364 1.118l1.284 3.95c.3.921-.755 1.688-1.54 1.118l-3.37-2.45a1 1 0 00-1.176 0l-3.37 2.45c-.784.57-1.839-.197-1.54-1.118l1.284-3.95a1 1 0 00-.364-1.118L2.07 9.377c-.783-.57-.38-1.81.588-1.81h4.16a1 1 0 00.95-.69l1.284-3.95z" />
+                              </svg>
+                              <div className="text-left">
+                                <div className="font-medium">Submit Review</div>
+                                <div className="text-sm text-gray-500">Share your stay experience</div>
                               </div>
                             </button>
 

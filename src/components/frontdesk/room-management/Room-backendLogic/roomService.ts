@@ -42,6 +42,14 @@ export interface RoomFilters {
 let roomsCache: { data: Room[]; timestamp: number } | null = null;
 const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
+/**
+ * Invalidate the rooms cache (called after updates)
+ */
+export const invalidateRoomsCache = (): void => {
+  roomsCache = null;
+  console.log('🔄 Rooms cache invalidated');
+};
+
 export const fetchRooms = async (forceRefresh = false): Promise<Room[]> => {
   try {
     // Return cached data if still valid
@@ -205,6 +213,7 @@ export const updateRoomStatus = async (roomId: string, status: Room['status']): 
   try {
     const roomRef = doc(db, 'rooms', roomId);
     await updateDoc(roomRef, { status });
+    invalidateRoomsCache(); // ✅ Clear cache after update
     console.log(`✅ Updated room ${roomId} status to ${status}`);
   } catch (error) {
     console.error('❌ Error updating room status:', error);

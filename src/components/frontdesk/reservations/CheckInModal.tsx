@@ -75,9 +75,9 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
     
     setSelectedRoom(reservation.roomNumber || '');
     setPaymentReceived(
-      reservation.paymentDetails.paymentStatus === 'paid' ? reservation.totalAmount : 0
+      reservation.paymentStatus === 'paid' ? reservation.totalAmount : 0
     );
-    setPaymentMethod(reservation.paymentDetails.paymentMethod || 'cash');
+    setPaymentMethod(reservation.paymentMethod || 'cash');
     
     // Reset checklist
     setGuestIdVerified(false);
@@ -107,13 +107,16 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
 
     const updatedReservation: BookingData = {
       ...reservation,
+      // Ensure identifiers are preserved (do not overwrite with a new/random id)
+      bookingId: reservation.bookingId,
+      userId: reservation.userId,
       roomNumber: selectedRoom,
       status: 'checked-in',
       updatedAt: Timestamp.fromDate(now),
+      paymentMethod: paymentMethod,
+      paymentStatus: newPaymentStatus,
       paymentDetails: {
         ...reservation.paymentDetails,
-        paymentMethod: paymentMethod,
-        paymentStatus: newPaymentStatus,
         paidAt: newPaymentStatus === 'paid' 
           ? (reservation.paymentDetails.paidAt || Timestamp.fromDate(now)) 
           : null,
@@ -313,11 +316,11 @@ export const CheckInModal = ({ isOpen, onClose, reservation, onCheckIn }: CheckI
                   <div>
                     <label className="block text-sm font-medium text-gray-700 text-right">Payment Status</label>
                     <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                      reservation.paymentDetails.paymentStatus === 'paid' 
+                      reservation.paymentStatus === 'paid' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {reservation.paymentDetails.paymentStatus.charAt(0).toUpperCase() + reservation.paymentDetails.paymentStatus.slice(1)}
+                      {reservation.paymentStatus.charAt(0).toUpperCase() + reservation.paymentStatus.slice(1)}
                     </span>
                   </div>
                 </div>

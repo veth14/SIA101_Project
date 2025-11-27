@@ -29,9 +29,9 @@ export interface BookingData {
     gcashName: string | null;
     gcashNumber: string | null;
     paidAt: Timestamp | null;
-    paymentMethod: string;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
-  };
+};
+  paymentMethod: string;
+  paymentStatus: 'paid' | 'pending' | 'refunded';
   roomName: string;
   roomNumber: string | null;
   roomPricePerNight: number;

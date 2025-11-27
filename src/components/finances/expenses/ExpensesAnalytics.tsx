@@ -4,12 +4,26 @@ import { TrendingUp, FileText } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   getRevenueData, 
-  calculateChartMetrics, 
-  formatCurrency, 
-  formatShortCurrency
+  calculateChartMetrics
 } from '../dashboard/chartsLogic/revenueAnalyticsLogic';
 
 
+
+// PHP currency helpers for this view
+const phpFormatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+  }).format(amount);
+
+const phpFormatShortCurrency = (amount: number) => {
+  if (!Number.isFinite(amount)) return '₱0';
+  const abs = Math.abs(amount);
+  if (abs >= 1_000_000) return `₱${(amount / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `₱${(amount / 1_000).toFixed(1)}K`;
+  return phpFormatCurrency(amount);
+};
 
 // Tooltip payload shape
 interface TooltipPayload {
@@ -34,7 +48,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
               <span className="text-sm text-gray-600 capitalize">{entry.dataKey}</span>
             </div>
             <span className="text-sm font-medium text-gray-900">
-              {formatCurrency(entry.value)}
+              {phpFormatCurrency(entry.value)}
             </span>
           </div>
         ))}
@@ -165,7 +179,7 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
                   padding={{ left: 0, right: 0 }}
                 />
                 <RYAxis 
-                  tickFormatter={formatShortCurrency}
+                  tickFormatter={phpFormatShortCurrency}
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
@@ -210,7 +224,7 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
                 <div className="text-sm font-medium text-gray-500">Total Expenses</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.totalRevenue || 85800)}
+              {phpFormatCurrency(metrics?.totalRevenue || 85800)}
             </div>
             <div className="flex items-center gap-1 mt-1 text-xs font-medium text-emerald-600">
               <TrendingUp className="w-3 h-3" />
@@ -221,7 +235,7 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Average</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.averageRevenue || 12257)}
+              {phpFormatCurrency(metrics?.averageRevenue || 12257)}
             </div>
             <div className="text-xs text-gray-500">Per day</div>
           </div>
@@ -229,7 +243,7 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Highest Day</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.maxRevenue || 15400)}
+              {phpFormatCurrency(metrics?.maxRevenue || 15400)}
             </div>
             <div className="text-xs text-gray-500">{metrics?.maxDay || "Friday"}</div>
           </div>
@@ -237,7 +251,7 @@ const ExpenseAnalytics: React.FC<ExpenseAnalyticsProps> = ({ expenses, staffFrom
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Projected</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.projectedRevenue || 92500)}
+              {phpFormatCurrency(metrics?.projectedRevenue || 92500)}
             </div>
             <div className="text-xs text-gray-500">Next week</div>
           </div>

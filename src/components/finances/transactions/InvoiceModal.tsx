@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Transaction } from './TransactionDetails';
 import SuccessModal from './SuccessModal';
+import { createInvoice, generateInvoiceNumber } from '../../../backend/invoices/invoicesService';
+import { db } from '../../../config/firebase';
+import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 interface InvoiceModalProps {
   isOpen: boolean;
@@ -12,19 +15,64 @@ interface InvoiceModalProps {
 
 const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transaction }) => {
   const navigate = useNavigate();
-  const [invoiceData, setInvoiceData] = useState({
-    customerName: '',
-    customerEmail: '',
+  const [invoiceData, setInvoiceData] = useState(() => ({
+    customerName: transaction?.guestName || '',
+    customerEmail: transaction?.userEmail || '',
     customerAddress: '',
-    invoiceNumber: `INV-${Date.now()}`,
+    invoiceNumber: generateInvoiceNumber(),
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
     notes: '',
-    taxRate: 12, // Default VAT rate in Philippines
-  });
+    taxRate: 12, // Display-only VAT rate (already included in transaction amount)
+  }));
 
   const [isCreating, setIsCreating] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [createdInvoiceNumber, setCreatedInvoiceNumber] = useState('');
+
+  // When the modal opens for a transaction, prefill guest info and generate a fresh invoice number
+  useEffect(() => {
+    if (!transaction || !isOpen) return;
+
+    setInvoiceData(prev => ({
+      ...prev,
+      customerName: transaction.guestName || prev.customerName,
+      customerEmail: transaction.userEmail || prev.customerEmail,
+      invoiceNumber: generateInvoiceNumber(),
+    }));
+  }, [transaction, isOpen]);
+
+  // Fallback for older transactions: if guest info is missing on the transaction,
+  // try to fetch it from the related booking document using bookingId.
+  useEffect(() => {
+    const shouldFetchFromBooking =
+      transaction &&
+      !transaction.guestName &&
+      !transaction.userEmail &&
+      transaction.bookingId;
+
+    if (!shouldFetchFromBooking) return;
+
+    const fetchBookingGuestInfo = async () => {
+      try {
+        const bookingsRef = collection(db, 'bookings');
+        const q = query(bookingsRef, where('bookingId', '==', transaction!.bookingId));
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+          const booking: any = snapshot.docs[0].data();
+          setInvoiceData(prev => ({
+            ...prev,
+            customerName: booking.userName || booking.guestName || prev.customerName,
+            customerEmail: booking.userEmail || booking.email || prev.customerEmail,
+          }));
+        }
+      } catch (error) {
+        console.error('Error pre-filling customer info from booking:', error);
+      }
+    };
+
+    fetchBookingGuestInfo();
+  }, [transaction]);
 
   if (!isOpen || !transaction) return null;
 
@@ -43,10 +91,13 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
   };
 
   const calculateTotals = () => {
-    const subtotal = transaction.amount;
-    const taxAmount = (subtotal * invoiceData.taxRate) / 100;
-    const total = subtotal + taxAmount;
-    
+    const total = transaction.amount;
+    const vatRate = invoiceData.taxRate / 100; // 0.12
+
+    // Assume total already includes 12% VAT; extract net and tax portions
+    const taxAmount = total * (vatRate / (1 + vatRate));
+    const subtotal = total - taxAmount;
+
     return {
       subtotal,
       taxAmount,
@@ -55,24 +106,123 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
   };
 
   const handleCreateInvoice = async () => {
+    if (!transaction) return;
+
     setIsCreating(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Here you would typically send the invoice data to your backend
-    const invoicePayload = {
-      ...invoiceData,
-      transactionId: transaction.id,
-      ...calculateTotals(),
-      createdAt: new Date().toISOString()
-    };
-    
-    console.log('Creating invoice:', invoicePayload);
-    
-    setIsCreating(false);
-    setCreatedInvoiceNumber(invoiceData.invoiceNumber);
-    setIsSuccessModalOpen(true);
+
+    try {
+      const totals = calculateTotals();
+      let invoiceStatus: 'paid' | 'pending' = 'pending';
+
+      // Prefer booking.paymentStatus if available
+      if (transaction.bookingId) {
+        try {
+          const bookingsRef = collection(db, 'bookings');
+          const q = query(bookingsRef, where('bookingId', '==', transaction.bookingId));
+          const snapshot = await getDocs(q);
+
+          if (!snapshot.empty) {
+            const booking: any = snapshot.docs[0].data();
+            const rawStatus = (booking.paymentStatus || '').toString().toLowerCase();
+            if (rawStatus === 'paid' || rawStatus === 'fully_paid' || rawStatus === 'fully paid') {
+              invoiceStatus = 'paid';
+            }
+          }
+        } catch (statusError) {
+          console.warn('Could not read booking paymentStatus for invoice status:', statusError);
+        }
+      }
+
+      // Fallback to transaction status if booking did not decide it
+      if (invoiceStatus === 'pending' && transaction.status === 'completed') {
+        invoiceStatus = 'paid';
+      }
+
+      // Enforce one invoice per transaction: if an invoice already exists for this
+      // transactionId, reuse it instead of creating a duplicate document.
+      try {
+        const invoicesRef = collection(db, 'invoices');
+        const existingQuery = query(invoicesRef, where('transactionId', '==', transaction.id));
+        const existingSnapshot = await getDocs(existingQuery);
+
+        if (!existingSnapshot.empty) {
+          const existingDoc = existingSnapshot.docs[0];
+          const existingData: any = existingDoc.data();
+          const existingInvoiceNumber: string = existingData.invoiceNumber || existingDoc.id;
+
+          // Mark the underlying source document as invoiced so it won't
+          // produce duplicate invoices. For legacy/normal transactions we
+          // update the 'transactions' collection. For requisitions and
+          // purchase orders we update their respective collections.
+          try {
+            if (!transaction.source || transaction.source === 'transaction') {
+              const txRef = doc(db, 'transactions', transaction.id);
+              await updateDoc(txRef, { hasInvoice: true });
+            } else if (transaction.source === 'requisition') {
+              const reqRef = doc(db, 'requisitions', transaction.id);
+              await updateDoc(reqRef, { hasInvoice: true });
+            } else if (transaction.source === 'purchase_order') {
+              const poRef = doc(db, 'purchaseOrders', transaction.id);
+              await updateDoc(poRef, { hasInvoice: true });
+            }
+          } catch (markError) {
+            console.warn('Failed to mark source document as invoiced (existing invoice):', markError);
+          }
+
+          setCreatedInvoiceNumber(existingInvoiceNumber);
+          setIsSuccessModalOpen(true);
+          return;
+        }
+      } catch (existingError) {
+        console.warn('Error checking for existing invoice for transaction:', existingError);
+      }
+
+      await createInvoice({
+        invoiceNumber: invoiceData.invoiceNumber,
+        customerName: invoiceData.customerName,
+        customerEmail: invoiceData.customerEmail || '',
+        customerAddress: invoiceData.customerAddress || '',
+        notes: invoiceData.notes || '',
+        taxRate: invoiceData.taxRate,
+        subtotal: totals.subtotal,
+        taxAmount: totals.taxAmount,
+        total: totals.total,
+        dueDate: invoiceData.dueDate,
+        status: invoiceStatus,
+        transactionId: transaction.id,
+        transactionReference: transaction.reference,
+        transactionDescription: transaction.description,
+        transactionCategory: transaction.category,
+        transactionMethod: transaction.method,
+        transactionDate: transaction.date,
+        transactionTime: transaction.time,
+      });
+
+      // Mark the underlying source document as having an invoice to prevent
+      // duplicates. For requisitions and purchase orders, update their own
+      // collections instead of 'transactions'.
+      try {
+        if (!transaction.source || transaction.source === 'transaction') {
+          const txRef = doc(db, 'transactions', transaction.id);
+          await updateDoc(txRef, { hasInvoice: true });
+        } else if (transaction.source === 'requisition') {
+          const reqRef = doc(db, 'requisitions', transaction.id);
+          await updateDoc(reqRef, { hasInvoice: true });
+        } else if (transaction.source === 'purchase_order') {
+          const poRef = doc(db, 'purchaseOrders', transaction.id);
+          await updateDoc(poRef, { hasInvoice: true });
+        }
+      } catch (markError) {
+        console.warn('Failed to mark source document as invoiced:', markError);
+      }
+
+      setCreatedInvoiceNumber(invoiceData.invoiceNumber);
+      setIsSuccessModalOpen(true);
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleSuccessModalClose = () => {
@@ -83,20 +233,50 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
   const handleViewInvoice = () => {
     setIsSuccessModalOpen(false);
     onClose(); // Close the invoice modal
-    
-    // Navigate to invoices page with the created invoice data
-    navigate('/admin/finances/invoices', { 
-      state: { 
-        newInvoice: {
-          invoiceNumber: createdInvoiceNumber,
-          transactionId: transaction?.id,
-          customerName: invoiceData.customerName,
-          amount: calculateTotals().total,
-          status: 'draft',
-          createdAt: new Date().toISOString()
+
+    const totals = calculateTotals();
+    let invoiceStatus: 'paid' | 'pending' = 'pending';
+
+    // Mirror the same logic used in handleCreateInvoice so UI matches backend
+    const decideStatusFromBooking = async () => {
+      if (transaction?.bookingId) {
+        try {
+          const bookingsRef = collection(db, 'bookings');
+          const q = query(bookingsRef, where('bookingId', '==', transaction.bookingId));
+          const snapshot = await getDocs(q);
+
+          if (!snapshot.empty) {
+            const booking: any = snapshot.docs[0].data();
+            const rawStatus = (booking.paymentStatus || '').toString().toLowerCase();
+            if (rawStatus === 'paid' || rawStatus === 'fully_paid' || rawStatus === 'fully paid') {
+              invoiceStatus = 'paid';
+            }
+          }
+        } catch (statusError) {
+          console.warn('Could not read booking paymentStatus for navigation invoice status:', statusError);
         }
-      } 
-    });
+      }
+
+      if (invoiceStatus === 'pending' && transaction?.status === 'completed') {
+        invoiceStatus = 'paid';
+      }
+
+      navigate('/admin/finances/invoices', { 
+        state: { 
+          newInvoice: {
+            invoiceNumber: createdInvoiceNumber,
+            transactionId: transaction?.id,
+            customerName: invoiceData.customerName,
+            amount: totals.total,
+            status: invoiceStatus,
+            createdAt: new Date().toISOString()
+          }
+        } 
+      });
+    };
+
+    // Fire and forget; navigation happens once status is decided
+    void decideStatusFromBooking();
   };
 
   const { subtotal, taxAmount, total } = calculateTotals();
@@ -271,14 +451,9 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
 
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Invoice Number</label>
-                    <input
-                      type="text"
-                      name="invoiceNumber"
-                      value={invoiceData.invoiceNumber}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/50 focus:border-[#82A33D] transition-colors"
-                      placeholder="INV-001"
-                    />
+                    <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm">
+                      {invoiceData.invoiceNumber}
+                    </div>
                   </div>
 
                   <div>
@@ -291,27 +466,13 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, transactio
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/50 focus:border-[#82A33D] transition-colors"
                     />
                   </div>
-
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Tax Rate (%)</label>
-                    <input
-                      type="number"
-                      name="taxRate"
-                      value={invoiceData.taxRate}
-                      onChange={handleInputChange}
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/50 focus:border-[#82A33D] transition-colors"
-                      placeholder="12.00"
-                    />
-                  </div>
                 </div>
 
                 {/* Invoice Summary */}
                 <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100/60 rounded-xl border border-gray-200/60">
                   <h4 className="mb-4 text-lg font-semibold text-gray-900 flex items-center">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     Invoice Summary

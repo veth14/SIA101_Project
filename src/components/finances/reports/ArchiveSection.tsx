@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Archive, ChevronDown, Download, Eye } from 'lucide-react';
-import { getArchivedReports, reportCategories } from '../../../data/financialReportsData';
+import { getArchivedReports, reportCategories, type FinancialReport } from '../../../data/financialReportsData';
  
 interface ArchiveSectionProps {
   searchQuery: string;
+  // Optional live reports from Firestore; not yet wired into archive logic
+  reports?: FinancialReport[];
 }
 
-const ArchiveSection: React.FC<ArchiveSectionProps> = ({ searchQuery }) => {
+const ArchiveSection: React.FC<ArchiveSectionProps> = ({ searchQuery, reports }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const archivedReports = getArchivedReports();
+  const archivedReports: FinancialReport[] = (reports || []).filter(r => r.status === 'archived');
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredReports = normalizedQuery

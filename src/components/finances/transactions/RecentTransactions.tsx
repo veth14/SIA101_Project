@@ -10,7 +10,12 @@ export interface Transaction {
   category: string;
   status: 'completed' | 'pending' | 'failed';
   reference: string;
-  method: 'cash' | 'card' | 'transfer' | 'check';
+  method: 'cash' | 'card' | 'transfer' | 'check' | 'gcash';
+  guestName?: string;
+  userEmail?: string;
+  hasInvoice?: boolean;
+  bookingId?: string;
+  source?: 'transaction' | 'requisition' | 'purchase_order';
 }
 
 interface RecentTransactionsProps {
@@ -88,22 +93,6 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
               <span>{showAll ? 'All transactions' : 'Paginated view'}</span>
             </p>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onToggleShowAll}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {showAll ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                )}
-              </svg>
-              <span>{showAll ? 'Paginate' : 'Display All'}</span>
-            </button>
-          </div>
         </div>
 
         {/* Search and Filter Row */}
@@ -124,41 +113,6 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
             />
           </div>
 
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
-          >
-            <option value="all">📊 All Status</option>
-            <option value="completed">✅ Completed</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="failed">⚠️ Failed</option>
-          </select>
-
-          {/* Type Filter */}
-          <select
-            value={typeFilter}
-            onChange={(e) => onTypeFilterChange(e.target.value)}
-            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
-          >
-            <option value="all">💳 All Types</option>
-            <option value="credit">Credit</option>
-            <option value="debit">Debit</option>
-          </select>
-
-          {/* Category Filter */}
-          <select
-            value={categoryFilter}
-            onChange={(e) => onCategoryFilterChange(e.target.value)}
-            className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium hover:border-gray-300 cursor-pointer"
-          >
-            <option value="all">📂 All Categories</option>
-            <option value="booking">Booking</option>
-            <option value="service">Service</option>
-            <option value="food">Food &amp; Beverage</option>
-            <option value="event">Events</option>
-          </select>
         </div>
       </div>
 
@@ -174,7 +128,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                 Amount
               </th>
               <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
-                Status
+                Invoice Status
               </th>
               <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
                 Date
@@ -191,6 +145,16 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
               >
                 <td className="px-6 py-5 whitespace-nowrap">
                   <div>
+                    {transaction.guestName && (
+                      <div className="text-xs font-medium text-gray-600">
+                        Guest: {transaction.guestName}
+                      </div>
+                    )}
+                    {transaction.userEmail && (
+                      <div className="text-xs font-medium text-gray-500">
+                        Email: {transaction.userEmail}
+                      </div>
+                    )}
                     <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">
                       {transaction.description}
                     </div>
@@ -217,7 +181,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-5 text-center whitespace-nowrap">
-                  {transaction.status === 'completed' ? (
+                  {transaction.hasInvoice ? (
                     <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
                       <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -226,30 +190,19 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      Completed
-                    </span>
-                  ) : transaction.status === 'failed' ? (
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200 shadow-sm">
-                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Failed
+                      Invoiced
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm">
-                      <svg className="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300 shadow-sm">
+                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          d="M12 8v4m0 4h.01M4 6h16M4 10h16M4 14h8"
                         />
                       </svg>
-                      Pending
+                      No Invoice
                     </span>
                   )}
                 </td>

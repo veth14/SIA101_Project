@@ -46,7 +46,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({ payment, onClose, onPri
         };
       case 'digital':
         return {
-          name: 'Digital Wallet',
+          name: 'GCash',
           icon: '📱',
           color: 'bg-purple-100 text-purple-800',
           details: ['GCash payment', 'Instant transfer', 'Verified account'],

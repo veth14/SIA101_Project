@@ -80,7 +80,7 @@ const RevenueSourcesBreakdown: React.FC<RevenueSourcesBreakdownProps> = ({ reven
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-sm font-semibold text-gray-600">Detailed Breakdown</p>
                 <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
-                <span className="text-sm font-bold text-heritage-green">${totalAmount.toLocaleString()}</span>
+                <span className="text-sm font-bold text-heritage-green">₱{totalAmount.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -135,7 +135,7 @@ const RevenueSourcesBreakdown: React.FC<RevenueSourcesBreakdownProps> = ({ reven
                     <div className="flex items-center justify-end gap-2 mb-1">
                       <TrendingUp className={`w-4 h-4 ${config.textColor}`} />
                       <p className={`text-2xl font-black ${config.textColor}`}>
-                        ${item.amount.toLocaleString()}
+                        ₱{item.amount.toLocaleString()}
                       </p>
                     </div>
                     <p className="text-xs text-gray-500 font-semibold">

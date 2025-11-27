@@ -3,39 +3,103 @@ import TransactionAnalytics from './TransactionAnalytics';
 import RecentTransactions from './RecentTransactions';
 import TransactionDetails from './TransactionDetails';
 import TransactionStats from './TransactionStats';
+import { subscribeToTransactions, TransactionRecord } from '../../../backend/transactions/transactionsService';
+import { subscribeToRequisitions, RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
-export interface Transaction {
-  id: string;
-  description: string;
-  amount: number;
-  type: 'credit' | 'debit';
-  date: string;
-  time: string;
-  category: string;
-  status: 'completed' | 'pending' | 'failed';
-  reference: string;
-  method: 'cash' | 'card' | 'transfer' | 'check';
-}
+export type Transaction = TransactionRecord;
 
-// Sample transaction data
-const sampleTransactions: Transaction[] = [
-  { id: '1', description: 'Room Booking Payment', amount: 15254, type: 'credit', date: '2024-10-01', time: '10:30', category: 'booking', status: 'completed', reference: 'BK001', method: 'card' },
-  { id: '2', description: 'Spa Service Payment', amount: 8254, type: 'credit', date: '2024-10-02', time: '14:15', category: 'service', status: 'completed', reference: 'SP002', method: 'cash' },
-  { id: '3', description: 'Restaurant Bill', amount: 3250, type: 'credit', date: '2024-10-03', time: '19:45', category: 'food', status: 'pending', reference: 'FB003', method: 'card' },
-  { id: '4', description: 'Conference Hall Booking', amount: 25000, type: 'credit', date: '2024-10-04', time: '09:00', category: 'booking', status: 'completed', reference: 'CH004', method: 'transfer' },
-  { id: '5', description: 'Laundry Service', amount: 1200, type: 'credit', date: '2024-10-05', time: '11:20', category: 'service', status: 'failed', reference: 'LS005', method: 'cash' },
-  { id: '6', description: 'Wedding Package', amount: 85000, type: 'credit', date: '2024-10-06', time: '16:30', category: 'event', status: 'completed', reference: 'WP006', method: 'transfer' },
-  { id: '7', description: 'Room Service Order', amount: 2800, type: 'credit', date: '2024-10-07', time: '20:15', category: 'food', status: 'completed', reference: 'RS007', method: 'card' },
-  { id: '8', description: 'Gym Membership', amount: 5000, type: 'credit', date: '2024-10-08', time: '08:45', category: 'service', status: 'pending', reference: 'GM008', method: 'card' },
-  { id: '9', description: 'Event Catering', amount: 45000, type: 'credit', date: '2024-10-09', time: '12:00', category: 'food', status: 'completed', reference: 'EC009', method: 'transfer' },
-  { id: '10', description: 'Transportation Service', amount: 3500, type: 'credit', date: '2024-10-10', time: '07:30', category: 'service', status: 'completed', reference: 'TS010', method: 'cash' },
-];
+const mapRequisitionToTransaction = (req: RequisitionRecord): Transaction => {
+  const dateSource = req.approvedDate || req.requiredDate || req.requestDate;
+  let date = '';
+  let time = '';
+
+  if (dateSource) {
+    const d = new Date(dateSource);
+    if (!Number.isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      date = `${year}-${month}-${day}`;
+      time = `${hours}:${minutes}`;
+    }
+  }
+
+  return {
+    id: req.id || req.requestNumber,
+    description: `${req.department} requisition ${req.requestNumber}`,
+    amount: typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0,
+    type: 'debit',
+    date,
+    time,
+    category: 'requisition',
+    // Treat requisition transactions as pending so invoices start as unpaid
+    status: 'pending',
+    reference: req.requestNumber,
+    method: 'transfer',
+    hasInvoice: req.hasInvoice === true,
+    // Use department as the customer name hint so invoices auto-fill
+    guestName: req.department || undefined,
+    userEmail: undefined,
+    bookingId: undefined,
+    source: 'requisition',
+  };
+};
+
+const mapPurchaseOrderToTransaction = (po: PurchaseOrderRecord): Transaction => {
+  const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
+  let date = '';
+  let time = '';
+
+  if (dateSource) {
+    const d = new Date(dateSource);
+    if (!Number.isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      date = `${year}-${month}-${day}`;
+      time = `${hours}:${minutes}`;
+    }
+  }
+
+  const rawStatus = (po.status || '').toString().toLowerCase();
+  // Keep purchase orders as pending so supplier invoices start as unpaid.
+  const status: Transaction['status'] = rawStatus === 'failed' ? 'failed' : 'pending';
+
+  return {
+    id: po.id || po.orderNumber,
+    description: `PO ${po.orderNumber} • ${po.supplier}`,
+    amount: typeof po.totalAmount === 'number' ? po.totalAmount : 0,
+    type: 'debit',
+    date,
+    time,
+    category: 'purchase_order',
+    status,
+    reference: po.orderNumber,
+    method: 'transfer',
+    hasInvoice: po.hasInvoice === true,
+    // Use supplier as the customer name hint so invoices auto-fill
+    guestName: po.supplier || undefined,
+    userEmail: undefined,
+    bookingId: undefined,
+    source: 'purchase_order',
+  };
+};
 
 export const TransactionsPage: React.FC = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [requisitionTransactions, setRequisitionTransactions] = useState<Transaction[]>([]);
+  const [purchaseOrderTransactions, setPurchaseOrderTransactions] = useState<Transaction[]>([]);
+
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
   const [filters, setFilters] = useState({
     dateRange: 'all',
     type: 'all',
@@ -46,20 +110,74 @@ export const TransactionsPage: React.FC = () => {
 
   // Centralized loading state - synchronized for all components
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Unified 2-second loading time
-    return () => clearTimeout(timer);
+    const unsubscribe = subscribeToTransactions(
+      (loaded) => {
+        setTransactions(loaded);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error('Error loading transactions:', error);
+        setIsLoading(false);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  // Subscribe to purchase orders so approved/received POs can appear in the
+  // transactions table for invoicing to suppliers.
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (orders) => {
+        const relevant = orders.filter((po) => {
+          const s = (po.status || '').toString().toLowerCase();
+          return s === 'approved' || s === 'received';
+        });
+        const mapped = relevant.map(mapPurchaseOrderToTransaction);
+        setPurchaseOrderTransactions(mapped);
+      },
+      (error) => {
+        console.error('Error loading purchase orders for transactions view:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  // Also subscribe to requisitions so approved and fulfilled requests can appear in the
+  // transactions table for invoicing.
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (requisitions) => {
+        const relevant = requisitions.filter((req) => {
+          const s = (req.status || '').toString().toLowerCase();
+          return s === 'approved' || s === 'fulfilled';
+        });
+        const mapped = relevant.map(mapRequisitionToTransaction);
+        setRequisitionTransactions(mapped);
+      },
+      (error) => {
+        console.error('Error loading requisitions for transactions view:', error);
+      }
+    );
+
+    return unsubscribe;
   }, []);
 
   const itemsPerPage = 8; // Items per page when not showing all
 
-  const totalTransactions = sampleTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const completedTransactions = sampleTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
-  const pendingTransactions = sampleTransactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
+  const allTransactions: Transaction[] = [
+    ...transactions,
+    ...requisitionTransactions,
+    ...purchaseOrderTransactions,
+  ];
 
-  // Filter and paginate transactions
-  const filteredTransactions = sampleTransactions.filter(transaction => {
+  const totalTransactions = allTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const completedTransactions = allTransactions.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount, 0);
+  const pendingTransactions = allTransactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
+
+  // Filter transactions
+  const filteredTransactions = allTransactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
     const matchesStatus = filters.status === 'all' || transaction.status === filters.status;
     const matchesType = filters.type === 'all' || transaction.type === filters.type;
@@ -67,11 +185,27 @@ export const TransactionsPage: React.FC = () => {
     return matchesSearch && matchesStatus && matchesType && matchesCategory;
   });
 
+  // Sort so that non-invoiced items appear first, then invoiced ones,
+  // while prioritizing most recent date/time within each group.
+  const sortedFilteredTransactions = [...filteredTransactions].sort((a, b) => {
+    const aHasInvoice = a.hasInvoice === true ? 1 : 0;
+    const bHasInvoice = b.hasInvoice === true ? 1 : 0;
+
+    if (aHasInvoice !== bHasInvoice) {
+      // 0 (no invoice) comes before 1 (invoiced)
+      return aHasInvoice - bHasInvoice;
+    }
+
+    const aDateTime = new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+    const bDateTime = new Date(`${b.date}T${b.time || '00:00'}`).getTime();
+    return bDateTime - aDateTime;
+  });
+
   // Pagination logic - show all if showAll is true, otherwise paginate
-  const totalPages = showAll ? 1 : Math.ceil(filteredTransactions.length / itemsPerPage);
+  const totalPages = showAll ? 1 : Math.ceil(sortedFilteredTransactions.length / itemsPerPage);
   const paginatedTransactions = showAll 
-    ? filteredTransactions 
-    : filteredTransactions.slice(
+    ? sortedFilteredTransactions 
+    : sortedFilteredTransactions.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
       );
@@ -110,6 +244,7 @@ export const TransactionsPage: React.FC = () => {
           filters={{ status: filters.status, category: filters.category }}
           onFiltersChange={(newFilters) => setFilters({...filters, ...newFilters})}
           isLoading={isLoading}
+          transactions={allTransactions}
         />
 
         {/* Transaction Table and Details */}

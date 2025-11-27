@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import CreateInvoiceModal from './CreateInvoiceModal';
 
 export interface Invoice {
   id: string;
+
   guestName: string;
   roomNumber: string;
   checkIn: string;
@@ -11,6 +11,15 @@ export interface Invoice {
   status: 'paid' | 'pending' | 'overdue';
   totalAmount: number;
   items: InvoiceItem[];
+  // Additional backend-derived fields used in InvoiceDetails
+  subtotal?: number;
+  taxAmount?: number;
+  taxRate?: number;
+  reference?: string;
+  paymentMethod?: string;
+  dueDate?: string;
+  // internal key so selection/highlight stays unique per row
+  selectionKey?: string;
 }
 
 interface InvoiceItem {
@@ -26,12 +35,11 @@ interface InvoiceListProps {
   invoices: Invoice[];
   onInvoiceSelect: (invoice: Invoice) => void;
   selectedInvoice: Invoice | null;
-  onInvoiceCreated?: (invoice: Invoice) => void;
 }
 
-const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, selectedInvoice, onInvoiceCreated }) => {
+const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, selectedInvoice }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const [filters, setFilters] = useState({
     status: 'all',
     dateRange: 'all',
@@ -39,7 +47,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
   });
   const [showAll, setShowAll] = useState(false);
 
-  const itemsPerPage = 11;
+  const itemsPerPage = 10;
 
   // Filter invoices based on current filters
   const filteredInvoices = invoices.filter(invoice => {
@@ -134,13 +142,6 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
     document.body.removeChild(link);
   };
 
-  const handleInvoiceCreated = (newInvoice: Invoice) => {
-    if (onInvoiceCreated) {
-      onInvoiceCreated(newInvoice);
-    }
-    setIsCreateModalOpen(false);
-  };
-
   return (
     <>
       <style>{`
@@ -203,16 +204,6 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
             </div>
 
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white transition-all shadow-lg bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-xl hover:shadow-xl hover:scale-105"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Create Invoice</span>
-              </button>
-
               <button 
                 onClick={handleExportAll}
                 className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
@@ -285,7 +276,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                   Guest
                 </th>
                 <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
-                  Room
+                  Reference
                 </th>
                 <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
                   Status
@@ -293,7 +284,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                 <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
                   Amount
                 </th>
-                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                <th className="px-6 py-5 text-center whitespace-nowrap">
                   Date
                 </th>
               </tr>
@@ -301,14 +292,15 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
             <tbody className="bg-white divide-y divide-gray-200">
               {visibleInvoices.map((invoice, index) => (
                 <tr
-                  key={invoice.id}
+                  key={`${invoice.id}-${invoice.roomNumber}-${invoice.totalAmount}-${index}`}
+
                   onClick={() => {
                     console.log('Invoice clicked:', invoice.id);
                     onInvoiceSelect(invoice);
                   }}
                   style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
                   className={`group cursor-pointer transition-all duration-300 hover:shadow-sm animate-fade-in ${
-                    selectedInvoice?.id === invoice.id
+                    selectedInvoice?.selectionKey && invoice.selectionKey && selectedInvoice.selectionKey === invoice.selectionKey
                       ? 'bg-gradient-to-r from-[#82A33D]/10 via-[#82A33D]/5 to-transparent border-l-4 border-l-[#82A33D]'
                       : 'hover:bg-gray-50'
                   }`}
@@ -369,7 +361,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                   </td>
                   <td className="px-6 py-5 text-right whitespace-nowrap">
                     <div className="text-sm font-bold text-gray-900">
-                      ${invoice.totalAmount.toFixed(2)}
+                      ₱{invoice.totalAmount.toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-5 text-center whitespace-nowrap">
@@ -378,23 +370,6 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
                   </td>
                 </tr>
               ))}
-
-              {/* Fill empty rows to always show itemsPerPage rows when paginated */}
-              {!showAll && totalItems > 0 &&
-                Array.from({ length: Math.max(0, itemsPerPage - currentInvoices.length) }).map((_, index) => (
-                  <tr
-                    key={`empty-${index}`}
-                    style={{ height: '74px' }}
-                    className="border-gray-200 border-dashed bg-gray-50/30"
-                  >
-                    <td className="px-6 py-5" colSpan={6}>
-                      <div className="flex items-center justify-center text-sm font-medium text-gray-300 opacity-60">
-                        <div className="w-2 h-2 mr-2 bg-gray-300 rounded-full opacity-40"></div>
-                        Empty slot {index + 1}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
             </tbody>
           </table>
         </div>
@@ -464,13 +439,6 @@ const InvoiceList: React.FC<InvoiceListProps> = ({ invoices, onInvoiceSelect, se
           </div>
         )}
       </div>
-
-      {/* Create Invoice Modal */}
-      <CreateInvoiceModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onInvoiceCreated={handleInvoiceCreated}
-      />
     </>
   );
 };

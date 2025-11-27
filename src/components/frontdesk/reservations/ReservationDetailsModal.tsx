@@ -213,7 +213,7 @@ export const ReservationDetailsModal = ({
               <p className="text-sm font-medium text-gray-600">ID: {reservation.bookingId}</p>
               <div className="flex space-x-2 mt-2 sm:mt-0">
                 {getStatusBadge(reservation.status)}
-                {getPaymentBadge(reservation.paymentDetails.paymentStatus)}
+                {getPaymentBadge(reservation.paymentStatus)}
               </div>
             </div>
           </div>
@@ -280,7 +280,7 @@ export const ReservationDetailsModal = ({
                   </span>
                 </InfoItem>
                 <InfoItem icon={<IconCreditCard />} label="Payment Method">
-                  <span className="capitalize">{reservation.paymentDetails.paymentMethod.replace('-', ' ')}</span>
+                  <span className="capitalize">{(reservation.paymentMethod || '').toString().replace('-', ' ')}</span>
                 </InfoItem>
               </div>
             </div>
