@@ -5,28 +5,24 @@ import {
   query,
   where,
   getDocs,
+  Timestamp,
 } from "firebase/firestore";
 
 
-interface StaffSchedule {
+interface AttendanceRecord {
   id: string;
+  TimeIn: Timestamp;
+  TimeOut: Timestamp | null;
   classification: string;
-  createdAt: unknown; 
-  day: string;
-  email: string;
-  phoneNumber: string;
-  shift: string;
-  shiftTime: string;
+  date: Timestamp;
+  fullName: string;
+  rfid: string;
   staffId: string;
-  staffName: string;
-  staffRef: unknown; 
-  status: string;
-  week: number;
-  year: number;
+  working: boolean;
 }
 
 const OnDutyStaffPage: React.FC = () => {
-  const [staff, setStaff] = useState<StaffSchedule[]>([]);
+  const [staff, setStaff] = useState<AttendanceRecord[]>([]);
   const [onDutyCount, setOnDutyCount] = useState(0);
   const [onBreakCount, setOnBreakCount] = useState(0);
   const [offDutyCount, setOffDutyCount] = useState(0);
@@ -35,52 +31,103 @@ const OnDutyStaffPage: React.FC = () => {
     const fetchStaff = async () => {
       try {
         const today = new Date();
-        const dayName = today.toLocaleDateString("en-US", { weekday: "long" });
-
         
-        const schedulesRef = collection(db, "staff_schedules");
+        const todayString = today.toISOString().split('T')[0];
+        
+        
+        const attendanceRef = collection(db, "attendance");
         const q = query(
-          schedulesRef,
-          where("day", "==", dayName)
+          attendanceRef,
+          where("date", ">=", new Date(todayString)), 
+          where("working", "==", true) 
         );
 
         const querySnapshot = await getDocs(q);
-        const staffList: StaffSchedule[] = [];
+        const staffList: AttendanceRecord[] = [];
 
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
           staffList.push({ 
             id: docSnap.id,
+            TimeIn: data.TimeIn || Timestamp.now(),
+            TimeOut: data.TimeOut || null,
             classification: data.classification || "",
-            createdAt: data.createdAt || "",
-            day: data.day || "",
-            email: data.email || "",
-            phoneNumber: data.phoneNumber || "",
-            shift: data.shift || "",
-            shiftTime: data.shiftTime || "",
+            date: data.date || Timestamp.now(),
+            fullName: data.fullName || "",
+            rfid: data.rfid || "",
             staffId: data.staffId || "",
-            staffName: data.staffName || "",
-            staffRef: data.staffRef || null,
-            status: data.status || "off",
-            week: data.week || 0,
-            year: data.year || 0
+            working: data.working || false
           });
         });
 
         setStaff(staffList);
 
         
-        setOnDutyCount(staffList.filter((s) => s.status === "scheduled" || s.status === "present").length);
-        setOnBreakCount(staffList.filter((s) => s.status === "break").length);
-        setOffDutyCount(staffList.filter((s) => s.status === "absent" || s.status === "off").length);
+        const currentTime = new Date();
+        const onDuty = staffList.filter((s) => {
+          const timeIn = s.TimeIn.toDate();
+          const timeOut = s.TimeOut ? s.TimeOut.toDate() : null;
+          
+          
+          if (!timeOut) return true;
+          
+          
+          return currentTime >= timeIn && currentTime <= timeOut;
+        }).length;
+
+        
+        const onBreak = 0;
+        
+        const offDuty = staffList.length - onDuty - onBreak;
+
+        setOnDutyCount(onDuty);
+        setOnBreakCount(onBreak);
+        setOffDutyCount(offDuty);
 
       } catch (error) {
-        console.error("Error fetching staff schedules:", error);
+        console.error("Error fetching attendance records:", error);
       }
     };
 
     fetchStaff();
   }, []);
+
+  
+  const getStaffStatus = (staff: AttendanceRecord): string => {
+    const currentTime = new Date();
+    const timeIn = staff.TimeIn.toDate();
+    const timeOut = staff.TimeOut ? staff.TimeOut.toDate() : null;
+
+    if (!timeOut) {
+      return "present"; 
+    }
+
+    if (currentTime >= timeIn && currentTime <= timeOut) {
+      return "present";
+    } else {
+      return "off";
+    }
+  };
+
+  
+  const getShiftTime = (staff: AttendanceRecord): string => {
+    const timeIn = staff.TimeIn.toDate();
+    const timeOut = staff.TimeOut ? staff.TimeOut.toDate() : null;
+    
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    };
+
+    if (timeOut) {
+      return `${formatTime(timeIn)} - ${formatTime(timeOut)}`;
+    } else {
+      return `${formatTime(timeIn)} - Present`;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
@@ -138,37 +185,42 @@ const OnDutyStaffPage: React.FC = () => {
           </div>
 
           <div className="p-6 space-y-4">
-            {staff.map((s) => (
-              <div key={s.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                
-                {/* Avatar + name */}
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-700">
-                      {s.staffName ? s.staffName.split(" ").map((w: string) => w[0]).join("") : "?"}
-                    </span>
+            {staff.map((s) => {
+              const status = getStaffStatus(s);
+              const shiftTime = getShiftTime(s);
+              
+              return (
+                <div key={s.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  
+                  {/* Avatar + name */}
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-700">
+                        {s.fullName ? s.fullName.split(" ").map((w: string) => w[0]).join("") : "?"}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{s.fullName}</p>
+                      <p className="text-sm text-gray-500">{s.classification}</p>
+                      <p className="text-xs text-gray-400">{shiftTime}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{s.staffName}</p>
-                    <p className="text-sm text-gray-500">{s.classification}</p>
-                    <p className="text-xs text-gray-400">{s.shiftTime}</p>
-                  </div>
-                </div>
 
-                {/* Status */}
-                <span
-                  className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    s.status === "present" || s.status === "scheduled"
-                      ? "bg-green-100 text-green-800"
-                      : s.status === "break"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {s.status === "scheduled" ? "on duty" : s.status}
-                </span>
-              </div>
-            ))}
+                  {/* Status */}
+                  <span
+                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      status === "present"
+                        ? "bg-green-100 text-green-800"
+                        : status === "break"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {status === "present" ? "on duty" : status}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
