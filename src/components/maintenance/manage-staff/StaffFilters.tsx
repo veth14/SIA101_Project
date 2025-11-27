@@ -1,6 +1,25 @@
 import React from 'react';
 
-const StaffFilters: React.FC = () => {
+interface StaffFiltersProps {
+  onAddStaff: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  filterClassification: string;
+  onFilterChange: (classification: string) => void;
+  filterGender: string;
+  onGenderChange: (gender: string) => void;
+}
+
+const StaffFilters: React.FC<StaffFiltersProps> = ({
+  onAddStaff,
+  searchQuery,
+  onSearchChange,
+  filterClassification,
+  onFilterChange,
+  filterGender,
+  onGenderChange
+}) => {
+
   return (
     <div className="relative mb-8">
       <div className="absolute -inset-1 bg-gradient-to-r from-[#82A33D] to-green-400 rounded-2xl blur opacity-20"></div>
@@ -8,7 +27,10 @@ const StaffFilters: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
           {/* Add New Staff Button */}
           <div className="flex-shrink-0">
-            <button className="group relative overflow-hidden bg-gradient-to-r from-[#82A33D] to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <button
+              onClick={onAddStaff}
+              className="group relative overflow-hidden bg-gradient-to-r from-[#82A33D] to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-[#82A33D] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative flex items-center space-x-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,19 +52,41 @@ const StaffFilters: React.FC = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search by name or task..."
+                placeholder="Search staff..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/80 backdrop-blur-sm placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-[#82A33D] focus:border-transparent transition-all duration-300"
               />
             </div>
 
-            {/* Filter Dropdown */}
+            {/* Classification Filter */}
             <div className="relative">
-              <select className="appearance-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent transition-all duration-300 cursor-pointer">
-                <option value="">Filter by classification</option>
-                <option value="housekeeping">Housekeeping</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="security">Security</option>
-                <option value="management">Management</option>
+              <select
+                value={filterClassification}
+                onChange={(e) => onFilterChange(e.target.value)}
+                className="appearance-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent transition-all duration-300 cursor-pointer"
+              >
+                <option value="">🏢 All Classifications</option>
+                <option value="Housekeeping">Housekeeping</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Gender Filter */}
+            <div className="relative">
+              <select
+                value={filterGender}
+                onChange={(e) => onGenderChange(e.target.value)}
+                className="appearance-none bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-[#82A33D] focus:border-transparent transition-all duration-300 cursor-pointer"
+              >
+                <option value="">👥 All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +96,14 @@ const StaffFilters: React.FC = () => {
             </div>
 
             {/* Clear Filters Button */}
-            <button className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap">
+            <button
+              onClick={() => {
+                onSearchChange("");
+                onFilterChange("");
+                onGenderChange("");
+              }}
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-300 hover:scale-105 whitespace-nowrap"
+            >
               Clear Filters
             </button>
           </div>
