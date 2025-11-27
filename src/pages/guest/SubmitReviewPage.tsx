@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ReviewForm, ReviewData } from '../../components/reviews/ReviewForm';
 import { LoadingOverlay } from '../../components/shared/LoadingSpinner';
 import { CheckCircle } from 'lucide-react';
+import { getTimeValue } from '../../lib/utils';
 
 export const SubmitReviewPage = () => {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -58,9 +59,9 @@ export const SubmitReviewPage = () => {
         );
         const reviewsSnapshot = await getDocs(reviewsQuery);
         
-        if (!reviewsSnapshot.empty) {
-          setExistingReview(reviewsSnapshot.docs[0].data());
-        }
+            if (!reviewsSnapshot.empty) {
+              setExistingReview(reviewsSnapshot.docs[0].data());
+            }
 
       } catch (err) {
         console.error('Error fetching booking:', err);
@@ -74,6 +75,8 @@ export const SubmitReviewPage = () => {
   }, [bookingId, userData, location.state]);
 
   const uploadPhotos = async (photos: File[]): Promise<string[]> => {
+    if (!photos || photos.length === 0) return [];
+
     const uploadPromises = photos.map(async (photo, index) => {
       const timestamp = Date.now();
       const fileName = `reviews/${userData?.uid}/${bookingId}/${timestamp}_${index}.jpg`;
@@ -95,7 +98,7 @@ export const SubmitReviewPage = () => {
     try {
       // Upload photos to Firebase Storage
       let photoUrls: string[] = [];
-      if (reviewData.photos.length > 0) {
+      if (reviewData.photos && reviewData.photos.length > 0) {
         photoUrls = await uploadPhotos(reviewData.photos);
       }
 
@@ -107,7 +110,9 @@ export const SubmitReviewPage = () => {
         roomType: booking.roomType,
         roomName: booking.roomName,
         rating: reviewData.rating,
-        title: reviewData.title,
+        category: reviewData.category,
+        // Backwards-compat: older schema used `title` for category
+        title: reviewData.category,
         review: reviewData.review,
         photos: photoUrls,
         guestName: userData.displayName || userData.email?.split('@')[0] || 'Guest',
@@ -119,7 +124,7 @@ export const SubmitReviewPage = () => {
         checkInDate: booking.checkIn,
         checkOutDate: booking.checkOut,
         submittedAt: serverTimestamp(),
-        status: 'approved', // Auto-approve or set to 'pending' for moderation
+        status: 'new', // mark new submissions for moderation/review
         helpful: 0,
         verified: true // Verified because it's from actual booking
       };
@@ -130,14 +135,15 @@ export const SubmitReviewPage = () => {
       // Show success
       setSuccess(true);
 
-      // Redirect after 3 seconds
+      // Redirect after 3 seconds (route is /my-bookings)
       setTimeout(() => {
         navigate('/my-bookings');
       }, 3000);
 
     } catch (err) {
       console.error('Error submitting review:', err);
-      setError('Failed to submit review. Please try again.');
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Failed to submit review. ${message}`);
       setSubmitting(false);
     }
   };
@@ -168,20 +174,73 @@ export const SubmitReviewPage = () => {
   }
 
   if (existingReview) {
+  // Show the submitted review and any response from staff
+  const respMs = getTimeValue(existingReview.responseDate);
+  const respDate = respMs ? new Date(respMs) : null;
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pt-20 sm:pt-24">
-        <div className="text-center p-6 sm:p-8 max-w-md">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-            <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
+        <div className="w-full max-w-3xl p-6 sm:p-8">
+          <div className="bg-gradient-to-br from-white to-slate-50/50 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200/50 p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-heritage-green rounded-lg flex items-center justify-center text-white font-bold">{userData?.displayName?.charAt(0) || userData?.email?.charAt(0) || 'G'}</div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{userData?.displayName || userData?.email?.split('@')[0] || 'Guest'}</h3>
+                    <div className="text-sm text-gray-500">{booking?.roomName || booking?.roomType}</div>
+                  </div>
+                    <div className="text-sm text-gray-500">{(() => {
+                      const submittedMs = getTimeValue(existingReview.submittedAt);
+                      return submittedMs ? new Date(submittedMs).toLocaleString() : (existingReview.submittedAt || '');
+                    })()}</div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="flex items-center gap-3">
+                    <div className="font-medium">Category:</div>
+                    <div className="text-sm text-gray-700">{existingReview.category || existingReview.title || 'General'}</div>
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="font-medium">Rating</div>
+                    <div className="text-sm text-gray-700">{existingReview.rating}/5</div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="font-medium">Your review</div>
+                    <p className="mt-2 text-sm text-gray-700 whitespace-pre-line">{existingReview.review}</p>
+                  </div>
+
+                  {existingReview.photos && existingReview.photos.length > 0 && (
+                    <div className="mt-4">
+                      <div className="font-medium">Photos</div>
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        {existingReview.photos.map((p: string, i: number) => (
+                          <img key={i} src={p} className="w-full h-24 object-cover rounded-lg" alt={`photo-${i}`} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 border-t pt-4">
+                    <div className="font-medium">Staff response</div>
+                    {existingReview.response ? (
+                      <div className="mt-2 text-sm text-gray-700">
+                        <p className="whitespace-pre-line">{existingReview.response}</p>
+                        <div className="mt-2 text-xs text-gray-500">Responded by: {existingReview.respondedBy || 'Staff'} {respDate ? `• ${respDate.toLocaleString()}` : ''}</div>
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-gray-500">No response yet. We will notify you when staff replies.</p>
+                    )}
+                  </div>
+
+                    <div className="mt-6 flex justify-end">
+                    <button onClick={() => navigate('/my-bookings')} className="px-5 py-2 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90">Back to My Bookings</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Review Already Submitted</h2>
-          <p className="text-sm sm:text-base text-gray-600 mb-4">You've already reviewed this booking.</p>
-          <button
-            onClick={() => navigate('/my-bookings')}
-            className="mt-4 px-6 py-3 bg-heritage-green text-white rounded-xl font-semibold hover:bg-heritage-green/90 transition-colors"
-          >
-            Back to My Bookings
-          </button>
         </div>
       </div>
     );

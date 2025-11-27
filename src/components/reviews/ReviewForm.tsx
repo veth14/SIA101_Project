@@ -11,7 +11,7 @@ interface ReviewFormProps {
 
 export interface ReviewData {
   rating: number;
-  title: string;
+  category: string;
   review: string;
   photos: File[];
 }
@@ -23,7 +23,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
   onCancel
 }) => {
   const [rating, setRating] = useState(0);
-  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
   const [review, setReview] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
@@ -59,8 +59,8 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
       return;
     }
 
-    if (!title.trim()) {
-      setError('Please enter a title');
+    if (!category.trim()) {
+      setError('Please select a category');
       return;
     }
 
@@ -73,7 +73,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
     setSubmitting(true);
 
     try {
-      await onSubmit({ rating, title, review, photos });
+      await onSubmit({ rating, category, review, photos });
     } catch (err) {
       setError('Failed to submit review. Please try again.');
       setSubmitting(false);
@@ -98,22 +98,25 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
           </div>
         </div>
 
-        {/* Title */}
+        {/* Category */}
         <div>
           <label className="block text-sm sm:text-base font-bold text-gray-900 mb-2">
-            Give your review a title *
+            Category *
           </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., Amazing stay with great service!"
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-heritage-green focus:ring-2 focus:ring-heritage-green/20 transition-all"
-            maxLength={100}
-          />
+          >
+            <option value="">Select a category</option>
+            <option value="Service">Service</option>
+            <option value="Cleanliness">Cleanliness</option>
+            <option value="Amenities">Amenities</option>
+            <option value="Food">Food</option>
+            <option value="General">General</option>
+          </select>
           <div className="flex justify-between items-center mt-1.5">
-            <p className="text-xs text-gray-500">Be specific and descriptive</p>
-            <p className="text-xs font-medium text-gray-600">{title.length}/100</p>
+            <p className="text-xs text-gray-500">Choose the most relevant category</p>
           </div>
         </div>
 

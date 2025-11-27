@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Modal from '../../admin/Modal';
+import { useAuth } from '../../../contexts/AuthContext';
+import { db } from '../../../config/firebase';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, QueryConstraint, serverTimestamp, limit } from 'firebase/firestore';
+import { getTimeValue } from '../../../lib/utils';
 
 interface FeedbackItem {
   id: string;
@@ -10,66 +15,69 @@ interface FeedbackItem {
   date: string;
   status: 'new' | 'reviewed' | 'responded';
   response?: string;
+  respondedBy?: string;
+  responseDate?: number | string;
 }
 
 export const GuestFeedback: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const feedbackData: FeedbackItem[] = [
-    {
-      id: '1',
-      guestName: 'Maria Santos',
-      roomNumber: '201',
-      rating: 5,
-      category: 'service',
-      feedback: 'Exceptional service from the front desk staff. Very accommodating and professional.',
-      date: '2024-01-15',
-      status: 'responded',
-      response: 'Thank you for your kind words! We\'ll share this with our team.'
-    },
-    {
-      id: '2',
-      guestName: 'John Rodriguez',
-      roomNumber: '305',
-      rating: 4,
-      category: 'cleanliness',
-      feedback: 'Room was very clean and well-maintained. Minor issue with bathroom lighting.',
-      date: '2024-01-14',
-      status: 'reviewed'
-    },
-    {
-      id: '3',
-      guestName: 'Lisa Chen',
-      roomNumber: '102',
-      rating: 3,
-      category: 'food',
-      feedback: 'Breakfast selection could be improved. Limited vegetarian options.',
-      date: '2024-01-13',
-      status: 'new'
-    },
-    {
-      id: '4',
-      guestName: 'Carlos Mendoza',
-      roomNumber: '408',
-      rating: 5,
-      category: 'amenities',
-      feedback: 'Love the spa facilities! Pool area is beautiful and well-maintained.',
-      date: '2024-01-12',
-      status: 'responded',
-      response: 'We\'re delighted you enjoyed our amenities! Thank you for staying with us.'
-    },
-    {
-      id: '5',
-      guestName: 'Anna Williams',
-      roomNumber: '156',
-      rating: 2,
-      category: 'service',
-      feedback: 'Check-in process took too long. Staff seemed overwhelmed during peak hours.',
-      date: '2024-01-11',
-      status: 'new'
-    }
-  ];
+  // removed pagination — load matching feedback in a single query
+  const { userData } = useAuth();
+
+  // feedbackData is loaded from Firestore `guestReview` collection
+  const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>([]);
+
+  useEffect(() => {
+    // Paginated, optionally filtered real-time listener.
+    const col = collection(db, 'guestReview');
+    const clauses: QueryConstraint[] = [];
+    if (selectedStatus && selectedStatus !== 'all') clauses.push(where('status', '==', selectedStatus));
+    if (selectedCategory && selectedCategory !== 'all') clauses.push(where('category', '==', selectedCategory));
+
+    // single real-time query (ordered newest first) — cap results to avoid unbounded reads
+    const q = query(col, ...clauses, orderBy('submittedAt', 'desc'), limit(500));
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const items: FeedbackItem[] = snapshot.docs.map(docSnap => {
+        const d = docSnap.data() as Record<string, unknown>;
+        const submittedMs = getTimeValue(d['submittedAt']);
+        const responseMs = getTimeValue(d['responseDate']);
+        const guestName = (d['guestName'] as string) || (d['guestEmail'] as string) || 'Guest';
+        const roomNumber = (d['roomName'] as string) || (d['roomType'] as string) || '';
+        const rating = Number(d['rating'] as number) || 0;
+        const category = ((d['category'] as string) || (d['title'] as string) || 'general').toString().toLowerCase() as FeedbackItem['category'];
+        const feedback = (d['review'] as string) || '';
+        const date = submittedMs ? new Date(submittedMs).toISOString() : ((d['stayDate'] as string) || new Date().toISOString());
+        const status = (((d['status'] as string) || 'new') as FeedbackItem['status']);
+        const response = (d['response'] as string) || '';
+        const respondedBy = (d['respondedBy'] as string) || '';
+
+        return {
+          id: docSnap.id,
+          guestName,
+          roomNumber,
+          rating,
+          category,
+          feedback,
+          date,
+          status,
+          response,
+          respondedBy,
+          responseDate: responseMs ?? ''
+        };
+      });
+
+      setFeedbackData(items);
+    }, (err) => {
+      console.error('guestReview onSnapshot error', err);
+    });
+
+    return () => unsub();
+  }, [selectedCategory, selectedStatus]);
+  
 
   const getCategoryColor = (category: string) => {
     const colors = {
@@ -111,8 +119,98 @@ export const GuestFeedback: React.FC = () => {
   const filteredFeedback = feedbackData.filter(item => {
     const categoryMatch = selectedCategory === 'all' || item.category === selectedCategory;
     const statusMatch = selectedStatus === 'all' || item.status === selectedStatus;
-    return categoryMatch && statusMatch;
+    const search = (searchTerm || '').toLowerCase().trim();
+    const searchMatch = !search || item.guestName.toLowerCase().includes(search) || item.roomNumber.toLowerCase().includes(search) || item.feedback.toLowerCase().includes(search);
+    return categoryMatch && statusMatch && searchMatch;
   });
+
+  // Pagination (reservations design)
+  const itemsPerPage = 5;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const totalPages = Math.max(1, Math.ceil(filteredFeedback.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFeedback = filteredFeedback.slice(startIndex, endIndex);
+
+  // Reset page when filters/search change
+  useEffect(() => { setCurrentPage(1); }, [selectedCategory, selectedStatus, searchTerm]);
+
+  // details modal state
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [activeFeedback, setActiveFeedback] = useState<FeedbackItem | null>(null);
+
+  const openModal = (item: FeedbackItem) => {
+    setActiveFeedback(item);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setActiveFeedback(null);
+  };
+
+  // respond modal state
+  const [isRespondOpen, setIsRespondOpen] = useState<boolean>(false);
+  const [respondTarget, setRespondTarget] = useState<FeedbackItem | null>(null);
+  const [responseDraft, setResponseDraft] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [templateCategory, setTemplateCategory] = useState<string>('all');
+
+  const categoryTemplates: Record<string, Array<{ key: string; label: string; text: string }>> = {
+    service: [
+      { key: 'service_apology', label: 'Apology', text: "We're truly sorry your experience with our service fell short. We will investigate what happened during your stay and retrain our team where needed to ensure this doesn't happen again." },
+      { key: 'service_thanks', label: 'Positive', text: "Thank you for highlighting our team's service. We're glad they made your stay comfortable — we'll share your kind words with the staff." }
+    ],
+    cleanliness: [
+      { key: 'clean_apology', label: 'Apology', text: "We apologize the room did not meet our cleanliness standards. We have shared this with housekeeping and will follow up to prevent future occurrences." },
+      { key: 'clean_thanks', label: 'Positive', text: "Thank you for noting the cleanliness. We're pleased the room met your expectations and will pass your feedback to our housekeeping team." }
+    ],
+    amenities: [
+      { key: 'amenities_apology', label: 'Apology', text: "We're sorry one of our amenities didn't meet your expectations. Please let us know which facility so we can address and improve it promptly." },
+      { key: 'amenities_thanks', label: 'Positive', text: "Thank you for your kind words about our amenities. We're delighted you enjoyed them and will share your feedback with the relevant teams." }
+    ],
+    food: [
+      { key: 'food_apology', label: 'Apology', text: "We apologize that the dining options didn't meet your needs. We'll review our menu and work with the kitchen to expand choices, including more vegetarian options." },
+      { key: 'food_thanks', label: 'Positive', text: "Thank you for your positive feedback about our food. We're happy you enjoyed the dining experience and will let the kitchen staff know." }
+    ],
+    general: [
+      { key: 'general_apology', label: 'Apology', text: "We're sorry to hear about your experience. Your feedback is important — we'll investigate and take the necessary steps to improve." },
+      { key: 'general_thanks', label: 'Positive', text: "Thank you for your feedback. We're glad you had a positive stay and appreciate you taking the time to let us know." }
+    ]
+  };
+
+  const openRespondModal = (item: FeedbackItem) => {
+    setRespondTarget(item);
+    setResponseDraft('');
+    setSelectedTemplate('');
+    setTemplateCategory(item.category || 'all');
+    setIsRespondOpen(true);
+  };
+
+  const closeRespondModal = () => {
+    setIsRespondOpen(false);
+    setRespondTarget(null);
+    setResponseDraft('');
+    setSelectedTemplate('');
+  };
+
+  const submitResponse = () => {
+    if (!respondTarget) return;
+    const adminUser = userData?.displayName || userData?.email || userData?.uid || 'Admin';
+
+    // update Firestore document for this review, store server timestamp
+    const reviewRef = doc(db, 'guestReview', respondTarget.id);
+    updateDoc(reviewRef, {
+      status: 'responded',
+      response: responseDraft || respondTarget.response || '',
+      respondedBy: adminUser,
+      responseDate: serverTimestamp()
+    }).then(() => {
+      closeRespondModal();
+    }).catch(err => {
+      console.error('Failed to send response:', err);
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -123,11 +221,13 @@ export const GuestFeedback: React.FC = () => {
             <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input
-              type="text"
-              placeholder="Search feedback, guest names, or rooms..."
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
-            />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search feedback, guest names, or rooms..."
+                className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
+              />
           </div>
           <select
             value={selectedCategory}
@@ -151,6 +251,7 @@ export const GuestFeedback: React.FC = () => {
             <option value="reviewed">Reviewed</option>
             <option value="responded">Responded</option>
           </select>
+          {/* no pagination controls — showing all matching feedback */}
         </div>
       </div>
 
@@ -169,13 +270,20 @@ export const GuestFeedback: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredFeedback.slice(0, 5).map((item) => (
+              {paginatedFeedback.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
-                    <div>
-                      <div className="font-semibold text-gray-900">{item.guestName}</div>
-                      <div className="text-sm text-gray-500">Room {item.roomNumber}</div>
-                      <div className="text-xs text-gray-400">{new Date(item.date).toLocaleDateString()}</div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-heritage-green text-white font-bold text-lg shadow-sm">
+                          {item.guestName ? item.guestName.split(' ').map(n=>n[0]).slice(0,2).join('') : (item.guestName ? item.guestName.charAt(0).toUpperCase() : '?')}
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 truncate">{item.guestName}</div>
+                        <div className="text-sm text-gray-500">Room {item.roomNumber}</div>
+                        <div className="text-xs text-gray-400">{new Date(item.date).toLocaleDateString()}</div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -199,17 +307,20 @@ export const GuestFeedback: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="text-heritage-green hover:text-heritage-green/80 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                      <button
+                        onClick={() => openModal(item)}
+                        className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors"
+                        aria-label="View feedback details"
+                      >
+                        View
                       </button>
-                      {item.status === 'new' && (
-                        <button className="text-blue-600 hover:text-blue-800 transition-colors">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
+                      {(item.status === 'new' || item.status === 'reviewed') && (
+                        <button
+                          onClick={() => openRespondModal(item)}
+                          className="px-3 py-1 rounded-md text-sm text-blue-600 border border-gray-200 bg-blue-50 hover:bg-blue-100 transition-colors"
+                          aria-label="Respond to guest"
+                        >
+                          Respond
                         </button>
                       )}
                     </div>
@@ -220,6 +331,233 @@ export const GuestFeedback: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination (matching reservations design) */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              Previous
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
+              .map((page, i, arr) => {
+                const isGap = i > 0 && page - arr[i - 1] > 1;
+                return (
+                  <React.Fragment key={page}>
+                    {isGap && <span className="text-gray-400">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
+                        currentPage === page
+                          ? 'bg-heritage-green text-white'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Details Modal */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} title="Feedback Details" size="md">
+        {activeFeedback && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 border-b border-gray-100 pb-3">
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Guest</div>
+                  <div className="text-sm font-medium text-gray-900">{activeFeedback.guestName}</div>
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Room</div>
+                  <div className="text-sm font-medium text-gray-900">{activeFeedback.roomNumber}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Rating</div>
+                  <div className="flex items-center space-x-2"><div>{renderStars(activeFeedback.rating)}</div><div className="text-sm text-gray-700">{activeFeedback.rating}/5</div></div>
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Category</div>
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(activeFeedback.category)}`}>
+                    {activeFeedback.category.charAt(0).toUpperCase() + activeFeedback.category.slice(1)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b border-gray-100 pb-3">
+                <div className="text-base font-semibold text-gray-700">Feedback</div>
+                <p className="text-sm text-gray-700">{activeFeedback.feedback}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-b border-gray-100 pb-3 items-start">
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Status</div>
+                  <div>
+                    {activeFeedback.status === 'responded' ? (
+                      <div className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-100">Responded</div>
+                    ) : (
+                      <select
+                        value={activeFeedback.status}
+                        onChange={async (e) => {
+                          if (!activeFeedback) return;
+                          const newStatus = e.target.value as FeedbackItem['status'];
+                          const prevStatus = activeFeedback.status;
+
+                          // optimistic local update
+                          setFeedbackData(prev => prev.map(it => it.id === activeFeedback.id ? { ...it, status: newStatus } : it));
+                          setActiveFeedback(prev => prev ? { ...prev, status: newStatus } : prev);
+
+                          try {
+                            const reviewRef = doc(db, 'guestReview', activeFeedback.id);
+                            await updateDoc(reviewRef, { status: newStatus });
+                          } catch (err) {
+                            console.error('Failed to update status:', err);
+                            // revert on failure
+                            setFeedbackData(prev => prev.map(it => it.id === activeFeedback.id ? { ...it, status: prevStatus } : it));
+                            setActiveFeedback(prev => prev ? { ...prev, status: prevStatus } : prev);
+                          }
+                        }}
+                        className="mt-1 px-2 py-1 rounded-xl border text-sm"
+                      >
+                        <option value="new">New</option>
+                        <option value="reviewed">Reviewed</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-gray-700">Date</div>
+                  <div className="text-sm font-medium text-gray-700">{new Date(activeFeedback.date).toLocaleDateString()}</div>
+                </div>
+              </div>
+
+              {activeFeedback.response && (
+                <div className="border-b border-gray-100 pb-3">
+                  <div className="text-base font-semibold text-gray-700">Response</div>
+                  <p className="text-sm text-gray-700">{activeFeedback.response}</p>
+                </div>
+              )}
+
+              {activeFeedback.respondedBy && (
+                <div className="grid grid-cols-2 gap-4 border-b border-gray-100 pb-3">
+                  <div>
+                    <div className="text-base font-semibold text-gray-700">Responded By</div>
+                    <div className="text-sm font-medium text-gray-700">{activeFeedback.respondedBy}</div>
+                  </div>
+                  {activeFeedback.responseDate && (
+                    <div>
+                      <div className="text-base font-semibold text-gray-700">Response Date</div>
+                      <div className="text-sm font-medium text-gray-700">{new Date(activeFeedback.responseDate).toLocaleString()}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button onClick={closeModal} className="px-4 py-2 bg-heritage-green text-white rounded-xl hover:bg-heritage-green/90">Close</button>
+              </div>
+            </div>
+        )}
+      </Modal>
+
+      {/* Respond Modal */}
+      <Modal isOpen={isRespondOpen} onClose={closeRespondModal} title={`Respond to ${respondTarget?.guestName ?? 'Guest'}`} size="md">
+        {respondTarget && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-600">Templates:</label>
+                <select
+                  value={templateCategory}
+                  onChange={(e) => setTemplateCategory(e.target.value)}
+                  className="px-2 py-1 border rounded-xl text-sm"
+                >
+                  <option value="all">All</option>
+                  <option value="service">Service</option>
+                  <option value="cleanliness">Cleanliness</option>
+                  <option value="amenities">Amenities</option>
+                  <option value="food">Food</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-2 flex-wrap">
+                {(() => {
+                  const cat = templateCategory === 'all' ? 'all' : templateCategory;
+                  if (cat === 'all') {
+                    return Object.keys(categoryTemplates).flatMap((c) =>
+                      categoryTemplates[c].map(t => (
+                        <button
+                          key={`${c}-${t.key}`}
+                          onClick={() => { setSelectedTemplate(t.key); setResponseDraft(t.text); }}
+                          className={`m-1 px-3 py-1 rounded-md text-sm border ${selectedTemplate === t.key ? 'bg-heritage-green/10 border-heritage-green text-heritage-green' : 'bg-white'}`}
+                        >
+                          {`${c.charAt(0).toUpperCase() + c.slice(1)}: ${t.label}`}
+                        </button>
+                      ))
+                    );
+                  }
+                  const list = categoryTemplates[cat] || categoryTemplates['general'];
+                  return list.map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => { setSelectedTemplate(t.key); setResponseDraft(t.text); }}
+                      className={`m-1 px-3 py-1 rounded-md text-sm border ${selectedTemplate === t.key ? 'bg-heritage-green/10 border-heritage-green text-heritage-green' : 'bg-white'}`}
+                    >
+                      {t.label}
+                    </button>
+                  ));
+                })()}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm text-gray-500">Message</div>
+              <textarea
+                value={responseDraft}
+                onChange={(e) => setResponseDraft(e.target.value)}
+                rows={5}
+                className="mt-1 w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-heritage-green/20"
+              />
+            </div>
+
+            
+
+            <div className="flex justify-end space-x-2 pt-2">
+              <button onClick={closeRespondModal} className="px-4 py-2 rounded-xl border text-sm">Cancel</button>
+              <button onClick={submitResponse} className="px-4 py-2 bg-heritage-green text-white rounded-xl text-sm">Send Response</button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {filteredFeedback.length === 0 && (
         <div className="text-center py-12">

@@ -85,7 +85,8 @@ export async function startListeners(
   // Start real-time listeners; these will send deltas and keep clients in sync.
   try {
     // Subscribe to a limited query first to avoid reading the whole collection on mount.
-    const foundQuery = query(collection(db, 'found'), orderBy('seqNumber', 'desc'), limitQuery(pageSize));
+    // Avoid relying on seqNumber; some docs may not have it yet.
+    const foundQuery = query(collection(db, 'found'), limitQuery(pageSize));
     unsubFound = onSnapshot(foundQuery, (snap) => {
       const items: LostFoundItem[] = [];
       const map: Record<string,string> = {};
@@ -100,7 +101,7 @@ export async function startListeners(
       onFoundUpdate(items, map);
     });
 
-    const lostQuery = query(collection(db, 'lost'), orderBy('seqNumber', 'desc'), limitQuery(pageSize));
+    const lostQuery = query(collection(db, 'lost'), limitQuery(pageSize));
     unsubLost = onSnapshot(lostQuery, (snap) => {
       const items: LostFoundItem[] = [];
       const map: Record<string,string> = {};
@@ -136,9 +137,10 @@ export async function fetchPage(collectionName: 'found' | 'lost', pageSize = 10,
   const base = collection(db, collectionName);
   let q;
   if (startAfterDoc) {
-    q = query(base, orderBy('seqNumber', 'desc'), startAfter(startAfterDoc), limitQuery(pageSize));
+    // Use simple pagination without relying on seqNumber
+    q = query(base, startAfter(startAfterDoc as QueryDocumentSnapshot<DocumentData>), limitQuery(pageSize));
   } else {
-    q = query(base, orderBy('seqNumber', 'desc'), limitQuery(pageSize));
+    q = query(base, limitQuery(pageSize));
   }
   const snap = await getDocs(q);
   const items: LostFoundItem[] = snap.docs.map(d => mapDocToItem(d));
