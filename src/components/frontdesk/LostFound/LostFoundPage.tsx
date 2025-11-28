@@ -397,19 +397,19 @@ const LostFoundPage: React.FC = () => {
           showCloseButton={false}
           showHeaderBar={false}
           headerContent={formItem ? (
-            <div className="relative z-30 flex  w-[100%] px-8 py-4 items-center justify-between border-b border-heritage-neutral/10 bg-gradient-to-r from-heritage-green/5 to-heritage-light/10 backdrop-blur-sm">
-              <div className="flex items-center space-x-3 ">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-heritage-green">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative z-30 flex w-[100%] px-8 py-4 items-center justify-between bg-white">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-600 text-white shadow-sm">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>  
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-heritage-green">{formItem.id?.toString().startsWith('new-') ? `Add ${selectedCollection === 'found' ? 'Found' : 'Lost'} Item` : 'Item Details'}</h2>
-                  <p className="text-sm text-heritage-neutral">{formItem.id?.toString().startsWith('new-') ? `Create a new ${selectedCollection === 'found' ? 'found' : 'lost'} item record` : 'View or edit the item information'}</p>
+                  <h2 className="text-xl font-semibold text-emerald-700">{formItem.id?.toString().startsWith('new-') ? `Add ${selectedCollection === 'found' ? 'Found' : 'Lost'} Item` : 'Item Details'}</h2>
+                  <p className="text-sm text-gray-500">{formItem.id?.toString().startsWith('new-') ? `Create a new ${selectedCollection === 'found' ? 'found' : 'lost'} item record` : 'View or edit the item information'}</p>
                 </div>
               </div>
-              <button onClick={handleModalClose} className="p-2 transition-all duration-200 rounded-full text-heritage-neutral hover:text-heritage-green hover:bg-heritage-green/10 ml-4">
+              <button onClick={handleModalClose} className="p-2 transition rounded-full text-emerald-700 hover:bg-emerald-50 ring-1 ring-emerald-100 ml-4">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -419,11 +419,11 @@ const LostFoundPage: React.FC = () => {
             <div className="p-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-heritage-neutral">Item Name</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Item Name</label>
                     <input
                       value={formItem.itemName}
                       onChange={(e) => setFormItem({ ...formItem, itemName: e.target.value })}
-                      className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                       placeholder="Enter item name"
                     />
                     {isFormNew && (!formItem.itemName || formItem.itemName.trim() === '') && (
@@ -432,11 +432,11 @@ const LostFoundPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-heritage-neutral">Category</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Category</label>
                     <select
                       value={formItem.category}
                       onChange={(e) => setFormItem({ ...formItem, category: e.target.value as LostFoundItem['category'] })}
-                      className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                     >
                       <option value="electronics">Electronics</option>
                       <option value="clothing">Clothing</option>
@@ -451,11 +451,11 @@ const LostFoundPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-heritage-neutral">Status</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Status</label>
                     <select
                       value={formItem.status}
                       onChange={(e) => setFormItem({ ...formItem, status: e.target.value as LostFoundItem['status'] })}
-                      className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                     >
                       <option value="unclaimed">Unclaimed</option>
                       <option value="claimed">Claimed</option>
@@ -465,11 +465,11 @@ const LostFoundPage: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">{selectedCollection === 'found' ? 'Location Found' : 'Location Lost'}</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{selectedCollection === 'found' ? 'Location Found' : 'Location Lost'}</label>
                   <input
                     value={formItem.location}
                     onChange={(e) => setFormItem({ ...formItem, location: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                     placeholder="e.g., Lobby, Poolside"
                   />
                   {isFormNew && (!formItem.location || formItem.location.trim() === '') && (
@@ -478,11 +478,11 @@ const LostFoundPage: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">{selectedCollection === 'found' ? 'Found By' : 'Lost By'}</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{selectedCollection === 'found' ? 'Found By' : 'Lost By'}</label>
                   <input
                     value={formItem.foundBy}
                     onChange={(e) => setFormItem({ ...formItem, foundBy: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                     placeholder="Staff name or description"
                   />
                   {isFormNew && (!formItem.foundBy || formItem.foundBy.trim() === '') && (
@@ -491,7 +491,7 @@ const LostFoundPage: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">{selectedCollection === 'found' ? 'Date Found' : 'Date Lost'}</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">{selectedCollection === 'found' ? 'Date Found' : 'Date Lost'}</label>
                   <input
                     type="date"
                     value={
@@ -507,7 +507,7 @@ const LostFoundPage: React.FC = () => {
                         dateLost: selectedCollection === 'lost' ? iso : formItem.dateLost
                       });
                     }}
-                    className="w-48 px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                    className="w-48 px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                   />
                   {isFormNew && ((selectedCollection === 'found' && (!formItem.dateFound || String(formItem.dateFound).trim() === '')) || (selectedCollection === 'lost' && !((formItem.dateLost ?? formItem.dateFound)))) && (
                     <p className="text-xs text-red-500 mt-1">{selectedCollection === 'found' ? 'Date found is required.' : 'Date lost is required.'}</p>
@@ -515,11 +515,11 @@ const LostFoundPage: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  <label className="block mb-2 text-sm font-medium text-heritage-neutral">Description</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
                   <textarea
                     value={formItem.description}
                     onChange={(e) => setFormItem({ ...formItem, description: e.target.value })}
-                    className="w-full px-4 py-1 transition-colors border rounded-lg resize-none border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green max-h-13 overflow-auto"
+                    className="w-full px-4 py-1 transition-colors border rounded-lg resize-none border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 max-h-13 overflow-auto"
                     rows={2}
                   />
                   {isFormNew && (!formItem.description || formItem.description.trim() === '') && (
@@ -532,32 +532,32 @@ const LostFoundPage: React.FC = () => {
                   <div className="mt-6">
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-heritage-neutral">Claimed By (Name)</label>
+                        <label className="block mb-2 text-sm font-medium text-gray-700">Claimed By (Name)</label>
                         <input
                           value={formItem.claimedBy ?? ''}
                           onChange={(e) => setFormItem({ ...formItem, claimedBy: e.target.value })}
-                          className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                          className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-heritage-neutral">Claimed Date</label>
+                        <label className="block mb-2 text-sm font-medium text-gray-700">Claimed Date</label>
                         <input
                           type="date"
                           value={formItem.claimedDate ? new Date(formItem.claimedDate).toISOString().slice(0, 10) : ''}
                           onChange={(e) => setFormItem({ ...formItem, claimedDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                          className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                          className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block mb-2 text-sm font-medium text-heritage-neutral">&nbsp;</label>
-                        <div className="text-sm text-heritage-neutral/80 mt-1">Optional claim details for guest contact</div>
+                        <label className="block mb-2 text-sm font-medium text-gray-700">&nbsp;</label>
+                        <div className="text-sm text-gray-500 mt-1">Optional claim details for guest contact</div>
                       </div>
                     </div>
 
                     <div className="pt-4">
-                      <h4 className="flex items-center text-lg font-bold text-heritage-green">
+                      <h4 className="flex items-center text-lg font-semibold text-emerald-700">
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -566,31 +566,31 @@ const LostFoundPage: React.FC = () => {
 
                       <div className="grid grid-cols-3 gap-4 mt-3">
                         <div>
-                          <label className="block mb-2 text-sm font-medium text-heritage-neutral">Name</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Name</label>
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.name) ?? ''}
                             onChange={(e) => updateGuestInfo('name', e.target.value)}
-                            className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                            className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                             placeholder="Guest full name"
                           />
                         </div>
 
                         <div>
-                          <label className="block mb-2 text-sm font-medium text-heritage-neutral">Room</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Room</label>
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.room) ?? ''}
                             onChange={(e) => updateGuestInfo('room', e.target.value)}
-                            className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                            className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                             placeholder="Room number"
                           />
                         </div>
 
                         <div>
-                          <label className="block mb-2 text-sm font-medium text-heritage-neutral">Contact</label>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">Contact</label>
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.contact) ?? ''}
                             onChange={(e) => updateGuestInfo('contact', e.target.value)}
-                            className="w-full px-4 py-3 transition-colors border rounded-lg border-heritage-neutral/30 focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                            className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
                             placeholder="Contact number or email"
                           />
                         </div>
@@ -599,10 +599,10 @@ const LostFoundPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Action buttons - invoice style */}
-                <div className="flex pt-6 mt-6 space-x-4 border-t border-heritage-neutral/10">
-                  <button onClick={handleModalClose} className="flex-1 px-6 py-3 transition-all duration-300 border-2 border-heritage-neutral/30 text-heritage-neutral rounded-xl hover:bg-heritage-neutral/5">Cancel</button>
-                  <button onClick={() => formItem && handleSaveItem(formItem, selectedCollection)} disabled={saveDisabled} className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-heritage-green to-heritage-neutral text-white rounded-xl hover:from-heritage-green/90 hover:to-heritage-neutral/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                {/* Action buttons - aligned with reservation modal */}
+                <div className="flex pt-6 mt-6 space-x-4 border-t border-gray-100">
+                  <button onClick={handleModalClose} className="flex-1 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
+                  <button onClick={() => formItem && handleSaveItem(formItem, selectedCollection)} disabled={saveDisabled} className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-2xl shadow-sm hover:bg-emerald-700 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                     <span>Save</span>
                   </button>

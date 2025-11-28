@@ -696,18 +696,18 @@ export const GuestAssistance: React.FC = () => {
             <div className="grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-600">Guest Name <span className="text-rose-500">*</span></label>
-                <input value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={handleGuestNameBlur} className="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="Start typing guest name..." />
+                <input value={guestName} onChange={(e) => setGuestName(e.target.value)} onBlur={handleGuestNameBlur} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" placeholder="Start typing guest name..." />
                 {formErrors.guestName && <div className="text-rose-600 text-xs mt-1">{formErrors.guestName}</div>}
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-600">Room Number/Location</label>
-                <input value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white" placeholder="Auto-filled when guest selected or enter manually" />
+                <input value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" placeholder="Auto-filled when guest selected or enter manually" />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-600">Guest Contact (Optional)</label>
-                <input value={guestContact} onChange={(e) => setGuestContact(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="Phone or email" />
+                <input value={guestContact} onChange={(e) => setGuestContact(e.target.value)} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" placeholder="Phone or email" />
               </div>
             </div>
           </div>
@@ -719,7 +719,7 @@ export const GuestAssistance: React.FC = () => {
               <div>
                 <label className="block text-xs font-medium text-gray-600">Request Type <span className="text-rose-500">*</span></label>
                 {modalMode === 'view' ? (
-                  <input value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white" />
+                  <input value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" />
                 ) : (
                   <select
                     value={requestType}
@@ -728,7 +728,7 @@ export const GuestAssistance: React.FC = () => {
                       setRequestType(val);
                       setAssignedTo(getDefaultAssigneeForType(val));
                     }}
-                    className="mt-1 w-full px-3 py-2 border rounded-lg bg-white"
+                    className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                   >
                     <option value="housekeeping">Housekeeping</option>
                     <option value="maintenance">Maintenance</option>
@@ -741,7 +741,7 @@ export const GuestAssistance: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600">Priority <span className="text-rose-500">*</span></label>
-                <select value={priority} onChange={(e) => setPriority(e.target.value as AssistanceRequest['priority'])} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
+                <select value={priority} onChange={(e) => setPriority(e.target.value as AssistanceRequest['priority'])} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition">
                   <option value="urgent">Urgent</option>
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -753,7 +753,7 @@ export const GuestAssistance: React.FC = () => {
               {modalMode === 'view' && (
                 <div>
                   <label className="block text-xs font-medium text-gray-600">Status</label>
-                  <select value={status} onChange={(e) => setStatus(e.target.value as AssistanceRequest['status'])} className="mt-1 w-full px-3 py-2 border rounded-lg bg-white">
+                  <select value={status} onChange={(e) => setStatus(e.target.value as AssistanceRequest['status'])} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition">
                     <option value="pending">Pending</option>
                     <option value="in-progress">In Progress</option>
                     <option value="completed">Completed</option>
@@ -764,7 +764,7 @@ export const GuestAssistance: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600">Description <span className="text-rose-500">*</span></label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full px-3 py-2 border rounded-lg" rows={4} placeholder="Describe the guest's request or issue..." disabled={modalMode === 'view'}></textarea>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" rows={4} placeholder="Describe the guest's request or issue..." disabled={modalMode === 'view'}></textarea>
                 <div className="flex justify-between items-center text-xs text-gray-500 mt-1">
                   <div>{description.length}/500</div>
                   {formErrors.description && <div className="text-rose-600">{formErrors.description}</div>}
@@ -787,7 +787,7 @@ export const GuestAssistance: React.FC = () => {
                 <select
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border rounded-lg bg-white"
+                  className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                 >
                   <option value="Unassigned">Unassigned</option>
                   <option value="Front Desk">Front Desk</option>
@@ -806,8 +806,8 @@ export const GuestAssistance: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-end space-x-3 pt-2">
-            <button type="button" onClick={closeModal} className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm">Cancel</button>
-            <button type="submit" disabled={!isDirty} className={`px-4 py-2 rounded-lg text-white text-sm ${isDirty ? 'bg-heritage-green' : 'bg-heritage-green/50 cursor-not-allowed'}`}>{modalMode === 'view' ? 'Save Changes' : 'Submit Request'}</button>
+            <button type="button" onClick={closeModal} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
+            <button type="submit" disabled={!isDirty} className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-emerald-600/50 cursor-not-allowed'}`}>{modalMode === 'view' ? 'Save Changes' : 'Submit Request'}</button>
           </div>
         </form>
       </Modal>
@@ -899,54 +899,56 @@ export const GuestAssistance: React.FC = () => {
           <p className="text-gray-500 font-medium">No assistance requests found for the selected filters.</p>
         </div>
       )}
-      {/* Pagination controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              Previous
-            </button>
+        <div className="p-4 border-t border-gray-100 bg-white/50">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="ml-1">Previous</span>
+              </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
-              .map((page, i, arr) => {
-                const isGap = i > 0 && page - arr[i - 1] > 1;
-                return (
-                  <React.Fragment key={page}>
-                    {isGap && <span className="text-gray-400">...</span>}
+              <div className="flex items-center space-x-2">
+                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else {
+                    const start = Math.max(1, Math.min(currentPage - 3, totalPages - 6));
+                    pageNum = start + i;
+                  }
+                  const isActive = pageNum === currentPage;
+                  return (
                     <button
-                      onClick={() => setCurrentPage(page)}
-                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                        currentPage === page
-                          ? 'bg-heritage-green text-white'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`inline-flex items-center justify-center min-w-[38px] h-10 px-3 text-sm font-medium rounded-md transition-all ${isActive ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100'}`}
+                      aria-current={isActive ? 'page' : undefined}
                     >
-                      {page}
+                      {pageNum}
                     </button>
-                  </React.Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
 
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-              }`}
-            >
-              Next
-            </button>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="mr-1">Next</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       )}

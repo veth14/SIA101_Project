@@ -425,54 +425,56 @@ export const LoyaltyProgram: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination (matching reservations table design) */}
+      {/* Pagination*/}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              Previous
-            </button>
+        <div className="p-4 border-t border-gray-100 bg-white/50">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="ml-1">Previous</span>
+              </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
-              .map((page, i, arr) => {
-                const isGap = i > 0 && page - arr[i - 1] > 1;
-                return (
-                  <React.Fragment key={page}>
-                    {isGap && <span className="text-gray-400">...</span>}
+              <div className="flex items-center space-x-2">
+                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else {
+                    const start = Math.max(1, Math.min(currentPage - 3, totalPages - 6));
+                    pageNum = start + i;
+                  }
+                  const isActive = pageNum === currentPage;
+                  return (
                     <button
-                      onClick={() => setCurrentPage(page)}
-                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                        currentPage === page
-                          ? 'bg-heritage-green text-white'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`inline-flex items-center justify-center min-w-[38px] h-10 px-3 text-sm font-medium rounded-md transition-all ${isActive ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100'}`}
+                      aria-current={isActive ? 'page' : undefined}
                     >
-                      {page}
+                      {pageNum}
                     </button>
-                  </React.Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
 
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-              }`}
-            >
-              Next
-            </button>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="mr-1">Next</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -558,7 +560,7 @@ export const LoyaltyProgram: React.FC = () => {
               <input
                 value={formMember.name || ''}
                 onChange={(e) => setFormMember(prev => ({ ...(prev || {}), name: e.target.value }))}
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
               />
             </div>
 
@@ -567,7 +569,7 @@ export const LoyaltyProgram: React.FC = () => {
               <input
                 value={formMember.email || ''}
                 onChange={(e) => setFormMember(prev => ({ ...(prev || {}), email: e.target.value }))}
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
               />
             </div>
 
@@ -576,7 +578,7 @@ export const LoyaltyProgram: React.FC = () => {
               <input
                 value={formMember.phone || ''}
                 onChange={(e) => setFormMember(prev => ({ ...(prev || {}), phone: e.target.value }))}
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
               />
             </div>
 
@@ -586,7 +588,7 @@ export const LoyaltyProgram: React.FC = () => {
                 <select
                   value={formMember.tier || 'Bronze'}
                   onChange={(e) => setFormMember(prev => ({ ...(prev || {}), tier: e.target.value as LoyaltyMember['tier'] }))}
-                  className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                  className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                 >
                   <option value="Bronze">Bronze</option>
                   <option value="Silver">Silver</option>
@@ -597,11 +599,11 @@ export const LoyaltyProgram: React.FC = () => {
 
               <div>
                 <label className="text-sm text-gray-500">Points</label>
-                <input
+                  <input
                   type="number"
                   value={formMember.points ?? 0}
                   onChange={(e) => setFormMember(prev => ({ ...(prev || {}), points: Number(e.target.value) }))}
-                  className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                    className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                 />
               </div>
             </div>
@@ -612,7 +614,7 @@ export const LoyaltyProgram: React.FC = () => {
                 type="number"
                 value={formMember.totalSpent ?? 0}
                 readOnly
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed"
+                className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-gray-50 border-gray-300 cursor-not-allowed"
               />
               <div className="text-xs text-gray-400 mt-1">Lifetime spend (read-only). Points are awarded per transaction and managed separately.</div>
             </div>
@@ -624,7 +626,7 @@ export const LoyaltyProgram: React.FC = () => {
                   type="date"
                   value={formMember.lastStay ? new Date(formMember.lastStay).toISOString().slice(0,10) : ''}
                   onChange={(e) => setFormMember(prev => ({ ...(prev || {}), lastStay: new Date(e.target.value).toISOString() }))}
-                  className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                  className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                 />
               </div>
 
@@ -633,7 +635,7 @@ export const LoyaltyProgram: React.FC = () => {
                 <select
                   value={formMember.status || 'active'}
                   onChange={(e) => setFormMember(prev => ({ ...(prev || {}), status: e.target.value as LoyaltyMember['status'] }))}
-                  className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                  className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -678,16 +680,16 @@ export const LoyaltyProgram: React.FC = () => {
                     setAddPointsError(null);
                     setIsAddPointsOpen(true);
                   }}
-                  className="px-4 py-2 rounded-xl border border-gray-200 bg-red-50 text-red-600"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
                 >
                   Add Points
                 </button>
               )}
-              <button onClick={closeAdd} className="px-4 py-2 rounded-xl border border-gray-200">Cancel</button>
+              <button onClick={closeAdd} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
               <button
                 onClick={() => formMember && saveMember({ ...(formMember as Partial<LoyaltyMember>) })}
                 disabled={Boolean(activeMember) && !isFormDirty}
-                className={`px-4 py-2 rounded-xl text-white ${Boolean(activeMember) && !isFormDirty ? 'bg-heritage-green/50 cursor-not-allowed' : 'bg-heritage-green'}`}
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${Boolean(activeMember) && !isFormDirty ? 'bg-emerald-600/50 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
               >
                 Save
               </button>
@@ -716,7 +718,7 @@ export const LoyaltyProgram: React.FC = () => {
                       <button
                         disabled={redeemMember.points < r.cost}
                         onClick={() => confirmRedeem(redeemMember.id, r.id)}
-                        className="px-3 py-1 rounded-xl bg-heritage-green text-white disabled:opacity-40"
+                        className="px-3 py-1 rounded-2xl bg-emerald-600 text-white border border-transparent shadow-sm hover:bg-emerald-700 transition disabled:opacity-40"
                       >
                         Redeem
                       </button>
@@ -752,7 +754,7 @@ export const LoyaltyProgram: React.FC = () => {
                 step={1}
                 value={addPointsValue}
                 onChange={(e) => setAddPointsValue(Number(e.target.value))}
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
               />
             </div>
 
@@ -762,15 +764,15 @@ export const LoyaltyProgram: React.FC = () => {
                 value={addPointsReason}
                 onChange={(e) => setAddPointsReason(e.target.value)}
                 placeholder="e.g. Loyalty promo"
-                className="w-full mt-2 px-3 py-2 border border-gray-200 rounded-xl"
+                className="w-full mt-2 px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
               />
             </div>
 
             {addPointsError && <div className="text-sm text-red-600">{addPointsError}</div>}
 
             <div className="flex items-center justify-end space-x-3 pt-3">
-              <button onClick={() => { setIsAddPointsOpen(false); setAddPointsMember(null); }} className="px-4 py-2 rounded-xl border border-gray-200">Cancel</button>
-              <button onClick={confirmAddPoints} className="px-4 py-2 rounded-xl bg-heritage-green text-white">Add Points</button>
+              <button onClick={() => { setIsAddPointsOpen(false); setAddPointsMember(null); }} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
+              <button onClick={confirmAddPoints} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-2xl shadow-sm hover:bg-emerald-700 transition transform hover:-translate-y-0.5">Add Points</button>
             </div>
           </div>
         )}

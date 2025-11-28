@@ -332,54 +332,56 @@ export const GuestFeedback: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination (matching reservations design) */}
+      {/* Pagination  */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-6 pb-6 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              Previous
-            </button>
+        <div className="p-4 border-t border-gray-100 bg-white/50">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="ml-1">Previous</span>
+              </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(p => p === 1 || p === totalPages || Math.abs(currentPage - p) <= 1)
-              .map((page, i, arr) => {
-                const isGap = i > 0 && page - arr[i - 1] > 1;
-                return (
-                  <React.Fragment key={page}>
-                    {isGap && <span className="text-gray-400">...</span>}
+              <div className="flex items-center space-x-2">
+                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else {
+                    const start = Math.max(1, Math.min(currentPage - 3, totalPages - 6));
+                    pageNum = start + i;
+                  }
+                  const isActive = pageNum === currentPage;
+                  return (
                     <button
-                      onClick={() => setCurrentPage(page)}
-                      className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                        currentPage === page
-                          ? 'bg-heritage-green text-white'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`inline-flex items-center justify-center min-w-[38px] h-10 px-3 text-sm font-medium rounded-md transition-all ${isActive ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100'}`}
+                      aria-current={isActive ? 'page' : undefined}
                     >
-                      {page}
+                      {pageNum}
                     </button>
-                  </React.Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
 
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-heritage-green hover:text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-              }`}
-            >
-              Next
-            </button>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="mr-1">Next</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -482,7 +484,7 @@ export const GuestFeedback: React.FC = () => {
               )}
 
               <div className="flex justify-end pt-2">
-                <button onClick={closeModal} className="px-4 py-2 bg-heritage-green text-white rounded-xl hover:bg-heritage-green/90">Close</button>
+                <button onClick={closeModal} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Close</button>
               </div>
             </div>
         )}
@@ -545,15 +547,15 @@ export const GuestFeedback: React.FC = () => {
                 value={responseDraft}
                 onChange={(e) => setResponseDraft(e.target.value)}
                 rows={5}
-                className="mt-1 w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-heritage-green/20"
+                className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
               />
             </div>
 
             
 
             <div className="flex justify-end space-x-2 pt-2">
-              <button onClick={closeRespondModal} className="px-4 py-2 rounded-xl border text-sm">Cancel</button>
-              <button onClick={submitResponse} className="px-4 py-2 bg-heritage-green text-white rounded-xl text-sm">Send Response</button>
+              <button onClick={closeRespondModal} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
+              <button onClick={submitResponse} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-2xl shadow-sm hover:bg-emerald-700 transition transform hover:-translate-y-0.5">Send Response</button>
             </div>
           </div>
         )}
