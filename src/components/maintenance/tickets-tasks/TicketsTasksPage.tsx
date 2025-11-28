@@ -62,6 +62,11 @@ const TicketsTasksPage: React.FC = () => {
   const [filteredCompletedTickets, setFilteredCompletedTickets] = useState<Ticket[]>([]);
   const [filteredActiveTickets, setFilteredActiveTickets] = useState<Ticket[]>([]);
 
+  // Pagination
+  const [activeTicketsPage, setActiveTicketsPage] = useState(1);
+  const [completedTicketsPage, setCompletedTicketsPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
   // Subscribe to real-time updates
   useEffect(() => {
     const unsubscribeActive = subscribeToActiveTickets((tickets) => {
@@ -118,6 +123,29 @@ const TicketsTasksPage: React.FC = () => {
 
     applyCompletedFilters();
   }, [completedFilters, completedTickets]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setActiveTicketsPage(1);
+  }, [filters, filteredActiveTickets]);
+
+  useEffect(() => {
+    setCompletedTicketsPage(1);
+  }, [completedFilters, filteredCompletedTickets]);
+
+  // Pagination calculations for Active Tickets
+  const activeTotalPages = Math.max(1, Math.ceil(filteredActiveTickets.length / ITEMS_PER_PAGE));
+  const activeDisplayTickets = filteredActiveTickets.slice(
+    (activeTicketsPage - 1) * ITEMS_PER_PAGE,
+    activeTicketsPage * ITEMS_PER_PAGE
+  );
+
+  // Pagination calculations for Completed Tickets
+  const completedTotalPages = Math.max(1, Math.ceil(filteredCompletedTickets.length / ITEMS_PER_PAGE));
+  const completedDisplayTickets = filteredCompletedTickets.slice(
+    (completedTicketsPage - 1) * ITEMS_PER_PAGE,
+    completedTicketsPage * ITEMS_PER_PAGE
+  );
 
   const resetCreateForm = () => {
     setCreateTicketForm({
@@ -444,7 +472,7 @@ const TicketsTasksPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredActiveTickets.map((ticket, index) => (
+                    {activeDisplayTickets.map((ticket, index) => (
                       <tr 
                         key={ticket.id}
                         style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
@@ -531,6 +559,66 @@ const TicketsTasksPage: React.FC = () => {
                 </table>
               )}
             </div>
+
+            {/* Pagination for Active Tickets */}
+            {activeTotalPages > 1 && (
+              <div className="p-4 border-t border-gray-100 bg-white/50">
+                <div className="flex items-center justify-center">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveTicketsPage(Math.max(1, activeTicketsPage - 1))}
+                      disabled={activeTicketsPage === 1}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Previous
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(7, activeTotalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (activeTotalPages <= 7) {
+                          pageNum = i + 1;
+                        } else if (activeTicketsPage <= 4) {
+                          pageNum = i + 1;
+                        } else if (activeTicketsPage >= activeTotalPages - 3) {
+                          pageNum = activeTotalPages - 6 + i;
+                        } else {
+                          pageNum = activeTicketsPage - 3 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setActiveTicketsPage(pageNum)}
+                            className={`min-w-[40px] px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                              activeTicketsPage === pageNum
+                                ? 'bg-[#82A33D] text-white shadow-sm'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setActiveTicketsPage(Math.min(activeTotalPages, activeTicketsPage + 1))}
+                      disabled={activeTicketsPage === activeTotalPages}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             </div>
 
           {/* Completed Tickets Section */}
@@ -651,7 +739,7 @@ const TicketsTasksPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredCompletedTickets.map((ticket, index) => (
+                    {completedDisplayTickets.map((ticket, index) => (
                       <tr 
                         key={ticket.id}
                         style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
@@ -725,6 +813,66 @@ const TicketsTasksPage: React.FC = () => {
                 </table>
               )}
             </div>
+
+            {/* Pagination for Completed Tickets */}
+            {completedTotalPages > 1 && (
+              <div className="p-4 border-t border-gray-100 bg-white/50">
+                <div className="flex items-center justify-center">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCompletedTicketsPage(Math.max(1, completedTicketsPage - 1))}
+                      disabled={completedTicketsPage === 1}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Previous
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(7, completedTotalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (completedTotalPages <= 7) {
+                          pageNum = i + 1;
+                        } else if (completedTicketsPage <= 4) {
+                          pageNum = i + 1;
+                        } else if (completedTicketsPage >= completedTotalPages - 3) {
+                          pageNum = completedTotalPages - 6 + i;
+                        } else {
+                          pageNum = completedTicketsPage - 3 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCompletedTicketsPage(pageNum)}
+                            className={`min-w-[40px] px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                              completedTicketsPage === pageNum
+                                ? 'bg-[#82A33D] text-white shadow-sm'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setCompletedTicketsPage(Math.min(completedTotalPages, completedTicketsPage + 1))}
+                      disabled={completedTicketsPage === completedTotalPages}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

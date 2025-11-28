@@ -49,7 +49,7 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
   }, [logs, search, classification, dateFilter]);
 
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 5;
 
   React.useEffect(() => {
     setPage(1);

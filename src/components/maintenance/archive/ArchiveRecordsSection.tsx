@@ -12,7 +12,7 @@ interface Props {
   onDelete?: (id: string) => void;
 }
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, staffCountToday, onView, onDownload, onDelete }) => {
   const [page, setPage] = React.useState(1);
