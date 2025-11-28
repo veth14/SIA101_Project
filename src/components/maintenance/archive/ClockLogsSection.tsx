@@ -196,9 +196,9 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
           ) : (
             <table className="w-full table-fixed">
               <colgroup>
-                <col style={{ width: '20%' }} /> {/* Staff Member */}
-                <col style={{ width: '15%' }} /> {/* Classification */}
-                <col style={{ width: '15%' }} /> {/* Date */}
+                <col style={{ width: '22%' }} /> {/* Staff Member */}
+                <col style={{ width: '16%' }} /> {/* Classification */}
+                <col style={{ width: '12%' }} /> {/* Date */}
                 <col style={{ width: '12%' }} /> {/* Time In */}
                 <col style={{ width: '12%' }} /> {/* Time Out */}
                 <col style={{ width: '12%' }} /> {/* Hours Worked */}
@@ -222,44 +222,48 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
                     style={{ animationDelay: `${index * 50}ms`, height: '74px' }}
                     className="group transition-all duration-300 hover:shadow-sm hover:bg-gray-50"
                   >
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#82A33D]/10">
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg bg-[#82A33D]/10">
                           <svg className="w-4 h-4 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>
-                        <div className="text-sm font-bold text-gray-900 transition-colors group-hover:text-[#82A33D]">
+                        <div className="text-sm font-bold text-gray-900 transition-colors truncate group-hover:text-[#82A33D]">
                           {log.staffMember}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${
-                        log.classification === 'Housekeeping'
-                          ? 'bg-gradient-to-r from-purple-100 to-purple-100 text-purple-800 border border-purple-200'
-                          : 'bg-gradient-to-r from-orange-100 to-orange-100 text-orange-800 border border-orange-200'
-                      }`}>
-                        {log.classification}
-                      </span>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-center overflow-hidden">
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm whitespace-nowrap max-w-full truncate ${
+                          log.classification === 'Housekeeping'
+                            ? 'bg-gradient-to-r from-purple-100 to-purple-100 text-purple-800 border border-purple-200'
+                            : 'bg-gradient-to-r from-orange-100 to-orange-100 text-orange-800 border border-orange-200'
+                        }`}>
+                          {log.classification}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-5 text-center whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">{log.date}</div>
+                    <td className="px-6 py-5 text-center">
+                      <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">{log.date}</div>
                     </td>
-                    <td className="px-6 py-5 text-center whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{log.timeIn ?? '--'}</div>
+                    <td className="px-6 py-5 text-center">
+                      <div className="text-sm font-medium text-gray-900 whitespace-nowrap">{log.timeIn ?? '--'}</div>
                     </td>
-                    <td className="px-6 py-5 text-center whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{log.timeOut ?? '--'}</div>
+                    <td className="px-6 py-5 text-center">
+                      <div className="text-sm font-medium text-gray-900 whitespace-nowrap">{log.timeOut ?? '--'}</div>
                     </td>
-                    <td className="px-6 py-5 text-center whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900">{log.hoursWorked ?? '--'}</div>
+                    <td className="px-6 py-5 text-center">
+                      <div className="text-sm font-bold text-gray-900 whitespace-nowrap">{log.hoursWorked ?? '--'}</div>
                     </td>
-                    <td className="px-6 py-5 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200">
-                        <span className="w-1.5 h-1.5 mr-2 rounded-full bg-emerald-500" />
-                        {log.status ?? 'Off-Duty'}
-                      </span>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-center overflow-hidden">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 whitespace-nowrap max-w-full truncate">
+                          <span className="flex-shrink-0 w-1.5 h-1.5 mr-2 rounded-full bg-emerald-500" />
+                          {log.status ?? 'Off-Duty'}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}
