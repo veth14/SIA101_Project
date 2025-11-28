@@ -143,18 +143,24 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={onCreateSchedule}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white transition-all bg-[#82A33D] rounded-xl hover:bg-[#6d8a33] shadow-sm hover:shadow-md"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Create Schedule</span>
-              </button>
-            </div>
-          </div>
+<div className="flex items-center gap-3">
+  <button
+    onClick={onCreateSchedule}
+    className="group relative overflow-hidden bg-gradient-to-r from-[#82A33D] to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+  >
+    {/* Hover overlay gradient */}
+    <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-[#82A33D] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+    {/* Content */}
+    <div className="relative flex items-center space-x-2">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Create Schedule</span>
+    </div>
+  </button>
+</div>
+</div>
 
           {/* Filters and Week Navigation Row */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-12">

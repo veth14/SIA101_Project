@@ -18,9 +18,6 @@ interface Props {
   classificationFilter: string;
   setClassificationFilter: (s: string) => void;
   uniqueClassifications: string[];
-  currentWeekOffset: number;
-  setCurrentWeekOffset: (o: number | ((prev: number) => number)) => void;
-  currentWeekRange: { start: Date; end: Date; label: string };
 }
 
 const statusBadge = (status?: string) => {
@@ -61,9 +58,6 @@ const LeaveRequestTable: React.FC<Props> = ({
   classificationFilter,
   setClassificationFilter,
   uniqueClassifications,
-  currentWeekOffset,
-  setCurrentWeekOffset,
-  currentWeekRange,
 }) => {
   return (
     <>
@@ -136,16 +130,28 @@ const LeaveRequestTable: React.FC<Props> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onAdd}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white transition-all bg-[#82A33D] rounded-xl hover:bg-[#6d8a33] shadow-sm hover:shadow-md"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Add Leave Request</span>
-              </button>
+<div className="flex items-center gap-3">
+  <button
+    onClick={onAdd}
+    className="group relative overflow-hidden bg-gradient-to-r from-[#82A33D] to-green-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+  >
+    {/* Hover overlay gradient */}
+    <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-[#82A33D] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+    {/* Content */}
+    <div className="relative flex items-center space-x-2">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 4v16m8-8H4"
+        />
+      </svg>
+      <span>Add Leave Request</span>
+    </div>
+  </button>
+
 
               <button
                 onClick={() => onRefresh()}
@@ -160,45 +166,7 @@ const LeaveRequestTable: React.FC<Props> = ({
 
           {/* Filters and Week Navigation Row */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
-            {/* Week Navigation */}
-            <div className="md:col-span-4 flex items-center gap-2 bg-white border-2 border-gray-200 rounded-xl px-4 py-3">
-              <button
-                onClick={() => setCurrentWeekOffset(prev => prev - 1)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Previous week"
-              >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              
-              <div className="flex flex-col items-center flex-1 min-w-0">
-                <span className="text-sm font-bold text-gray-800">{currentWeekRange.label}</span>
-                <span className="text-xs font-medium text-gray-500">
-                  {formatWeekRange(currentWeekRange.start, currentWeekRange.end)}
-                </span>
-              </div>
-              
-              <button
-                onClick={() => setCurrentWeekOffset(prev => prev + 1)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Next week"
-              >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-              
-              {currentWeekOffset !== 0 && (
-                <button
-                  onClick={() => setCurrentWeekOffset(0)}
-                  className="ml-2 px-3 py-1.5 text-xs font-bold bg-[#82A33D] text-white rounded-lg hover:bg-[#6d8a33] transition-colors"
-                  title="Go to current week"
-                >
-                  Today
-                </button>
-              )}
-            </div>
+
 
             {/* Status Filter */}
             <div className="md:col-span-3">

@@ -33,8 +33,6 @@ const LeaveRequestsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [classificationFilter, setClassificationFilter] = useState<string>('all');
 
-  const [currentWeekOffset, setCurrentWeekOffset] = useState<number>(0);
-  const currentWeekRange = getWeekDateRange(currentWeekOffset);
 
   // ------------------------------
   // Fetch Staff
@@ -85,9 +83,10 @@ const LeaveRequestsPage: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchLeaveRequests();
-  }, [fetchLeaveRequests, currentWeekOffset]);
+useEffect(() => {
+  fetchLeaveRequests();
+}, [fetchLeaveRequests]);
+
 
   useEffect(() => {
     if (isModalOpen) {
@@ -190,14 +189,6 @@ const LeaveRequestsPage: React.FC = () => {
       }
     }
 
-    const start = new Date(r.startDate);
-    const end = new Date(r.endDate);
-
-    const weekStart = currentWeekRange.start;
-    const weekEnd = currentWeekRange.end;
-
-    if (end < weekStart || start > weekEnd) return false;
-
     return true;
   });
 
@@ -230,9 +221,6 @@ const LeaveRequestsPage: React.FC = () => {
         classificationFilter={classificationFilter}
         setClassificationFilter={setClassificationFilter}
         uniqueClassifications={uniqueClassifications}
-        currentWeekOffset={currentWeekOffset}
-        setCurrentWeekOffset={setCurrentWeekOffset}
-        currentWeekRange={currentWeekRange}
       />
 
       <CreateLeaveRequestModal
