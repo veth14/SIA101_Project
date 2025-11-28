@@ -15,7 +15,7 @@
     "composite": true,
     "declaration": true,
     "emitDeclarationOnly": false,
-    "noEmit": false,
+    "noEmit": true,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "isolatedModules": true,
