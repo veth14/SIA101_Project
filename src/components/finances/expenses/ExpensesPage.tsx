@@ -4,13 +4,14 @@ import type { Expense } from '@/components/finances/expenses/types';
 import ExpensesStats from '@/components/finances/expenses/ExpensesStats';
 import ExpensesAnalytics from '@/components/finances/expenses/ExpensesAnalytics';
 import { getCurrentPayrollTotal } from '@/services/payrollService';
-import { expenses as seedExpenses } from '@/components/finances/expenses/expensesData';
-import { subscribeToRequisitions, RequisitionRecord } from '@/backend/requisitions/requisitionsService';
-import { subscribeToPurchaseOrders, PurchaseOrderRecord } from '@/backend/purchaseOrders/purchaseOrdersService';
+
+import { subscribeToRequisitions, RequisitionRecord, updateRequisitionStatus } from '@/backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, PurchaseOrderRecord, updatePurchaseOrderStatus } from '@/backend/purchaseOrders/purchaseOrdersService';
 
 export const ExpensesPage: React.FC = () => {
-  // Base/manual expenses managed locally on this page
-  const [baseExpenses, setBaseExpenses] = useState<Expense[]>(seedExpenses);
+  // Base/manual expenses managed locally on this page (start empty; no hardcoded seed data)
+  const [baseExpenses, setBaseExpenses] = useState<Expense[]>([]);
+
   // Derived expenses coming from requisitions and purchase orders
   const [requisitionExpenses, setRequisitionExpenses] = useState<Expense[]>([]);
   const [purchaseOrderExpenses, setPurchaseOrderExpenses] = useState<Expense[]>([]);
@@ -46,9 +47,32 @@ export const ExpensesPage: React.FC = () => {
 
   const updateStatus = useCallback((ids: string[], status: Expense['status']) => {
     if (ids.length === 0) return;
+
+    // Sync status back to requisitions / purchase orders in Firestore when applicable
+    ids.forEach((rawId) => {
+      if (rawId.startsWith('REQ-')) {
+        const sourceId = rawId.replace(/^REQ-/, '');
+        let backendStatus: RequisitionRecord['status'];
+        if (status === 'approved') backendStatus = 'approved';
+        else if (status === 'paid') backendStatus = 'fulfilled';
+        else if (status === 'rejected') backendStatus = 'rejected';
+        else backendStatus = 'pending';
+        void updateRequisitionStatus(sourceId, backendStatus);
+      } else if (rawId.startsWith('PO-')) {
+        const sourceId = rawId.replace(/^PO-/, '');
+        let backendStatus: PurchaseOrderRecord['status'];
+        if (status === 'approved') backendStatus = 'approved';
+        else if (status === 'paid') backendStatus = 'received';
+        else if (status === 'rejected') backendStatus = 'cancelled';
+        else backendStatus = 'pending';
+        void updatePurchaseOrderStatus(sourceId, backendStatus);
+      }
+    });
+
     // Only mutate base/manual expenses; requisitions and purchase orders are
-    // read-only views here and are kept in their own state.
+    // driven by Firestore subscriptions.
     setBaseExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
+
     // Update selectedExpense if it is a base expense whose status changed
     setSelectedExpense(prev => (prev && ids.includes(prev.id) ? { ...prev, status } : prev));
     addToast(`${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Marked as Paid'} ${ids.length} item${ids.length > 1 ? 's' : ''}`);
