@@ -18,6 +18,7 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, staff
   const [page, setPage] = React.useState(1);
   // Filters local to the archived records section
   const [search, setSearch] = React.useState('');
+  // Removed middle type filter per request; keep search and date only
   const [typeFilter, setTypeFilter] = React.useState<'All' | 'Completed Ticket' | 'Staff Record' | 'Equipment Log'>('All');
   const [dateFilter, setDateFilter] = React.useState<string>(''); // yyyy-mm-dd
 
@@ -223,16 +224,6 @@ const ArchiveRecordsSection: React.FC<Props> = ({ stats, records, loading, staff
               onChange={(e) => setSearch(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heritage-green/50 w-64"
             />
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as any)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="All">All Records</option>
-              <option value="Completed Ticket">Completed Tickets</option>
-              <option value="Staff Record">Staff Records</option>
-              <option value="Equipment Log">Equipment Logs</option>
-            </select>
             <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm" />
             <button onClick={() => { setSearch(''); setTypeFilter('All'); setDateFilter(''); }} className="bg-heritage-green text-white px-3 py-2 rounded-lg hover:bg-heritage-green/90 transition-colors text-sm">Clear</button>
             <button onClick={() => exportXlsHtml()} className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-500 transition-colors text-sm">Export Data</button>

@@ -34,10 +34,17 @@ export const Modal: React.FC<ModalProps> = ({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const titleIdRef = useRef<string>(`modal-title-${Math.random().toString(36).slice(2,9)}`);
+  const prevIsOpenRef = useRef<boolean>(false);
+  const onCloseRef = useRef(onClose);
+
+  // Keep a stable reference to onClose for event handlers
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current?.();
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -63,7 +70,9 @@ export const Modal: React.FC<ModalProps> = ({
       }
     };
 
-    if (isOpen) {
+    // Only react when open state actually changes
+    if (isOpen && !prevIsOpenRef.current) {
+      prevIsOpenRef.current = true;
       // Save previously focused element to restore on close
       previousActiveElement.current = document.activeElement as HTMLElement | null;
       // Prevent body scroll
@@ -87,9 +96,9 @@ export const Modal: React.FC<ModalProps> = ({
           else container.focus();
         }
       });
-    }
-
-    return () => {
+    } else if (!isOpen && prevIsOpenRef.current) {
+      // Clean up when closing
+      prevIsOpenRef.current = false;
       document.removeEventListener('keydown', handleEscape);
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
@@ -99,8 +108,8 @@ export const Modal: React.FC<ModalProps> = ({
       } catch (e) {
         // ignore
       }
-    };
-  }, [isOpen, onClose]);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

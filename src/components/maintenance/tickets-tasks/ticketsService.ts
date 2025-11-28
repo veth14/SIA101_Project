@@ -850,30 +850,42 @@ export async function searchTickets(filters: {
   priority?: string;
   status?: string;
   isCompleted?: boolean;
+  // Optional date filter in yyyy-mm-dd; for completed tickets it applies to completedAt,
+  // otherwise it applies to createdAt
+  date?: string;
 }): Promise<Ticket[]> {
   try {
     const ticketsRef = collection(db, 'tickets_task');
     const constraints: QueryConstraint[] = [];
-    
+
+    // Always scope by completion state if provided to keep the result set reasonable
     if (filters.isCompleted !== undefined) {
       constraints.push(where('isCompleted', '==', filters.isCompleted));
     }
-    
-    if (filters.category) {
-      constraints.push(where('category', '==', filters.category));
+
+    // Optional date filter: range on the relevant timestamp field
+    let orderByField: 'createdAt' | 'completedAt' = 'createdAt';
+    if (filters.isCompleted) {
+      orderByField = 'completedAt';
     }
-    
-    if (filters.priority) {
-      constraints.push(where('priority', '==', filters.priority));
+
+    if (filters.date) {
+      // Expect yyyy-mm-dd; build start/end of day
+      const [y, m, d] = filters.date.split('-').map(n => parseInt(n, 10));
+      if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+        const start = new Date(y, m - 1, d, 0, 0, 0, 0);
+        const end = new Date(y, m - 1, d, 23, 59, 59, 999);
+        const field = filters.isCompleted ? 'completedAt' : 'createdAt';
+        constraints.push(where(field, '>=', Timestamp.fromDate(start)));
+        constraints.push(where(field, '<=', Timestamp.fromDate(end)));
+        orderByField = field as 'createdAt' | 'completedAt';
+      }
     }
-    
-    if (filters.status) {
-      constraints.push(where('status', '==', filters.status));
-    }
-    
-    constraints.push(orderBy('createdAt', 'desc'));
-    constraints.push(limit(100));
-    
+
+    // Order by the relevant timestamp
+    constraints.push(orderBy(orderByField, 'desc'));
+    constraints.push(limit(200));
+
     const q = query(ticketsRef, ...constraints);
     const snapshot = await getDocs(q);
     
@@ -882,13 +894,29 @@ export async function searchTickets(filters: {
       tickets.push({ id: doc.id, ...doc.data() } as Ticket);
     });
     
-    // Client-side search filter for title/description
+    // Apply remaining filters client-side to avoid composite index requirements and
+    // handle case differences safely.
+    const normalize = (v?: string) => (v ?? '').toString();
+
+    if (filters.category) {
+      const cat = normalize(filters.category);
+      tickets = tickets.filter(t => normalize(t.category) === cat);
+    }
+    if (filters.priority) {
+      const pr = normalize(filters.priority);
+      tickets = tickets.filter(t => normalize(t.priority) === pr);
+    }
+    if (filters.status) {
+      const st = normalize(filters.status);
+      tickets = tickets.filter(t => normalize(t.status) === st);
+    }
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       tickets = tickets.filter(ticket => 
-        ticket.taskTitle.toLowerCase().includes(searchLower) ||
-        ticket.description.toLowerCase().includes(searchLower) ||
-        ticket.ticketNumber.toLowerCase().includes(searchLower)
+        normalize(ticket.taskTitle).toLowerCase().includes(searchLower) ||
+        normalize(ticket.description).toLowerCase().includes(searchLower) ||
+        normalize(ticket.ticketNumber).toLowerCase().includes(searchLower)
       );
     }
     
