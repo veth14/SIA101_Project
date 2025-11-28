@@ -32,7 +32,6 @@ import AdminRequisitionsPage from './pages/admin/Inventory/requisitions'
 import AdminSuppliersPage from './pages/admin/Inventory/suppliers'
 import AdminIncomePage from './pages/admin/Finances/RevenuePage'
 import AdminExpensePage from './pages/admin/Finances/ExpensesPage'
-import AdminPayrollPage from './pages/admin/Finances/AdminPayrollPage'
 import AdminReportsPage from './pages/admin/Finances/AdminReportsPage'
 import AdminFinanceDashboardPage from './pages/admin/Finances/dashboardpage'
 import AdminFinanceTransactionsPage from './pages/admin/Finances/transactionspage'
@@ -301,14 +300,7 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
-                <Route 
-                  path="/admin/payroll" 
-                  element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminPayrollPage />
-                    </ProtectedRoute>
-                  } 
-                />
+
                 <Route 
                   path="/admin/reports" 
                   element={

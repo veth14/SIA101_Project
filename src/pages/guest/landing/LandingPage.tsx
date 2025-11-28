@@ -29,10 +29,7 @@ export const LandingPage: React.FC = () => {
 
   const amenities = [
     { icon: FaWifi, name: 'Free Wi-Fi', description: 'High-speed internet throughout' },
-    { icon: FaSwimmingPool, name: 'Infinity Pool', description: 'With Manila Bay view' },
-    { icon: FaSpa, name: 'Spa Services', description: 'Traditional Filipino treatments' },
-    { icon: FaUtensils, name: 'Restaurant', description: 'Local & international cuisine' },
-    { icon: FaCalendarAlt, name: 'Events', description: 'Modern function rooms' }
+    { icon: FaSwimmingPool, name: 'Infinity Pool', description: 'With Manila Bay view' }
   ];
 
   const rooms: Room[] = [

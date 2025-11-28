@@ -41,120 +41,13 @@ export const AmenitiesPage = () => {
       features: ['Manila Bay view', 'Temperature controlled', 'Pool bar service', 'Lounge chairs', 'Towel service'],
       image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2080&q=80',
       availability: '6:00 AM - 10:00 PM'
-    },
-    {
-      id: 3,
-      name: 'Spa Services',
-      category: 'wellness',
-      description: 'Traditional Filipino spa treatments and modern wellness therapies for ultimate relaxation.',
-      icon: '🌿',
-      features: ['Traditional Filipino treatments', 'Aromatherapy sessions', 'Couples massage rooms', 'Wellness consultations'],
-      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      availability: '9:00 AM - 9:00 PM'
-    },
-    {
-      id: 4,
-      name: 'Restaurant',
-      category: 'dining',
-      description: 'Authentic local and international cuisine prepared by our expert culinary team.',
-      icon: '🍽️',
-      features: ['Local Filipino cuisine', 'International dishes', 'Fresh seafood', 'Vegetarian options', 'Room service'],
-      image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      availability: '6:00 AM - 11:00 PM'
-    },
-    {
-      id: 5,
-      name: 'Events Hall',
-      category: 'events',
-      description: 'Modern function rooms perfect for meetings, conferences, and special celebrations.',
-      icon: '🎉',
-      features: ['Audio-visual equipment', 'Flexible seating arrangements', 'Catering services', 'Event planning assistance'],
-      image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80',
-      availability: 'By reservation'
-    },
-    {
-      id: 6,
-      name: 'Fitness Center',
-      category: 'wellness',
-      description: 'Fully equipped gym with modern exercise equipment and personal training services.',
-      icon: '💪',
-      features: ['Modern equipment', 'Personal trainers', 'Group classes', 'Locker rooms', 'Towel service'],
-      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      availability: '5:00 AM - 11:00 PM'
-    },
-    {
-      id: 7,
-      name: 'Business Center',
-      category: 'business',
-      description: 'Complete business facilities including computers, printers, and meeting rooms.',
-      icon: '💼',
-      features: ['Computer workstations', 'Printing services', 'Meeting rooms', 'High-speed internet', 'Secretarial services'],
-      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80',
-      availability: '24/7'
-    },
-    {
-      id: 8,
-      name: 'Concierge Service',
-      category: 'service',
-      description: 'Professional concierge team to assist with tours, reservations, and local recommendations.',
-      icon: '🛎️',
-      features: ['Tour arrangements', 'Restaurant reservations', 'Transportation booking', 'Local recommendations'],
-      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      availability: '24/7'
-    },
-    {
-      id: 9,
-      name: 'Laundry Service',
-      category: 'service',
-      description: 'Professional laundry and dry cleaning services for your convenience.',
-      icon: '👔',
-      features: ['Same-day service', 'Dry cleaning', 'Pressing service', 'Pickup and delivery'],
-      image: 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      availability: '7:00 AM - 7:00 PM'
-    },
-    {
-      id: 10,
-      name: 'Airport Shuttle',
-      category: 'transportation',
-      description: 'Complimentary shuttle service to and from Ninoy Aquino International Airport.',
-      icon: '🚐',
-      features: ['Complimentary service', 'Scheduled departures', 'Professional drivers', 'Luggage assistance'],
-      image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80',
-      availability: 'Scheduled times'
-    },
-    {
-      id: 11,
-      name: 'Gift Shop',
-      category: 'shopping',
-      description: 'Curated selection of local crafts, souvenirs, and travel essentials.',
-      icon: '🛍️',
-      features: ['Local handicrafts', 'Souvenirs', 'Travel essentials', 'Filipino delicacies'],
-      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
-      availability: '8:00 AM - 8:00 PM'
-    },
-    {
-      id: 12,
-      name: 'Rooftop Bar',
-      category: 'dining',
-      description: 'Elegant rooftop bar with panoramic city views and signature cocktails.',
-      icon: '🍸',
-      features: ['Panoramic city views', 'Signature cocktails', 'Light snacks', 'Live music weekends'],
-      image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80',
-      availability: '5:00 PM - 1:00 AM'
     }
   ];
 
   const categories = [
     { id: 'all', name: 'All Amenities', icon: '🏨' },
-    { id: 'recreation', name: 'Recreation', icon: '🏊' },
-    { id: 'dining', name: 'Dining', icon: '🍽️' },
-    { id: 'wellness', name: 'Wellness', icon: '🌿' },
-    { id: 'business', name: 'Business', icon: '💼' },
-    { id: 'service', name: 'Services', icon: '🛎️' },
     { id: 'connectivity', name: 'Connectivity', icon: '📶' },
-    { id: 'events', name: 'Events', icon: '🎉' },
-    { id: 'transportation', name: 'Transport', icon: '🚐' },
-    { id: 'shopping', name: 'Shopping', icon: '🛍️' }
+    { id: 'recreation', name: 'Recreation', icon: '🏊' }
   ];
 
   const filteredAmenities = selectedCategory === 'all' 
