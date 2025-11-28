@@ -149,13 +149,13 @@ export const Modal: React.FC<ModalProps> = ({
                 headerContent
               ) : (
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-heritage-green">
+                  <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
                     <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <h3 id={titleIdRef.current} className="text-lg font-semibold text-heritage-green md:text-2xl">{title}</h3>
+                    <h3 id={titleIdRef.current} className="text-lg font-semibold text-emerald-700 md:text-2xl">{title}</h3>
                     {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export const Modal: React.FC<ModalProps> = ({
                 <button
                   onClick={onClose}
                   aria-label="Close"
-                  className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-heritage-green bg-heritage-green/10 ring-1 ring-heritage-green/20"
+                  className="absolute flex items-center justify-center top-4 right-4 w-9 h-9 text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
