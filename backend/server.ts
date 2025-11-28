@@ -7,6 +7,7 @@ import requisitionRoute from "./routes/invRequisition.route.js";
 import supplierRoute from "./routes/invSupplier.route.js";
 import analyticRoute from "./routes/invAnalytic.route.js";
 import departmentRoute from "./routes/invDepartment.route.js";
+import dotenv from "dotenv";
 import { db, User } from "./config/firebaseAdmin.js";
 const app = express();
 const PORT = 3000;
@@ -17,6 +18,7 @@ app.use(
   })
 );
 
+dotenv.config();
 app.use(express.json());
 app.use("/api/inventory-dashboard", dashboardRoute);
 app.use("/api/inventory-procurement", procurementRoute);
