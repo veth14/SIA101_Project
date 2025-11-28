@@ -7,6 +7,7 @@ import { getCurrentPayrollTotal } from '@/services/payrollService';
 
 import { subscribeToRequisitions, RequisitionRecord, updateRequisitionStatus } from '@/backend/requisitions/requisitionsService';
 import { subscribeToPurchaseOrders, PurchaseOrderRecord, updatePurchaseOrderStatus } from '@/backend/purchaseOrders/purchaseOrdersService';
+import { createNotification } from '@/backend/notifications/notificationsService';
 
 export const ExpensesPage: React.FC = () => {
   // Base/manual expenses managed locally on this page (start empty; no hardcoded seed data)
@@ -53,19 +54,51 @@ export const ExpensesPage: React.FC = () => {
       if (rawId.startsWith('REQ-')) {
         const sourceId = rawId.replace(/^REQ-/, '');
         let backendStatus: RequisitionRecord['status'];
-        if (status === 'approved') backendStatus = 'approved';
-        else if (status === 'paid') backendStatus = 'fulfilled';
-        else if (status === 'rejected') backendStatus = 'rejected';
-        else backendStatus = 'pending';
+        let title = '';
+        if (status === 'approved') {
+          backendStatus = 'approved';
+          title = 'Requisition approved';
+        } else if (status === 'paid') {
+          backendStatus = 'fulfilled';
+          title = 'Requisition fulfilled';
+        } else if (status === 'rejected') {
+          backendStatus = 'rejected';
+          title = 'Requisition rejected';
+        } else {
+          backendStatus = 'pending';
+          title = 'Requisition updated';
+        }
         void updateRequisitionStatus(sourceId, backendStatus);
+        void createNotification({
+          type: 'requisition',
+          title,
+          message: rawId,
+          sourceId,
+        });
       } else if (rawId.startsWith('PO-')) {
         const sourceId = rawId.replace(/^PO-/, '');
         let backendStatus: PurchaseOrderRecord['status'];
-        if (status === 'approved') backendStatus = 'approved';
-        else if (status === 'paid') backendStatus = 'received';
-        else if (status === 'rejected') backendStatus = 'cancelled';
-        else backendStatus = 'pending';
+        let title = '';
+        if (status === 'approved') {
+          backendStatus = 'approved';
+          title = 'Purchase order approved';
+        } else if (status === 'paid') {
+          backendStatus = 'received';
+          title = 'Purchase order received';
+        } else if (status === 'rejected') {
+          backendStatus = 'cancelled';
+          title = 'Purchase order cancelled';
+        } else {
+          backendStatus = 'pending';
+          title = 'Purchase order updated';
+        }
         void updatePurchaseOrderStatus(sourceId, backendStatus);
+        void createNotification({
+          type: 'purchaseOrder',
+          title,
+          message: rawId,
+          sourceId,
+        });
       }
     });
 

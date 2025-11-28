@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { navigation } from './Sidebar';
+import { subscribeToNotifications, markNotificationRead, clearAllNotifications, type NotificationRecord } from '../../backend/notifications/notificationsService';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
@@ -14,6 +15,7 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
 
   // Get page title from path
   const getPageTitle = () => {
@@ -147,7 +149,6 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     return { bgClass, iconColorClass, titleClass };
   };
 
-
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -164,6 +165,16 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Live notifications subscription
+  useEffect(() => {
+    const unsubscribe = subscribeToNotifications((items) => {
+      setNotifications(items);
+    });
+    return unsubscribe;
+  }, []);
+
+  const unreadCount = notifications.filter((n) => n.status !== 'read').length;
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -172,7 +183,6 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
       console.error('Logout failed:', error);
     }
   };
-
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b shadow-sm backdrop-blur-xl border-heritage-green/20">
@@ -207,9 +217,11 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 3h-2l-.5 2.5" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9z" />
               </svg>
-              <span className="absolute flex items-center justify-center w-5 h-5 border-2 border-white rounded-full shadow-lg -top-1 -right-1 bg-heritage-green animate-pulse">
-                <span className="text-xs font-bold text-white">2</span>
-              </span>
+              {unreadCount > 0 && (
+                <span className="absolute flex items-center justify-center w-5 h-5 border-2 border-white rounded-full shadow-lg -top-1 -right-1 bg-heritage-green animate-pulse">
+                  <span className="text-xs font-bold text-white">{unreadCount}</span>
+                </span>
+              )}
             </button>
 
             {showNotifications && (
@@ -218,38 +230,58 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-heritage-green">Notifications</h3>
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-heritage-green/10 text-heritage-green border border-heritage-green/30">
-                      2 New
+                      {unreadCount} New
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-start p-4 space-x-4 transition-all duration-200 border bg-heritage-light/30 rounded-xl border-heritage-light/60 hover:shadow-md hover:bg-heritage-light/40">
-                      <div className="flex-shrink-0">
-                        <div className="flex items-center justify-center w-10 h-10 shadow-lg bg-heritage-green rounded-xl">
-                          <span className="text-lg text-white">🏨</span>
+                  <div className="space-y-3 max-h-72 overflow-y-auto">
+                    {notifications.length === 0 && (
+                      <p className="text-xs text-heritage-neutral text-center py-6">No notifications yet.</p>
+                    )}
+                    {notifications.map((n) => (
+                      <button
+                        key={n.id}
+                        onClick={async () => {
+                          if (n.status !== 'read') {
+                            await markNotificationRead(n.id);
+                          }
+                        }}
+                        className={`w-full text-left flex items-start p-4 space-x-4 transition-all duration-200 border rounded-xl hover:shadow-md hover:bg-heritage-light/40 ${
+                          n.status === 'read' ? 'bg-heritage-light/20 border-heritage-light/40 opacity-80' : 'bg-heritage-light/30 border-heritage-light/60'
+                        }`}
+                      >
+                        <div className="flex-shrink-0">
+                          <div className="flex items-center justify-center w-10 h-10 shadow-lg bg-heritage-green rounded-xl">
+                            <span className="text-lg text-white">
+                              {n.type === 'requisition' && '�'}
+                              {n.type === 'purchaseOrder' && '�📦'}
+                              {n.type === 'invoice' && '💳'}
+                              {n.type === 'reservation' && '🏨'}
+                              {!['requisition', 'purchaseOrder', 'invoice', 'reservation'].includes(n.type) && 'ℹ️'}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-heritage-green">New Check-in</p>
-                        <p className="mt-1 text-sm text-heritage-neutral">Room 101 - John Doe</p>
-                        <p className="mt-2 text-xs font-medium text-heritage-green/70">5 minutes ago</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start p-4 space-x-4 transition-all duration-200 border bg-heritage-light/30 rounded-xl border-heritage-light/60 hover:shadow-md hover:bg-heritage-light/40">
-                      <div className="flex-shrink-0">
-                        <div className="flex items-center justify-center w-10 h-10 shadow-lg bg-heritage-neutral rounded-xl">
-                          <span className="text-lg text-white">📦</span>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-heritage-green">{n.title}</p>
+                          {n.message && (
+                            <p className="mt-1 text-sm text-heritage-neutral">{n.message}</p>
+                          )}
+                          {n.createdAt && (
+                            <p className="mt-2 text-xs font-medium text-heritage-neutral/70">
+                              {n.createdAt.toLocaleString()}
+                            </p>
+                          )}
                         </div>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-heritage-green">Low Stock Alert</p>
-                        <p className="mt-1 text-sm text-heritage-neutral">Towels - 5 remaining</p>
-                        <p className="mt-2 text-xs font-medium text-heritage-neutral/70">1 hour ago</p>
-                      </div>
-                    </div>
+                      </button>
+                    ))}
                   </div>
-                  <div className="pt-4 mt-5 border-t border-heritage-light/40">
-                    <button className="w-full px-4 py-2 text-sm font-semibold text-center transition-all duration-200 text-heritage-green hover:text-heritage-green/80 rounded-xl hover:bg-heritage-light/30">
-                      View all notifications
+                  <div className="pt-4 mt-5 border-t border-heritage-light/40 flex items-center justify-between gap-3">
+                    <button
+                      onClick={async () => {
+                        await clearAllNotifications();
+                      }}
+                      className="px-4 py-2 text-xs font-semibold text-heritage-neutral rounded-xl hover:bg-heritage-light/40"
+                    >
+                      Mark all as read
                     </button>
                   </div>
                 </div>
@@ -299,29 +331,6 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
 
                     {/* Enhanced Menu Items */}
                     <div className="space-y-2">
-                    <button className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-heritage-neutral hover:bg-heritage-light/40 hover:text-heritage-green rounded-xl group">
-                      <div className="flex items-center justify-center w-8 h-8 mr-3 transition-colors bg-heritage-light/50 rounded-xl group-hover:bg-heritage-green/20">
-                        <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div className="text-left">
-                        <p className="font-semibold">Your Profile</p>
-                        <p className="text-xs text-heritage-neutral/70">Manage your account</p>
-                      </div>
-                    </button>
-                    <button className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-heritage-neutral hover:bg-heritage-light/40 hover:text-heritage-green rounded-xl group">
-                      <div className="flex items-center justify-center w-8 h-8 mr-3 transition-colors bg-heritage-light/50 rounded-xl group-hover:bg-heritage-green/20">
-                        <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div className="text-left">
-                        <p className="font-semibold">Settings</p>
-                        <p className="text-xs text-heritage-neutral/70">Preferences & configuration</p>
-                      </div>
-                    </button>
                     <button className="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 text-heritage-neutral hover:bg-heritage-light/40 hover:text-heritage-green rounded-xl group">
                       <div className="flex items-center justify-center w-8 h-8 mr-3 transition-colors bg-heritage-light/50 rounded-xl group-hover:bg-heritage-green/20">
                         <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
