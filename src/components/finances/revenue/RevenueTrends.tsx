@@ -249,7 +249,11 @@ const RevenueTrends: React.FC<RevenueTrendsProps> = ({ revenuePoints }) => {
           <div className="flex items-center justify-center pb-2 mt-2">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <div className="w-3 h-0.5 bg-heritage-green rounded"></div>
-              <span>Daily Revenue</span>
+              <span>
+                {activeTimeframe === 'monthly'
+                  ? 'Weekly Revenue (Current Month)'
+                  : 'Monthly Revenue (Current Year)'}
+              </span>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { db } from '../../config/firebase';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, updateDoc } from 'firebase/firestore';
 
 export interface PurchaseOrderItemRecord {
   name: string;
@@ -88,4 +88,25 @@ export const subscribeToPurchaseOrders = (
   );
 
   return unsubscribe;
+};
+
+export const updatePurchaseOrderStatus = async (
+  id: string,
+  status: 'pending' | 'approved' | 'sent' | 'received' | 'cancelled' | string,
+  options?: { approvedBy?: string }
+) => {
+  const ref = doc(db, 'purchaseOrders', id);
+  const payload: any = {
+    status,
+    updatedAt: new Date(),
+  };
+
+  if (status === 'approved' || status === 'received') {
+    if (options?.approvedBy) {
+      payload.approvedBy = options.approvedBy;
+    }
+    payload.approvedDate = new Date().toISOString();
+  }
+
+  await updateDoc(ref, payload);
 };
