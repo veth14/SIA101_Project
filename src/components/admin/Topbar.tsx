@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { navigation } from './Sidebar';
-import { subscribeToNotifications, markNotificationRead, clearAllNotifications, type NotificationRecord } from '../../backend/notifications/notificationsService';
+import { subscribeToNotifications, markNotificationRead, clearAllNotifications, getRecentReadNotifications, type NotificationRecord } from '../../backend/notifications/notificationsService';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
@@ -16,6 +16,8 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
+  const [readNotifications, setReadNotifications] = useState<NotificationRecord[]>([]);
+  const [showRead, setShowRead] = useState(false);
 
   // Get page title from path
   const getPageTitle = () => {
@@ -174,6 +176,7 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   }, []);
 
   const unreadCount = notifications.filter((n) => n.status !== 'read').length;
+  const visibleNotifications = showRead ? readNotifications : notifications;
 
   const handleLogout = async () => {
     try {
@@ -229,22 +232,54 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-heritage-green">Notifications</h3>
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-heritage-green/10 text-heritage-green border border-heritage-green/30">
-                      {unreadCount} New
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={async () => {
+                          if (!showRead) {
+                            try {
+                              const items = await getRecentReadNotifications();
+                              setReadNotifications(items);
+                            } catch (error) {
+                              console.error('Failed to load read notifications:', error);
+                            }
+                          }
+                          setShowRead((prev) => !prev);
+                        }}
+                        className="px-2.5 py-1 text-xs font-semibold rounded-full border border-heritage-light/60 text-heritage-neutral hover:text-heritage-green hover:border-heritage-green/60 hover:bg-heritage-light/40"
+                      >
+                        {showRead ? 'Show unread' : 'Show read'}
+                      </button>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-heritage-green/10 text-heritage-green border border-heritage-green/30">
+                        {unreadCount} New
+                      </span>
+                    </div>
                   </div>
                   <div className="space-y-3 max-h-72 overflow-y-auto">
-                    {notifications.length === 0 && (
-                      <p className="text-xs text-heritage-neutral text-center py-6">No notifications yet.</p>
+                    {visibleNotifications.length === 0 && (
+                      <p className="text-xs text-heritage-neutral text-center py-6">
+                        {showRead ? 'No read notifications yet.' : 'No notifications yet.'}
+                      </p>
                     )}
-                    {notifications.map((n) => (
+                    {visibleNotifications.map((n) => (
                       <button
                         key={n.id}
                         onClick={async () => {
                           if (n.status !== 'read') {
                             await markNotificationRead(n.id);
                           }
+                          // Navigate to the relevant page based on notification type
+                          if (n.type === 'invoice' && n.sourceId) {
+                            navigate(`/admin/finances/invoices?focus=${encodeURIComponent(n.sourceId)}`);
+                          } else if (n.type === 'requisition' && n.sourceId) {
+                            navigate(`/admin/inventory/requisitions?focus=${encodeURIComponent(n.sourceId)}`);
+                          } else if (n.type === 'purchaseOrder' && n.sourceId) {
+                            navigate(`/admin/inventory/procurement?focus=${encodeURIComponent(n.sourceId)}`);
+                          } else if (n.type === 'reservation' && n.sourceId) {
+                            navigate(`/admin/frontdesk?reservationId=${encodeURIComponent(n.sourceId)}`);
+                          }
+                          setShowNotifications(false);
                         }}
+
                         className={`w-full text-left flex items-start p-4 space-x-4 transition-all duration-200 border rounded-xl hover:shadow-md hover:bg-heritage-light/40 ${
                           n.status === 'read' ? 'bg-heritage-light/20 border-heritage-light/40 opacity-80' : 'bg-heritage-light/30 border-heritage-light/60'
                         }`}
@@ -278,6 +313,7 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
                     <button
                       onClick={async () => {
                         await clearAllNotifications();
+                        setNotifications([]);
                       }}
                       className="px-4 py-2 text-xs font-semibold text-heritage-neutral rounded-xl hover:bg-heritage-light/40"
                     >

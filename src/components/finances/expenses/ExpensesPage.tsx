@@ -7,6 +7,8 @@ import { getCurrentPayrollTotal } from '@/services/payrollService';
 
 import { subscribeToRequisitions, RequisitionRecord, updateRequisitionStatus } from '@/backend/requisitions/requisitionsService';
 import { subscribeToPurchaseOrders, PurchaseOrderRecord, updatePurchaseOrderStatus } from '@/backend/purchaseOrders/purchaseOrdersService';
+import { InvoiceRecord, updateInvoicesStatusByReference, getPendingInvoices } from '@/backend/invoices/invoicesService';
+
 import { createNotification } from '@/backend/notifications/notificationsService';
 
 export const ExpensesPage: React.FC = () => {
@@ -16,6 +18,9 @@ export const ExpensesPage: React.FC = () => {
   // Derived expenses coming from requisitions and purchase orders
   const [requisitionExpenses, setRequisitionExpenses] = useState<Expense[]>([]);
   const [purchaseOrderExpenses, setPurchaseOrderExpenses] = useState<Expense[]>([]);
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([]);
+  const [pendingInvoiceRefs, setPendingInvoiceRefs] = useState<Set<string>>(new Set());
+
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type?: 'success' | 'error' | 'info' }>>([]);
@@ -23,6 +28,29 @@ export const ExpensesPage: React.FC = () => {
   const handleExpenseSelect = (expense: Expense) => {
     setSelectedExpense(expense);
   };
+
+  // One-time load of pending invoices to avoid a continuous listener
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const pending = await getPendingInvoices();
+        setInvoiceRecords(pending);
+        const refs = new Set<string>();
+        pending.forEach((inv) => {
+          if (inv.transactionReference) {
+            refs.add(inv.transactionReference.toString());
+          }
+        });
+        setPendingInvoiceRefs(refs);
+      } catch (error) {
+        console.error('Error loading pending invoices for expenses view:', error);
+        setInvoiceRecords([]);
+        setPendingInvoiceRefs(new Set());
+      }
+    };
+
+    void load();
+  }, []);
 
   const toggleSelect = (id: string, selected: boolean) => {
     setSelectedIds(prev => {
@@ -53,6 +81,10 @@ export const ExpensesPage: React.FC = () => {
     ids.forEach((rawId) => {
       if (rawId.startsWith('REQ-')) {
         const sourceId = rawId.replace(/^REQ-/, '');
+        // Clean reference used by invoices: many expenses are of the form REQ-REQ-2025-009,
+        // while invoices store transactionReference as REQ-2025-009. Strip only the first prefix.
+        const invoiceRef = rawId.replace(/^REQ-/, '');
+
         let backendStatus: RequisitionRecord['status'];
         let title = '';
         if (status === 'approved') {
@@ -69,6 +101,14 @@ export const ExpensesPage: React.FC = () => {
           title = 'Requisition updated';
         }
         void updateRequisitionStatus(sourceId, backendStatus);
+        void updateInvoicesStatusByReference(invoiceRef, status);
+        // Once status is no longer pending, drop this ref locally so UI updates without extra reads
+        setPendingInvoiceRefs((prev) => {
+          const next = new Set(prev);
+          next.delete(invoiceRef);
+          return next;
+        });
+
         void createNotification({
           type: 'requisition',
           title,
@@ -77,6 +117,10 @@ export const ExpensesPage: React.FC = () => {
         });
       } else if (rawId.startsWith('PO-')) {
         const sourceId = rawId.replace(/^PO-/, '');
+        // Same idea for purchase orders: expense ids can be PO-PO-2025-013 while
+        // invoices use PO-2025-013 as transactionReference.
+        const invoiceRef = rawId.replace(/^PO-/, '');
+
         let backendStatus: PurchaseOrderRecord['status'];
         let title = '';
         if (status === 'approved') {
@@ -93,6 +137,8 @@ export const ExpensesPage: React.FC = () => {
           title = 'Purchase order updated';
         }
         void updatePurchaseOrderStatus(sourceId, backendStatus);
+        void updateInvoicesStatusByReference(invoiceRef, status);
+
         void createNotification({
           type: 'purchaseOrder',
           title,
@@ -144,6 +190,13 @@ export const ExpensesPage: React.FC = () => {
     else if (rawStatus === 'rejected') status = 'rejected';
     else status = 'pending';
 
+    // If there is a pending invoice for this requisition, show it as pending in Expense Records
+    const reqRefA = req.requestNumber?.toString();
+    const reqRefB = req.id?.toString();
+    if ((reqRefA && pendingInvoiceRefs.has(reqRefA)) || (reqRefB && pendingInvoiceRefs.has(reqRefB))) {
+      status = 'pending';
+    }
+
     const dateSource = req.approvedDate || req.requiredDate || req.requestDate;
     let date = '';
     if (dateSource) {
@@ -179,6 +232,13 @@ export const ExpensesPage: React.FC = () => {
     else if (rawStatus === 'received') status = 'paid';
     else if (rawStatus === 'cancelled') status = 'rejected';
     else status = 'pending';
+
+    // If there is a pending invoice for this PO, show it as pending in Expense Records
+    const poRefA = po.orderNumber?.toString();
+    const poRefB = po.id?.toString();
+    if ((poRefA && pendingInvoiceRefs.has(poRefA)) || (poRefB && pendingInvoiceRefs.has(poRefB))) {
+      status = 'pending';
+    }
 
     const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
     let date = '';
@@ -216,6 +276,7 @@ export const ExpensesPage: React.FC = () => {
             const s = (req.status || '').toString().toLowerCase();
             return s === 'approved' || s === 'fulfilled' || s === 'pending' || s === 'rejected';
           });
+
           const mapped = relevant.map(mapRequisitionToExpense);
           setRequisitionExpenses(mapped);
         } catch (error) {
@@ -230,7 +291,7 @@ export const ExpensesPage: React.FC = () => {
     );
 
     return unsubscribe;
-  }, []);
+  }, [pendingInvoiceRefs]);
 
   // Subscribe to purchase orders from Firestore and project into expenses
   useEffect(() => {
@@ -241,6 +302,7 @@ export const ExpensesPage: React.FC = () => {
             const s = (po.status || '').toString().toLowerCase();
             return s === 'approved' || s === 'received' || s === 'pending' || s === 'cancelled';
           });
+
           const mapped = relevant.map(mapPurchaseOrderToExpense);
           setPurchaseOrderExpenses(mapped);
         } catch (error) {
@@ -255,7 +317,7 @@ export const ExpensesPage: React.FC = () => {
     );
 
     return unsubscribe;
-  }, []);
+  }, [pendingInvoiceRefs]);
 
   // Combined list used for stats, analytics, and the main table
   const allExpenses = useMemo<Expense[]>(
@@ -278,25 +340,28 @@ export const ExpensesPage: React.FC = () => {
         
         {/* Light Grid Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(134, 134, 134, 0.1) 1px, transparent 0)',
-            backgroundSize: '50px 50px'
-          }}></div>
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 25px 25px, rgba(134, 134, 134, 0.1) 1px, transparent 0)',
+              backgroundSize: '50px 50px',
+            }}
+          ></div>
         </div>
       </div>
 
       {/* Main Content Container */}
       <div className="relative z-10 w-full px-2 py-4 space-y-6 sm:px-4 lg:px-6">
-        
-  {/* Stats Section */}
-  <ExpensesStats expenses={allExpenses} />
+        {/* Stats Section */}
+        <ExpensesStats expenses={allExpenses} />
 
-  {/* Category Breakdown Analytics */}
-  <ExpensesAnalytics expenses={allExpenses} staffFromPayroll={getCurrentPayrollTotal()} />
+        {/* Category Breakdown Analytics */}
+        <ExpensesAnalytics expenses={allExpenses} staffFromPayroll={getCurrentPayrollTotal()} />
 
         {/* Expense List - Full Width */}
         <div className="w-full">
-          <ExpenseList 
+          <ExpenseList
             expenses={allExpenses}
             onExpenseSelect={handleExpenseSelect}
             selectedExpense={selectedExpense}
@@ -311,10 +376,13 @@ export const ExpensesPage: React.FC = () => {
 
         {/* Toasts */}
         <div className="fixed z-50 space-y-2 bottom-6 right-6">
-          {toasts.map(t => (
-            <div key={t.id} className={`px-4 py-3 rounded-xl shadow-lg text-sm text-white ${
-              t.type === 'success' ? 'bg-emerald-600' : t.type === 'error' ? 'bg-red-600' : 'bg-gray-700'
-            }`}>
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className={`px-4 py-3 rounded-xl shadow-lg text-sm text-white ${
+                t.type === 'success' ? 'bg-emerald-600' : t.type === 'error' ? 'bg-red-600' : 'bg-gray-700'
+              }`}
+            >
               {t.message}
             </div>
           ))}

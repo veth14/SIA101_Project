@@ -1,5 +1,5 @@
 import { db } from '../../config/firebase';
-import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getDocs, onSnapshot, orderBy, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { createNotification } from '../notifications/notificationsService';
 
 export interface InvoiceCreateData {
@@ -56,6 +56,69 @@ export const createInvoice = async (data: InvoiceCreateData) => {
     console.warn('Failed to create invoice notification', e);
   }
   return docRef;
+};
+
+export const updateInvoicesStatusByReference = async (
+  transactionReference: string,
+  status: string
+) => {
+  if (!transactionReference) return;
+
+  const q = query(
+    collection(db, 'invoices'),
+    where('transactionReference', '==', transactionReference)
+  );
+
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return;
+
+  const updates = snapshot.docs.map((docSnap) =>
+    updateDoc(docSnap.ref, { status })
+  );
+
+  await Promise.all(updates);
+};
+
+export const getPendingInvoices = async (): Promise<InvoiceRecord[]> => {
+  const q = query(
+    collection(db, 'invoices'),
+    where('status', '==', 'pending')
+  );
+
+  const snapshot = await getDocs(q);
+
+  const loaded: InvoiceRecord[] = snapshot.docs.map((doc) => {
+    const data = doc.data() as any;
+    let createdAtDate: Date | undefined;
+    if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+      createdAtDate = data.createdAt.toDate();
+    }
+
+    return {
+      id: doc.id,
+      invoiceNumber: data.invoiceNumber || doc.id,
+      customerName: data.customerName || '',
+      customerEmail: data.customerEmail || '',
+      customerAddress: data.customerAddress || '',
+      notes: data.notes || '',
+      taxRate: typeof data.taxRate === 'number' ? data.taxRate : 0,
+      subtotal: typeof data.subtotal === 'number' ? data.subtotal : 0,
+      taxAmount: typeof data.taxAmount === 'number' ? data.taxAmount : 0,
+      total: typeof data.total === 'number' ? data.total : 0,
+      dueDate: data.dueDate || '',
+      status: data.status || 'draft',
+      transactionId: data.transactionId,
+      transactionReference: data.transactionReference,
+      transactionDescription: data.transactionDescription,
+      transactionCategory: data.transactionCategory,
+      transactionMethod: data.transactionMethod,
+      transactionDate: data.transactionDate,
+      transactionTime: data.transactionTime,
+      createdAt: createdAtDate,
+    };
+  });
+
+  return loaded;
 };
 
 export const subscribeToInvoices = (

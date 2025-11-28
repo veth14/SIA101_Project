@@ -32,6 +32,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   onReject,
   onExpenseSelect,
   onCreate,
+  onMarkPaid,
 }) => {
   // Local fallback storage for newly created expenses if parent doesn't push them into `expenses` prop
   const [localCreated, setLocalCreated] = useState<Expense[]>([]);
@@ -741,36 +742,59 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             )}
 
             {/* Action Buttons */}
-            {selectedExpense.status === 'pending' && (
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onApprove([selectedExpense.id]);
-                    setIsModalOpen(false);
-                  }}
-                  className="inline-flex items-center justify-center flex-1 gap-2 px-6 py-4 font-bold text-white transition-colors bg-green-600 shadow-lg hover:bg-green-700 rounded-xl shadow-green-600/30"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Approve Expense
-                </button>
-                
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // open reject prompt to capture reason
-                    setRejectNotes('');
-                    setIsRejectPromptOpen(true);
-                  }}
-                  className="inline-flex items-center justify-center flex-1 gap-2 px-6 py-4 font-bold text-white transition-colors bg-red-600 shadow-lg hover:bg-red-700 rounded-xl shadow-red-600/30"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Reject Expense
-                </button>
+            {(selectedExpense.status === 'pending' || selectedExpense.status === 'approved') && (
+              <div className="flex flex-col gap-3 pt-2 md:flex-row">
+                {/* For pending expenses, show Approve + Reject */}
+                {selectedExpense.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onApprove([selectedExpense.id]);
+                        setIsModalOpen(false);
+                      }}
+                      className="inline-flex items-center justify-center flex-1 gap-2 px-6 py-4 font-bold text-white transition-colors bg-green-600 shadow-lg hover:bg-green-700 rounded-xl shadow-green-600/30"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Approve Expense
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // open reject prompt to capture reason
+                        setRejectNotes('');
+                        setIsRejectPromptOpen(true);
+                      }}
+                      className="inline-flex items-center justify-center flex-1 gap-2 px-6 py-4 font-bold text-white transition-colors bg-red-600 shadow-lg hover:bg-red-700 rounded-xl shadow-red-600/30"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Reject Expense
+                    </button>
+                  </>
+                )}
+
+                {/* Mark as Paid is available for both pending and already approved expenses */}
+                {typeof onMarkPaid === 'function' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMarkPaid([selectedExpense.id]);
+                      setIsModalOpen(false);
+                    }}
+                    className="inline-flex items-center justify-center flex-1 gap-2 px-6 py-4 font-bold text-white transition-colors bg-blue-600 shadow-lg hover:bg-blue-700 rounded-xl shadow-blue-600/30"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-2.21 0-4 1.343-4 3 0 1.105.89 2 2 2h3a2 2 0 010 4h-4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v3m0 12v3" />
+                    </svg>
+                    Mark as Paid
+                  </button>
+                )}
               </div>
             )}
 
