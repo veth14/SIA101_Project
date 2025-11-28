@@ -1,5 +1,6 @@
 import { db } from '../../config/firebase';
 import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import { createNotification } from '../notifications/notificationsService';
 
 export interface InvoiceCreateData {
   invoiceNumber: string;
@@ -43,6 +44,17 @@ export const createInvoice = async (data: InvoiceCreateData) => {
   };
 
   const docRef = await addDoc(collection(db, 'invoices'), payload);
+  try {
+    await createNotification({
+      type: 'invoice',
+      title: `New invoice ${data.invoiceNumber}`,
+      message: `${data.customerName || 'Guest'} • ₱${Number(data.total || 0).toLocaleString('en-PH')}`,
+      sourceId: docRef.id,
+    });
+  } catch (e) {
+    // Non-blocking: log but don't break invoice creation
+    console.warn('Failed to create invoice notification', e);
+  }
   return docRef;
 };
 

@@ -1,10 +1,19 @@
-// StaffSchedulesPage.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+// StaffSchedulesPage.tsx - UPDATED WITH MERGED SCHEDULE TABLE
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../../../config/firebase';
-import { collection, getDocs, addDoc, serverTimestamp, doc, DocumentReference } from 'firebase/firestore';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  serverTimestamp, 
+  doc, 
+  DocumentReference,
+  query,
+  where
+} from 'firebase/firestore';
 
 // Import types
-import { Staff, Schedule, WeeklySchedule } from './types';
+import { Staff, Schedule, WeeklySchedule, LeaveRequest } from './types';
 
 // Import utilities
 import {
@@ -12,80 +21,62 @@ import {
   formatDateForDisplay,
   getWeekNumber,
   getWeekDateRange,
-  filterSchedulesByWeek,
   getDepartment,
   getShiftTime
 } from './utils';
 
-// Import components
+// Import existing components
 import ScheduleHeader from './ScheduleHeader';
-import ScheduleFilters from './ScheduleFilters';
-import ScheduleTable from './ScheduleTable';
+import ScheduleTable from './ScheduleTable'; // ✅ Now includes filters
 import CreateScheduleModal from './CreateScheduleModal';
 
+// ✅ Import Leave Request Page
+import LeaveRequestsPage from './LeaveRequestPage';
+
 const StaffSchedulesPage: React.FC = () => {
-  // State management
+  // ✅ Tab state
+  const [activeTab, setActiveTab] = useState<"schedule" | "leave">("schedule");
+
+  // ---------------- Existing States ----------------
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
   const [selectedShift, setSelectedShift] = useState<string>('7am-3pm');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [currentWeekOffset, setCurrentWeekOffset] = useState<number>(0);
 
-  // Computed values
-  const currentWeekRange = getWeekDateRange(currentWeekOffset);
-  
-  const uniqueClassifications = Array.from(
-    new Set(staffList.map(staff => staff.classification).filter((c): c is string => Boolean(c)))
-  ).sort();
 
-  const filteredWeeklySchedule = Object.fromEntries(
-    Object.entries(weeklySchedule).filter(([_, data]) => {
-      if (selectedDepartment !== 'all') {
-        const staffDepartment = getDepartment(data.classification);
-        if (staffDepartment !== selectedDepartment) return false;
-      }
-      
-      if (selectedClassification !== 'all') {
-        if (data.classification !== selectedClassification) return false;
-      }
-      
-      return true;
-    })
+  // ✅ NEW: State for leave requests
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+
+  // ✅ OPTIMIZATION: Memoize computed values
+  const currentWeekRange = useMemo(() => getWeekDateRange(currentWeekOffset), [currentWeekOffset]);
+  
+  const uniqueClassifications = useMemo(() => 
+    Array.from(
+      new Set(staffList.map(staff => staff.classification).filter((c): c is string => Boolean(c)))
+    ).sort(),
+    [staffList]
   );
 
-  // Fetch staff from Firestore
-  const fetchStaff = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const staffCollection = collection(db, 'staff');
-      const staffSnapshot = await getDocs(staffCollection);
-      
-      const staffData: Staff[] = staffSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Staff));
+  // ✅ OPTIMIZATION: Filter schedules by current week (memoized)
+  const weeklySchedules = useMemo(() => {
+    return schedules.filter(schedule => {
+      if (!schedule.date) return false;
+      const scheduleDate = new Date(schedule.date);
+      return scheduleDate >= currentWeekRange.start && scheduleDate <= currentWeekRange.end;
+    });
+  }, [schedules, currentWeekRange]);
 
-      setStaffList(staffData);
-    } catch (error) {
-      console.error('Error fetching staff:', error);
-      alert('Error loading staff. Please check your Firebase configuration.');
-      setStaffList([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Organize schedules by staff and day
-  const organizeWeeklySchedule = useCallback((schedulesData: Schedule[]): void => {
+  // ✅ OPTIMIZATION: Organize weekly schedule (memoized)
+  const weeklySchedule = useMemo(() => {
     const organized: WeeklySchedule = {};
 
-    schedulesData.forEach(schedule => {
+    weeklySchedules.forEach(schedule => {
       if (!organized[schedule.staffId]) {
         organized[schedule.staffId] = {
           staffName: schedule.staffName,
@@ -100,50 +91,147 @@ const StaffSchedulesPage: React.FC = () => {
       };
     });
 
-    setWeeklySchedule(organized);
+    return organized;
+  }, [weeklySchedules]);
+
+  // ✅ OPTIMIZATION: Filter by department and classification (memoized)
+  const filteredWeeklySchedule = useMemo(() => {
+    return Object.fromEntries(
+      Object.entries(weeklySchedule).filter(([_, data]) => {
+        if (selectedDepartment !== 'all') {
+          const staffDepartment = getDepartment(data.classification);
+          if (staffDepartment !== selectedDepartment) return false;
+        }
+        if (selectedClassification !== 'all') {
+          if (data.classification !== selectedClassification) return false;
+        }
+        return true;
+      })
+    );
+  }, [weeklySchedule, selectedDepartment, selectedClassification]);
+
+  // ✅ OPTIMIZATION: Prepare schedules for header (memoized)
+  const headerSchedules = useMemo(() => {
+    return weeklySchedules.map(schedule => ({
+      id: schedule.id,
+      name: schedule.staffName,
+      classification: schedule.classification,
+      shift: schedule.shift,
+      shiftTime: schedule.shiftTime,
+      date: schedule.date || ''
+    }));
+  }, [weeklySchedules]);
+
+  // ---------------- Fetching Logic ----------------
+
+  /**
+   * ✅ NEW: Fetch leave requests
+   */
+  const fetchLeaveRequests = useCallback(async (): Promise<void> => {
+    try {
+      const leaveCollection = collection(db, 'leave_requests');
+      const leaveSnapshot = await getDocs(leaveCollection);
+      
+      const leaveData: LeaveRequest[] = leaveSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as LeaveRequest));
+
+      setLeaveRequests(leaveData);
+    } catch (error) {
+      console.error('Error fetching leave requests:', error);
+      // Don't alert, just log - leave requests are optional
+    }
   }, []);
 
-  // Fetch schedules from Firestore
-const fetchSchedules = useCallback(async (): Promise<void> => {
-  try {
-    const schedulesCollection = collection(db, 'staff_schedules');
-    const schedulesSnapshot = await getDocs(schedulesCollection);
+  /**
+   * ✅ OPTIMIZATION: Only fetch staff when modal opens AND list is empty
+   * This prevents unnecessary reads on every render
+   */
+  const fetchStaff = useCallback(async (): Promise<void> => {
+    // Skip if we already have staff data
+    if (staffList.length > 0) return;
     
-    const schedulesData: Schedule[] = schedulesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Schedule));
+    setLoading(true);
+    try {
+      const staffCollection = collection(db, 'staff');
+      const staffSnapshot = await getDocs(staffCollection);
+      
+      const staffData: Staff[] = staffSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Staff));
 
-    setSchedules(schedulesData);
-    
-    // Use the state variable in a useEffect instead
-  } catch (error) {
-    console.error('Error fetching schedules:', error);
-  }
-}, []);
+      setStaffList(staffData);
+    } catch (error) {
+      console.error('Error fetching staff:', error);
+      alert('Error loading staff. Please check your Firebase configuration.');
+    } finally {
+      setLoading(false);
+    }
+  }, [staffList.length]);
 
-// Add new useEffect to organize schedules when they change
-useEffect(() => {
-  const weekFiltered = filterSchedulesByWeek(
-    schedules, 
-    currentWeekRange.start, 
-    currentWeekRange.end
-  );
-  organizeWeeklySchedule(weekFiltered);
-}, [schedules, currentWeekRange, organizeWeeklySchedule]);
+  /**
+   * ✅ OPTIMIZATION: Fetch schedules with date range query
+   * This dramatically reduces reads by only fetching schedules within the week
+   * IMPORTANT: Requires Firestore composite index on 'date' field
+   */
+  const fetchSchedules = useCallback(async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const schedulesCollection = collection(db, 'staff_schedules');
+      
+      // Convert dates to ISO strings for Firestore comparison
+      const startDate = currentWeekRange.start.toISOString().split('T')[0];
+      const endDate = currentWeekRange.end.toISOString().split('T')[0];
+      
+      // ✅ Query only schedules within the current week range
+      const q = query(
+        schedulesCollection,
+        where('date', '>=', startDate),
+        where('date', '<=', endDate)
+      );
+      
+      const schedulesSnapshot = await getDocs(q);
+      
+      const schedulesData: Schedule[] = schedulesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Schedule));
 
-  // Effects
+      setSchedules(schedulesData);
+      
+      console.log(`✅ Optimized query: Fetched ${schedulesData.length} schedules for week ${startDate} to ${endDate}`);
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+      
+      // If the error is about missing index, provide helpful message
+      if (error instanceof Error && error.message.includes('index')) {
+        console.error('📌 You need to create a Firestore index on the "date" field.');
+        console.error('📌 Check the browser console for a link to create the index automatically.');
+      }
+      
+      alert('Error loading schedules. Please check your Firebase configuration and ensure the required index exists.');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentWeekRange]);
+
+  // ✅ Fetch schedules when week changes
   useEffect(() => {
     fetchSchedules();
-  }, [fetchSchedules, currentWeekOffset]);
+  }, [fetchSchedules]);
 
+  // ✅ Lazy load staff and leave requests only when modal opens
   useEffect(() => {
     if (isModalOpen) {
       fetchStaff();
+      fetchLeaveRequests();
     }
-  }, [isModalOpen, fetchStaff]);
+  }, [isModalOpen, fetchStaff, fetchLeaveRequests]);
 
-  // Event handlers
+  // ---------------- Event Handlers ----------------
+
   const handleStaffToggle = (staffId: string): void => {
     setSelectedStaff(prev =>
       prev.includes(staffId)
@@ -154,8 +242,39 @@ useEffect(() => {
 
   const handleSubmit = async (): Promise<void> => {
     try {
+      console.log("Submitting schedule...");
+
       if (!selectedDate) {
         alert('Please select a date for the schedule.');
+        return;
+      }
+
+      if (selectedStaff.length === 0) {
+        alert('Please select at least one staff member.');
+        return;
+      }
+
+      // ✅ NEW: Check if any selected staff has approved leave on this date
+      const scheduleDate = new Date(selectedDate);
+      const staffOnLeave = selectedStaff.filter(staffId => {
+        return leaveRequests.some(request => {
+          if (request.staffId !== staffId || request.status !== 'approved') {
+            return false;
+          }
+          
+          const leaveStart = new Date(request.startDate);
+          const leaveEnd = new Date(request.endDate);
+          
+          return scheduleDate >= leaveStart && scheduleDate <= leaveEnd;
+        });
+      });
+
+      if (staffOnLeave.length > 0) {
+        const staffNames = staffOnLeave
+          .map(id => staffList.find(s => s.id === id)?.fullName || 'Unknown')
+          .join(', ');
+        
+        alert(`Cannot schedule the following staff members as they have approved leave on this date:\n${staffNames}`);
         return;
       }
 
@@ -164,6 +283,7 @@ useEffect(() => {
       const selectedDateObj = new Date(selectedDate);
       const dayName = getDayFromDate(selectedDate);
       
+      // ✅ Batch write all schedules at once
       const schedulePromises = selectedStaff.map(staffId => {
         const staffMember = staffList.find(s => s.id === staffId);
         const staffRef: DocumentReference = doc(db, 'staff', staffId);
@@ -175,7 +295,7 @@ useEffect(() => {
           classification: staffMember?.classification || '',
           email: staffMember?.email || '',
           phoneNumber: staffMember?.phoneNumber || '',
-          date: selectedDate,
+          date: selectedDate, // ✅ Store as ISO string for querying
           day: dayName,
           shift: selectedShift,
           shiftTime: getShiftTime(selectedShift),
@@ -189,6 +309,7 @@ useEffect(() => {
 
       await Promise.all(schedulePromises);
       
+      // Reset modal state
       setIsModalOpen(false);
       setSelectedStaff([]);
       setSelectedShift('7am-3pm');
@@ -196,6 +317,7 @@ useEffect(() => {
       
       alert(`Successfully scheduled ${selectedStaff.length} staff member(s) for ${formatDateForDisplay(selectedDate)}!`);
       
+      // Refresh schedules
       fetchSchedules();
     } catch (error) {
       console.error('Error creating schedule:', error);
@@ -203,8 +325,9 @@ useEffect(() => {
     }
   };
 
+  // ---------------- RENDER ----------------
   return (
-    <div className="min-h-screen bg-[#F9F6EE]">
+    <div className="min-h-screen bg-[#F9F6EE] pb-12">
       {/* Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-r from-heritage-green/5 to-emerald-100/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
@@ -220,40 +343,78 @@ useEffect(() => {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        <ScheduleHeader />
-        
-        <ScheduleFilters
-          onCreateSchedule={() => setIsModalOpen(true)}
-          currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={setCurrentWeekOffset}
-          currentWeekRange={currentWeekRange}
-          selectedDepartment={selectedDepartment}
-          setSelectedDepartment={setSelectedDepartment}
-          selectedClassification={selectedClassification}
-          setSelectedClassification={setSelectedClassification}
-          uniqueClassifications={uniqueClassifications}
-        />
+      <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 w-full">
+        {/* ✅ Pass optimized header schedules as prop */}
+        <ScheduleHeader weeklySchedules={headerSchedules} />
 
-        <ScheduleTable
-          weeklySchedule={filteredWeeklySchedule}
-          selectedDepartment={selectedDepartment}
-          selectedClassification={selectedClassification}
-        />
+        {/* ✅ TAB NAVIGATION - After header, before filters */}
+{/* ===================== TAB NAVIGATION WITH REAL-TIME CLOCK ===================== */}
+<div className="w-full flex justify-center mb-8">
+  <div className="flex w-[600px] bg-gradient-to-br from-[#f6fff6] to-[#e8f6e8] p-2 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    
+    {/* Staff Scheduling Tab */}
+    <button
+      onClick={() => setActiveTab("schedule")}
+      className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300
+        ${activeTab === "schedule"
+          ? "bg-white shadow-md text-[#2F6D2F]"
+          : "text-[#338833] opacity-70 hover:opacity-100"
+        }`}
+    >
+      Staff Scheduling
+    </button>
 
-        <CreateScheduleModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          selectedShift={selectedShift}
-          setSelectedShift={setSelectedShift}
-          selectedStaff={selectedStaff}
-          handleStaffToggle={handleStaffToggle}
-          staffList={staffList}
-          loading={loading}
-          onSubmit={handleSubmit}
-        />
+    {/* Leave Requests Tab */}
+    <button
+      onClick={() => setActiveTab("leave")}
+      className={`flex-1 py-3 rounded-2xl font-semibold transition-all duration-300
+        ${activeTab === "leave"
+          ? "bg-white shadow-md text-[#2F6D2F]"
+          : "text-[#338833] opacity-70 hover:opacity-100"
+        }`}
+    >
+      Leave Requests
+    </button>
+
+</div>
+</div>
+
+
+        {/* ✅ Conditional Page Rendering */}
+        {activeTab === "leave" ? (
+          <LeaveRequestsPage />
+        ) : (
+          <div className="space-y-6">
+            {/* ✅ UPDATED: ScheduleTable now includes filters */}
+            <ScheduleTable
+              weeklySchedule={filteredWeeklySchedule}
+              selectedDepartment={selectedDepartment}
+              setSelectedDepartment={setSelectedDepartment}
+              selectedClassification={selectedClassification}
+              setSelectedClassification={setSelectedClassification}
+              uniqueClassifications={uniqueClassifications}
+              currentWeekOffset={currentWeekOffset}
+              setCurrentWeekOffset={setCurrentWeekOffset}
+              currentWeekRange={currentWeekRange}
+              onCreateSchedule={() => setIsModalOpen(true)}
+            />
+
+            <CreateScheduleModal 
+              isOpen={isModalOpen} 
+              onClose={() => setIsModalOpen(false)} 
+              selectedDate={selectedDate} 
+              setSelectedDate={setSelectedDate} 
+              selectedShift={selectedShift} 
+              setSelectedShift={setSelectedShift} 
+              selectedStaff={selectedStaff} 
+              handleStaffToggle={handleStaffToggle} 
+              staffList={staffList} 
+              loading={loading} 
+              onSubmit={handleSubmit}
+              leaveRequests={leaveRequests} // ✅ NEW: Pass leave requests
+            />
+          </div>
+        )}
       </div>
     </div>
   );

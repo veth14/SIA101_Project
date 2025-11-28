@@ -6,100 +6,185 @@ import RevenueDashboard from './RevenueDashboard';
 const OverviewCards = React.lazy(() => import('../profitAnalytics/OverviewCards').then((m) => ({ default: m.OverviewCards })));
 const ProfitAnalysisCharts = React.lazy(() => import('../profitAnalytics/ProfitAnalysisCharts'));
 
-// Analytics helpers (reuse same logic as ProfitAnalysisPage)
-import { getRevenueData, calculateChartMetrics } from '../dashboard/chartsLogic/revenueAnalyticsLogic';
+// Live data from Firestore services
+import { subscribeToInvoices, type InvoiceRecord } from '../../../backend/invoices/invoicesService';
+import { subscribeToRequisitions, type RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, type PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
 export const RevenuePage: React.FC = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'revenue' | 'profit'>('revenue');
   const [activeTimeframe] = useState<'monthly' | 'yearly'>('monthly');
   const navigate = useNavigate();
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([]);
+  const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderRecord[]>([]);
 
-  // Compute revenue metrics for the Profit tab and pass to components
-  const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
-  const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
+  // Subscribe to live financial data
+  useEffect(() => {
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        const paid = records.filter((r) => r.status === 'paid' || r.status === 'completed');
+        setInvoiceRecords(paid);
+      },
+      (error) => {
+        console.error('Error loading invoices for revenue/profit analytics:', error);
+      }
+    );
 
-  const costAnalysis = useMemo(() => [
-    {
-      category: 'Staff Costs',
-      amount: Math.round(metrics.totalExpenses * 0.45),
-      percentage: 45,
-      trend: 'up' as const,
-      change: '+3.2%',
-      color: '#EF4444',
-      icon: '👥',
-      description: 'Salaries, benefits, training',
-      status: 'high' as const
-    },
-    {
-      category: 'Utilities & Maintenance',
-      amount: Math.round(metrics.totalExpenses * 0.25),
-      percentage: 25,
-      trend: 'down' as const,
-      change: '-1.8%',
-      color: '#F59E0B',
-      icon: '⚡',
-      description: 'Electricity, water, repairs',
-      status: 'medium' as const
-    },
-    {
-      category: 'Food & Beverage Costs',
-      amount: Math.round(metrics.totalExpenses * 0.20),
-      percentage: 20,
-      trend: 'up' as const,
-      change: '+2.1%',
-      color: '#8B5CF6',
-      icon: '🍽️',
-      description: 'Ingredients, supplies, waste',
-      status: 'medium' as const
-    },
-    {
-      category: 'Marketing & Operations',
-      amount: Math.round(metrics.totalExpenses * 0.10),
-      percentage: 10,
-      trend: 'down' as const,
-      change: '-0.5%',
-      color: '#10B981',
-      icon: '📢',
-      description: 'Advertising, admin, insurance',
-      status: 'low' as const
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (loaded) => {
+        setRequisitions(loaded);
+      },
+      (error) => {
+        console.error('Error loading requisitions for revenue/profit analytics:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (loaded) => {
+        setPurchaseOrders(loaded);
+      },
+      (error) => {
+        console.error('Error loading purchase orders for revenue/profit analytics:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  // Compute revenue/expense/profit metrics for the Profit tab from live data
+  const metrics = useMemo(() => {
+    if (!invoiceRecords.length && !requisitions.length && !purchaseOrders.length) {
+      return { totalRevenue: 0, totalExpenses: 0, totalProfit: 0 };
     }
-  ], [metrics.totalExpenses]);
 
-  const departmentProfits = useMemo(() => [
-    {
-      department: 'Rooms',
-      revenue: Math.round(metrics.totalRevenue * 0.60),
-      costs: Math.round(metrics.totalExpenses * 0.35),
-      profit: Math.round(metrics.totalRevenue * 0.60) - Math.round(metrics.totalExpenses * 0.35),
-      margin: 58.3,
-      status: 'excellent' as const
-    },
-    {
-      department: 'Food & Beverage',
-      revenue: Math.round(metrics.totalRevenue * 0.25),
-      costs: Math.round(metrics.totalExpenses * 0.30),
-      profit: Math.round(metrics.totalRevenue * 0.25) - Math.round(metrics.totalExpenses * 0.30),
-      margin: -20.0,
-      status: 'poor' as const
-    },
-    {
-      department: 'Events',
-      revenue: Math.round(metrics.totalRevenue * 0.10),
-      costs: Math.round(metrics.totalExpenses * 0.15),
-      profit: Math.round(metrics.totalRevenue * 0.10) - Math.round(metrics.totalExpenses * 0.15),
-      margin: -50.0,
-      status: 'poor' as const
-    },
-    {
-      department: 'Other Services',
-      revenue: Math.round(metrics.totalRevenue * 0.05),
-      costs: Math.round(metrics.totalExpenses * 0.20),
-      profit: Math.round(metrics.totalRevenue * 0.05) - Math.round(metrics.totalExpenses * 0.20),
-      margin: -300.0,
-      status: 'critical' as const
+    // Align revenue with the Revenue tab: sum of paid/completed invoices
+    const totalRevenue = invoiceRecords.reduce(
+      (sum, r) => sum + (typeof r.total === 'number' ? r.total : 0),
+      0
+    );
+
+    // Expenses from requisitions
+    const relevantRequisitions = requisitions.filter((req) => {
+      const rawStatus = (req.status || '').toString().toLowerCase();
+      const allowedStatus =
+        rawStatus === 'approved' || rawStatus === 'fulfilled' || rawStatus === 'pending';
+      const dateSource = req.approvedDate || req.requiredDate || req.requestDate;
+      return allowedStatus && !!dateSource;
+    });
+
+    const requisitionExpenses = relevantRequisitions.reduce(
+      (sum, req) =>
+        sum + (typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0),
+      0
+    );
+
+    // Expenses from purchase orders
+    const relevantPurchaseOrders = purchaseOrders.filter((po) => {
+      const rawStatus = (po.status || '').toString().toLowerCase();
+      const allowedStatus =
+        rawStatus === 'approved' || rawStatus === 'received' || rawStatus === 'pending';
+      const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
+      return allowedStatus && !!dateSource;
+    });
+
+    const purchaseOrderExpenses = relevantPurchaseOrders.reduce(
+      (sum, po) => sum + (typeof po.totalAmount === 'number' ? po.totalAmount : 0),
+      0
+    );
+
+    const totalExpenses = requisitionExpenses + purchaseOrderExpenses;
+    const totalProfit = totalRevenue - totalExpenses;
+
+    return { totalRevenue, totalExpenses, totalProfit };
+  }, [invoiceRecords, requisitions, purchaseOrders, activeTimeframe]);
+
+  // Cost analysis breakdown: derive category amounts from total expenses
+  const costAnalysis = useMemo(() => {
+    const total = metrics.totalExpenses;
+    if (total <= 0) {
+      return [] as {
+        category: string;
+        amount: number;
+        percentage: number;
+        trend: 'up' | 'down';
+        change: string;
+        color: string;
+        icon: string;
+        description: string;
+        status: 'high' | 'medium' | 'low';
+      }[];
     }
-  ], [metrics.totalRevenue, metrics.totalExpenses]);
+
+    // Split expenses into three high-level buckets for analysis
+    const maintenanceAmount = Math.round(total * 0.3);
+    const fnbAmount = Math.round(total * 0.45);
+    const operationsAmount = Math.max(0, total - maintenanceAmount - fnbAmount);
+
+    const makeItem = (
+      category: string,
+      amount: number,
+      color: string,
+      icon: string,
+      description: string,
+      status: 'high' | 'medium' | 'low'
+    ) => ({
+      category,
+      amount,
+      percentage: total > 0 ? Math.round((amount / total) * 100) : 0,
+      trend: 'up' as const,
+      change: '+0.0%',
+      color,
+      icon,
+      description,
+      status,
+    });
+
+    return [
+      makeItem('Maintenance', maintenanceAmount, '#F59E0B', '🛠️', 'Repairs, maintenance supplies, property upkeep', 'medium'),
+      makeItem('Food & Beverage Costs', fnbAmount, '#8B5CF6', '🍽️', 'Ingredients, kitchen supplies, minibar and restaurant costs', 'medium'),
+      makeItem('Operations', operationsAmount, '#10B981', '🏨', 'Front office, housekeeping, admin and other operating expenses', 'low'),
+    ];
+  }, [metrics.totalExpenses]);
+
+  // Only keep Rooms and Food & Beverage departments; remove Events/Other Services.
+  const departmentProfits = useMemo(() => {
+    const roomsRevenue = Math.round(metrics.totalRevenue * 0.7);
+    const roomsCosts = Math.round(metrics.totalExpenses * 0.4);
+    const roomsProfit = roomsRevenue - roomsCosts;
+
+    const fnbRevenue = Math.max(0, metrics.totalRevenue - roomsRevenue);
+    const fnbCosts = Math.max(0, metrics.totalExpenses - roomsCosts);
+    const fnbProfit = fnbRevenue - fnbCosts;
+
+    return [
+      {
+        department: 'Rooms',
+        revenue: roomsRevenue,
+        costs: roomsCosts,
+        profit: roomsProfit,
+        margin: roomsRevenue > 0 ? (roomsProfit / roomsRevenue) * 100 : 0,
+        status: roomsProfit >= 0 ? ('excellent' as const) : ('poor' as const),
+      },
+      {
+        department: 'Food & Beverage',
+        revenue: fnbRevenue,
+        costs: fnbCosts,
+        profit: fnbProfit,
+        margin: fnbRevenue > 0 ? (fnbProfit / fnbRevenue) * 100 : 0,
+        status: fnbProfit >= 0 ? ('good' as const) : ('poor' as const),
+      },
+    ];
+  }, [metrics.totalRevenue, metrics.totalExpenses]);
 
   // Read ?tab= or #hash on mount and switch tabs accordingly
   useEffect(() => {

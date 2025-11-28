@@ -31,7 +31,8 @@ const computeTotals = (items: Expense[]) => ({
 const ExpensesStats: React.FC<Props> = ({ expenses }) => {
   // immediate render; skeleton removed
   const totals = computeTotals(expenses);
-  const overall = Object.values(totals).reduce((s, v) => s + v, 0);
+  // Only count approved and paid expenses in the overall total
+  const overall = totals.approved + totals.paid;
   
   const stats: StatCard[] = [
     {

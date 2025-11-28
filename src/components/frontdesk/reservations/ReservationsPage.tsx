@@ -5,6 +5,7 @@ import {
   writeBatch, where, WriteBatch, runTransaction
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import { createNotification } from '../../../backend/notifications/notificationsService';
 import { useAuth } from '../../../contexts/AuthContext';
 
 // --- Import from the new separate file ---
@@ -301,6 +302,17 @@ export const ReservationsPage = () => {
       setShowCheckInModal(false);
       setSelectedReservation(null);
 
+      try {
+        await createNotification({
+          type: 'reservation',
+          title: 'Guest checked in',
+          message: `${updatedReservation.userName} • ${updatedReservation.roomName || 'Room'} (${updatedReservation.checkIn}–${updatedReservation.checkOut})`,
+          sourceId: updatedReservation.bookingId,
+        });
+      } catch (e) {
+        console.warn('Failed to create check-in notification', e);
+      }
+
     } catch (error) {
       console.error('Error checking in:', error);
       alert('Failed to check in. Please try again.');
@@ -416,6 +428,18 @@ export const ReservationsPage = () => {
       } catch (err) {
         console.warn('Failed to upsert guest profile from walk-in booking:', err);
       }
+
+      try {
+        await createNotification({
+          type: 'reservation',
+          title: 'New reservation',
+          message: `${newBooking.userName} • ${newBooking.roomName || 'Room'} (${newBooking.checkIn}–${newBooking.checkOut})`,
+          sourceId: bookingId,
+        });
+      } catch (e) {
+        console.warn('Failed to create reservation notification', e);
+      }
+
     } catch (error) {
       console.error('Error adding walk-in:', error);
       alert('Failed to create booking.');
@@ -455,6 +479,17 @@ export const ReservationsPage = () => {
       setShowCheckOutModal(false);
       setSelectedReservation(null);
 
+      try {
+        await createNotification({
+          type: 'reservation',
+          title: 'Guest checked out',
+          message: `${reservation.userName} • ${reservation.roomName || 'Room'} (${reservation.checkIn}–${reservation.checkOut})`,
+          sourceId: reservation.bookingId,
+        });
+      } catch (e) {
+        console.warn('Failed to create check-out notification', e);
+      }
+
     } catch (error) {
       console.error('Error confirming check-out:', error);
       alert('Failed to check out.');
@@ -493,6 +528,17 @@ export const ReservationsPage = () => {
 
       setShowCancelModal(false);
       setSelectedReservation(null);
+
+      try {
+        await createNotification({
+          type: 'reservation',
+          title: 'Reservation cancelled',
+          message: `${reservation.userName} • ${reservation.roomName || 'Room'} (${reservation.checkIn}–${reservation.checkOut})`,
+          sourceId: reservation.bookingId,
+        });
+      } catch (e) {
+        console.warn('Failed to create cancel notification', e);
+      }
 
     } catch (error) {
       console.error('Error cancelling:', error);

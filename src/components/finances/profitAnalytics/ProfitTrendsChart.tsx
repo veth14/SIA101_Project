@@ -1,7 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatCurrencyPH, formatShortCurrencyPH } from '../../../lib/utils';
+import { subscribeToInvoices, type InvoiceRecord } from '../../../backend/invoices/invoicesService';
+import { subscribeToRequisitions, type RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, type PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
 // Workaround: Recharts JSX types sometimes conflict with the project's React typings.
 // Create safe aliases typed as React.ComponentType<any> and use them in JSX to avoid typing issues.
@@ -19,43 +22,6 @@ interface TooltipPayload {
   value: number;
   color?: string;
 }
-
-// Sample profit data generator
-const getProfitData = (timeframe: 'weekly' | 'monthly' | 'yearly') => {
-  const baseData = {
-    weekly: [
-      { period: 'Monday', revenue: 12500, expenses: 8200, profit: 4300 },
-      { period: 'Tuesday', revenue: 11800, expenses: 7900, profit: 3900 },
-      { period: 'Wednesday', revenue: 13200, expenses: 8800, profit: 4400 },
-      { period: 'Thursday', revenue: 14100, expenses: 9200, profit: 4900 },
-      { period: 'Friday', revenue: 15400, expenses: 9800, profit: 5600 },
-      { period: 'Saturday', revenue: 16200, expenses: 10200, profit: 6000 },
-      { period: 'Sunday', revenue: 14800, expenses: 9500, profit: 5300 }
-    ],
-    monthly: [
-      { period: 'Jan', revenue: 285000, expenses: 195000, profit: 90000 },
-      { period: 'Feb', revenue: 298000, expenses: 205000, profit: 93000 },
-      { period: 'Mar', revenue: 312000, expenses: 215000, profit: 97000 },
-      { period: 'Apr', revenue: 295000, expenses: 200000, profit: 95000 },
-      { period: 'May', revenue: 325000, expenses: 225000, profit: 100000 },
-      { period: 'Jun', revenue: 340000, expenses: 235000, profit: 105000 },
-      { period: 'Jul', revenue: 355000, expenses: 245000, profit: 110000 },
-      { period: 'Aug', revenue: 348000, expenses: 240000, profit: 108000 },
-      { period: 'Sep', revenue: 332000, expenses: 228000, profit: 104000 },
-      { period: 'Oct', revenue: 365000, expenses: 250000, profit: 115000 },
-      { period: 'Nov', revenue: 378000, expenses: 258000, profit: 120000 },
-      { period: 'Dec', revenue: 395000, expenses: 270000, profit: 125000 }
-    ],
-    yearly: [
-      { period: '2020', revenue: 2800000, expenses: 2100000, profit: 700000 },
-      { period: '2021', revenue: 3200000, expenses: 2400000, profit: 800000 },
-      { period: '2022', revenue: 3600000, expenses: 2700000, profit: 900000 },
-      { period: '2023', revenue: 3900000, expenses: 2850000, profit: 1050000 },
-      { period: '2024', revenue: 4200000, expenses: 3000000, profit: 1200000 }
-    ]
-  };
-  return baseData[timeframe];
-};
 
 const formatCurrency = formatCurrencyPH;
 const formatShortCurrency = formatShortCurrencyPH;
@@ -91,10 +57,185 @@ interface ProfitTrendsChartProps {
 }
 
 const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" }) => {
-  const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+  const [activeTimeframe, setActiveTimeframe] = useState<'monthly' | 'yearly'>('monthly');
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const now = new Date();
+  const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([]);
+  const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderRecord[]>([]);
   
-  // Get data and calculate metrics
-  const profitData = useMemo(() => getProfitData(activeTimeframe), [activeTimeframe]);
+  // Subscribe to live financial data
+  useEffect(() => {
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        const paid = records.filter((r) => r.status === 'paid' || r.status === 'completed');
+        setInvoiceRecords(paid);
+      },
+      (error) => {
+        console.error('Error loading invoices for profit analysis chart:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (loaded) => {
+        setRequisitions(loaded);
+      },
+      (error) => {
+        console.error('Error loading requisitions for profit analysis chart:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (loaded) => {
+        setPurchaseOrders(loaded);
+      },
+      (error) => {
+        console.error('Error loading purchase orders for profit analysis chart:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+  
+  // Build profit data from live invoices (revenue) and requisitions/POs (expenses)
+  const profitData = useMemo(() => {
+    // Helper to accumulate revenue/expenses per key
+    type Bucket = { revenue: number; expenses: number; profit: number };
+    const buckets = new Map<string, Bucket>();
+
+    const ensureBucket = (key: string): Bucket => {
+      const existing = buckets.get(key);
+      if (existing) return existing;
+      const created: Bucket = { revenue: 0, expenses: 0, profit: 0 };
+      buckets.set(key, created);
+      return created;
+    };
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const withinScope = (d: Date) => {
+      if (activeTimeframe === 'yearly') {
+        // For year view, include all data for the current year only
+        return d.getFullYear() === currentYear;
+      }
+      // For month view, restrict to the current month of the current year
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    };
+
+    // Revenue from invoices
+    invoiceRecords.forEach((record) => {
+      const rawDate = record.transactionDate || record.dueDate || record.createdAt?.toISOString().split('T')[0];
+      if (!rawDate) return;
+      const d = new Date(rawDate);
+      if (Number.isNaN(d.getTime()) || !withinScope(d)) return;
+
+      let key: string;
+      if (activeTimeframe === 'yearly') {
+        // Bucket by month index (0-11) for year view
+        key = String(d.getMonth());
+      } else {
+        const dayOfMonth = d.getDate();
+        const weekOfMonth = Math.min(5, Math.floor((dayOfMonth - 1) / 7) + 1);
+        key = `Week ${weekOfMonth}`;
+      }
+
+      const bucket = ensureBucket(key);
+      const amount = typeof record.total === 'number' ? record.total : 0;
+      bucket.revenue += amount;
+      bucket.profit = bucket.revenue - bucket.expenses;
+    });
+
+    // Expenses from requisitions
+    requisitions.forEach((req) => {
+      const rawStatus = (req.status || '').toString().toLowerCase();
+      const allowedStatus = rawStatus === 'approved' || rawStatus === 'fulfilled' || rawStatus === 'pending';
+      if (!allowedStatus) return;
+      const dateSource = req.approvedDate || req.requiredDate || req.requestDate;
+      if (!dateSource) return;
+      const d = new Date(dateSource as unknown as string);
+      if (Number.isNaN(d.getTime()) || !withinScope(d)) return;
+
+      let key: string;
+      if (activeTimeframe === 'yearly') {
+        key = String(d.getMonth());
+      } else {
+        const dayOfMonth = d.getDate();
+        const weekOfMonth = Math.min(5, Math.floor((dayOfMonth - 1) / 7) + 1);
+        key = `Week ${weekOfMonth}`;
+      }
+
+      const bucket = ensureBucket(key);
+      const amount = typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0;
+      bucket.expenses += amount;
+      bucket.profit = bucket.revenue - bucket.expenses;
+    });
+
+    // Expenses from purchase orders
+    purchaseOrders.forEach((po) => {
+      const rawStatus = (po.status || '').toString().toLowerCase();
+      const allowedStatus = rawStatus === 'approved' || rawStatus === 'received' || rawStatus === 'pending';
+      if (!allowedStatus) return;
+      const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
+      if (!dateSource) return;
+      const d = new Date(dateSource as unknown as string);
+      if (Number.isNaN(d.getTime()) || !withinScope(d)) return;
+
+      let key: string;
+      if (activeTimeframe === 'yearly') {
+        key = String(d.getFullYear());
+      } else {
+        const dayOfMonth = d.getDate();
+        const weekOfMonth = Math.min(5, Math.floor((dayOfMonth - 1) / 7) + 1);
+        key = `Week ${weekOfMonth}`;
+      }
+
+      const bucket = ensureBucket(key);
+      const amount = typeof po.totalAmount === 'number' ? po.totalAmount : 0;
+      bucket.expenses += amount;
+      bucket.profit = bucket.revenue - bucket.expenses;
+    });
+
+    // Order buckets for chart
+    if (activeTimeframe === 'yearly') {
+      // Aggregate by month name within the current year
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return monthNames.map((label, index) => {
+        const key = String(index); // use month index as bucket key
+        const bucket = buckets.get(key) || { revenue: 0, expenses: 0, profit: 0 };
+        const displayProfit = Math.max(0, bucket.profit);
+        return { period: label, ...bucket, displayProfit };
+      });
+    }
+
+    // Monthly: always show Week 1..Week N (4 or 5) for the current month
+    const sampleDate = invoiceRecords[0]?.transactionDate
+      ? new Date(invoiceRecords[0].transactionDate as string)
+      : new Date();
+    const year = sampleDate.getFullYear();
+    const monthIndex = sampleDate.getMonth();
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    const maxWeek = Math.min(5, Math.ceil(daysInMonth / 7));
+
+    const result: { period: string; revenue: number; expenses: number; profit: number; displayProfit: number }[] = [];
+    for (let week = 1; week <= maxWeek; week++) {
+      const key = `Week ${week}`;
+      const bucket = buckets.get(key) || { revenue: 0, expenses: 0, profit: 0 };
+      const displayProfit = Math.max(0, bucket.profit);
+      result.push({ period: key, ...bucket, displayProfit });
+    }
+    return result;
+  }, [invoiceRecords, requisitions, purchaseOrders, activeTimeframe]);
   
   const metrics = useMemo(() => {
     const totalRevenue = profitData.reduce((sum, item) => sum + item.revenue, 0);
@@ -114,6 +255,17 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
       maxProfitPeriod,
       profitMargin
     };
+  }, [profitData]);
+
+  const yAxisDomain = useMemo(() => {
+    if (!profitData.length) return [0, 0] as [number, number];
+    const profits = profitData.map((p) => p.profit);
+    const dataMax = Math.max(...profits, 0);
+
+    // Small padding so line is not stuck to the top
+    const padding = Math.max(1, Math.round(dataMax * 0.05));
+
+    return [0, dataMax + padding] as [number, number];
   }, [profitData]);
 
   // Render immediately — removed artificial loading/skeleton
@@ -147,7 +299,7 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-gray-600">Performance Metrics</p>
                   <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
-                  <span className="text-sm font-bold text-heritage-green">October 2025</span>
+                  <span className="text-sm font-bold text-heritage-green">{currentMonthLabel}</span>
                 </div>
               </div>
             </div>
@@ -157,23 +309,13 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
               <div className="flex p-1.5 bg-gradient-to-r from-heritage-light/40 to-heritage-light/60 rounded-2xl shadow-inner backdrop-blur-sm border border-heritage-light/30">
                 <button 
                   className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
-                    activeTimeframe === 'weekly' 
-                      ? 'text-white bg-gradient-to-r from-heritage-green to-heritage-neutral shadow-lg transform scale-105' 
-                      : 'text-gray-700 hover:text-heritage-green hover:bg-white/50'
-                  }`}
-                  onClick={() => setActiveTimeframe('weekly')}
-                >
-                  Weekly
-                </button>
-                <button 
-                  className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
                     activeTimeframe === 'monthly' 
                       ? 'text-white bg-gradient-to-r from-heritage-green to-heritage-neutral shadow-lg transform scale-105' 
                       : 'text-gray-700 hover:text-heritage-green hover:bg-white/50'
                   }`}
                   onClick={() => setActiveTimeframe('monthly')}
                 >
-                  Monthly
+                  Month
                 </button>
                 <button 
                   className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
@@ -183,7 +325,7 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                   }`}
                   onClick={() => setActiveTimeframe('yearly')}
                 >
-                  Yearly
+                  Year
                 </button>
               </div>
             </div>
@@ -218,6 +360,7 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                   tick={{ fill: '#82A33D', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
+                  domain={yAxisDomain as unknown as [number, number]}
                 />
 
                 <RCartesianGrid 
@@ -230,11 +373,12 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
                 {/* Profit Area - Primary (Top Layer) */}
                 <RArea 
                   type="linear" 
-                  dataKey="profit" 
+                  dataKey="displayProfit" 
                   stroke="#82A33D" 
                   fillOpacity={1}
                   fill="url(#colorProfit)" 
                   strokeWidth={3}
+                  baseValue={0}
                   activeDot={{ 
                     r: 6, 
                     stroke: '#ABAD8A',
@@ -277,7 +421,9 @@ const ProfitTrendsChart: React.FC<ProfitTrendsChartProps> = ({ className = "" })
             <div className="text-2xl font-bold text-heritage-green">
               {formatCurrency(metrics.averageProfit)}
             </div>
-            <div className="text-xs text-gray-500">Per {activeTimeframe.slice(0, -2)}</div>
+            <div className="text-xs text-gray-500">
+              Per {activeTimeframe === 'monthly' ? 'week' : 'year'}
+            </div>
           </div>
           
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">

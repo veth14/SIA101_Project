@@ -99,11 +99,17 @@ const buildRevenueData = (
       const weekOfMonth = Math.min(5, Math.floor((dayOfMonth - 1) / 7) + 1);
       weekTotals.set(weekOfMonth, (weekTotals.get(weekOfMonth) || 0) + amount);
     });
+
+    // Determine how many weeks exist in this month based on the parsed dates
+    const sampleDate = parsed[0]?.dateObj;
+    const year = sampleDate?.getFullYear() ?? new Date().getFullYear();
+    const monthIndex = sampleDate?.getMonth() ?? new Date().getMonth();
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    const maxWeek = Math.min(5, Math.ceil(daysInMonth / 7));
+
     const result: RevenueDataPoint[] = [];
-    for (let week = 1; week <= 5; week++) {
-      if (weekTotals.has(week)) {
-        result.push({ day: `Week ${week}`, revenue: weekTotals.get(week) || 0 });
-      }
+    for (let week = 1; week <= maxWeek; week++) {
+      result.push({ day: `Week ${week}`, revenue: weekTotals.get(week) || 0 });
     }
     return result;
   }
@@ -113,6 +119,9 @@ const buildRevenueData = (
 
 const RevenueTrends: React.FC<RevenueTrendsProps> = ({ revenuePoints }) => {
   const [activeTimeframe, setActiveTimeframe] = useState<'monthly' | 'yearly'>('monthly');
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const now = new Date();
+  const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
   const revenueData = useMemo(
     () => buildRevenueData(revenuePoints, activeTimeframe),
@@ -149,7 +158,7 @@ const RevenueTrends: React.FC<RevenueTrendsProps> = ({ revenuePoints }) => {
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-gray-600">Performance Metrics</p>
                   <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
-                  <span className="text-sm font-bold text-heritage-green">Revenue Overview</span>
+                  <span className="text-sm font-bold text-heritage-green">{currentMonthLabel}</span>
                 </div>
               </div>
             </div>
@@ -165,7 +174,7 @@ const RevenueTrends: React.FC<RevenueTrendsProps> = ({ revenuePoints }) => {
                   }`}
                   onClick={() => setActiveTimeframe('monthly')}
                 >
-                  Monthly
+                  Month
                 </button>
                 <button 
                   className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
@@ -175,7 +184,7 @@ const RevenueTrends: React.FC<RevenueTrendsProps> = ({ revenuePoints }) => {
                   }`}
                   onClick={() => setActiveTimeframe('yearly')}
                 >
-                  Yearly
+                  Year
                 </button>
               </div>
             </div>
@@ -240,7 +249,11 @@ const RevenueTrends: React.FC<RevenueTrendsProps> = ({ revenuePoints }) => {
           <div className="flex items-center justify-center pb-2 mt-2">
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <div className="w-3 h-0.5 bg-heritage-green rounded"></div>
-              <span>Daily Revenue</span>
+              <span>
+                {activeTimeframe === 'monthly'
+                  ? 'Weekly Revenue (Current Month)'
+                  : 'Monthly Revenue (Current Year)'}
+              </span>
             </div>
           </div>
         </div>

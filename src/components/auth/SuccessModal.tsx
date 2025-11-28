@@ -44,20 +44,20 @@ export const SuccessModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-6 overflow-y-auto sm:px-0 sm:py-0">
       {/* Backdrop - Don't close on click */}
       <div 
         className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 transform transition-all duration-300 scale-100">
+      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl mx-auto transform transition-all duration-300 scale-100 sm:max-w-md max-h-[90vh] overflow-y-auto">
         {/* Email Icon with Animation */}
-        <div className="flex items-center justify-center pt-8 pb-4">
+        <div className="flex items-center justify-center pt-6 pb-3 sm:pt-8 sm:pb-4">
           <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center animate-pulse">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full flex items-center justify-center animate-pulse sm:w-20 sm:h-20">
               <svg 
-                className="w-10 h-10 text-blue-600" 
+                className="w-8 h-8 text-blue-600 sm:w-10 sm:h-10" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -71,34 +71,34 @@ export const SuccessModal = ({
               </svg>
             </div>
             {/* Notification Badge */}
-            <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
-              <span className="text-white text-xs font-bold">1</span>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center animate-bounce sm:w-6 sm:h-6">
+              <span className="text-xs font-bold text-white">1</span>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="px-8 pb-8 text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+        <div className="px-5 pb-6 text-center sm:px-8 sm:pb-8">
+          <h3 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
             📧 Check Your Email!
           </h3>
           
           {/* Main Message */}
-          <div className="mb-6">
-            <p className="text-gray-700 font-medium mb-2 leading-relaxed">
+          <div className="mb-5">
+            <p className="mb-2 text-sm font-medium leading-relaxed text-gray-700 sm:text-base">
               {message}
             </p>
           </div>
 
           {/* Important Warning Box */}
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6">
+          <div className="p-3 mb-5 border-2 border-amber-200 rounded-lg bg-amber-50 sm:p-4 sm:mb-6">
             <div className="flex items-start space-x-3">
-              <svg className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="flex-shrink-0 w-5 h-5 mt-0.5 text-amber-600 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               <div className="text-left">
-                <p className="text-sm font-bold text-amber-900 mb-1">⚠️ IMPORTANT - Action Required!</p>
-                <p className="text-sm text-amber-800">
+                <p className="mb-1 text-xs font-bold text-amber-900 sm:text-sm">⚠️ IMPORTANT - Action Required!</p>
+                <p className="text-xs text-amber-800 sm:text-sm">
                   You <strong>CANNOT log in</strong> until you verify your email. Please check your inbox now.
                 </p>
               </div>
@@ -106,9 +106,9 @@ export const SuccessModal = ({
           </div>
 
           {/* Instructions */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm font-semibold text-gray-700 mb-3">📋 What to do next:</p>
-            <ol className="text-sm text-gray-600 space-y-2">
+          <div className="p-3 mb-5 text-left bg-gray-50 rounded-lg sm:p-4 sm:mb-6">
+            <p className="mb-2 text-sm font-semibold text-gray-700 sm:mb-3">📋 What to do next:</p>
+            <ol className="space-y-2 text-xs text-gray-600 sm:text-sm">
               <li className="flex items-start">
                 <span className="font-bold text-heritage-green mr-2">1.</span>
                 <span>Open your <strong>Gmail inbox</strong></span>
@@ -133,7 +133,7 @@ export const SuccessModal = ({
           </div>
 
           {/* Helpful Tips */}
-          <div className="text-xs text-gray-500 mb-6 text-left border-l-4 border-blue-400 pl-3 py-2 bg-blue-50">
+          <div className="py-2 pl-3 mb-5 text-xs text-gray-500 text-left border-l-4 border-blue-400 bg-blue-50 sm:mb-6">
             <p className="font-semibold text-gray-700 mb-1">💡 Tips:</p>
             <ul className="space-y-1">
               <li>• Email may take 1-2 minutes to arrive</li>
@@ -145,12 +145,12 @@ export const SuccessModal = ({
           {/* Action Button */}
           <button
             onClick={onClose}
-            className="w-full bg-heritage-green text-white py-3 px-6 rounded-lg font-semibold hover:bg-heritage-green/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-heritage-green focus:ring-offset-2 shadow-lg hover:shadow-xl"
+            className="w-full px-4 py-3 text-sm font-semibold text-white transition-all duration-200 bg-heritage-green rounded-lg shadow-lg hover:bg-heritage-green/90 focus:outline-none focus:ring-2 focus:ring-heritage-green focus:ring-offset-2 hover:shadow-xl sm:text-base"
           >
             ✓ I Understand - Go to Login
           </button>
           
-          <p className="text-xs text-gray-400 mt-3">
+          <p className="mt-3 text-xs text-gray-400">
             You'll be able to log in after verifying your email
           </p>
         </div>

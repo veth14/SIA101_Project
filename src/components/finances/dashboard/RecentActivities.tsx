@@ -1,78 +1,152 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, CreditCard, ArrowLeft, Bell, Clock, User } from 'lucide-react';
+import { formatCurrencyPH } from '../../../lib/utils';
+import { subscribeToInvoices, type InvoiceRecord } from '../../../backend/invoices/invoicesService';
+import { subscribeToRequisitions, type RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, type PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
-// Sample activity data with hotel-specific activities
-const activityData = [
-  {
-    id: 'act-001',
-    title: 'New Booking Confirmed',
-    description: 'John Smith booked Deluxe Suite for 3 nights',
-    timestamp: '2025-10-10T14:32:00',
-    type: 'booking',
-    amount: '₱11,400',
-    room: 'Room 205',
-    user: {
-      name: 'John Smith',
-      avatar: null
-    }
-  },
-  {
-    id: 'act-002',
-    title: 'Payment Received',
-    description: 'Sarah Johnson completed payment for reservation',
-    timestamp: '2025-10-10T12:15:00',
-    type: 'payment',
-    amount: '₱8,507',
-    room: 'Room 312',
-    user: {
-      name: 'Sarah Johnson',
-      avatar: null
-    }
-  },
-  {
-    id: 'act-003',
-    title: 'Check-in Completed',
-    description: 'Michael Brown checked into Standard Room',
-    timestamp: '2025-10-10T10:45:00',
-    type: 'checkin',
-    amount: '₱7,500',
-    room: 'Room 108',
-    user: {
-      name: 'Michael Brown',
-      avatar: null
-    }
-  },
-  {
-    id: 'act-004',
-    title: 'Refund Processed',
-    description: 'Emma Wilson received cancellation refund',
-    timestamp: '2025-10-09T16:20:00',
-    type: 'refund',
-    amount: '₱4,502',
-    room: 'Room 201',
-    user: {
-      name: 'Emma Wilson',
-      avatar: null
-    }
-  },
-  {
-    id: 'act-005',
-    title: 'Room Service Order',
-    description: 'David Lee ordered premium dining service',
-    timestamp: '2025-10-09T09:30:00',
-    type: 'service',
-    amount: '₱2,850',
-    room: 'Room 405',
-    user: {
-      name: 'David Lee',
-      avatar: null
-    }
-  }
-];
+type ActivityKind = 'invoice_created' | 'invoice_paid' | 'requisition_approved' | 'po_received';
+
+interface ActivityItem {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: Date;
+  type: ActivityKind;
+  amount?: number;
+  room: string;
+  actor: string;
+}
 
 const RecentActivities: React.FC = () => {
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
+  const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderRecord[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        setInvoices(records);
+      },
+      (error) => {
+        console.error('Error loading invoices for recent activities:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (loaded) => {
+        setRequisitions(loaded);
+      },
+      (error) => {
+        console.error('Error loading requisitions for recent activities:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (loaded) => {
+        setPurchaseOrders(loaded);
+      },
+      (error) => {
+        console.error('Error loading purchase orders for recent activities:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  const activities = useMemo<ActivityItem[]>(() => {
+    const items: ActivityItem[] = [];
+
+    // Invoices: created & paid
+    invoices.forEach((inv) => {
+      const createdAt = inv.createdAt || (inv.transactionDate ? new Date(inv.transactionDate) : undefined) || new Date();
+      const customer = inv.customerName || 'Guest';
+      const amount = typeof inv.total === 'number' ? inv.total : 0;
+
+      items.push({
+        id: `inv-created-${inv.id}`,
+        title: `Invoice ${inv.invoiceNumber} created`,
+        description: `${customer} • ${formatCurrencyPH(amount)}`,
+        timestamp: createdAt,
+        type: 'invoice_created',
+        amount,
+        room: inv.transactionCategory || 'Invoice',
+        actor: customer,
+      });
+
+      const rawStatus = (inv.status || '').toString().toLowerCase();
+      if (rawStatus === 'paid' || rawStatus === 'completed') {
+        items.push({
+          id: `inv-paid-${inv.id}`,
+          title: `Payment recorded for ${inv.invoiceNumber}`,
+          description: `${customer} • ${formatCurrencyPH(amount)}`,
+          timestamp: createdAt,
+          type: 'invoice_paid',
+          amount,
+          room: inv.transactionCategory || 'Payment',
+          actor: customer,
+        });
+      }
+    });
+
+    // Requisitions: approved / fulfilled
+    requisitions.forEach((req) => {
+      const rawStatus = (req.status || '').toString().toLowerCase();
+      if (rawStatus === 'approved' || rawStatus === 'fulfilled') {
+        const ts = req.approvedDate ? new Date(req.approvedDate) : req.createdAt || new Date();
+        const amount = typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0;
+        items.push({
+          id: `req-${req.id}`,
+          title: `Requisition ${req.requestNumber} approved`,
+          description: `${req.department} • ${formatCurrencyPH(amount)}`,
+          timestamp: ts,
+          type: 'requisition_approved',
+          amount,
+          room: req.department || 'Requisition',
+          actor: req.approvedBy || req.requestedBy || 'Staff',
+        });
+      }
+    });
+
+    // Purchase orders: approved / received
+    purchaseOrders.forEach((po) => {
+      const rawStatus = (po.status || '').toString().toLowerCase();
+      if (rawStatus === 'approved' || rawStatus === 'received') {
+        const ts = po.approvedDate ? new Date(po.approvedDate) : po.createdAt || new Date();
+        const amount = typeof po.totalAmount === 'number' ? po.totalAmount : 0;
+        items.push({
+          id: `po-${po.id}`,
+          title: `PO ${po.orderNumber} ${rawStatus === 'received' ? 'received' : 'approved'}`,
+          description: `${po.supplier} • ${formatCurrencyPH(amount)}`,
+          timestamp: ts,
+          type: 'po_received',
+          amount,
+          room: po.supplier || 'Purchase Order',
+          actor: po.approvedBy || 'Purchasing',
+        });
+      }
+    });
+
+    // Sort newest first and cap list to 5 activities
+    items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return items.slice(0, 5);
+  }, [invoices, requisitions, purchaseOrders]);
+
+  const activitiesToday = useMemo(() => {
+    if (!activities.length) return 0;
+    const today = new Date();
+    const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const dayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    return activities.filter((a) => a.timestamp >= dayStart && a.timestamp < dayEnd).length;
+  }, [activities]);
+
   return (
-    <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">
+    <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in min-h-[360px]">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
       
@@ -94,9 +168,11 @@ const RecentActivities: React.FC = () => {
                   Recent Activities
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="text-sm font-semibold text-gray-600">Latest hotel activities</p>
+                  <p className="text-sm font-semibold text-gray-600">Key financial events</p>
                   <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
-                  <span className="text-sm font-bold text-heritage-green">5 activities today</span>
+                  <span className="text-sm font-bold text-heritage-green">
+                    {activitiesToday} activit{activitiesToday === 1 ? 'y' : 'ies'} today
+                  </span>
                 </div>
               </div>
             </div>
@@ -106,7 +182,7 @@ const RecentActivities: React.FC = () => {
         {/* Activities List */}
         <div className="px-8 py-6">
           <div className="space-y-4">
-            {activityData.map((activity) => (
+            {activities.map((activity) => (
               <div 
                 key={activity.id} 
                 className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300"
@@ -115,17 +191,15 @@ const RecentActivities: React.FC = () => {
                   <div className="flex items-center gap-4">
                     {/* Activity Type Icon */}
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      activity.type === 'booking' ? 'bg-green-100' :
-                      activity.type === 'payment' ? 'bg-blue-100' :
-                      activity.type === 'checkin' ? 'bg-purple-100' :
-                      activity.type === 'refund' ? 'bg-red-100' :
+                      activity.type === 'invoice_created' ? 'bg-blue-100' :
+                      activity.type === 'invoice_paid' ? 'bg-green-100' :
+                      activity.type === 'requisition_approved' ? 'bg-purple-100' :
                       'bg-orange-100'
                     }`}>
-                      {activity.type === 'booking' && <Calendar className="w-6 h-6 text-green-600" />}
-                      {activity.type === 'payment' && <CreditCard className="w-6 h-6 text-blue-600" />}
-                      {activity.type === 'checkin' && <User className="w-6 h-6 text-purple-600" />}
-                      {activity.type === 'refund' && <ArrowLeft className="w-6 h-6 text-red-600" />}
-                      {activity.type === 'service' && <Bell className="w-6 h-6 text-orange-600" />}
+                      {activity.type === 'invoice_created' && <Calendar className="w-6 h-6 text-blue-600" />}
+                      {activity.type === 'invoice_paid' && <CreditCard className="w-6 h-6 text-green-600" />}
+                      {activity.type === 'requisition_approved' && <User className="w-6 h-6 text-purple-600" />}
+                      {activity.type === 'po_received' && <Bell className="w-6 h-6 text-orange-600" />}
                     </div>
                     
                     {/* Activity Details */}
@@ -139,7 +213,7 @@ const RecentActivities: React.FC = () => {
                         <span>{activity.description}</span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {new Date(activity.timestamp).toLocaleTimeString('en-US', {
+                          {activity.timestamp.toLocaleTimeString('en-US', {
                             hour: '2-digit',
                             minute: '2-digit',
                             hour12: true
@@ -152,13 +226,13 @@ const RecentActivities: React.FC = () => {
                   {/* Amount and User */}
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className={`text-lg font-bold ${
-                        activity.type === 'refund' ? 'text-red-600' : 'text-green-600'
-                      }`}>
-                        {activity.type === 'refund' ? '-' : '+'}{activity.amount}
-                      </div>
+                      {typeof activity.amount === 'number' && (
+                        <div className="text-lg font-bold text-heritage-green">
+                          {formatCurrencyPH(activity.amount)}
+                        </div>
+                      )}
                       <div className="text-sm text-gray-500">
-                        {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                        {activity.timestamp.toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric'
                         })}
@@ -168,20 +242,13 @@ const RecentActivities: React.FC = () => {
                     {/* User Avatar */}
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-sm text-gray-700 font-medium">
-                        {activity.user.name.charAt(0)}
+                        {activity.actor.charAt(0)}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-          
-          {/* View All Button */}
-          <div className="mt-6 text-center">
-            <button className="px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-              View All Activities
-            </button>
           </div>
         </div>
       </div>

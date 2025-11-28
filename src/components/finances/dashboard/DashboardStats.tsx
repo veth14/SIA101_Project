@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { formatCurrencyPH } from '../../../lib/utils';
+import { subscribeToInvoices, type InvoiceRecord } from '../../../backend/invoices/invoicesService';
+import { subscribeToRequisitions, type RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, type PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
+import { expenses as seedExpenses } from '../expenses/expensesData';
 
 interface StatCard {
   title: string;
@@ -10,60 +14,139 @@ interface StatCard {
   iconBg: string;
 }
 
-const stats: StatCard[] = [
-  {
-    title: 'Total Revenue',
-    value: formatCurrencyPH(245800),
-    change: '+12.5% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-green-100',
-    icon: (
-      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-      </svg>
-    )
-  },
-  {
-    title: 'Net Profit',
-    value: formatCurrencyPH(89240),
-    change: '+8.3% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-blue-100',
-    icon: (
-      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    )
-  },
-  {
-    title: 'Total Expenses',
-    value: formatCurrencyPH(156560),
-    change: '+2.1% from last month',
-    changeType: 'positive',
-    iconBg: 'bg-orange-100',
-    icon: (
-      <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
-      </svg>
-    )
-  },
-  {
-    title: 'Cash Flow',
-    value: formatCurrencyPH(45320),
-    change: '-3.2% from last month',
-    changeType: 'negative',
-    iconBg: 'bg-purple-100',
-    icon: (
-      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-      </svg>
-    )
-  }
-];
-
 const DashboardStats: React.FC = () => {
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([]);
+  const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderRecord[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        const paid = records.filter((r) => r.status === 'paid' || r.status === 'completed');
+        setInvoiceRecords(paid);
+      },
+      (error) => {
+        console.error('Error loading invoices for dashboard stats:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToRequisitions(
+      (loaded) => {
+        setRequisitions(loaded);
+      },
+      (error) => {
+        console.error('Error loading requisitions for dashboard stats:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (loaded) => {
+        setPurchaseOrders(loaded);
+      },
+      (error) => {
+        console.error('Error loading purchase orders for dashboard stats:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  const metrics = useMemo(() => {
+    // Revenue: all paid/completed invoices
+    const totalRevenue = invoiceRecords.reduce(
+      (sum, r) => sum + (typeof r.total === 'number' ? r.total : 0),
+      0
+    );
+
+    // Base/manual expenses from expensesData: only approved + paid
+    const baseApprovedPaid = seedExpenses
+      .filter((e) => e.status === 'approved' || e.status === 'paid')
+      .reduce((sum, e) => sum + (typeof e.amount === 'number' ? e.amount : 0), 0);
+
+    // Requisition expenses mapped to statuses like in ExpensesPage
+    let requisitionApprovedPaid = 0;
+    requisitions.forEach((req) => {
+      const rawStatus = (req.status || '').toString().toLowerCase();
+      let status: 'approved' | 'paid' | 'rejected' | 'pending';
+      if (rawStatus === 'approved') status = 'approved';
+      else if (rawStatus === 'fulfilled') status = 'paid';
+      else if (rawStatus === 'rejected') status = 'rejected';
+      else status = 'pending';
+
+      if (status === 'approved' || status === 'paid') {
+        const amount = typeof req.totalEstimatedCost === 'number' ? req.totalEstimatedCost : 0;
+        requisitionApprovedPaid += amount;
+      }
+    });
+
+    // Purchase order expenses mapped to statuses like in ExpensesPage
+    let purchaseOrderApprovedPaid = 0;
+    purchaseOrders.forEach((po) => {
+      const rawStatus = (po.status || '').toString().toLowerCase();
+      let status: 'approved' | 'paid' | 'rejected' | 'pending';
+      if (rawStatus === 'approved') status = 'approved';
+      else if (rawStatus === 'received') status = 'paid';
+      else if (rawStatus === 'cancelled') status = 'rejected';
+      else status = 'pending';
+
+      if (status === 'approved' || status === 'paid') {
+        const amount = typeof po.totalAmount === 'number' ? po.totalAmount : 0;
+        purchaseOrderApprovedPaid += amount;
+      }
+    });
+
+    const totalExpenses = baseApprovedPaid + requisitionApprovedPaid + purchaseOrderApprovedPaid;
+    const totalProfit = totalRevenue - totalExpenses;
+
+    return { totalRevenue, totalExpenses, totalProfit };
+  }, [invoiceRecords, requisitions, purchaseOrders]);
+
+  const stats: StatCard[] = [
+    {
+      title: 'Total Revenue',
+      value: formatCurrencyPH(metrics.totalRevenue),
+      change: '+0.0% from last month',
+      changeType: 'positive',
+      iconBg: 'bg-green-100',
+      icon: (
+        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+        </svg>
+      )
+    },
+    {
+      title: 'Net Profit',
+      value: formatCurrencyPH(metrics.totalProfit),
+      change: '+8.3% from last month',
+      changeType: 'positive',
+      iconBg: 'bg-blue-100',
+      icon: (
+        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      )
+    },
+    {
+      title: 'Total Expenses',
+      value: formatCurrencyPH(metrics.totalExpenses),
+      change: '+2.1% from last month',
+      changeType: 'positive',
+      iconBg: 'bg-orange-100',
+      icon: (
+        <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V8" />
+        </svg>
+      )
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-3">
       {stats.map((stat, index) => (
         <div 
           key={index} 
