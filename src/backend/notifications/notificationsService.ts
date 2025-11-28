@@ -10,6 +10,8 @@ import {
   getDocs,
   addDoc,
   serverTimestamp,
+  limit,
+  where,
 } from 'firebase/firestore';
 
 export interface NotificationRecord {
@@ -27,7 +29,13 @@ export const subscribeToNotifications = (
   onData: (notifications: NotificationRecord[]) => void,
   onError?: (error: unknown) => void,
 ) => {
-  const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+  // Only listen to the most recent UNREAD notifications to avoid excessive reads
+  const q = query(
+    collection(db, 'notifications'),
+    where('status', '==', 'unread'),
+    orderBy('createdAt', 'desc'),
+    limit(50),
+  );
 
   const unsubscribe = onSnapshot(
     q,
@@ -90,5 +98,36 @@ export const createNotification = async (data: {
     ...data,
     status: 'unread',
     createdAt: serverTimestamp(),
+  });
+};
+
+export const getRecentReadNotifications = async (limitCount = 50): Promise<NotificationRecord[]> => {
+  const q = query(
+    collection(db, 'notifications'),
+    where('status', '==', 'read'),
+    orderBy('createdAt', 'desc'),
+    limit(limitCount),
+  );
+
+  const snap = await getDocs(q);
+
+  return snap.docs.map((docSnap) => {
+    const data = docSnap.data() as any;
+
+    let createdAt: Date | undefined;
+    if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+      const d = data.createdAt.toDate();
+      createdAt = Number.isNaN(d.getTime()) ? undefined : d;
+    }
+
+    return {
+      id: docSnap.id,
+      type: data.type || 'general',
+      title: data.title || 'Notification',
+      message: data.message || '',
+      status: data.status || 'unread',
+      createdAt,
+      sourceId: data.sourceId,
+    } as NotificationRecord;
   });
 };
