@@ -1,76 +1,82 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CreditCard, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, MoreHorizontal, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { subscribeToInvoices, type InvoiceRecord } from '../../../backend/invoices/invoicesService';
 
-// Sample transaction data with hotel-specific transactions
-const transactionData = [
-  {
-    id: 'tx-001',
-    customer: 'John Smith',
-    room: 'Room 205',
-    amount: 1250.00,
-    status: 'completed',
-    date: '2025-10-10',
-    time: '14:30',
-    type: 'payment',
-    method: 'Credit Card',
-    category: 'Room Booking'
-  },
-  {
-    id: 'tx-002',
-    customer: 'Sarah Johnson',
-    room: 'Room 312',
-    amount: 850.75,
-    status: 'completed',
-    date: '2025-10-10',
-    time: '12:15',
-    type: 'payment',
-    method: 'Debit Card',
-    category: 'F&B Service'
-  },
-  {
-    id: 'tx-003',
-    customer: 'Michael Brown',
-    room: 'Room 108',
-    amount: 1500.00,
-    status: 'pending',
-    date: '2025-10-10',
-    time: '10:45',
-    type: 'payment',
-    method: 'Bank Transfer',
-    category: 'Event Booking'
-  },
-  {
-    id: 'tx-004',
-    customer: 'Emma Wilson',
-    room: 'Room 201',
-    amount: 450.25,
-    status: 'completed',
-    date: '2025-10-09',
-    time: '16:20',
-    type: 'refund',
-    method: 'Credit Card',
-    category: 'Cancellation'
-  },
-  {
-    id: 'tx-005',
-    customer: 'David Lee',
-    room: 'Room 405',
-    amount: 975.50,
-    status: 'completed',
-    date: '2025-10-09',
-    time: '09:30',
-    type: 'payment',
-    method: 'Cash',
-    category: 'Room Service'
-  }
-];
+type TransactionStatus = 'completed' | 'pending';
+
+interface DashboardTransaction {
+  id: string;
+  customer: string;
+  room: string;
+  amount: number;
+  status: TransactionStatus;
+  date: string;
+  time: string;
+  type: 'payment' | 'refund';
+  method: string;
+  category: string;
+}
 
 const RecentTransactions: React.FC = () => {
   const navigate = useNavigate();
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        setInvoiceRecords(records);
+      },
+      (error) => {
+        console.error('Error loading invoices for recent transactions:', error);
+      }
+    );
+    return unsubscribe;
+  }, []);
+
+  const recentTransactions = useMemo<DashboardTransaction[]>(() => {
+    if (!invoiceRecords.length) return [];
+
+    const now = new Date();
+
+    const mapped = invoiceRecords
+      .filter((inv) => {
+        const rawStatus = (inv.status || '').toString().toLowerCase();
+        return rawStatus === 'paid' || rawStatus === 'completed' || rawStatus === 'pending';
+      })
+      .map<DashboardTransaction>((inv) => {
+        const rawStatus = (inv.status || '').toString().toLowerCase();
+        const status: TransactionStatus = rawStatus === 'pending' ? 'pending' : 'completed';
+
+        const dateSource = inv.transactionDate || inv.dueDate || (inv.createdAt ? inv.createdAt.toISOString().split('T')[0] : '');
+        const timeSource = inv.transactionTime || (inv.createdAt ? inv.createdAt.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '');
+
+        return {
+          id: inv.id,
+          customer: inv.customerName || 'Guest',
+          room: inv.transactionCategory || 'Room / Service',
+          amount: typeof inv.total === 'number' ? inv.total : 0,
+          status,
+          date: dateSource,
+          time: timeSource,
+          type: 'payment',
+          method: inv.transactionMethod || 'N/A',
+          category: inv.transactionDescription || inv.transactionCategory || 'Hotel Service',
+        };
+      });
+
+    return mapped.slice(0, 5);
+  }, [invoiceRecords]);
+
+  const todayCount = useMemo(() => {
+    if (!recentTransactions.length) return 0;
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return recentTransactions.filter((tx) => tx.date === todayKey).length;
+  }, [recentTransactions]);
 
   return (
-    <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in">
+    <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in min-h-[360px]">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
       
@@ -94,7 +100,9 @@ const RecentTransactions: React.FC = () => {
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-gray-600">Latest payment activities</p>
                   <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
-                  <span className="text-sm font-bold text-heritage-green">5 transactions today</span>
+                  <span className="text-sm font-bold text-heritage-green">
+                    {todayCount} transaction{todayCount === 1 ? '' : 's'} today
+                  </span>
                 </div>
               </div>
             </div>
@@ -104,7 +112,7 @@ const RecentTransactions: React.FC = () => {
         {/* Transactions List */}
         <div className="px-8 py-6">
           <div className="space-y-4">
-            {transactionData.map((transaction) => (
+            {recentTransactions.map((transaction) => (
               <div 
                 key={transaction.id} 
                 className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
@@ -183,17 +191,6 @@ const RecentTransactions: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-          
-          {/* View All Button */}
-          <div className="mt-6 text-center">
-            <button 
-              onClick={() => navigate('/admin/finances/transactions')}
-              className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-heritage-green to-heritage-neutral rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 mx-auto"
-            >
-              <span>View All Transactions</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>

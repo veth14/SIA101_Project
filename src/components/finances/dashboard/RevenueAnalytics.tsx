@@ -1,15 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { 
-  getRevenueData, 
-  calculateChartMetrics, 
-  formatCurrency, 
-  formatShortCurrency
+import {
+  calculateChartMetrics,
+  formatCurrency,
+  formatShortCurrency,
 } from './chartsLogic/revenueAnalyticsLogic';
-
-
-
+import { subscribeToInvoices, type InvoiceRecord } from '../../../backend/invoices/invoicesService';
 
 // Tooltip payload shape
 interface TooltipPayload {
@@ -53,20 +50,120 @@ const RCartesianGrid = CartesianGrid as unknown as React.ComponentType<Record<st
 const RTooltip = Tooltip as unknown as React.ComponentType<Record<string, unknown>>;
 const RArea = Area as unknown as React.ComponentType<Record<string, unknown>>;
 
-const RevenueAnalytics: React.FC = () => {
-  const [activeTimeframe, setActiveTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-  
-  // Get data and metrics
-  const revenueData = useMemo(() => getRevenueData(activeTimeframe), [activeTimeframe]);
-  const metrics = useMemo(() => calculateChartMetrics(revenueData), [revenueData]);
+interface RevenuePoint {
+  date: string;
+  amount: number;
+}
 
-  // Transform data for recharts
+interface RevenueDataPoint {
+  day: string;
+  revenue: number;
+}
+
+const buildRevenueData = (
+  points: RevenuePoint[] | undefined,
+  timeframe: 'monthly' | 'yearly'
+): RevenueDataPoint[] => {
+  const safePoints = Array.isArray(points) ? points : [];
+  if (safePoints.length === 0) return [];
+
+  const parsed = safePoints
+    .map((p) => {
+      const d = new Date(p.date);
+      if (Number.isNaN(d.getTime())) return null;
+      return { dateObj: d, amount: p.amount };
+    })
+    .filter((v): v is { dateObj: Date; amount: number } => v !== null);
+
+  if (parsed.length === 0) return [];
+
+  if (timeframe === 'yearly') {
+    const monthTotals = new Map<string, number>();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    parsed.forEach(({ dateObj, amount }) => {
+      const label = monthNames[dateObj.getMonth()] || String(dateObj.getMonth() + 1);
+      monthTotals.set(label, (monthTotals.get(label) || 0) + amount);
+    });
+    const orderedMonths = monthNames;
+    return orderedMonths.map((m) => ({ day: m, revenue: monthTotals.get(m) || 0 }));
+  }
+
+  if (timeframe === 'monthly') {
+    const weekTotals = new Map<number, number>();
+    parsed.forEach(({ dateObj, amount }) => {
+      const dayOfMonth = dateObj.getDate();
+      const weekOfMonth = Math.min(5, Math.floor((dayOfMonth - 1) / 7) + 1);
+      weekTotals.set(weekOfMonth, (weekTotals.get(weekOfMonth) || 0) + amount);
+    });
+
+    const sampleDate = parsed[0]?.dateObj;
+    const year = sampleDate?.getFullYear() ?? new Date().getFullYear();
+    const monthIndex = sampleDate?.getMonth() ?? new Date().getMonth();
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    const maxWeek = Math.min(5, Math.ceil(daysInMonth / 7));
+
+    const result: RevenueDataPoint[] = [];
+    for (let week = 1; week <= maxWeek; week++) {
+      result.push({ day: `Week ${week}`, revenue: weekTotals.get(week) || 0 });
+    }
+    return result;
+  }
+
+  return [];
+};
+
+const RevenueAnalytics: React.FC = () => {
+  const [activeTimeframe, setActiveTimeframe] = useState<'monthly' | 'yearly'>('monthly');
+  const [invoiceRecords, setInvoiceRecords] = useState<InvoiceRecord[]>([]);
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const now = new Date();
+  const currentMonthLabel = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+
+  useEffect(() => {
+    const unsubscribe = subscribeToInvoices(
+      (records) => {
+        const paid = records.filter((r) => r.status === 'paid' || r.status === 'completed');
+        setInvoiceRecords(paid);
+      },
+      (error) => {
+        console.error('Error loading invoices for revenue analytics:', error);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
+
+  const revenuePoints: RevenuePoint[] = useMemo(
+    () =>
+      invoiceRecords.map((record) => ({
+        date: record.transactionDate || record.dueDate || (record.createdAt ? record.createdAt.toISOString().split('T')[0] : ''),
+        amount: typeof record.total === 'number' ? record.total : 0,
+      })),
+    [invoiceRecords]
+  );
+
+  const revenueData = useMemo(
+    () => buildRevenueData(revenuePoints, activeTimeframe),
+    [revenuePoints, activeTimeframe]
+  );
+
+  const metrics = useMemo(
+    () =>
+      calculateChartMetrics(
+        revenueData.map((item) => ({
+          day: item.day,
+          revenue: item.revenue,
+          expenses: 0,
+          profit: item.revenue,
+        }))
+      ),
+    [revenueData]
+  );
+
   const chartData = revenueData.map((item) => ({
     day: item.day,
-    revenue: item.revenue
+    revenue: item.revenue,
   }));
-
-  
 
   return (
     <div className="relative overflow-hidden shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 animate-fade-in">
@@ -93,7 +190,7 @@ const RevenueAnalytics: React.FC = () => {
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-gray-600">Performance Metrics</p>
                   <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
-                  <span className="text-sm font-bold text-heritage-green">October 2025</span>
+                  <span className="text-sm font-bold text-heritage-green">{currentMonthLabel}</span>
                 </div>
               </div>
             </div>
@@ -103,23 +200,13 @@ const RevenueAnalytics: React.FC = () => {
               <div className="flex p-1.5 bg-gradient-to-r from-heritage-light/40 to-heritage-light/60 rounded-2xl shadow-inner backdrop-blur-sm border border-heritage-light/30">
                 <button 
                   className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
-                    activeTimeframe === 'weekly' 
-                      ? 'text-white bg-gradient-to-r from-heritage-green to-heritage-neutral shadow-lg transform scale-105' 
-                      : 'text-gray-700 hover:text-heritage-green hover:bg-white/50'
-                  }`}
-                  onClick={() => setActiveTimeframe('weekly')}
-                >
-                  Weekly
-                </button>
-                <button 
-                  className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
                     activeTimeframe === 'monthly' 
                       ? 'text-white bg-gradient-to-r from-heritage-green to-heritage-neutral shadow-lg transform scale-105' 
                       : 'text-gray-700 hover:text-heritage-green hover:bg-white/50'
                   }`}
                   onClick={() => setActiveTimeframe('monthly')}
                 >
-                  Monthly
+                  Month
                 </button>
                 <button 
                   className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 ${
@@ -129,7 +216,7 @@ const RevenueAnalytics: React.FC = () => {
                   }`}
                   onClick={() => setActiveTimeframe('yearly')}
                 >
-                  Yearly
+                  Year
                 </button>
               </div>
             </div>
@@ -204,20 +291,20 @@ const RevenueAnalytics: React.FC = () => {
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Total Revenue</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.totalRevenue || 85800)}
+              {formatCurrency(metrics?.totalRevenue || 0)}
             </div>
             <div className="flex items-center gap-1 mt-1 text-xs font-medium text-emerald-600">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
               </svg>
-              <span>{metrics?.growthRate || 4}%</span>
+              <span>{metrics?.growthRate ?? 0}%</span>
             </div>
           </div>
           
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Average</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.averageRevenue || 12257)}
+              {formatCurrency(metrics?.averageRevenue || 0)}
             </div>
             <div className="text-xs text-gray-500">Per day</div>
           </div>
@@ -225,7 +312,7 @@ const RevenueAnalytics: React.FC = () => {
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Highest Day</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.maxRevenue || 15400)}
+              {formatCurrency(metrics?.maxRevenue || 0)}
             </div>
             <div className="text-xs text-gray-500">{metrics?.maxDay || "Friday"}</div>
           </div>
@@ -233,7 +320,7 @@ const RevenueAnalytics: React.FC = () => {
           <div className="p-4 border shadow-sm bg-white/80 rounded-xl border-heritage-light">
             <div className="text-sm font-medium text-gray-500">Projected</div>
             <div className="text-2xl font-bold text-heritage-green">
-              {formatCurrency(metrics?.projectedRevenue || 92500)}
+              {formatCurrency(metrics?.projectedRevenue || 0)}
             </div>
             <div className="text-xs text-gray-500">Next week</div>
           </div>
