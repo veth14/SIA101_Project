@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 // Import Serverless wrapper
-const serverless = require("serverless-http");
+// const serverless = require("serverless-http");
+import serverless from "serverless-http";
 
 // --- FIX: Use './' because we moved the file to the root ---
 import dashboardRoute from "./routes/invDashboard.route";
@@ -22,15 +23,17 @@ dotenv.config();
 const app = express();
 
 // ✅ NEW (WORKING)
-app.use(cors({
-  // You must allow the specific Local URL and your future Netlify URL
-  origin: [
-    "http://localhost:5173",           // Your Local Frontend
-    "http://localhost:5174",           // Alternate Local Port
-    "https://balayginhawa.netlify.app" // Your Production Site (Add this later)
-  ],
-  credentials: true,
-}));
+app.use(
+  cors({
+    // You must allow the specific Local URL and your future Netlify URL
+    origin: [
+      "http://localhost:5173", // Your Local Frontend
+      "http://localhost:5174", // Alternate Local Port
+      "https://balayginhawa.netlify.app", // Your Production Site (Add this later)
+    ],
+    credentials: true,
+  })
+);
 
 const router = express.Router();
 
@@ -50,7 +53,9 @@ router.post("/create", async (req, res) => {
     const response = await User.add(data);
     res.status(201).send({ id: response.id, message: "User added" });
   } catch (error: any) {
-    res.status(500).send({ error: "Failed to create user", message: error.message });
+    res
+      .status(500)
+      .send({ error: "Failed to create user", message: error.message });
   }
 });
 
@@ -59,7 +64,7 @@ router.get("/users", async (req, res) => {
     const snapshot = await db.collection("inventory_items").get();
     if (snapshot.empty) {
       res.status(404).send({ message: "No users found" });
-      return; 
+      return;
     }
     const users: any[] = [];
     snapshot.forEach((doc) => {
