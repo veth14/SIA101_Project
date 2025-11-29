@@ -3,9 +3,6 @@
   publish = "dist"
   functions = "backend/dist"
 
-[build.environment]
-  NODE_VERSION = "20"
-
 # --- THE FIX ---
 [[redirects]]
   from = "/api/*"
