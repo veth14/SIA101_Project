@@ -113,13 +113,10 @@ const ArchivePage: React.FC = () => {
 
   const handleView = async (id: string) => {
     try {
-      setLoading(prev => ({ ...prev, records: true }));
       const data = await fetchArchiveRecordById(id);
       setViewing({ id, data: data ?? undefined });
     } catch (err) {
       setError((err as Error)?.message ?? 'Failed to fetch record');
-    } finally {
-      setLoading(prev => ({ ...prev, records: false }));
     }
   };
 
