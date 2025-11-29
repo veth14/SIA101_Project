@@ -16,6 +16,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["**/*.ts"],          // Include all TS files in this folder
+  "include": [
+    "**/*.ts"
+  ],          // Include all TS files in this folder
   "exclude": ["node_modules", "dist"] // IMPORTANT: Ignore these folders
 }
