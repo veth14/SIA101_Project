@@ -729,10 +729,6 @@ export const GuestAssistance: React.FC = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       setRequestType(val);
-                      // Do not set assignedTo in create mode; auto-assignment will handle it
-                      if (modalMode === 'view') {
-                        setAssignedTo(getDefaultAssigneeForType(val));
-                      }
                       // Recompute default due date when type changes
                       setDueDateTime(toDateTimeLocal(computeDueDateTime(val, priority)));
                     }}
