@@ -1,26 +1,18 @@
 [build]
-  # 1. Go to frontend, install & build
-  # 2. Go to backend, install & build
-  command = "npm install && npm run build && cd ../backend && npm install && npm run build"
-  
-  # Serve the built React files
-  publish = "frontend/dist"
-  
-  # Where to find the compiled backend functions
+  command = "npm install && npm run build && cd backend && npm install && npm run build"
+  publish = "dist"
   functions = "backend/dist"
 
 [build.environment]
   NODE_VERSION = "20"
 
-# --- Redirects ---
-
-# 1. API Requests: Send /api/* to the backend function
+# --- THE FIX ---
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
+  # Point to 'server' because your file is server.ts
+  to = "/.netlify/functions/server/:splat"
   status = 200
 
-# 2. React Router: Send everything else to index.html (so refresh works)
 [[redirects]]
   from = "/*"
   to = "/index.html"
