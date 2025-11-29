@@ -1,16 +1,28 @@
 import { useState, useEffect } from "react";
-import { UltraPremiumDepartmentGrid } from "../../components/inventory/invDepartments/DepartmentGrid";
 import { UltraPremiumRequestTable } from "../../components/inventory/invDepartments/DepartmentRequestTracking";
 import useGetInvDepartment from "../../api/getInvDepartment";
 
+interface MaintenanceRequest {
+  id: string;
+  department: string;
+  itemService: string;
+  requestedBy: string;
+  date: string;
+  status: "Pending" | "Approved" | "Rejected" | "Completed";
+}
+
 export default function InvDepartments() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("All Departments");
   const [departments, setDepartments] = useState([]);
-  const [maintenanceRequests, setMaintenanceRequests] = useState([]);
+  const [maintenanceRequests, setMaintenanceRequests] = useState<
+    MaintenanceRequest[]
+  >([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { getInvDepartment, loadingForGetInvDepartment } = useGetInvDepartment();
+  const { getInvDepartment, loadingForGetInvDepartment } =
+    useGetInvDepartment();
 
   const fetchData = async () => {
     const response = await getInvDepartment();
@@ -27,7 +39,7 @@ export default function InvDepartments() {
   }, [refreshKey]);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -46,7 +58,7 @@ export default function InvDepartments() {
         </div>
 
         {/* Department Grid */}
-        <UltraPremiumDepartmentGrid departments={departments} />
+        {/* <UltraPremiumDepartmentGrid departments={departments} /> */}
 
         {/* Request Tracking Table */}
         <UltraPremiumRequestTable
@@ -55,6 +67,7 @@ export default function InvDepartments() {
           selectedDepartment={selectedDepartment}
           onDepartmentChange={setSelectedDepartment}
           requests={maintenanceRequests}
+          setRequests={setMaintenanceRequests}
           onSuccess={handleRefresh}
         />
       </div>
