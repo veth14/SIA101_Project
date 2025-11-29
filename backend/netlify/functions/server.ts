@@ -96,7 +96,7 @@ router.get("/", (req, res) => {
 
 // 3. Mount the Router to the Netlify Path
 // This is critical. Netlify sends requests to /.netlify/functions/api
-app.use("/.netlify/functions/api", router);
+app.use("/.netlify/functions/server", router);
 
 // 4. Export the Handler (No app.listen)
 export const handler = serverless(app);
