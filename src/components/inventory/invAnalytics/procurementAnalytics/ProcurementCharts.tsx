@@ -217,9 +217,7 @@ const ProcurementCharts: React.FC = () => {
       <div className="p-8">
         {/* Chart Container */}
         <div className="w-full h-80">
-          {/* @ts-expect-error - Recharts typing issue */}
           <ResponsiveContainer width="100%" height="100%">
-            {/* @ts-expect-error - Recharts typing issue */}
             <AreaChart
               data={procurementData}
               margin={{
@@ -305,7 +303,6 @@ const ProcurementCharts: React.FC = () => {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
 
-              {/* @ts-expect-error - Recharts typing issue */}
               <XAxis
                 dataKey="month"
                 axisLine={false}
@@ -314,7 +311,6 @@ const ProcurementCharts: React.FC = () => {
                 dy={10}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
               <YAxis
                 axisLine={false}
                 tickLine={false}
@@ -325,7 +321,6 @@ const ProcurementCharts: React.FC = () => {
               {/* @ts-expect-error - Recharts typing issue */}
               <Tooltip content={CustomTooltip} />
 
-              {/* @ts-expect-error - Recharts typing issue */}
               <Area
                 type="monotone"
                 dataKey="orders"
@@ -341,7 +336,6 @@ const ProcurementCharts: React.FC = () => {
                 }}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
               <Area
                 type="monotone"
                 dataKey="value"
@@ -357,7 +351,6 @@ const ProcurementCharts: React.FC = () => {
                 }}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
               <Area
                 type="monotone"
                 dataKey="suppliers"
@@ -373,7 +366,6 @@ const ProcurementCharts: React.FC = () => {
                 }}
               />
 
-              {/* @ts-expect-error - Recharts typing issue */}
               <Area
                 type="monotone"
                 dataKey="onTime"

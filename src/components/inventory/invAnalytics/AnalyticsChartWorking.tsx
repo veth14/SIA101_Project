@@ -330,9 +330,7 @@ export function AnalyticsChart(): React.ReactElement {
         <div className="p-8">
           {/* Chart Container */}
           <div className="w-full h-80">
-            {/* @ts-expect-error - Recharts typing issue */}
             <ResponsiveContainer width="100%" height="100%">
-              {/* @ts-expect-error - Recharts typing issue */}
               <AreaChart
                 data={chartData}
                 margin={{
@@ -380,7 +378,6 @@ export function AnalyticsChart(): React.ReactElement {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <XAxis
                   dataKey="month"
                   axisLine={false}
@@ -389,7 +386,6 @@ export function AnalyticsChart(): React.ReactElement {
                   dy={10}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <YAxis
                   axisLine={false}
                   tickLine={false}
@@ -400,7 +396,6 @@ export function AnalyticsChart(): React.ReactElement {
                 {/* @ts-expect-error - Recharts typing issue */}
                 <Tooltip content={CustomTooltip} />
 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="linens"
@@ -416,7 +411,6 @@ export function AnalyticsChart(): React.ReactElement {
                   }}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="cleaning"
@@ -432,7 +426,6 @@ export function AnalyticsChart(): React.ReactElement {
                   }}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="food"
@@ -448,7 +441,6 @@ export function AnalyticsChart(): React.ReactElement {
                   }}
                 />
 
-                {/* @ts-expect-error - Recharts typing issue */}
                 <Area
                   type="monotone"
                   dataKey="maintenance"
