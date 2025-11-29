@@ -3,6 +3,7 @@ import { Modal } from '../../admin/Modal';
 import { collection, getDocs, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, where, limit } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../hooks/useAuth';
+import { createTicket } from '../../maintenance/tickets-tasks/ticketsService';
 
 interface AssistanceRequest {
   id: string;
@@ -17,6 +18,7 @@ interface AssistanceRequest {
   estimatedTime?: string;
   notes?: string;
   source?: 'contactRequests' | 'guest_request' | 'local';
+  ticketNumber?: string;
 }
 
 export const GuestAssistance: React.FC = () => {
@@ -36,6 +38,7 @@ export const GuestAssistance: React.FC = () => {
   const [initialPriority, setInitialPriority] = useState<AssistanceRequest['priority'] | null>(null);
   const [initialStatus, setInitialStatus] = useState<AssistanceRequest['status'] | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialGuestName, setInitialGuestName] = useState<string | null>(null);
   const [initialRoomNumber, setInitialRoomNumber] = useState<string | null>(null);
   const [initialRequestType, setInitialRequestType] = useState<string | null>(null);
@@ -43,210 +46,121 @@ export const GuestAssistance: React.FC = () => {
   const [initialGuestContact, setInitialGuestContact] = useState<string | null>(null);
 
   useEffect(() => {
-    // Caching strategy: try load cached data from localStorage first to avoid full collection reads.
-    const CACHE_KEY = 'guest_assistance_cache_v1';
+    const CACHE_KEY = 'guest_assistance_cache_v2';
+    let cached: AssistanceRequest[] = [];
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) cached = JSON.parse(raw)?.items || [];
+    } catch {}
+    if (cached.length) {
+      assistanceRef.current = cached;
+      setAssistanceRequests(cached);
+    }
 
-    const loadCache = (): { items: AssistanceRequest[]; lastFetchedIso?: string } | null => {
+    const upsert = (item: AssistanceRequest) => {
+      assistanceRef.current = assistanceRef.current.filter(r => r.id !== item.id);
+      assistanceRef.current.push(item);
+    };
+
+    const sortAndCommit = () => {
+      const sorted = [...assistanceRef.current].sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
+      setAssistanceRequests(sorted);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ items: sorted })); } catch {}
+    };
+
+    const mapContactDoc = (d: any, id: string): AssistanceRequest => {
+      const data = d;
+      const requestTime = data.submittedAt?.toDate?.() ? data.submittedAt.toDate().toISOString() : data.submittedAt || data.createdAt || new Date().toISOString();
+      const guestName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.email || 'Guest';
+      const requestType = data.inquiryType ? data.inquiryType.toString().toLowerCase() : 'other';
+      let status: AssistanceRequest['status'] = 'pending';
+      if (data.status === 'resolved') status = 'completed';
+      else if (data.status === 'in-progress') status = 'in-progress';
+      else if (data.status === 'cancelled') status = 'cancelled';
+      return {
+        id,
+        guestName,
+        roomNumber: data.bookingReference || '—',
+        requestType,
+        priority: 'medium',
+        description: [data.subject, data.message].filter(Boolean).join(' — '),
+        requestTime,
+        status,
+        assignedTo: data.assignedTo || 'Front Desk',
+        estimatedTime: data.estimatedTime,
+        notes: data.notes,
+        ticketNumber: data.ticketNumber,
+        source: 'contactRequests'
+      };
+    };
+
+    const mapGuestDoc = (d: any, id: string): AssistanceRequest => {
+      const data = d;
+      const requestTime = data.submittedAt?.toDate?.() ? data.submittedAt.toDate().toISOString() : data.submittedAt || data.createdAt || new Date().toISOString();
+      return {
+        id,
+        guestName: data.guestName || data.firstName || 'Guest',
+        roomNumber: data.roomNumber || '—',
+        requestType: data.requestType || 'other',
+        priority: data.priority || 'medium',
+        description: data.description || '',
+        requestTime,
+        status: data.status || 'pending',
+        assignedTo: data.assignedTo || undefined,
+        estimatedTime: data.estimatedTime || undefined,
+        notes: data.notes || undefined,
+        ticketNumber: data.ticketNumber,
+        source: 'guest_request'
+      };
+    };
+
+    const fetchOnce = async () => {
       try {
-        const raw = localStorage.getItem(CACHE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-      } catch (e) {
-        console.warn('Failed to parse cache', e);
-        return null;
+        const [contactSnap, guestSnap] = await Promise.all([
+          getDocs(query(collection(db, 'contactRequests'), orderBy('createdAt', 'desc'), limit(50))),
+          getDocs(query(collection(db, 'guest_request'), orderBy('createdAt', 'desc'), limit(50)))
+        ]);
+
+        assistanceRef.current = [];
+
+        contactSnap.forEach(docSnap => {
+          upsert(mapContactDoc(docSnap.data(), docSnap.id));
+        });
+
+        guestSnap.forEach(docSnap => {
+          upsert(mapGuestDoc(docSnap.data(), docSnap.id));
+        });
+
+        sortAndCommit();
+        try { localStorage.setItem('guest_assistance_cache_meta', JSON.stringify({ ts: Date.now() })); } catch {}
+      } catch (err) {
+        console.error('Failed to fetch assistance requests', err);
       }
     };
 
-    const saveCache = (items: AssistanceRequest[]) => {
-      try {
-        const last = items.reduce<string | null>((acc, it) => {
-          const t = it.requestTime;
-          if (!t) return acc;
-          if (!acc) return t;
-          return new Date(t) > new Date(acc) ? t : acc;
-        }, null);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ items, lastFetchedIso: last }));
-      } catch (e) {
-        console.warn('Failed to save cache', e);
-      }
-    };
+    fetchOnce();
 
-    // (removed helper) timestamp conversion handled inline after switching to range queries
-
-    const fetchNewSince = async (sinceIso?: string) => {
-      const newItems: AssistanceRequest[] = [];
+    const onFocus = () => {
       try {
-        // If we have a timestamp, query only docs with createdAt > timestamp to avoid full collection reads.
-        // Otherwise fetch a limited set (most recent N) to initialize the UI.
-        const contactRef = collection(db, 'contactRequests');
-        if (sinceIso) {
-          const sinceDate = new Date(sinceIso);
-          const q = query(contactRef, where('createdAt', '>', sinceDate), orderBy('createdAt', 'desc'), limit(200));
-          const snap = await getDocs(q);
-          snap.docs.forEach(d => {
-            const data = d.data();
-            const requestTime = data.submittedAt?.toDate?.()
-              ? data.submittedAt.toDate().toISOString()
-              : data.submittedAt || data.createdAt || new Date().toISOString();
-            const guestName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.email || 'Guest';
-            const requestType = data.inquiryType ? data.inquiryType.toString().toLowerCase() : 'other';
-            let status: AssistanceRequest['status'] = 'pending';
-            if (data.status === 'resolved') status = 'completed';
-            else if (data.status === 'in-progress') status = 'in-progress';
-            else if (data.status === 'cancelled') status = 'cancelled';
-            newItems.push({
-              id: d.id,
-              guestName,
-              roomNumber: data.bookingReference || '—',
-              requestType,
-              priority: 'medium',
-              description: [data.subject, data.message].filter(Boolean).join(' — '),
-              requestTime,
-              status,
-              assignedTo: data.assignedTo || 'Front Desk',
-              estimatedTime: data.estimatedTime,
-              notes: data.notes,
-              source: 'contactRequests'
-            } as AssistanceRequest);
-          });
-        } else {
-          // initial limited fetch (small number to avoid many reads)
-          const q = query(contactRef, orderBy('createdAt', 'desc'), limit(50));
-          const snap = await getDocs(q);
-          snap.docs.forEach(d => {
-            const data = d.data();
-            const requestTime = data.submittedAt?.toDate?.()
-              ? data.submittedAt.toDate().toISOString()
-              : data.submittedAt || data.createdAt || new Date().toISOString();
-            const guestName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.email || 'Guest';
-            const requestType = data.inquiryType ? data.inquiryType.toString().toLowerCase() : 'other';
-            let status: AssistanceRequest['status'] = 'pending';
-            if (data.status === 'resolved') status = 'completed';
-            else if (data.status === 'in-progress') status = 'in-progress';
-            else if (data.status === 'cancelled') status = 'cancelled';
-            newItems.push({
-              id: d.id,
-              guestName,
-              roomNumber: data.bookingReference || '—',
-              requestType,
-              priority: 'medium',
-              description: [data.subject, data.message].filter(Boolean).join(' — '),
-              requestTime,
-              status,
-              assignedTo: data.assignedTo || 'Front Desk',
-              estimatedTime: data.estimatedTime,
-              notes: data.notes,
-              source: 'contactRequests'
-            } as AssistanceRequest);
-          });
+        const metaRaw = localStorage.getItem('guest_assistance_cache_meta');
+        const ts = metaRaw ? JSON.parse(metaRaw)?.ts : 0;
+        const maxAgeMs = 5 * 60 * 1000; // 5 minutes staleness window
+        if (!ts || Date.now() - ts > maxAgeMs) {
+          fetchOnce();
         }
-
-        // guest_request
-        const guestRef = collection(db, 'guest_request');
-        if (sinceIso) {
-          const sinceDate = new Date(sinceIso);
-          const qg = query(guestRef, where('createdAt', '>', sinceDate), orderBy('createdAt', 'desc'), limit(200));
-          const s = await getDocs(qg);
-          s.docs.forEach(d => {
-            const data = d.data();
-            const requestTime = data.submittedAt?.toDate?.()
-              ? data.submittedAt.toDate().toISOString()
-              : data.submittedAt || data.createdAt || new Date().toISOString();
-            newItems.push({
-              id: d.id,
-              guestName: data.guestName || data.firstName || 'Guest',
-              roomNumber: data.roomNumber || '—',
-              requestType: data.requestType || 'other',
-              priority: data.priority || 'medium',
-              description: data.description || '',
-              requestTime,
-              status: data.status || 'pending',
-              assignedTo: data.assignedTo || undefined,
-              estimatedTime: data.estimatedTime || undefined,
-              notes: data.notes || undefined,
-              source: 'guest_request'
-            } as AssistanceRequest);
-          });
-        } else {
-          const qg = query(guestRef, orderBy('createdAt', 'desc'), limit(50));
-          const s = await getDocs(qg);
-          s.docs.forEach(d => {
-            const data = d.data();
-            const requestTime = data.submittedAt?.toDate?.()
-              ? data.submittedAt.toDate().toISOString()
-              : data.submittedAt || data.createdAt || new Date().toISOString();
-            newItems.push({
-              id: d.id,
-              guestName: data.guestName || data.firstName || 'Guest',
-              roomNumber: data.roomNumber || '—',
-              requestType: data.requestType || 'other',
-              priority: data.priority || 'medium',
-              description: data.description || '',
-              requestTime,
-              status: data.status || 'pending',
-              assignedTo: data.assignedTo || undefined,
-              estimatedTime: data.estimatedTime || undefined,
-              notes: data.notes || undefined,
-              source: 'guest_request'
-            } as AssistanceRequest);
-          });
-        }
-
-      } catch (error) {
-        console.error('Error fetching incremental requests:', error);
-      }
-
-      return newItems;
-    };
-
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-
-    const fetchRequests = async () => {
-      try {
-        const cache = loadCache();
-        if (cache && cache.items && cache.items.length > 0) {
-          setAssistanceRequests(cache.items);
-          // fetch only new docs since lastFetchedIso
-          const newOnes = await fetchNewSince(cache.lastFetchedIso);
-          if (newOnes && newOnes.length > 0) {
-            const merged = [...newOnes, ...cache.items].sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
-            setAssistanceRequests(merged);
-            saveCache(merged);
-          }
-        } else {
-          // No cache: fetch a limited set (still more than zero, but avoid unlimited reads)
-          const items = await fetchNewSince(undefined);
-          const combined = items.sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
-          setAssistanceRequests(combined);
-          saveCache(combined);
-        }
-
-        // Periodic background poll for new docs every 60s (fetches only new docs)
-        intervalId = setInterval(async () => {
-          const currentLast = assistanceRef.current.reduce<string | null>((acc, it) => {
-            if (!acc) return it.requestTime || null;
-            return new Date(it.requestTime) > new Date(acc) ? it.requestTime : acc;
-          }, null);
-          const newOnes = await fetchNewSince(currentLast || undefined);
-          if (newOnes && newOnes.length > 0) {
-            setAssistanceRequests(prev => {
-              const merged = [...newOnes, ...prev].sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
-              saveCache(merged);
-              return merged;
-            });
-          }
-        }, 60000);
-      } catch (error) {
-        console.error('Error in fetchRequests flow:', error);
+      } catch {
+        fetchOnce();
       }
     };
 
-    fetchRequests().then(() => {
-      // nothing
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') onFocus();
     });
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', () => {});
     };
   }, []);
 
@@ -267,8 +181,10 @@ export const GuestAssistance: React.FC = () => {
   const [description, setDescription] = useState('');
   const [assignedTo, setAssignedTo] = useState<string>('Unassigned');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [dueDateTime, setDueDateTime] = useState<string>('');
 
-  const calcEstimatedTime = (type: string) => {
+  const calcEstimatedTime = (type: string, p?: AssistanceRequest['priority']) => {
+    if (p === 'urgent') return '15 minutes';
     switch (type) {
       case 'housekeeping':
         return '15 minutes';
@@ -281,6 +197,26 @@ export const GuestAssistance: React.FC = () => {
       default:
         return '30 minutes';
     }
+  };
+
+  const computeDueDateTime = (type: string, p?: AssistanceRequest['priority']): string => {
+    const now = new Date();
+    const est = calcEstimatedTime(type, p);
+    const match = est.match(/(\d+)\s*minute/);
+    const minutes = match ? parseInt(match[1], 10) : 30;
+    const due = new Date(now.getTime() + minutes * 60 * 1000);
+    return due.toISOString();
+  };
+
+  const toDateTimeLocal = (isoOrDate: string | Date): string => {
+    const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   const getDefaultAssigneeForType = (type: string) => {
@@ -315,6 +251,10 @@ export const GuestAssistance: React.FC = () => {
     setInitialRequestType(null);
     setInitialAssignedTo(null);
     setInitialGuestContact(null);
+    // Keep unassigned; ticket creation will auto-assign to available staff
+    setAssignedTo('Unassigned');
+    // Prefill due date based on estimated completion
+    setDueDateTime(toDateTimeLocal(computeDueDateTime('housekeeping', priority)));
     setIsModalOpen(true);
   };
 
@@ -340,6 +280,7 @@ export const GuestAssistance: React.FC = () => {
     setInitialRequestType(request.requestType || '');
     setInitialAssignedTo(request.assignedTo || 'Unassigned');
     setInitialGuestContact(request.notes?.includes('Contact:') ? request.notes.replace('Contact:', '').trim() : '');
+    setDueDateTime('');
     setIsModalOpen(true);
   };
 
@@ -361,6 +302,7 @@ export const GuestAssistance: React.FC = () => {
     if (!priority) errs.priority = 'Priority is required.';
     if (!description.trim() || description.trim().length < 10) errs.description = 'Description must be at least 10 characters.';
     if (!assignedTo) errs.assignedTo = 'Please assign the request or pick Unassigned.';
+    if (!dueDateTime) errs.dueDateTime = 'Due Date & Time is required.';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -396,6 +338,8 @@ export const GuestAssistance: React.FC = () => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+
+    if (isSubmitting) return;
 
     if (modalMode === 'view' && selectedRequest) {
       try {
@@ -462,6 +406,7 @@ export const GuestAssistance: React.FC = () => {
 
     // create mode
     if (!validateForm()) return;
+    setIsSubmitting(true);
 
     const tempId = `temp-${Date.now()}`;
     const newReq: AssistanceRequest = {
@@ -494,6 +439,7 @@ export const GuestAssistance: React.FC = () => {
         assignedTo: newReq.assignedTo || null,
         estimatedTime: newReq.estimatedTime || null,
         notes: newReq.notes || null,
+        dueDateTime: dueDateTime || null,
         createdAt: serverTimestamp(),
         submittedAt: serverTimestamp()
       };
@@ -501,10 +447,57 @@ export const GuestAssistance: React.FC = () => {
       const createdRef = await addDoc(collection(db, 'guest_request'), payload);
       // replace temp id with real id
       setAssistanceRequests(prev => prev.map(r => r.id === tempId ? { ...r, id: createdRef.id } : r));
+
+      // Also create a maintenance/housekeeping ticket aligned to tickets_task schema
+      const mapPriority = (p: AssistanceRequest['priority']): 'High' | 'Medium' | 'Low' => {
+        if (p === 'urgent' || p === 'high') return 'High';
+        if (p === 'medium') return 'Medium';
+        return 'Low';
+      };
+
+      const category = newReq.requestType === 'maintenance' ? 'Maintenance' : 'Housekeeping';
+
+      const deriveTaskTitle = (type: string, desc: string): string => {
+        const t = type.toLowerCase();
+        if (t === 'housekeeping') {
+          if (/clean|tidy|room/i.test(desc)) return 'Room Cleaning';
+          return 'Housekeeping Request';
+        }
+        if (t === 'maintenance') {
+          if (/leak|water|pipe/i.test(desc)) return 'Leak Check';
+          if (/ac|air.?con|cool/i.test(desc)) return 'AC Maintenance';
+          if (/electrical|power|light/i.test(desc)) return 'Electrical Issue';
+          return 'Maintenance Request';
+        }
+        return `${type.charAt(0).toUpperCase() + type.slice(1)} Request`;
+      };
+
+      const ticket = await createTicket({
+        taskTitle: deriveTaskTitle(newReq.requestType, newReq.description),
+        description: newReq.description,
+        category,
+        priority: mapPriority(newReq.priority),
+        roomNumber: newReq.roomNumber,
+        dueDateTime: dueDateTime || computeDueDateTime(newReq.requestType, newReq.priority),
+        createdBy: user?.email || user?.uid || 'frontdesk',
+        // Let auto-assignment choose available staff
+      });
+
+      // Persist ticketNumber back to the guest_request for easy cross-reference in UI
+      if (ticket && ticket.ticketNumber) {
+        try {
+          await updateDoc(createdRef, { ticketNumber: ticket.ticketNumber });
+          // reflect in local state
+          setAssistanceRequests(prev => prev.map(r => r.id === createdRef.id ? { ...r, ticketNumber: ticket.ticketNumber, notes: (r.notes ? r.notes + ` | ` : '') + `Ticket: ${ticket.ticketNumber}` } : r));
+        } catch (e) {
+          console.warn('Failed to persist ticketNumber to guest_request', e);
+        }
+      }
     } catch (error) {
       console.error('Error saving guest request:', error);
       alert('Failed to save request.');
     } finally {
+      setIsSubmitting(false);
       closeModal();
     }
   };
@@ -516,6 +509,10 @@ export const GuestAssistance: React.FC = () => {
       setRoomNumber(match.roomNumber);
       if (match.notes?.includes('Contact:')) {
         setGuestContact(match.notes.replace('Contact:', '').trim());
+      }
+      // Prefill due date based on the current request type if not set
+      if (!dueDateTime) {
+        setDueDateTime(toDateTimeLocal(computeDueDateTime(requestType)));
       }
     }
   };
@@ -647,8 +644,6 @@ export const GuestAssistance: React.FC = () => {
             <option value="all">All Types</option>
             <option value="housekeeping">Housekeeping</option>
             <option value="maintenance">Maintenance</option>
-            <option value="electrical">Electrical</option>
-            <option value="plumbing">Plumbing</option>
           </select>
           <select
             value={selectedStatus}
@@ -673,12 +668,14 @@ export const GuestAssistance: React.FC = () => {
             <option value="low">Low</option>
           </select>
         </div>
-        <button onClick={openModal} className="w-auto inline-flex justify-center items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          <span>New Request</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={openModal} className="w-auto inline-flex justify-center items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <span>New Request</span>
+          </button>
+        </div>
       </div>
 
       {/* Create New Request Modal */}
@@ -686,7 +683,7 @@ export const GuestAssistance: React.FC = () => {
         isOpen={isModalOpen}
         onClose={closeModal}
         title={modalMode === 'view' ? 'Request Details' : 'Create New Request'}
-        subtitle={modalMode === 'view' && selectedRequest ? `Request #${selectedRequest.id} • ${selectedRequest.guestName || guestName || 'Guest'}` : undefined}
+        subtitle={modalMode === 'view' && selectedRequest ? `Request #${selectedRequest.id} • ${selectedRequest.guestName || guestName || 'Guest'}${selectedRequest.ticketNumber ? ` • Ticket ${selectedRequest.ticketNumber}` : ''}` : undefined}
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -708,6 +705,12 @@ export const GuestAssistance: React.FC = () => {
               <div>
                 <label className="block text-xs font-medium text-gray-600">Guest Contact (Optional)</label>
                 <input value={guestContact} onChange={(e) => setGuestContact(e.target.value)} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" placeholder="Phone or email" />
+                {modalMode === 'view' && selectedRequest?.ticketNumber && (
+                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7H8a2 2 0 00-2 2v6a2 2 0 002 2h8a2 2 0 002-2V9a2 2 0 00-2-2z" /></svg>
+                    <span>Linked Ticket: {selectedRequest.ticketNumber}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -726,14 +729,17 @@ export const GuestAssistance: React.FC = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       setRequestType(val);
-                      setAssignedTo(getDefaultAssigneeForType(val));
+                      // Do not set assignedTo in create mode; auto-assignment will handle it
+                      if (modalMode === 'view') {
+                        setAssignedTo(getDefaultAssigneeForType(val));
+                      }
+                      // Recompute default due date when type changes
+                      setDueDateTime(toDateTimeLocal(computeDueDateTime(val, priority)));
                     }}
                     className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
                   >
                     <option value="housekeeping">Housekeeping</option>
                     <option value="maintenance">Maintenance</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="plumbing">Plumbing</option>
                   </select>
                 )}
                 {formErrors.requestType && <div className="text-rose-600 text-xs mt-1">{formErrors.requestType}</div>}
@@ -741,7 +747,14 @@ export const GuestAssistance: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600">Priority <span className="text-rose-500">*</span></label>
-                <select value={priority} onChange={(e) => setPriority(e.target.value as AssistanceRequest['priority'])} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition">
+                <select value={priority} onChange={(e) => {
+                  const val = e.target.value as AssistanceRequest['priority'];
+                  setPriority(val);
+                  // Adjust due date when priority changes (urgent -> 15 mins)
+                  if (modalMode === 'create') {
+                    setDueDateTime(toDateTimeLocal(computeDueDateTime(requestType, val)));
+                  }
+                }} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition">
                   <option value="urgent">Urgent</option>
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -775,39 +788,46 @@ export const GuestAssistance: React.FC = () => {
                 <label className="block text-xs font-medium text-gray-600">Estimated Completion</label>
                 <div className="mt-1 text-sm text-gray-700">Est: {calcEstimatedTime(requestType)}</div>
               </div>
-            </div>
-          </div>
-
-          {/* Assignment */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-2">Assignment</h4>
-            <div className="grid grid-cols-1 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600">Assign To <span className="text-rose-500">*</span></label>
-                <select
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
+                <label className="block text-xs font-medium text-gray-600">Due Date & Time <span className="text-rose-500">*</span></label>
+                <input
+                  type="datetime-local"
+                  value={dueDateTime}
+                  onChange={(e) => setDueDateTime(e.target.value)}
                   className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
-                >
-                  <option value="Unassigned">Unassigned</option>
-                  <option value="Front Desk">Front Desk</option>
-                  <option value="Housekeeping Team">Housekeeping Team</option>
-                  <option value="Maintenance Team">Maintenance Team</option>
-                  <option value="Electrical Team">Electrical Team</option>
-                  <option value="Plumbing Team">Plumbing Team</option>
-                  <option value="Concierge">Concierge</option>
-                  <option value="Transport Team">Transport Team</option>
-                  <option value="Kitchen">Kitchen</option>
-                </select>
-                {formErrors.assignedTo && <div className="text-rose-600 text-xs mt-1">{formErrors.assignedTo}</div>}
+                  disabled={modalMode === 'view'}
+                />
+                {formErrors.dueDateTime && <div className="text-rose-600 text-xs mt-1">{formErrors.dueDateTime}</div>}
               </div>
-
             </div>
           </div>
+
+          {/* Assignment (view only) */}
+          {modalMode === 'view' && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Assignment</h4>
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600">Assign To</label>
+                  <select
+                    value={assignedTo}
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                    className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+                  >
+                    <option value="Unassigned">Unassigned</option>
+                    <option value="Front Desk">Front Desk</option>
+                    <option value="Housekeeping Team">Housekeeping Team</option>
+                    <option value="Maintenance Team">Maintenance Team</option>
+                  </select>
+                  {formErrors.assignedTo && <div className="text-rose-600 text-xs mt-1">{formErrors.assignedTo}</div>}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-end space-x-3 pt-2">
             <button type="button" onClick={closeModal} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
-            <button type="submit" disabled={!isDirty} className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-emerald-600/50 cursor-not-allowed'}`}>{modalMode === 'view' ? 'Save Changes' : 'Submit Request'}</button>
+            <button type="submit" disabled={!isDirty || isSubmitting} className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${(!isDirty || isSubmitting) ? 'bg-emerald-600/50 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}>{modalMode === 'view' ? 'Save Changes' : (isSubmitting ? 'Submitting...' : 'Submit Request')}</button>
           </div>
         </form>
       </Modal>
@@ -877,9 +897,7 @@ export const GuestAssistance: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button onClick={() => openViewModal(request)} className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors">View</button>
                       {/* 'Start' action removed per UI policy change */}
-                      {request.status === 'in-progress' && (
-                        <button className="px-3 py-1 rounded-md text-sm text-green-600 border border-gray-200 bg-green-50 hover:bg-green-100 transition-colors">Complete</button>
-                      )}
+                      {/* Complete button removed per request */}
                     </div>
                   </td>
                 </tr>

@@ -272,7 +272,7 @@ export const AdminDashboardStats: React.FC<AdminDashboardStatsProps> = ({ stats 
       <div className="p-4 border border-gray-200 shadow-lg bg-gradient-to-br from-gray-50 to-white rounded-2xl">
         <div className="grid grid-cols-2 gap-4 pt-2 md:grid-cols-4">
           <button
-            onClick={() => navigate('/frontdesk/reservations')}
+            onClick={() => navigate('/admin/frontdesk')}
             className="flex flex-col items-center justify-center p-4 transition-all border bg-emerald-50 hover:bg-emerald-100 border-emerald-200 rounded-xl group"
           >
             <div className="flex items-center justify-center w-10 h-10 mb-2 transition-transform rounded-lg bg-emerald-600 group-hover:scale-110">
