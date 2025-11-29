@@ -1,7 +1,7 @@
 [build]
   # 1. Go to frontend, install & build
   # 2. Go to backend, install & build
-  command = "cd frontend && npm install && npm run build && cd ../backend && npm install && npm run build"
+  command = "npm install && npm run build && cd ../backend && npm install && npm run build"
   
   # Serve the built React files
   publish = "frontend/dist"
