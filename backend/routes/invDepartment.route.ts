@@ -1,5 +1,5 @@
 import express from "express";
-import * as departmentController from "../controllers/invDepartment.controller.js";
+import * as departmentController from "../controllers/invDepartment.controller";
 
 const router = express.Router();
 

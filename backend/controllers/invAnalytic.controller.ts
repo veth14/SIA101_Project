@@ -1,5 +1,5 @@
 import type { Response, Request } from "express";
-import { db } from "../config/firebaseAdmin.js";
+import { db } from "../config/firebaseAdmin";
 
 interface SummaryStat {
   title: string;

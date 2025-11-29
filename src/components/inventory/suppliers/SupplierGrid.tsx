@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { SupplierCard } from './SupplierCard';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { SupplierCard } from "./SupplierCard";
+import NewSupplierModal from "./NewSupplierModal";
 
 // Simple Category Dropdown Component
 const CategoryDropdown: React.FC<{
@@ -10,24 +11,27 @@ const CategoryDropdown: React.FC<{
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const categories = [
-    'All Categories',
-    'Food & Beverage',
-    'Housekeeping',
-    'Maintenance',
-    'Technology',
-    'Furniture'
+    "All Categories",
+    "Food & Beverage",
+    "Housekeeping",
+    "Maintenance",
+    "Technology",
+    "Furniture",
   ];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -48,13 +52,20 @@ const CategoryDropdown: React.FC<{
             <div className="w-2 h-2 bg-gradient-to-r from-heritage-green to-emerald-500 rounded-full"></div>
             <span className="text-gray-800">{selectedCategory}</span>
           </div>
-          <svg 
-            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
       </div>
@@ -66,20 +77,32 @@ const CategoryDropdown: React.FC<{
               key={category}
               onClick={() => handleCategorySelect(category)}
               className={`w-full flex items-center space-x-3 px-6 py-3 text-left text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-heritage-green/10 hover:to-emerald-500/10 ${
-                selectedCategory === category 
-                  ? 'bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green' 
-                  : 'text-gray-700 hover:text-heritage-green'
+                selectedCategory === category
+                  ? "bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green"
+                  : "text-gray-700 hover:text-heritage-green"
               }`}
             >
-              <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                selectedCategory === category 
-                  ? 'bg-gradient-to-r from-heritage-green to-emerald-500' 
-                  : 'bg-gray-300'
-              }`}></div>
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  selectedCategory === category
+                    ? "bg-gradient-to-r from-heritage-green to-emerald-500"
+                    : "bg-gray-300"
+                }`}
+              ></div>
               <span className="flex-1">{category}</span>
               {selectedCategory === category && (
-                <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-4 h-4 text-heritage-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               )}
             </button>
@@ -88,8 +111,8 @@ const CategoryDropdown: React.FC<{
       )}
 
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-[99998]" 
+        <div
+          className="fixed inset-0 z-[99998]"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
@@ -109,7 +132,7 @@ interface Supplier {
   totalOrders: number;
   totalValue: number;
   lastOrderDate: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: "active" | "inactive" | "suspended";
   paymentTerms: string;
   deliveryTime: string;
   notes?: string;
@@ -120,6 +143,7 @@ interface SupplierGridProps {
   formatCurrency: (amount: number) => string;
   getStatusBadge: (status: string) => React.ReactNode;
   getRatingStars: (rating: number) => React.ReactNode;
+  setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
 }
 
 export const SupplierGrid: React.FC<SupplierGridProps> = ({
@@ -127,10 +151,12 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
   formatCurrency,
   getStatusBadge,
   getRatingStars,
+  setSuppliers,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [isNewSupplierModalOpen, setIsNewSupplierModalOpen] = useState(false);
   const itemsPerPage = 3;
 
   // Filter suppliers based on search term and selected category
@@ -139,21 +165,27 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
       return [];
     }
 
-    return suppliers.filter(supplier => {
+    return suppliers.filter((supplier) => {
       // Search filter - check if search term is empty or matches any field
-      const searchLower = (searchTerm || '').toLowerCase().trim();
-      const matchesSearch = searchLower === '' || 
+      const searchLower = (searchTerm || "").toLowerCase().trim();
+      const matchesSearch =
+        searchLower === "" ||
         (supplier.name && supplier.name.toLowerCase().includes(searchLower)) ||
-        (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(searchLower)) ||
-        (supplier.email && supplier.email.toLowerCase().includes(searchLower)) ||
-        (supplier.category && supplier.category.toLowerCase().includes(searchLower)) ||
-        (supplier.status && supplier.status.toLowerCase().includes(searchLower));
-      
+        (supplier.contactPerson &&
+          supplier.contactPerson.toLowerCase().includes(searchLower)) ||
+        (supplier.email &&
+          supplier.email.toLowerCase().includes(searchLower)) ||
+        (supplier.category &&
+          supplier.category.toLowerCase().includes(searchLower)) ||
+        (supplier.status &&
+          supplier.status.toLowerCase().includes(searchLower));
+
       // Category filter
-      const matchesCategory = !selectedCategory || 
-        selectedCategory === 'All Categories' || 
+      const matchesCategory =
+        !selectedCategory ||
+        selectedCategory === "All Categories" ||
         supplier.category === selectedCategory;
-      
+
       return matchesSearch && matchesCategory;
     });
   }, [suppliers, searchTerm, selectedCategory]);
@@ -182,15 +214,19 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
     const showPages = 5;
     let start = Math.max(1, currentPage - Math.floor(showPages / 2));
     const end = Math.min(totalPages, start + showPages - 1);
-    
+
     if (end - start + 1 < showPages) {
       start = Math.max(1, end - showPages + 1);
     }
-    
+
     for (let i = start; i <= end; i++) {
       range.push(i);
     }
     return range;
+  };
+
+  const handleNewSupplierSuccess = () => {
+    console.log("New supplier created successfully");
   };
 
   if (suppliers.length === 0) {
@@ -200,23 +236,39 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
           <div className="flex items-center space-x-4">
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
                 </svg>
               </div>
               <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
             </div>
             <div>
               <h3 className="text-xl font-black text-gray-900">Suppliers</h3>
-              <p className="text-sm text-gray-500 font-medium">No suppliers found</p>
+              <p className="text-sm text-gray-500 font-medium">
+                No suppliers found
+              </p>
             </div>
           </div>
         </div>
-        
+
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🏢</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No suppliers found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            No suppliers found
+          </h3>
+          <p className="text-gray-600">
+            Try adjusting your search criteria or filters.
+          </p>
         </div>
       </div>
     );
@@ -230,8 +282,18 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
           <div className="flex items-center space-x-4">
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
                 </svg>
               </div>
               <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
@@ -239,9 +301,20 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
             <div>
               <h3 className="text-xl font-black text-gray-900">Suppliers</h3>
               <p className="text-sm text-gray-500 font-medium">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredSuppliers.length)} of {filteredSuppliers.length} suppliers • Page {currentPage} of {totalPages}
-                {searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{searchTerm}"</span>}
-                {selectedCategory !== 'All Categories' && <span className="ml-2 text-blue-600">• Category: {selectedCategory}</span>}
+                Showing {startIndex + 1}-
+                {Math.min(endIndex, filteredSuppliers.length)} of{" "}
+                {filteredSuppliers.length} suppliers • Page {currentPage} of{" "}
+                {totalPages}
+                {searchTerm && (
+                  <span className="ml-2 text-heritage-green">
+                    • Searching: "{searchTerm}"
+                  </span>
+                )}
+                {selectedCategory !== "All Categories" && (
+                  <span className="ml-2 text-blue-600">
+                    • Category: {selectedCategory}
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -249,8 +322,18 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative flex items-center">
-                <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
                 <input
                   type="text"
@@ -265,9 +348,22 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
             />
-            <button className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            <button
+              onClick={() => setIsNewSupplierModalOpen(true)}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
               </svg>
               New Supplier
             </button>
@@ -282,8 +378,8 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
             <div
               key={supplier.id}
               className="opacity-0 animate-pulse"
-              style={{ 
-                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`
+              style={{
+                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`,
               }}
             >
               <SupplierCard
@@ -291,10 +387,11 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
                 formatCurrency={formatCurrency}
                 getStatusBadge={getStatusBadge}
                 getRatingStars={getRatingStars}
+                setSuppliers={setSuppliers}
               />
             </div>
           ))}
-          
+
           {/* Placeholder cards for alignment */}
           {placeholders.map((_, index) => (
             <div key={`placeholder-${index}`} className="invisible">
@@ -317,12 +414,22 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
                 disabled={currentPage === 1}
                 className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                   currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 } transition-colors`}
               >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg
+                  className="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
                 Previous
               </button>
@@ -335,8 +442,8 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
                     onClick={() => handlePageChange(page)}
                     className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
                       page === currentPage
-                        ? 'bg-heritage-green text-white'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        ? "bg-heritage-green text-white"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                     }`}
                   >
                     {page}
@@ -350,25 +457,42 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
                 disabled={currentPage === totalPages}
                 className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                   currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 } transition-colors`}
               >
                 Next
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* New Supplier Modal */}
+      <NewSupplierModal
+        isOpen={isNewSupplierModalOpen}
+        onClose={() => setIsNewSupplierModalOpen(false)}
+        onSuccess={handleNewSupplierSuccess}
+      />
     </div>
   );
 };
 
 // Add CSS animation keyframes
-const style = document.createElement('style');
+const style = document.createElement("style");
 style.textContent = `
   @keyframes fadeInUp {
     from {

@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import * as analyticController from "../controllers/invAnalytic.controller.js";
+import * as analyticController from "../controllers/invAnalytic.controller";
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import * as requisitionController from "../controllers/invRequisition.controller.js";
+import * as requisitionController from "../controllers/invRequisition.controller";
 
 const router = express.Router();
 
