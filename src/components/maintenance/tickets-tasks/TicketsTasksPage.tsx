@@ -13,6 +13,7 @@ import {
   archiveTicket,
   searchTickets
 } from './ticketsService';
+import StatsCard from '../overview/StatsCard';
 
 const TicketsTasksPage: React.FC = () => {
   const { user } = useAuth();
@@ -353,31 +354,23 @@ const TicketsTasksPage: React.FC = () => {
       <div className="min-h-screen bg-[#F9F6EE]">
         {/* Main Content Container */}
         <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-          
-          {/* Error Message */}
-                {/* Error modal will appear on top of any other modal */}
-                {/* Rendered via portal below as ErrorModal */}
-
-          {/* Create Ticket Button */}
-          <div className="mb-6">
-            <button 
-              onClick={() => setIsCreateTicketModalOpen(true)}
-              disabled={loading}
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Create New Ticket
-            </button>
-          </div>
+          {/* Top Stats + Create Button */}
+          {/**
+           * Copying the StatsCard design from archive (overview/StatsCard) to display ticket stats.
+           * Button placed at upper right as requested.
+           */}
+          <TicketStatsHeader 
+            total={activeTickets.length + completedTickets.length} 
+            active={activeTickets.length} 
+            completed={completedTickets.length} 
+          />
 
           {/* Active Tickets Section */}
           <div className="flex flex-col h-full overflow-hidden bg-white border shadow-md rounded-xl border-gray-200/70">
             {/* Header with Search and Controls */}
             <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
               <div className="flex items-center justify-between mb-6">
-                <div>
+                <div className="flex-1">
                   <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">
                     <div className="p-2 bg-[#82A33D]/10 rounded-xl">
                       <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,6 +386,18 @@ const TicketsTasksPage: React.FC = () => {
                     <span className="text-gray-400">•</span>
                     <span>In Progress & Open</span>
                   </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => setIsCreateTicketModalOpen(true)}
+                    disabled={loading}
+                    className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-heritage-green/80 to-emerald-600/80 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Ticket
+                  </button>
                 </div>
               </div>
 
@@ -1094,3 +1099,52 @@ const TicketsTasksPage: React.FC = () => {
 };
 
 export default TicketsTasksPage;
+
+// Inline component for ticket stats header (without create button now)
+interface TicketStatsHeaderProps {
+  total: number;
+  active: number;
+  completed: number;
+}
+
+const TicketStatsHeader: React.FC<TicketStatsHeaderProps> = ({ total, active, completed }) => {
+  return (
+    <div className="mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatsCard
+          index={0}
+          title="Total Tickets"
+          value={total}
+          iconBg="bg-emerald-100"
+          icon={(
+            <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7.5c0-.7.4-1.3 1-1.6l2.2-1.1a2 2 0 011.8.1l1 .6a2 2 0 002 0l1-.6a2 2 0 011.8-.1L18 5.9c.6.3 1 .9 1 1.6v8.9c0 .7-.4 1.3-1 1.6l-2.2 1.1a2 2 0 01-1.8-.1l-1-.6a2 2 0 00-2 0l-1 .6a2 2 0 01-1.8.1L6 18c-.6-.3-1-.9-1-1.6V7.5z" />
+            </svg>
+          )}
+        />
+        <StatsCard
+          index={1}
+          title="Active Tickets"
+          value={active}
+          iconBg="bg-yellow-100"
+          icon={(
+            <svg className="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v4m0 12v4m8-8h-4M4 12H2m14.14-6.14l-2.83 2.83M8.69 15.31l-2.83 2.83m0-11.66l2.83 2.83m6.62 6.62l2.83 2.83" />
+            </svg>
+          )}
+        />
+        <StatsCard
+          index={2}
+          title="Completed Tickets"
+          value={completed}
+          iconBg="bg-blue-100"
+          icon={(
+            <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        />
+      </div>
+    </div>
+  );
+};
