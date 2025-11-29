@@ -19,6 +19,23 @@ import {
   DocumentData,
   QueryDocumentSnapshot
 } from 'firebase/firestore';
+/**
+ * Update guest_request status linked by ticketNumber.
+ */
+async function updateGuestRequestStatusByTicketNumber(ticketNumber: string, status: 'pending' | 'in-progress' | 'completed' | 'cancelled') {
+  try {
+    if (!ticketNumber) return;
+    const guestRef = collection(db, 'guest_request');
+    const q = query(guestRef, where('ticketNumber', '==', ticketNumber), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return;
+    const d = snap.docs[0];
+    await updateDoc(doc(db, 'guest_request', d.id), { status, updatedAt: Timestamp.now() });
+  } catch (err) {
+    console.warn('updateGuestRequestStatusByTicketNumber failed', err);
+  }
+}
+
 import { db } from '../../../config/firebase';
 
 // ==================== TYPES ====================
@@ -525,10 +542,8 @@ export async function createTicket(payload: {
     
     // Assign staff using FIFO algorithm
     const assignedStaff = await assignStaffToTicket(payload.category, dueDate);
-
-    if (!assignedStaff) {
-      throw new Error(`No available staff found for category: ${payload.category}`);
-    }
+    // If no eligible staff, allow creation with Unassigned so ticket still appears in maintenance view.
+    const finalAssignee = assignedStaff || 'Unassigned';
 
     // Create ticket document
     const ticketData = {
@@ -537,7 +552,7 @@ export async function createTicket(payload: {
       category: payload.category,
       priority: payload.priority,
       roomNumber: payload.roomNumber,
-      assignedTo: assignedStaff,
+      assignedTo: finalAssignee,
       createdAt: Timestamp.now(),
       createdBy: payload.createdBy,
       dueDate: dueDateTimestamp,
@@ -545,6 +560,8 @@ export async function createTicket(payload: {
       isCompleted: false,
       ticketNumber,
       updatedAt: Timestamp.now(),
+      // Backwards compatibility field if some UI expects ticketId
+      ticketId: ticketNumber,
     };
     
     const ticketsRef = collection(db, 'tickets_task');
@@ -705,6 +722,11 @@ export async function markTicketCompleted(ticketId: string): Promise<void> {
       completedAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
+
+    // Sync guest_request status -> completed
+    if (ticketData.ticketNumber) {
+      await updateGuestRequestStatusByTicketNumber(ticketData.ticketNumber, 'completed');
+    }
     
     // Clear working flag for assigned staff using staff fullName
     if (ticketData.assignedTo) {
@@ -787,10 +809,17 @@ export async function updateTicketStatus(
 ): Promise<void> {
   try {
     const ticketRef = doc(db, 'tickets_task', ticketId);
-    await updateDoc(ticketRef, {
-      status,
-      updatedAt: Timestamp.now(),
-    });
+    // Fetch to retrieve ticketNumber for guest_request sync
+    const ticketSnap = await getDoc(ticketRef);
+    if (!ticketSnap.exists()) throw new Error('Ticket not found');
+    const ticketData = ticketSnap.data() as Ticket;
+
+    await updateDoc(ticketRef, { status, updatedAt: Timestamp.now() });
+
+    // When status moves to In Progress, reflect on guest_request
+    if (status === 'In Progress' && ticketData.ticketNumber) {
+      await updateGuestRequestStatusByTicketNumber(ticketData.ticketNumber, 'in-progress');
+    }
   } catch (error) {
     console.error('Error updating ticket status:', error);
     throw error;

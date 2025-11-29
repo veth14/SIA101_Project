@@ -13,6 +13,7 @@ import {
   sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import loyaltyService from '../services/loyaltyService';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -137,6 +138,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isLoading: false,
             error: null
           });
+
+          // Trigger retry of any pending loyalty updates for this user (quota resilience)
+          try {
+            await loyaltyService.retryPendingForUser(firebaseUser.uid);
+          } catch (retryErr) {
+            console.warn('Loyalty retry on login failed:', retryErr);
+          }
 
           // Auto-redirect based on user role
           if (userRole === 'admin') {

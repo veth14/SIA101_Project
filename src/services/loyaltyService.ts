@@ -5,7 +5,6 @@ import {
   getDoc,
   getDocs,
   addDoc,
-  updateDoc,
   serverTimestamp,
   query,
   orderBy,
@@ -14,6 +13,8 @@ import {
   startAfter,
   Timestamp,
   where,
+  updateDoc,
+  arrayUnion,
 } from 'firebase/firestore';
 import { getTimeValue } from '../lib/utils';
 
@@ -24,6 +25,7 @@ export type GuestProfile = {
   firstName?: string;
   lastName?: string;
   email?: string;
+  emailLower?: string;
   phone?: string;
   totalSpent: number;
   loyaltyPoints: number;
@@ -62,6 +64,7 @@ function normalizeGuestData(data: any, id?: string): GuestProfile {
     firstName: data?.firstName || '',
     lastName: data?.lastName || '',
     email: data?.email || '',
+    emailLower: (data?.emailLower || data?.email || '').toLowerCase(),
     phone: data?.phone || '',
     totalSpent,
     loyaltyPoints,
@@ -70,6 +73,8 @@ function normalizeGuestData(data: any, id?: string): GuestProfile {
     lastBookingDate: data?.lastBookingDate || null,
     status: data?.status || 'Active',
     createdAt: data?.createdAt || null,
+    // Optional persisted claimed rewards array (may be undefined if not yet added)
+    rewardsClaimed: Array.isArray(data?.rewardsClaimed) ? data.rewardsClaimed : [],
   } as GuestProfile;
 }
 
@@ -94,8 +99,33 @@ export async function getRedemptionsByGuest(
   } else {
     q = query(col, where('guestId', '==', guestId), orderBy('timestamp', 'desc'), limit(limitResults));
   }
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })) as RewardRedemption[];
+  try {
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })) as RewardRedemption[];
+  } catch (err: any) {
+    // Handle missing composite index gracefully: Firestore throws failed-precondition with link
+    if (err?.code === 'failed-precondition') {
+      console.warn('[loyaltyService.getRedemptionsByGuest] Missing composite index for (guestId ==, orderBy timestamp desc). Create it in Firestore: guestRedemptions (guestId ASC, timestamp DESC). Falling back to unsorted query.', err?.message);
+      try {
+        // Fallback: fetch documents filtered by guestId only, then sort locally.
+        const degradedQ = query(col, where('guestId', '==', guestId));
+        const degradedSnap = await getDocs(degradedQ);
+        const all = degradedSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })) as RewardRedemption[];
+        // Local sort by timestamp desc and apply limit.
+        const sorted = all.sort((a, b) => {
+          const at = getTimeValue(a.timestamp) || 0;
+          const bt = getTimeValue(b.timestamp) || 0;
+          return bt - at;
+        });
+        return sorted.slice(0, limitResults);
+      } catch (inner) {
+        console.error('[loyaltyService.getRedemptionsByGuest] Fallback query failed', inner);
+        return [];
+      }
+    }
+    console.error('[loyaltyService.getRedemptionsByGuest] Unexpected error', err);
+    return [];
+  }
 }
 
 /**
@@ -124,13 +154,40 @@ export async function getGuestById(id: string) {
   return normalizeGuestData(snap.data(), snap.id);
 }
 
+export async function getGuestByEmail(email: string) {
+  if (!email) return null;
+  const col = collection(db, GUESTS);
+  const lower = email.toLowerCase();
+  // Try emailLower first (new normalized field), fallback to legacy email field
+  let q = query(col, where('emailLower', '==', lower), limit(1));
+  let snap = await getDocs(q);
+  if (snap.empty) {
+    q = query(col, where('email', '==', email), limit(1));
+    snap = await getDocs(q);
+  }
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return normalizeGuestData(d.data(), d.id);
+}
+
+export async function getGuestByUserId(userId: string) {
+  if (!userId) return null;
+  const col = collection(db, GUESTS);
+  const q = query(col, where('guestId', '==', userId), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return normalizeGuestData(d.data(), d.id);
+}
+
 export async function createGuest(payload: Partial<GuestProfile>) {
   const col = collection(db, GUESTS);
-  const toSave: any = {
+  const toSave = {
     fullName: payload.fullName || `${payload.firstName || ''} ${payload.lastName || ''}`.trim(),
     firstName: payload.firstName || undefined,
     lastName: payload.lastName || undefined,
     email: payload.email || '',
+    emailLower: (payload.email || '').toLowerCase(),
     phone: payload.phone || '',
     totalSpent: payload.totalSpent ?? 0,
     // Points should only be set explicitly or start at 0. Do NOT derive from lifetime spend.
@@ -139,13 +196,12 @@ export async function createGuest(payload: Partial<GuestProfile>) {
     totalBookings: payload.totalBookings ?? 0,
     lastBookingDate: payload.lastBookingDate ?? null,
     status: payload.status ?? 'Active',
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
+    rewardsClaimed: []
   };
   const docRef = await addDoc(col, toSave);
-  // Read back the created document so serverTimestamp() is resolved to a real Timestamp
-  const snap = await getDoc(docRef);
-  const raw = snap.exists() ? snap.data() : toSave;
-  return normalizeGuestData(raw, docRef.id);
+  // Avoid read-back to reduce reads on Spark; return normalized payload with id
+  return normalizeGuestData(toSave as unknown as Record<string, unknown>, docRef.id);
 }
 
 export async function updateGuest(id: string, patch: Partial<GuestProfile>) {
@@ -157,6 +213,10 @@ export async function updateGuest(id: string, patch: Partial<GuestProfile>) {
     const current = snap.data() as any;
 
     const toUpdate: any = { ...patch };
+
+    if (patch.email !== undefined) {
+      toUpdate.emailLower = (patch.email || '').toLowerCase();
+    }
 
     // Enforce that totalSpent never decreases
     if (patch.totalSpent !== undefined && patch.totalSpent !== null) {
@@ -215,7 +275,11 @@ export async function redeemReward(guestId: string, cost: number, rewardLabel: s
     if (currentPoints < costNum) throw new Error('Insufficient points');
 
     const newPoints = currentPoints - costNum;
-    tx.update(guestRef as any, { loyaltyPoints: newPoints, membershipTier: computeTierFromPoints(newPoints) });
+    tx.update(guestRef as any, { 
+      loyaltyPoints: newPoints, 
+      membershipTier: computeTierFromPoints(newPoints),
+      rewardsClaimed: arrayUnion(rewardLabel)
+    });
 
     const rdRef = doc(redemptionCol);
     tx.set(rdRef, {
@@ -230,7 +294,7 @@ export async function redeemReward(guestId: string, cost: number, rewardLabel: s
   });
 }
 
-export async function applyCheckoutUpdate(guestId: string, bookingTotal: number) {
+export async function applyCheckoutUpdate(guestId: string, bookingTotal: number, options?: { lastBookingDateMs?: number }) {
   // update totalSpent, totalBookings, lastBookingDate, loyaltyPoints, membershipTier in one batch
   const guestRef = doc(db, GUESTS, guestId);
   return runTransaction(db, async (tx) => {
@@ -249,7 +313,7 @@ export async function applyCheckoutUpdate(guestId: string, bookingTotal: number)
     tx.update(guestRef as any, {
       totalSpent: newTotalSpent,
       totalBookings: newTotalBookings,
-      lastBookingDate: serverTimestamp(),
+      lastBookingDate: options?.lastBookingDateMs ? Timestamp.fromMillis(options.lastBookingDateMs) : serverTimestamp(),
       loyaltyPoints: newPoints,
       membershipTier: newTier
     });
@@ -272,13 +336,13 @@ export async function getLatestCheckoutByEmail(email: string): Promise<string | 
     const ms = getTimeValue(d?.checkOut);
     if (ms) return new Date(ms).toISOString();
     return typeof d?.checkOut === 'string' ? d.checkOut : null;
-  } catch (err) {
+  } catch {
     try {
       const q2 = query(col, where('userEmail', '==', email), orderBy('createdAt', 'desc'), limit(5));
       const snap2 = await getDocs(q2);
       let best: number | null = null;
       snap2.forEach(docSnap => {
-        const data = docSnap.data() as any;
+        const data = docSnap.data();
         const t = getTimeValue(data?.checkOut);
         if (t && (best === null || t > best)) best = t;
       });
@@ -292,6 +356,8 @@ export async function getLatestCheckoutByEmail(email: string): Promise<string | 
 export default {
   getGuests,
   getGuestById,
+  getGuestByEmail,
+  getGuestByUserId,
   createGuest,
   updateGuest,
   adjustPoints,
@@ -301,5 +367,24 @@ export default {
   computePointsFromTransaction,
   computeTierFromPoints,
   getRedemptionsByGuest,
-  getLatestCheckoutByEmail
+  getLatestCheckoutByEmail,
+  async retryPendingForUser(userId: string) {
+    try {
+      const bookingsCol = collection(db, 'bookings');
+      const q = query(bookingsCol, where('userId', '==', userId), where('loyaltyPending', '==', true));
+      const snap = await getDocs(q);
+      for (const d of snap.docs) {
+        const data = d.data() as any;
+        const amount = Number(data.totalAmount) || 0;
+        const checkOutMs = getTimeValue(data.checkOut);
+        const gp = await getGuestByUserId(userId);
+        if (gp?.id && amount > 0) {
+          await applyCheckoutUpdate(gp.id, amount, { lastBookingDateMs: checkOutMs || undefined });
+          await updateDoc(doc(db, 'bookings', d.id), { loyaltyApplied: true, loyaltyPending: false });
+        }
+      }
+    } catch (err) {
+      console.warn('retryPendingForUser error', err);
+    }
+  }
 };

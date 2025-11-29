@@ -23,6 +23,7 @@ import { ConfirmCancelModal } from './ConfirmCancelModal';
 import FrontDeskStatsCard from '../shared/FrontDeskStatsCard';
 import ModernReservationsTable from './ModernReservationsTable';
 import { updateBookingCount, updateRevenue, updateArrivals, updateCurrentGuests } from '../../../lib/statsHelpers';
+import { createCleaningTicketForCheckout } from '../../../services/maintenanceService';
 
 // --- HELPER FOR ROOM UPDATES ---
 const updateRoomStatusInBatch = (
@@ -237,6 +238,11 @@ export const ReservationsPage = () => {
             if (data.roomNumber) {
               // USED HELPER
               updateRoomStatusInBatch(batch, data.roomNumber, 'cleaning', false, null);
+              try {
+                await createCleaningTicketForCheckout(String(data.roomNumber), d.id, user?.email || user?.uid || 'system');
+              } catch (e) {
+                console.warn('Failed to create auto cleaning ticket', e);
+              }
             }
             
             if (mounted) {
@@ -361,37 +367,40 @@ export const ReservationsPage = () => {
         const earned = Math.floor(amountNum / 100);
 
         if (emailToCheck) {
-          // Use email-based deterministic ID as an idempotency key to avoid duplicates/races
-          const safeId = `guest_${emailToCheck.replace(/[^a-z0-9]/g, '_')}`;
-          const guestRef = doc(db, 'guestprofiles', safeId);
+          // Try to find existing profile by email first (any id), then fallback to deterministic ID
+          const existingByEmailSnap = await getDocs(query(guestProfilesRef, where('email', '==', emailToCheck), limit(1)));
+          let guestRef = existingByEmailSnap.empty
+            ? doc(db, 'guestprofiles', `guest_${emailToCheck.replace(/[^a-z0-9]/g, '_')}`)
+            : doc(db, 'guestprofiles', existingByEmailSnap.docs[0].id);
 
           await runTransaction(db, async (tx) => {
             const snap = await tx.get(guestRef as any);
             if (snap.exists()) {
               const current = snap.data() as any;
-              const prevTotal = Number(current.totalBookings || 0);
-              const prevSpent = Number(current.totalSpent || 0);
-              const currentPoints = Number(current.loyaltyPoints || 0);
-              const newPoints = currentPoints + earned;
-
+              const prevTotalBookings = Number(current.totalBookings || 0);
+              const prevTotalSpent = Number(current.totalSpent || 0);
+              const prevPoints = Number(current.loyaltyPoints || 0);
+              const newPoints = prevPoints + earned;
               tx.update(guestRef as any, {
                 fullName: newBooking.userName || (newBooking as any).guestName || current.fullName || '',
+                firstName: ((newBooking.userName || (newBooking as any).guestName || current.fullName || '').split(' ')[0]) || current.firstName || '',
+                lastName: ((newBooking.userName || (newBooking as any).guestName || current.fullName || '').split(' ').slice(1).join(' ')) || current.lastName || '',
                 email: emailToCheck || current.email || '',
                 phone: (newBooking as any).phone || current.phone || '',
-                totalBookings: prevTotal + 1,
-                totalSpent: prevSpent + amountNum,
+                totalBookings: prevTotalBookings + 1,
+                totalSpent: prevTotalSpent + amountNum,
                 loyaltyPoints: newPoints,
                 membershipTier: computeTierFromPoints(newPoints),
                 lastBookingDate: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                updatedAt: serverTimestamp(),
+                status: current.status || 'Active'
               });
             } else {
-              // create new guest profile with deterministic id
               tx.set(guestRef as any, {
                 fullName: newBooking.userName || (newBooking as any).guestName || '',
                 firstName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ')[0]) || '',
                 lastName: ((newBooking.userName || (newBooking as any).guestName || '').split(' ').slice(1).join(' ')) || '',
-                email: emailToCheck || '',
+                email: emailToCheck,
                 phone: (newBooking as any).phone || '',
                 totalBookings: 1,
                 totalSpent: amountNum,
@@ -488,6 +497,15 @@ export const ReservationsPage = () => {
         });
       } catch (e) {
         console.warn('Failed to create check-out notification', e);
+      }
+
+      // Create cleaning ticket for housekeeping
+      try {
+        if (reservation.roomNumber) {
+          await createCleaningTicketForCheckout(String(reservation.roomNumber), reservation.bookingId, user?.email || user?.uid || 'system');
+        }
+      } catch (e) {
+        console.warn('Failed to create cleaning ticket', e);
       }
 
     } catch (error) {

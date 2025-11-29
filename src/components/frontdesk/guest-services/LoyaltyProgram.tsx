@@ -300,7 +300,9 @@ export const LoyaltyProgram: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      // Only fetch latest checkout from bookings if profile lacks lastStay
       const emailsToFetch = paginatedMembers
+        .filter(m => !m.lastStay)
         .map(m => m.email)
         .filter((e): e is string => Boolean(e && !latestCheckoutByEmail[e]));
       if (emailsToFetch.length === 0) return;

@@ -4,6 +4,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { db } from '../../config/firebase';
 import { doc, updateDoc, serverTimestamp, query, collection, where, getDocs, addDoc, getDoc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
+import loyaltyService from '../../services/loyaltyService';
 
 export const PaymentPage = () => {
   interface Booking {
@@ -261,7 +262,7 @@ export const PaymentPage = () => {
         // Create booking document in Firebase using BK-prefixed bookingId
         const bookingIdToUse = booking.bookingId || `BK${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
         const bookingRef = doc(db, 'bookings', bookingIdToUse);
-        await setDoc(bookingRef, bookingDataWithPayment);
+        await setDoc(bookingRef, { ...bookingDataWithPayment, loyaltyApplied: false });
 
         // Create transaction record
         const transactionData = {
@@ -280,6 +281,39 @@ export const PaymentPage = () => {
         };
 
         await addDoc(collection(db, 'transactions'), transactionData);
+
+        // Update loyalty totals for the guest (lifetime spend, points, bookings)
+        try {
+          const uid = userData.uid || '';
+          const email = (userData.email || '').trim();
+          let gp = await loyaltyService.getGuestByUserId(uid);
+          if (!gp && email) {
+            // Fallback: attempt email lookup (case-insensitive) and migrate by attaching guestId
+            const emailProfile = await loyaltyService.getGuestByEmail(email);
+            if (emailProfile?.id) {
+              await loyaltyService.updateGuest(emailProfile.id, { guestId: uid, email });
+              // Use migrated profile directly to save an extra read
+              gp = { ...emailProfile, guestId: uid, email } as typeof emailProfile;
+            }
+          }
+          if (!gp && email) {
+            // Create new profile if still missing
+            gp = await loyaltyService.createGuest({ guestId: uid, email, fullName: booking.userName || userData.displayName || '' });
+          }
+          if (gp?.id && typeof booking.totalAmount === 'number') {
+            const checkOutMs = booking.checkOut ? new Date(booking.checkOut).getTime() : undefined;
+            await loyaltyService.applyCheckoutUpdate(gp.id, booking.totalAmount, { lastBookingDateMs: checkOutMs });
+            await updateDoc(bookingRef, { loyaltyApplied: true });
+          }
+        } catch (loyaltyErr) {
+          console.warn('Loyalty update failed:', loyaltyErr);
+          try {
+            // Mark booking as pending so a background retry can process later
+            await updateDoc(bookingRef, { loyaltyPending: true });
+          } catch (markErr) {
+            console.warn('Failed to mark booking as loyaltyPending:', markErr);
+          }
+        }
 
         // Update room availability (optional - if you track room availability)
         try {
@@ -314,9 +348,10 @@ export const PaymentPage = () => {
 
       } else {
         // OLD FLOW: Update existing booking payment status
+        let bookingRefForExisting: ReturnType<typeof doc> | null = null;
         if (typeof booking.id === 'string' && booking.id) {
-          const bookingRef = doc(db, 'bookings', String(booking.id));
-          await updateDoc(bookingRef, {
+          bookingRefForExisting = doc(db, 'bookings', String(booking.id));
+          await updateDoc(bookingRefForExisting, {
             paymentStatus: 'paid',
             paymentMethod: paymentMethod,
             paymentDetails: {
@@ -347,6 +382,39 @@ export const PaymentPage = () => {
             paymentMethod: paymentMethod,
             completedAt: serverTimestamp()
           });
+        }
+
+        // Update loyalty totals for the guest on existing booking payment
+        try {
+          const uid = userData.uid || '';
+          const email = (userData.email || '').trim();
+          let gp = await loyaltyService.getGuestByUserId(uid);
+          if (!gp && email) {
+            const emailProfile = await loyaltyService.getGuestByEmail(email);
+            if (emailProfile?.id) {
+              await loyaltyService.updateGuest(emailProfile.id, { guestId: uid, email });
+              gp = { ...emailProfile, guestId: uid, email } as typeof emailProfile;
+            }
+          }
+          if (!gp && email) {
+            gp = await loyaltyService.createGuest({ guestId: uid, email, fullName: booking.userName || userData.displayName || '' });
+          }
+          if (gp?.id && typeof booking.totalAmount === 'number') {
+            const checkOutMs = booking.checkOut ? new Date(booking.checkOut).getTime() : undefined;
+            await loyaltyService.applyCheckoutUpdate(gp.id, booking.totalAmount, { lastBookingDateMs: checkOutMs });
+            if (bookingRefForExisting) {
+              await updateDoc(bookingRefForExisting, { loyaltyApplied: true });
+            }
+          }
+        } catch (loyaltyErr) {
+          console.warn('Loyalty update failed:', loyaltyErr);
+          try {
+            if (bookingRefForExisting) {
+              await updateDoc(bookingRefForExisting, { loyaltyPending: true });
+            }
+          } catch (markErr) {
+            console.warn('Failed to mark existing booking as loyaltyPending:', markErr);
+          }
         }
       }
 
