@@ -483,6 +483,7 @@ export const RequisitionGrid: React.FC<RequisitionGridProps> = ({
         isOpen={isNewRequisitionModalOpen}
         onClose={() => setIsNewRequisitionModalOpen(false)}
         onSuccess={handleNewRequisitionSuccess}
+        setRequisitions={setRequisitions}
       />
     </div>
   );

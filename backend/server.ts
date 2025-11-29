@@ -79,7 +79,6 @@ app.get("/", (req, res) => {
   res.send("dsadasa");
 });
 
-app.listen(PORT, (error) => {
-  if (error) throw error;
+app.listen(PORT, () => {
   console.log(`server running at port ${PORT}`);
 });

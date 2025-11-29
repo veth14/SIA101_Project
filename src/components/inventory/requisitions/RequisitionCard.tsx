@@ -165,10 +165,10 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({
         {/* Items List */}
         <div className="mb-4">
           <p className="text-sm font-medium text-gray-700 mb-2">
-            Items ({requisition.items.length})
+            Items ({requisition.items?.length || 0})
           </p>
           <div className="space-y-1">
-            {requisition.items.slice(0, 2).map((item, index) => (
+            {(requisition.items || []).slice(0, 2).map((item, index) => (
               <div
                 key={index}
                 className="flex justify-between text-sm text-gray-600"
@@ -179,7 +179,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({
                 <span>{formatCurrency(item.estimatedCost)}</span>
               </div>
             ))}
-            {requisition.items.length > 2 && (
+            {(requisition.items?.length || 0) > 2 && (
               <p className="text-sm text-gray-500">
                 +{requisition.items.length - 2} more items
               </p>

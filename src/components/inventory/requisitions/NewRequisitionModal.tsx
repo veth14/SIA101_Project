@@ -3,6 +3,22 @@ import { createPortal } from "react-dom";
 import usePostInvRequisition from "../../../api/postInvRequisition";
 import useGetInvDepartment from "../../../api/getInvDepartment";
 
+interface Requisition {
+  id: string;
+  requestNumber: string;
+  department: string;
+  requestedBy: string;
+  items: RequisitionItem[];
+  totalEstimatedCost: number;
+  status: "pending" | "approved" | "rejected" | "fulfilled";
+  priority: "low" | "medium" | "high" | "urgent";
+  requestDate: string;
+  requiredDate: string;
+  justification: string;
+  approvedBy?: string;
+  approvedDate?: string;
+  notes?: string;
+}
 interface RequisitionItem {
   name: string;
   quantity: number;
@@ -15,6 +31,7 @@ interface NewRequisitionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  setRequisitions: React.Dispatch<React.SetStateAction<Requisition[]>>;
 }
 
 interface NewRequisitionData {
@@ -26,7 +43,12 @@ interface NewRequisitionData {
   items: RequisitionItem[];
 }
 
-const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClose, onSuccess }) => {
+const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  setRequisitions,
+}) => {
   const [requisitionData, setRequisitionData] = useState<NewRequisitionData>({
     department: "",
     requestedBy: "",
@@ -37,8 +59,10 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
   });
   const [departments, setDepartments] = useState<any[]>([]);
 
-  const { postInvRequisition, loadingForPostInvRequisition } = usePostInvRequisition();
-  const { getInvDepartment, loadingForGetInvDepartment } = useGetInvDepartment();
+  const { postInvRequisition, loadingForPostInvRequisition } =
+    usePostInvRequisition();
+  const { getInvDepartment, loadingForGetInvDepartment } =
+    useGetInvDepartment();
 
   useEffect(() => {
     if (isOpen) {
@@ -52,7 +76,8 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
       console.log("Departments response:", response);
       if (response && response.success) {
         // Extract departments from nested structure
-        const departmentsData = response.data?.departments || response.data || [];
+        const departmentsData =
+          response.data?.departments || response.data || [];
         console.log("Departments data:", departmentsData);
         setDepartments(departmentsData);
       } else {
@@ -68,7 +93,10 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
   const handleAddItem = () => {
     setRequisitionData({
       ...requisitionData,
-      items: [...requisitionData.items, { name: "", quantity: 0, unit: "", estimatedCost: 0, reason: "" }],
+      items: [
+        ...requisitionData.items,
+        { name: "", quantity: 0, unit: "", estimatedCost: 0, reason: "" },
+      ],
     });
   };
 
@@ -79,14 +107,21 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
     }
   };
 
-  const handleItemChange = (index: number, field: keyof RequisitionItem, value: string | number) => {
+  const handleItemChange = (
+    index: number,
+    field: keyof RequisitionItem,
+    value: string | number
+  ) => {
     const newItems = [...requisitionData.items];
     newItems[index] = { ...newItems[index], [field]: value };
     setRequisitionData({ ...requisitionData, items: newItems });
   };
 
   const calculateTotalEstimatedCost = () => {
-    return requisitionData.items.reduce((sum, item) => sum + (item.quantity * item.estimatedCost), 0);
+    return requisitionData.items.reduce(
+      (sum, item) => sum + item.quantity * item.estimatedCost,
+      0
+    );
   };
 
   const handleSave = async () => {
@@ -111,7 +146,12 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
     }
 
     const hasInvalidItems = requisitionData.items.some(
-      (item) => !item.name.trim() || item.quantity <= 0 || !item.unit.trim() || item.estimatedCost <= 0 || !item.reason.trim()
+      (item) =>
+        !item.name.trim() ||
+        item.quantity <= 0 ||
+        !item.unit.trim() ||
+        item.estimatedCost <= 0 ||
+        !item.reason.trim()
     );
 
     if (hasInvalidItems) {
@@ -133,7 +173,7 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
 
     try {
       const response = await postInvRequisition(newRequisition);
-      
+      setRequisitions((prev: any) => [...prev, newRequisition]);
       if (response.success) {
         console.log("Requisition created successfully:", response);
         alert("Requisition created successfully!");
@@ -155,7 +195,9 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
       requiredDate: "",
       priority: "medium",
       justification: "",
-      items: [{ name: "", quantity: 0, unit: "", estimatedCost: 0, reason: "" }],
+      items: [
+        { name: "", quantity: 0, unit: "", estimatedCost: 0, reason: "" },
+      ],
     });
     onClose();
   };
@@ -175,18 +217,38 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-heritage-green/5 to-emerald-50/30">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Add New Requisition</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Add New Requisition
+              </h2>
             </div>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -196,8 +258,10 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
             <div className="space-y-5">
               {/* Requisition Info Section */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Requisition Information</h3>
-                
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  Requisition Information
+                </h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -218,7 +282,12 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                     <input
                       type="date"
                       value={requisitionData.requiredDate}
-                      onChange={(e) => setRequisitionData({ ...requisitionData, requiredDate: e.target.value })}
+                      onChange={(e) =>
+                        setRequisitionData({
+                          ...requisitionData,
+                          requiredDate: e.target.value,
+                        })
+                      }
                       min={new Date().toISOString().split("T")[0]}
                       className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green bg-white"
                     />
@@ -230,18 +299,27 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                     </label>
                     <select
                       value={requisitionData.department}
-                      onChange={(e) => setRequisitionData({ ...requisitionData, department: e.target.value })}
+                      onChange={(e) =>
+                        setRequisitionData({
+                          ...requisitionData,
+                          department: e.target.value,
+                        })
+                      }
                       disabled={loadingForGetInvDepartment}
                       className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green bg-white disabled:bg-gray-50 disabled:text-gray-500"
                     >
                       <option value="">
-                        {loadingForGetInvDepartment ? "Loading departments..." : "Select Department"}
+                        {loadingForGetInvDepartment
+                          ? "Loading departments..."
+                          : "Select Department"}
                       </option>
-                      {departments && departments.length > 0 && departments.map((dept) => (
-                        <option key={dept.id || dept.name} value={dept.name}>
-                          {dept.name}
-                        </option>
-                      ))}
+                      {departments &&
+                        departments.length > 0 &&
+                        departments.map((dept) => (
+                          <option key={dept.id || dept.name} value={dept.name}>
+                            {dept.name}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
@@ -252,7 +330,12 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                     <input
                       type="text"
                       value={requisitionData.requestedBy}
-                      onChange={(e) => setRequisitionData({ ...requisitionData, requestedBy: e.target.value })}
+                      onChange={(e) =>
+                        setRequisitionData({
+                          ...requisitionData,
+                          requestedBy: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green bg-white"
                       placeholder="Enter your name"
                     />
@@ -264,7 +347,12 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                     </label>
                     <select
                       value={requisitionData.priority}
-                      onChange={(e) => setRequisitionData({ ...requisitionData, priority: e.target.value })}
+                      onChange={(e) =>
+                        setRequisitionData({
+                          ...requisitionData,
+                          priority: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green bg-white"
                     >
                       <option value="low">Low</option>
@@ -280,7 +368,12 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                     </label>
                     <textarea
                       value={requisitionData.justification}
-                      onChange={(e) => setRequisitionData({ ...requisitionData, justification: e.target.value })}
+                      onChange={(e) =>
+                        setRequisitionData({
+                          ...requisitionData,
+                          justification: e.target.value,
+                        })
+                      }
                       rows={3}
                       className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green bg-white resize-none"
                       placeholder="Provide justification for this requisition..."
@@ -292,14 +385,26 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
               {/* Items Section */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Requisition Items</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Requisition Items
+                  </h3>
                   <button
                     type="button"
                     onClick={handleAddItem}
                     className="px-3 py-1.5 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors font-medium text-xs flex items-center gap-1"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                     Add Item
                   </button>
@@ -307,17 +412,32 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
 
                 <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                   {requisitionData.items.map((item, index) => (
-                    <div key={index} className="bg-white rounded-lg p-3 border border-gray-200">
+                    <div
+                      key={index}
+                      className="bg-white rounded-lg p-3 border border-gray-200"
+                    >
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-700 text-xs">Item #{index + 1}</h4>
+                        <h4 className="font-semibold text-gray-700 text-xs">
+                          Item #{index + 1}
+                        </h4>
                         {requisitionData.items.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(index)}
                             className="text-red-500 hover:text-red-700 transition-colors"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </button>
                         )}
@@ -325,46 +445,70 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
 
                       <div className="space-y-2">
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Item Name</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Item Name
+                          </label>
                           <input
                             type="text"
                             value={item.name}
-                            onChange={(e) => handleItemChange(index, "name", e.target.value)}
+                            onChange={(e) =>
+                              handleItemChange(index, "name", e.target.value)
+                            }
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             placeholder="e.g., Office Supplies"
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-3 gap-2">
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              Quantity
+                            </label>
                             <input
                               type="number"
                               min="1"
                               value={item.quantity || ""}
-                              onChange={(e) => handleItemChange(index, "quantity", parseFloat(e.target.value) || 0)}
+                              onChange={(e) =>
+                                handleItemChange(
+                                  index,
+                                  "quantity",
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
                               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                               placeholder="0"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Unit</label>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              Unit
+                            </label>
                             <input
                               type="text"
                               value={item.unit}
-                              onChange={(e) => handleItemChange(index, "unit", e.target.value)}
+                              onChange={(e) =>
+                                handleItemChange(index, "unit", e.target.value)
+                              }
                               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                               placeholder="pcs, box"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Est. Cost (₱)</label>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              Est. Cost (₱)
+                            </label>
                             <input
                               type="number"
                               min="0"
                               step="0.01"
                               value={item.estimatedCost || ""}
-                              onChange={(e) => handleItemChange(index, "estimatedCost", parseFloat(e.target.value) || 0)}
+                              onChange={(e) =>
+                                handleItemChange(
+                                  index,
+                                  "estimatedCost",
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
                               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                               placeholder="0.00"
                             />
@@ -372,11 +516,15 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                         </div>
 
                         <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Reason</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            Reason
+                          </label>
                           <input
                             type="text"
                             value={item.reason}
-                            onChange={(e) => handleItemChange(index, "reason", e.target.value)}
+                            onChange={(e) =>
+                              handleItemChange(index, "reason", e.target.value)
+                            }
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
                             placeholder="Reason for requesting this item"
                           />
@@ -390,9 +538,14 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
               {/* Total Estimated Cost */}
               <div className="bg-gradient-to-r from-heritage-green/10 to-emerald-50 rounded-lg p-4 border border-heritage-green/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-bold text-gray-800">Total Estimated Cost:</span>
+                  <span className="text-base font-bold text-gray-800">
+                    Total Estimated Cost:
+                  </span>
                   <span className="text-2xl font-black text-heritage-green">
-                    ₱{calculateTotalEstimatedCost().toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                    ₱
+                    {calculateTotalEstimatedCost().toLocaleString("en-PH", {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
               </div>
@@ -415,9 +568,24 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
             >
               {loadingForPostInvRequisition ? (
                 <>
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Saving...
                 </>
