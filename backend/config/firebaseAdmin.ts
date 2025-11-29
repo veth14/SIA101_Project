@@ -1,22 +1,23 @@
 import admin from "firebase-admin";
-import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import dotenv from "dotenv";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+dotenv.config();
 
-// Read the service account JSON file
-const serviceAccountPath = join(__dirname, "serviceAccountKey.json");
-const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
-
+// We check if the app is already initialized to avoid "App already exists" errors in hot-reload
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      // IMPORTANT: Netlify often turns newlines (\n) into literal strings ("\\n").
+      // This .replace() fixes the key so Firebase can read it.
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
   });
-  console.log("✅ Firebase initialized successfully");
+  console.log("✅ Firebase initialized successfully via Env Vars");
 }
 
-const db = admin.firestore(); // this is a reference to the db
-const User = db.collection("Users"); // this is a reference to the Users collection (in sql, this is a reference to the table itself)
+const db = admin.firestore();
+const User = db.collection("Users");
+
 export { db, User };
