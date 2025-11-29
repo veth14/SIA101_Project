@@ -1,4 +1,5 @@
-import React from 'react';
+import React,{useState, useEffect}from 'react';
+import useGetInvDashboard from '../../../api/getInvDashboard';
 
 interface Activity {
   id: string;
@@ -9,40 +10,6 @@ interface Activity {
   timestamp: string;
 }
 
-const recentActivities: Activity[] = [
-  {
-    id: '1',
-    type: 'approved',
-    title: 'Purchase Order approved',
-    code: 'PO-2024-001',
-    department: 'Housekeeping',
-    timestamp: '2 hours ago'
-  },
-  {
-    id: '2',
-    type: 'submitted',
-    title: 'Requisition submitted',
-    code: 'REQ-2024-045',
-    department: 'F&B',
-    timestamp: '4 hours ago'
-  },
-  {
-    id: '3',
-    type: 'delivered',
-    title: 'Order delivered',
-    code: 'PO-2024-002',
-    department: 'Kitchen',
-    timestamp: '1 day ago'
-  },
-  {
-    id: '4',
-    type: 'replenished',
-    title: 'Stock replenished',
-    code: 'INV-2024-156',
-    department: 'Housekeeping',
-    timestamp: '1 day ago'
-  }
-];
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -84,6 +51,27 @@ const getActivityIcon = (type: string) => {
 };
 
 export const DashboardActivity: React.FC = () => {
+  
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const {
+    getInvDashboardActivity,
+    loadingForGetInvDashboardActivity,
+  } = useGetInvDashboard();
+
+  useEffect(() => {
+    const useGetInvDashboardActivityFunc = async () => {
+      const response = await getInvDashboardActivity();
+      console.log(response);
+      if (!response.data) {
+        alert(response.message);
+        return;
+      }
+
+
+      setRecentActivities(response.data);
+    };
+    useGetInvDashboardActivityFunc();
+  }, []);
   return (
     <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700 group overflow-hidden">
       {/* Enhanced Background Effects */}

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { db } from "../config/firebaseAdmin.js";
+import { db } from "../config/firebaseAdmin";
 
 type PurchaseOrderItem = {
   name: string;

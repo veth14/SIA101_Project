@@ -1,24 +1,22 @@
- import React, { useState } from 'react';
-import AnalyticsTabs from './AnalyticsTabs';
-import AnalyticsChart from './AnalyticsChartWorking';
-import AnalyticsBottomSections from './AnalyticsBottomSections';
-import ProcurementAnalyticsPage from './procurementAnalytics/ProcurementAnalyticsPage';
-import RequisitionAnalyticsPage from './requisitionAnalytics/RequisitionAnalyticsPage';
+import React, { useState } from "react";
+import AnalyticsTabs from "./AnalyticsTabs";
+import AnalyticsChart from "./AnalyticsChartWorking";
+import AnalyticsBottomSections from "./AnalyticsBottomSections";
+import ProcurementAnalyticsPage from "./procurementAnalytics/ProcurementAnalyticsPage";
+import RequisitionAnalyticsPage from "./requisitionAnalytics/RequisitionAnalyticsPage";
 
 const InventoryAnalyticsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('inventory');
+  const [activeTab, setActiveTab] = useState("inventory");
 
   const renderAnalyticsContent = () => {
     switch (activeTab) {
-      case 'procurement':
+      case "procurement":
         return <ProcurementAnalyticsPage />;
-      case 'department':
+      case "department":
         return <RequisitionAnalyticsPage />;
       default:
         return (
           <div className="space-y-6">
-            
-            
             {/* Chart */}
             <AnalyticsChart />
 
@@ -39,12 +37,10 @@ const InventoryAnalyticsPage: React.FC = () => {
       </div>
 
       <div className="relative z-10 px-6 py-6 space-y-6">
+        {/* Header */}
 
         {/* Tabs */}
-        <AnalyticsTabs 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
+        <AnalyticsTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Content */}
         {renderAnalyticsContent()}
