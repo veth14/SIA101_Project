@@ -137,57 +137,46 @@ export const BookingPage = () => {
 
       const roomName = roomTypeToNameMap[roomType];
 
-      // 1. Get total count of rooms of this type
+      // 1. Get all rooms of this type that are active and available
       const roomsQuery = query(
         collection(db, 'rooms'),
         where('roomName', '==', roomName),
-        where('isActive', '==', true)
+        where('isActive', '==', true),
+        where('status', '==', 'available')
       );
       const roomsSnapshot = await getDocs(roomsQuery);
-      const totalRooms = roomsSnapshot.size;
-
-      if (totalRooms === 0) {
+      const roomDocs = roomsSnapshot.docs;
+      if (roomDocs.length === 0) {
         setAvailabilityMessage('No rooms of this type are currently available.');
         setAvailabilityChecking(false);
         return false;
       }
 
-      // 2. Get bookings that overlap with the selected dates
-      // Only count bookings with status that truly block a room
+      // 2. Get bookings that overlap with the selected dates for this room type
       const bookingsQuery = query(
         collection(db, 'bookings'),
         where('roomType', '==', roomType),
-        where('status', 'in', ['confirmed', 'checked-in']) // Only count confirmed/checked-in bookings
+        where('status', '==', 'confirmed')
       );
-
       const bookingsSnapshot = await getDocs(bookingsQuery);
       const existingBookings = bookingsSnapshot.docs.map(doc => doc.data());
 
-      // 3. Count how many rooms are booked during the selected dates
-      // Count only overlapping bookings as they occupy one room each
-      let bookedRoomsCount = 0;
-      const conflictingBookings: any[] = [];
-
+      // 3. Deduct one available room for each overlapping booking with status 'confirmed'
+      let overlappingBookingsCount = 0;
       for (const booking of existingBookings) {
         if (checkDateOverlap(checkIn, checkOut, booking.checkIn, booking.checkOut)) {
-          bookedRoomsCount++;
-          conflictingBookings.push(booking);
+          overlappingBookingsCount++;
         }
       }
+      const availableRoomsCount = roomDocs.length - overlappingBookingsCount;
 
-      // 4. Check if there are available rooms
-      // Important: bookedRoomsCount should never exceed totalRooms in real scenarios,
-      // but cap it just to be safe in case of data inconsistencies
-      const actuallyBookedRooms = Math.min(bookedRoomsCount, totalRooms);
-      const availableRooms = totalRooms - actuallyBookedRooms;
-
-      if (availableRooms <= 0) {
+      if (availableRoomsCount <= 0) {
         setAvailabilityMessage(`All ${roomName} rooms are reserved for the selected dates. Please choose different dates.`);
         setAvailabilityChecking(false);
         return false;
       }
 
-      setAvailabilityMessage(`✓ ${availableRooms} ${roomName} room${availableRooms > 1 ? 's' : ''} available for selected dates`);
+      setAvailabilityMessage(`✓ ${availableRoomsCount} ${roomName} room${availableRoomsCount > 1 ? 's' : ''} available for selected dates`);
       setAvailabilityChecking(false);
       return true;
     } catch (error) {
