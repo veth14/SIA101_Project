@@ -12,7 +12,6 @@ const InventoryDashboardPage: React.FC = () => {
 
       {/* Main Content Container */}
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
-        {/* Header - Keep Original */}
 
         {/* Stats Cards */}
         <DashboardStats />

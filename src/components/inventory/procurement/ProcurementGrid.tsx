@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { ProcurementCard } from "./ProcurementCard";
-import NewOrderModal from "./NewOrderModal";
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { ProcurementCard } from './ProcurementCard';
 
 // Status Dropdown Component
 const StatusDropdown: React.FC<{
@@ -11,26 +10,23 @@ const StatusDropdown: React.FC<{
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const statuses = [
-    "All Status",
-    "Pending",
-    "Approved",
-    "Received",
-    "Cancelled",
+    'All Status',
+    'Pending',
+    'Approved', 
+    'Received',
+    'Cancelled'
   ];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -51,20 +47,13 @@ const StatusDropdown: React.FC<{
             <div className="w-2 h-2 rounded-full bg-gradient-to-r from-heritage-green to-emerald-500"></div>
             <span className="text-gray-800">{selectedStatus}</span>
           </div>
-          <svg
-            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
-            fill="none"
-            stroke="currentColor"
+          <svg 
+            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
       </div>
@@ -76,32 +65,20 @@ const StatusDropdown: React.FC<{
               key={status}
               onClick={() => handleStatusSelect(status)}
               className={`w-full flex items-center space-x-3 px-6 py-3 text-left text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-heritage-green/10 hover:to-emerald-500/10 ${
-                selectedStatus === status
-                  ? "bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green"
-                  : "text-gray-700 hover:text-heritage-green"
+                selectedStatus === status 
+                  ? 'bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green' 
+                  : 'text-gray-700 hover:text-heritage-green'
               }`}
             >
-              <div
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  selectedStatus === status
-                    ? "bg-gradient-to-r from-heritage-green to-emerald-500"
-                    : "bg-gray-300"
-                }`}
-              ></div>
+              <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                selectedStatus === status 
+                  ? 'bg-gradient-to-r from-heritage-green to-emerald-500' 
+                  : 'bg-gray-300'
+              }`}></div>
               <span className="flex-1">{status}</span>
               {selectedStatus === status && (
-                <svg
-                  className="w-4 h-4 text-heritage-green"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
+                <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}
             </button>
@@ -110,8 +87,8 @@ const StatusDropdown: React.FC<{
       )}
 
       {isOpen && (
-        <div
-          className="fixed inset-0 z-[99998]"
+        <div 
+          className="fixed inset-0 z-[99998]" 
           onClick={() => setIsOpen(false)}
         ></div>
       )}
@@ -132,7 +109,7 @@ interface PurchaseOrder {
   supplier: string;
   items: PurchaseOrderItem[];
   totalAmount: number;
-  status: "pending" | "approved" | "received" | "cancelled";
+  status: 'pending' | 'approved' | 'received' | 'cancelled';
   orderDate: string;
   expectedDelivery: string;
   approvedBy?: string;
@@ -143,21 +120,16 @@ interface ProcurementGridProps {
   orders: PurchaseOrder[];
   formatCurrency: (amount: number) => string;
   getStatusBadge: (status: string) => React.ReactNode;
-  setOrders: React.Dispatch<React.SetStateAction<any[]>>;
-  onSuccess?: () => void;
 }
 
 export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
   orders,
   formatCurrency,
   getStatusBadge,
-  setOrders,
-  onSuccess,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("All Status");
-  const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('All Status');
   const itemsPerPage = 3;
 
   // Reset to page 1 when orders change (e.g., after filtering)
@@ -171,23 +143,19 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
       return [];
     }
 
-    return orders.filter((order) => {
+    return orders.filter(order => {
       // Search filter - check if search term is empty or matches any field
-      const searchLower = (searchTerm || "").toLowerCase().trim();
-      const matchesSearch =
-        searchLower === "" ||
-        (order.orderNumber &&
-          order.orderNumber.toLowerCase().includes(searchLower)) ||
-        (order.supplier &&
-          order.supplier.toLowerCase().includes(searchLower)) ||
+      const searchLower = (searchTerm || '').toLowerCase().trim();
+      const matchesSearch = searchLower === '' || 
+        (order.orderNumber && order.orderNumber.toLowerCase().includes(searchLower)) ||
+        (order.supplier && order.supplier.toLowerCase().includes(searchLower)) ||
         (order.status && order.status.toLowerCase().includes(searchLower));
-
+      
       // Status filter
-      const matchesStatus =
-        !selectedStatus ||
-        selectedStatus === "All Status" ||
+      const matchesStatus = !selectedStatus || 
+        selectedStatus === 'All Status' || 
         order.status.toLowerCase() === selectedStatus.toLowerCase();
-
+      
       return matchesSearch && matchesStatus;
     });
   }, [orders, searchTerm, selectedStatus]);
@@ -207,7 +175,7 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-
+    
     if (totalPages <= maxVisiblePages) {
       // Show all pages if total is less than max visible
       for (let i = 1; i <= totalPages; i++) {
@@ -232,13 +200,8 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
         }
       }
     }
-
+    
     return pages;
-  };
-
-  const handleNewOrderSuccess = () => {
-    // Refresh orders or handle success
-    console.log("New order created successfully");
   };
 
   // Show empty state if no orders
@@ -247,12 +210,8 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
         <div className="py-12 text-center">
           <div className="mb-4 text-6xl">📋</div>
-          <h3 className="mb-2 text-xl font-semibold text-gray-900">
-            No purchase orders found
-          </h3>
-          <p className="text-gray-600">
-            Try adjusting your search criteria or filters.
-          </p>
+          <h3 className="mb-2 text-xl font-semibold text-gray-900">No purchase orders found</h3>
+          <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
         </div>
       </div>
     );
@@ -266,41 +225,18 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
           <div className="flex items-center space-x-4">
             <div className="relative">
               <div className="flex items-center justify-center w-10 h-10 shadow-xl bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
               <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
             </div>
             <div>
-              <h3 className="text-xl font-black text-gray-900">
-                Purchase Orders
-              </h3>
+              <h3 className="text-xl font-black text-gray-900">Purchase Orders</h3>
               <p className="text-sm font-medium text-gray-500">
-                Showing {startIndex + 1}-
-                {Math.min(endIndex, filteredOrders.length)} of{" "}
-                {filteredOrders.length} orders • Page {currentPage} of{" "}
-                {totalPages}
-                {searchTerm && (
-                  <span className="ml-2 text-heritage-green">
-                    • Searching: "{searchTerm}"
-                  </span>
-                )}
-                {selectedStatus !== "All Status" && (
-                  <span className="ml-2 text-blue-600">
-                    • Status: {selectedStatus}
-                  </span>
-                )}
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length} orders • Page {currentPage} of {totalPages}
+                {searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{searchTerm}"</span>}
+                {selectedStatus !== 'All Status' && <span className="ml-2 text-blue-600">• Status: {selectedStatus}</span>}
               </p>
             </div>
           </div>
@@ -308,18 +244,8 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
             <div className="relative group">
               <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur group-hover:opacity-100"></div>
               <div className="relative flex items-center">
-                <svg
-                  className="absolute z-10 w-5 h-5 transform -translate-y-1/2 left-4 top-1/2 text-heritage-green"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+                <svg className="absolute z-10 w-5 h-5 transform -translate-y-1/2 left-4 top-1/2 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
                   type="text"
@@ -334,22 +260,9 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
               selectedStatus={selectedStatus}
               onStatusChange={setSelectedStatus}
             />
-            <button
-              onClick={() => setIsNewOrderModalOpen(true)}
-              className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
+            <button className="inline-flex items-center px-6 py-3 font-semibold text-white transition-all duration-300 transform shadow-lg bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl hover:scale-105">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               New Order
             </button>
@@ -364,24 +277,22 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
             <div
               key={order.id}
               className="opacity-0 animate-pulse"
-              style={{
-                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`,
+              style={{ 
+                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`
               }}
             >
               <ProcurementCard
                 order={order}
                 formatCurrency={formatCurrency}
                 getStatusBadge={getStatusBadge}
-                onSuccess={onSuccess}
               />
             </div>
           ))}
         </div>
-
+        
         {/* Inline styles for animation */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
             @keyframes fadeInUp {
               from {
                 opacity: 0;
@@ -392,35 +303,24 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
                 transform: translateY(0);
               }
             }
-          `,
-          }}
-        />
+          `
+        }} />
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center pt-6 space-x-2 border-t border-gray-100">
             {/* Previous Button */}
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                 currentPage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               } transition-colors`}
             >
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Previous
             </button>
@@ -433,8 +333,8 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
                   onClick={() => setCurrentPage(pageNum)}
                   className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
                     currentPage === pageNum
-                      ? "bg-heritage-green text-white"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? 'bg-heritage-green text-white'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
                   {pageNum}
@@ -444,41 +344,22 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
 
             {/* Next Button */}
             <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
               className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                 currentPage === totalPages
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               } transition-colors`}
             >
               Next
-              <svg
-                className="w-4 h-4 ml-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
         )}
       </div>
-
-      {/* New Order Modal */}
-      <NewOrderModal
-        isOpen={isNewOrderModalOpen}
-        onClose={() => setIsNewOrderModalOpen(false)}
-        onSuccess={handleNewOrderSuccess}
-      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-import useGetInvDashboard from '../../../api/getInvDashboard';
+
 import {
   Card,
   CardContent,
@@ -16,8 +16,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { setChartData } from 'recharts/types/state/chartDataSlice';
 
+const chartData = [
+  { month: "January", consumption: 2000 },
+  { month: "February", consumption: 1800 },
+  { month: "March", consumption: 2200 },
+  { month: "April", consumption: 2400 },
+  { month: "May", consumption: 2600 },
+  { month: "June", consumption: 2800 }
+];
 
 const chartConfig = {
   consumption: {
@@ -27,30 +34,15 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 
+const departmentData = [
+  { department: 'Housekeeping', usage: 300 },
+  { department: 'F&B', usage: 250 },
+  { department: 'Front Desk', usage: 100 },
+  { department: 'Maintenance', usage: 150 },
+  { department: 'Kitchen', usage: 400 }
+];
+
 export const DashboardCharts: React.FC = () => {
-  const [departmentData,setDepartmentData] = useState<any>([]);
-  const [chartData,setChartData] = useState<any>([]);
-
-  const {
-    getInvDashboardChart,
-    loadingForGetInvDashboardChart,
-  } = useGetInvDashboard();
-
-  useEffect(() => {
-    const useGetInvDashboardChartFunc = async () => {
-      const response = await getInvDashboardChart();
-      console.log(response);
-      if (!response.data) {
-        alert(response.message);
-        return;
-      }
-
-      setDepartmentData(response.data.departmentData);
-      setChartData(response.data.chartData);
-    };
-    useGetInvDashboardChartFunc();
-  }, []);
-
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
       {/* Inventory Consumption Trends - Shadcn Card */}
@@ -166,8 +158,8 @@ export const DashboardCharts: React.FC = () => {
           <div className="h-48 sm:h-56">
             {/* Enhanced Horizontal Bar Chart */}
             <div className="space-y-3 h-full flex flex-col justify-center">
-              {departmentData && departmentData.length > 0 && departmentData.map((dept: any, index: number) => {
-                const maxUsage = Math.max(...departmentData.map((d: any) => d.usage));
+              {departmentData.map((dept, index) => {
+                const maxUsage = Math.max(...departmentData.map(d => d.usage));
                 const percentage = (dept.usage / maxUsage) * 100;
                 return (
                   <div key={index} className="flex items-center space-x-3 group">
