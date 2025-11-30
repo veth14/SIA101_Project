@@ -3,9 +3,12 @@ import { GuestServicesNavigation } from './GuestServicesNavigation';
 import { GuestFeedback } from './GuestFeedback';
 import { LoyaltyProgram } from './LoyaltyProgram';
 import { GuestAssistance } from './GuestAssistance';
+import { GuestServicesStats } from './GuestServicesStats';
+import { useGuestServicesStats } from '@/hooks/useGuestServicesStats';
 
 export const GuestServices: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'feedback' | 'loyalty' | 'assistance'>('feedback');
+  const stats = useGuestServicesStats();
 
   return (
     <div className="min-h-screen bg-[#F9F6EE]">
@@ -18,7 +21,16 @@ export const GuestServices: React.FC = () => {
 
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
 
-        {/* Stats removed (component unlinked) */}
+        {/* Live Stats (linked to all Guest Services data) */}
+        <div className="animate-fade-in">
+          <GuestServicesStats
+            avgRating={stats.avgRating}
+            responseRate={stats.responseRate}
+            activeLoyaltyMembers={stats.activeLoyaltyMembers}
+            assistanceOpenCount={stats.assistanceOpenCount}
+            assistanceAvgResponseMins={stats.assistanceAvgResponseMins}
+          />
+        </div>
 
         {/* Modern Navigation */}
         <GuestServicesNavigation 
