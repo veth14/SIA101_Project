@@ -590,7 +590,18 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             type="date"
             value={formData.checkIn}
             title="Check-in Date"
-            onChange={(e) => setFormData(prev => ({ ...prev, checkIn: e.target.value }))}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Validate that year (first 4 digits) is exactly 4 digits
+              if (value && value.length > 0) {
+                const year = value.split('-')[0];
+                if (year && year.length !== 4) {
+                  // Invalid year format, don't update
+                  return;
+                }
+              }
+              setFormData(prev => ({ ...prev, checkIn: value }));
+            }}
             hasError={!!errors.checkIn}
           />
         </FormItem>
@@ -599,7 +610,18 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             type="date"
             value={formData.checkOut}
             title="Check-out Date"
-            onChange={(e) => setFormData(prev => ({ ...prev, checkOut: e.target.value }))}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Validate that year (first 4 digits) is exactly 4 digits
+              if (value && value.length > 0) {
+                const year = value.split('-')[0];
+                if (year && year.length !== 4) {
+                  // Invalid year format, don't update
+                  return;
+                }
+              }
+              setFormData(prev => ({ ...prev, checkOut: value }));
+            }}
             hasError={!!errors.checkOut}
           />
         </FormItem>
