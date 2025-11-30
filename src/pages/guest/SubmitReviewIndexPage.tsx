@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../config/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, DocumentData, QuerySnapshot } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoadingOverlay } from '../../components/shared/LoadingSpinner';
 import { getTimeValue } from '../../lib/utils';
@@ -12,45 +12,107 @@ export const SubmitReviewIndexPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [eligibleBookings, setEligibleBookings] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchEligible = async () => {
-      if (!userData?.uid) {
+      if (!userData?.uid && !userData?.email) {
         setError('Please sign in to submit a review.');
         setLoading(false);
         return;
       }
 
       try {
-        const bookingsQ = query(collection(db, 'bookings'), where('userId', '==', userData.uid));
-        const bookingsSnap = await getDocs(bookingsQ);
-
         const now = Date.now();
-        const bookings: any[] = [];
 
-        for (const doc of bookingsSnap.docs) {
-          const data = doc.data();
-          const booking = { id: doc.id, ...data } as any;
+        // Fetch by userId and userEmail then merge to handle legacy bookings
+        const queries: Promise<QuerySnapshot<DocumentData>>[] = [];
+        if (userData?.uid) {
+          const byUid = query(collection(db, 'bookings'), where('userId', '==', userData.uid));
+          queries.push(getDocs(byUid));
+        }
+        if (userData?.email) {
+          const byEmail = query(collection(db, 'bookings'), where('userEmail', '==', userData.email));
+          queries.push(getDocs(byEmail));
+        }
 
-          // Only consider past bookings (checkout before now)
-          const checkOutTime = getTimeValue(booking.checkOut);
-          if (checkOutTime !== null && checkOutTime < now) {
-            // Check if a review already exists for this booking
-            const reviewsQ = query(
-              collection(db, 'guestReview'),
-              where('bookingId', '==', booking.bookingId),
-              where('userId', '==', userData.uid)
-            );
-            const reviewsSnap = await getDocs(reviewsQ);
-            if (!reviewsSnap.empty) {
-              // attach the user's review to the booking so we can show 'View Review'
-              booking.userReview = { id: reviewsSnap.docs[0].id, ...reviewsSnap.docs[0].data() };
-            }
-            bookings.push(booking);
+        const snaps = await Promise.all(queries);
+        const mergedByKey = new Map<string, any>();
+
+        for (const snap of snaps) {
+          for (const d of snap.docs) {
+            const data = d.data();
+            const booking = { id: d.id, ...data } as any;
+            const key = booking.bookingId || d.id; // prefer business id
+            if (!mergedByKey.has(key)) mergedByKey.set(key, booking);
           }
         }
 
-        setEligibleBookings(bookings);
+        const allBookings = Array.from(mergedByKey.values());
+
+        // Filter to past bookings (checkout before now)
+        const pastBookings = allBookings.filter((b) => {
+          const checkOutTime = getTimeValue(b.checkOut);
+          return checkOutTime !== null && checkOutTime < now;
+        });
+
+        // Batch review lookup using 'in' queries (chunks of 10)
+        const bookingIds: string[] = pastBookings
+          .map((b) => b.bookingId)
+          .filter((id): id is string => Boolean(id));
+
+        const chunk = <T,>(arr: T[], size: number) => {
+          const res: T[][] = [];
+          for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
+          return res;
+        };
+
+        const reviewMap = new Map<string, any>();
+
+        if (userData?.uid && bookingIds.length) {
+          const idChunks = chunk(bookingIds, 10);
+          for (const ch of idChunks) {
+            const q1 = query(
+              collection(db, 'guestReview'),
+              where('userId', '==', userData.uid),
+              where('bookingId', 'in', ch)
+            );
+            const s1 = await getDocs(q1);
+            s1.forEach((doc) => {
+              const d = doc.data();
+              if (d.bookingId && !reviewMap.has(d.bookingId)) reviewMap.set(d.bookingId, { id: doc.id, ...d });
+            });
+          }
+        }
+
+        // Fallback by guestEmail for any bookingIds still missing
+        if (userData?.email && bookingIds.length) {
+          const missing = bookingIds.filter((id) => !reviewMap.has(id));
+          const idChunks = chunk(missing, 10);
+          for (const ch of idChunks) {
+            if (!ch.length) continue;
+            const q2 = query(
+              collection(db, 'guestReview'),
+              where('guestEmail', '==', userData.email),
+              where('bookingId', 'in', ch)
+            );
+            const s2 = await getDocs(q2);
+            s2.forEach((doc) => {
+              const d = doc.data();
+              if (d.bookingId && !reviewMap.has(d.bookingId)) reviewMap.set(d.bookingId, { id: doc.id, ...d });
+            });
+          }
+        }
+
+        // Attach userReview if present
+        pastBookings.forEach((b) => {
+          if (b.bookingId && reviewMap.has(b.bookingId)) {
+            b.userReview = reviewMap.get(b.bookingId);
+          }
+        });
+
+        setEligibleBookings(pastBookings);
       } catch (err) {
         console.error('Error fetching bookings for review:', err);
         setError('Failed to load bookings. Please try again later.');
@@ -61,6 +123,11 @@ export const SubmitReviewIndexPage: React.FC = () => {
 
     fetchEligible();
   }, [userData]);
+
+  // Reset to first page when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [eligibleBookings.length]);
 
   if (loading) return <LoadingOverlay text="Loading eligible bookings..." />;
 
@@ -112,7 +179,13 @@ export const SubmitReviewIndexPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {eligibleBookings.map((b) => (
+                    {(() => {
+                      const totalPages = Math.ceil(eligibleBookings.length / itemsPerPage);
+                      const startIndex = (currentPage - 1) * itemsPerPage;
+                      const endIndex = startIndex + itemsPerPage;
+                      const currentItems = eligibleBookings.slice(startIndex, endIndex);
+                      return currentItems;
+                    })().map((b) => (
                       <div key={b.bookingId || b.id} className="bg-gradient-to-br from-white to-slate-50/50 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200/50 p-4 sm:p-6 flex items-center justify-between">
                         <div>
                           <div className="font-bold text-base sm:text-lg text-gray-900">{b.roomName || b.roomType || 'Room'}</div>
@@ -122,14 +195,14 @@ export const SubmitReviewIndexPage: React.FC = () => {
                         <div className="flex-shrink-0 ml-4">
                           {b.userReview ? (
                             <button
-                              onClick={() => navigate(`/submit-review/${b.bookingId}`, { state: { booking: b } })}
+                              onClick={() => navigate(`/submit-review/${b.bookingId || b.id}` as string, { state: { booking: b } })}
                               className="inline-flex items-center px-4 py-2 bg-white text-heritage-green border border-heritage-green rounded-lg font-semibold hover:bg-heritage-green/5 transition-all"
                             >
                               View Your Review
                             </button>
                           ) : (
                             <button
-                              onClick={() => navigate(`/submit-review/${b.bookingId}`, { state: { booking: b } })}
+                              onClick={() => navigate(`/submit-review/${b.bookingId || b.id}` as string, { state: { booking: b } })}
                               className="inline-flex items-center px-4 py-2 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all"
                             >
                               Write Review
@@ -138,6 +211,77 @@ export const SubmitReviewIndexPage: React.FC = () => {
                         </div>
                       </div>
                     ))}
+
+                    {/* Pagination */}
+                    {eligibleBookings.length > itemsPerPage && (
+                      <div className="px-4 sm:px-6 py-4 mt-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white rounded-xl">
+                        {(() => {
+                          const totalPages = Math.ceil(eligibleBookings.length / itemsPerPage);
+                          return (
+                            <div className="flex items-center justify-between gap-2">
+                              <button
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
+                                  currentPage === 1
+                                    ? 'text-gray-400 cursor-not-allowed bg-gray-100'
+                                    : 'text-gray-700 hover:bg-heritage-green hover:text-white shadow-sm bg-white border border-gray-200'
+                                }`}
+                              >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Previous
+                              </button>
+
+                              <div className="flex space-x-1 sm:space-x-2">
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                  let pageNum;
+                                  if (totalPages <= 5) {
+                                    pageNum = i + 1;
+                                  } else if (currentPage <= 3) {
+                                    pageNum = i + 1;
+                                  } else if (currentPage >= totalPages - 2) {
+                                    pageNum = totalPages - 4 + i;
+                                  } else {
+                                    pageNum = currentPage - 2 + i;
+                                  }
+
+                                  return (
+                                    <button
+                                      key={pageNum}
+                                      onClick={() => setCurrentPage(pageNum as number)}
+                                      className={`w-8 h-8 sm:w-10 sm:h-10 text-xs sm:text-sm font-bold rounded-lg transition-all duration-150 ${
+                                        currentPage === pageNum
+                                          ? 'bg-heritage-green text-white shadow-md transform scale-105'
+                                          : 'text-gray-700 hover:bg-heritage-green hover:text-white bg-white border border-gray-200 shadow-sm'
+                                      }`}
+                                    >
+                                      {pageNum}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              <button
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className={`inline-flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-150 ${
+                                  currentPage === totalPages
+                                    ? 'text-gray-400 cursor-not-allowed bg-gray-100'
+                                    : 'text-gray-700 hover:bg-heritage-green hover:text-white shadow-sm bg-white border border-gray-200'
+                                }`}
+                              >
+                                Next
+                                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </button>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 )}
           </div>

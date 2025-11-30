@@ -1,5 +1,13 @@
 import React from 'react';
 
+export interface GuestServicesStatsProps {
+  avgRating: number;
+  responseRate: number; // 0..1
+  activeLoyaltyMembers: number;
+  assistanceOpenCount: number;
+  assistanceAvgResponseMins: number | null;
+}
+
 interface StatCard {
   title: string;
   value: string;
@@ -9,12 +17,18 @@ interface StatCard {
   iconBg: string;
 }
 
-export const GuestServicesStats: React.FC = () => {
+export const GuestServicesStats: React.FC<GuestServicesStatsProps> = ({
+  avgRating,
+  responseRate,
+  activeLoyaltyMembers,
+  assistanceOpenCount,
+  assistanceAvgResponseMins
+}) => {
   const statCards: StatCard[] = [
     {
       title: 'Guest Satisfaction Score',
-      value: '4.8/5.0',
-      change: '+0.3 from last month',
+      value: `${avgRating.toFixed(1)}/5.0`,
+      change: 'Live from reviews',
       changeType: 'positive',
       iconBg: 'bg-emerald-100',
       icon: (
@@ -25,8 +39,8 @@ export const GuestServicesStats: React.FC = () => {
     },
     {
       title: 'Active Loyalty Members',
-      value: '1,247',
-      change: '+18% growth rate',
+      value: activeLoyaltyMembers.toLocaleString(),
+      change: 'Auto-synced from loyalty',
       changeType: 'positive',
       iconBg: 'bg-blue-100',
       icon: (
@@ -36,9 +50,9 @@ export const GuestServicesStats: React.FC = () => {
       )
     },
     {
-      title: 'Assistance Requests',
-      value: '23',
-      change: 'Avg response: 8 min',
+      title: 'Assistance Requests (Open)',
+      value: assistanceOpenCount.toLocaleString(),
+      change: assistanceAvgResponseMins != null ? `Avg response: ${Math.round(assistanceAvgResponseMins)} min` : 'Awaiting data',
       changeType: 'positive',
       iconBg: 'bg-purple-100',
       icon: (
@@ -48,9 +62,9 @@ export const GuestServicesStats: React.FC = () => {
       )
     },
     {
-      title: 'Feedback Responses',
-      value: '89%',
-      change: '+12% response rate',
+      title: 'Feedback Response Rate',
+      value: `${Math.round(responseRate * 100)}%`,
+      change: 'Responded vs total',
       changeType: 'positive',
       iconBg: 'bg-amber-100',
       icon: (

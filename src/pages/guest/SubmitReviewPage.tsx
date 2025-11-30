@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { db, storage } from '../../config/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../../contexts/AuthContext';
 import { ReviewForm, ReviewData } from '../../components/reviews/ReviewForm';
@@ -47,21 +47,48 @@ export const SubmitReviewPage = () => {
           if (!bookingsSnapshot.empty) {
             setBooking({ id: bookingsSnapshot.docs[0].id, ...bookingsSnapshot.docs[0].data() });
           } else {
-            setError('Booking not found');
+            // Fallback: try document id direct match (legacy deep link)
+            try {
+              const byIdRef = doc(db, 'bookings', bookingId);
+              const byIdSnap = await getDoc(byIdRef);
+              if (byIdSnap.exists()) {
+                const data = byIdSnap.data();
+                if (data.userId === userData.uid || data.userEmail === userData.email) {
+                  setBooking({ id: byIdSnap.id, ...data });
+                } else {
+                  setError('Booking not found');
+                }
+              } else {
+                setError('Booking not found');
+              }
+            } catch (e) {
+              setError('Booking not found');
+            }
           }
         }
 
-        // Check if review already exists
-        const reviewsQuery = query(
+        // Check if review already exists (userId OR guestEmail fallback)
+        let foundReview: any | null = null;
+        const reviewsQuery1 = query(
           collection(db, 'guestReview'),
           where('bookingId', '==', bookingId),
           where('userId', '==', userData.uid)
         );
-        const reviewsSnapshot = await getDocs(reviewsQuery);
-        
-            if (!reviewsSnapshot.empty) {
-              setExistingReview(reviewsSnapshot.docs[0].data());
-            }
+        const reviewsSnapshot1 = await getDocs(reviewsQuery1);
+        if (!reviewsSnapshot1.empty) {
+          foundReview = reviewsSnapshot1.docs[0].data();
+        } else if (userData.email) {
+          const reviewsQuery2 = query(
+            collection(db, 'guestReview'),
+            where('bookingId', '==', bookingId),
+            where('guestEmail', '==', userData.email)
+          );
+          const reviewsSnapshot2 = await getDocs(reviewsQuery2);
+          if (!reviewsSnapshot2.empty) {
+            foundReview = reviewsSnapshot2.docs[0].data();
+          }
+        }
+        if (foundReview) setExistingReview(foundReview);
 
       } catch (err) {
         console.error('Error fetching booking:', err);
@@ -106,7 +133,7 @@ export const SubmitReviewPage = () => {
       const reviewDoc = {
         reviewId: `REV${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
         userId: userData.uid,
-        bookingId: booking.bookingId,
+        bookingId: booking.bookingId || booking.id,
         roomType: booking.roomType,
         roomName: booking.roomName,
         rating: reviewData.rating,
