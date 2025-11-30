@@ -153,16 +153,18 @@ export const BookingPage = () => {
       }
 
       // 2. Get bookings that overlap with the selected dates
+      // Only count bookings with status that truly block a room
       const bookingsQuery = query(
         collection(db, 'bookings'),
         where('roomType', '==', roomType),
-        where('status', 'in', ['confirmed', 'checked-in', 'pending'])
+        where('status', 'in', ['confirmed', 'checked-in']) // Only count confirmed/checked-in bookings
       );
 
       const bookingsSnapshot = await getDocs(bookingsQuery);
       const existingBookings = bookingsSnapshot.docs.map(doc => doc.data());
 
       // 3. Count how many rooms are booked during the selected dates
+      // Count only overlapping bookings as they occupy one room each
       let bookedRoomsCount = 0;
       const conflictingBookings: any[] = [];
 
@@ -174,7 +176,10 @@ export const BookingPage = () => {
       }
 
       // 4. Check if there are available rooms
-      const availableRooms = totalRooms - bookedRoomsCount;
+      // Important: bookedRoomsCount should never exceed totalRooms in real scenarios,
+      // but cap it just to be safe in case of data inconsistencies
+      const actuallyBookedRooms = Math.min(bookedRoomsCount, totalRooms);
+      const availableRooms = totalRooms - actuallyBookedRooms;
 
       if (availableRooms <= 0) {
         setAvailabilityMessage(`All ${roomName} rooms are reserved for the selected dates. Please choose different dates.`);
@@ -195,6 +200,15 @@ export const BookingPage = () => {
 
   // Handle date changes and trigger availability check
   const handleDateChange = (field: 'checkIn' | 'checkOut', value: string) => {
+        // Validate that year (first 4 digits) is exactly 4 digits
+    if (value && value.length > 0) {
+      const year = value.split('-')[0];
+      if (year && year.length !== 4) {
+        // Invalid year format, don't update
+        return;
+      }
+    }
+
     const newFormData = { ...formData, [field]: value };
     setFormData(newFormData);
 
