@@ -195,14 +195,14 @@ export const SubmitReviewIndexPage: React.FC = () => {
                         <div className="flex-shrink-0 ml-4">
                           {b.userReview ? (
                             <button
-                              onClick={() => navigate(`/submit-review/${b.bookingId || b.id}` as string, { state: { booking: b } })}
+                              onClick={() => navigate(`/submit-review/${b.bookingId || b.id}`, { state: { booking: b } })}
                               className="inline-flex items-center px-4 py-2 bg-white text-heritage-green border border-heritage-green rounded-lg font-semibold hover:bg-heritage-green/5 transition-all"
                             >
                               View Your Review
                             </button>
                           ) : (
                             <button
-                              onClick={() => navigate(`/submit-review/${b.bookingId || b.id}` as string, { state: { booking: b } })}
+                              onClick={() => navigate(`/submit-review/${b.bookingId || b.id}`, { state: { booking: b } })}
                               className="inline-flex items-center px-4 py-2 bg-heritage-green text-white rounded-lg font-semibold hover:bg-heritage-green/90 transition-all"
                             >
                               Write Review
