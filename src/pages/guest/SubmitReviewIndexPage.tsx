@@ -127,7 +127,7 @@ export const SubmitReviewIndexPage: React.FC = () => {
   // Reset to first page when data changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [eligibleBookings.length]);
+  }, [eligibleBookings]);
 
   if (loading) return <LoadingOverlay text="Loading eligible bookings..." />;
 
