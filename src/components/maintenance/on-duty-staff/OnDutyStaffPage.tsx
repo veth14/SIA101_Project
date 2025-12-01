@@ -228,49 +228,79 @@ const OnDutyStaffPage: React.FC = () => {
           Last updated: {lastUpdated.toLocaleTimeString()}
         </div>
 
-        {/* Status Summary Cards - Modern design */}
+        {/* Status Summary Cards - DashboardStats design */}
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* On Duty Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200/70 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-3 bg-emerald-100 rounded-xl mr-4">
+            <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 hover:shadow-3xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-700 group overflow-hidden">
+              {/* Background Effects */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/40 via-white/80 to-emerald-50 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-200/60 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 animate-pulse"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/40 to-transparent rounded-full translate-y-1/2 -translate-x-1/3 animate-pulse delay-700"></div>
+
+              {/* Decorative dots */}
+              <div className="absolute top-4 left-4 w-2 h-2 bg-emerald-400/40 rounded-full animate-ping"></div>
+              <div className="absolute bottom-4 right-4 w-1 h-1 bg-emerald-500/40 rounded-full animate-ping delay-500"></div>
+
+              <div className="relative flex items-start justify-between">
+                <div className="flex-1 mr-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-emerald-700 rounded-full"></div>
+                    <p className="text-sm font-bold text-gray-700 uppercase tracking-wider">Currently On Duty</p>
+                  </div>
+                  <p className="text-4xl font-black text-emerald-700 drop-shadow-sm mb-3 group-hover:scale-105 transition-transform duration-500">
+                    {onDutyCount}
+                  </p>
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <span className="w-2 h-2 rounded-full mr-2 inline-block bg-emerald-500"></span>
+                    Active
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="w-20 h-20 bg-emerald-100 rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                     <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Currently On Duty</p>
-                    <p className="text-3xl font-bold text-gray-900">{onDutyCount}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                    Active
-                  </span>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-emerald-300/40 to-emerald-500/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-70 transition-opacity duration-500"></div>
+                  <div className="absolute top-0 right-0 w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
                 </div>
               </div>
             </div>
 
             {/* Off Duty Card */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200/70 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="p-3 bg-red-100 rounded-xl mr-4">
-                    <svg className="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 hover:shadow-3xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-700 group overflow-hidden">
+              {/* Background Effects */}
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-100/40 via-white/80 to-rose-50 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-200/60 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 animate-pulse"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-rose-100/40 to-transparent rounded-full translate-y-1/2 -translate-x-1/3 animate-pulse delay-700"></div>
+
+              {/* Decorative dots */}
+              <div className="absolute top-4 left-4 w-2 h-2 bg-rose-400/40 rounded-full animate-ping"></div>
+              <div className="absolute bottom-4 right-4 w-1 h-1 bg-rose-500/40 rounded-full animate-ping delay-500"></div>
+
+              <div className="relative flex items-start justify-between">
+                <div className="flex-1 mr-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-1 h-6 bg-gradient-to-b from-rose-500 to-rose-700 rounded-full"></div>
+                    <p className="text-sm font-bold text-gray-700 uppercase tracking-wider">Off Duty</p>
+                  </div>
+                  <p className="text-4xl font-black text-rose-700 drop-shadow-sm mb-3 group-hover:scale-105 transition-transform duration-500">
+                    {offDutyCount}
+                  </p>
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                    <span className="w-2 h-2 rounded-full mr-2 inline-block bg-rose-500"></span>
+                    Inactive
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="w-20 h-20 bg-rose-100 rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <svg className="w-7 h-7 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
                     </svg>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Off Duty</p>
-                    <p className="text-3xl font-bold text-gray-900">{offDutyCount}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                    Inactive
-                  </span>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-rose-300/40 to-rose-500/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-70 transition-opacity duration-500"></div>
+                  <div className="absolute top-0 right-0 w-3 h-3 bg-rose-400 rounded-full animate-pulse"></div>
                 </div>
               </div>
             </div>
