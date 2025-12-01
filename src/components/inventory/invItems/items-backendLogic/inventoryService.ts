@@ -1,4 +1,5 @@
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, deleteDoc, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, deleteDoc, where, Timestamp, onSnapshot } from 'firebase/firestore';
+
 import { db } from '../../../../config/firebase';
 
 export interface InventoryItem {
@@ -54,6 +55,41 @@ export interface InventoryFilters {
 let inventoryCache: { data: InventoryItem[]; timestamp: number } | null = null;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+const normalizeDate = (value: any): Date | undefined => {
+  if (!value) return undefined;
+  if (value instanceof Timestamp) return value.toDate();
+  if (value instanceof Date) return value;
+  const parsed = new Date(value);
+  return isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
+const mapInventorySnapshot = (snapshot: any): InventoryItem[] => {
+  const inventoryData: InventoryItem[] = [];
+
+  snapshot.forEach((doc: any) => {
+    const data = doc.data();
+
+    inventoryData.push({
+      id: doc.id,
+      name: data.name || '',
+      category: data.category || '',
+      description: data.description || '',
+      currentStock: data.currentStock || 0,
+      reorderLevel: data.reorderLevel || 0,
+      unitPrice: data.unitPrice || 0,
+      supplier: data.supplier || '',
+      lastRestocked: data.lastRestocked || '',
+      image: data.image || undefined,
+      unit: data.unit || 'pieces',
+      location: data.location || '',
+      createdAt: normalizeDate(data.createdAt),
+      updatedAt: normalizeDate(data.updatedAt)
+    });
+  });
+
+  return inventoryData;
+};
+
 export const fetchInventoryItems = async (forceRefresh = false): Promise<InventoryItem[]> => {
   try {
     // Return cached data if still valid
@@ -61,47 +97,59 @@ export const fetchInventoryItems = async (forceRefresh = false): Promise<Invento
       console.log('📦 Using cached inventory data');
       return inventoryCache.data;
     }
-    
+
     console.log('🔄 Fetching inventory items from Firebase...');
-    
+
     const inventoryQuery = query(
       collection(db, 'inventory_items'),
       orderBy('name', 'asc')
     );
-    
+
     const querySnapshot = await getDocs(inventoryQuery);
-    const inventoryData: InventoryItem[] = [];
-    
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      inventoryData.push({
-        id: doc.id,
-        name: data.name || '',
-        category: data.category || '',
-        description: data.description || '',
-        currentStock: data.currentStock || 0,
-        reorderLevel: data.reorderLevel || 0,
-        unitPrice: data.unitPrice || 0,
-        supplier: data.supplier || '',
-        lastRestocked: data.lastRestocked || '',
-        image: data.image || undefined,
-        unit: data.unit || 'pieces',
-        location: data.location || '',
-        createdAt: data.createdAt?.toDate() || undefined,
-        updatedAt: data.updatedAt?.toDate() || undefined
-      });
-    });
-    
+    const inventoryData = mapInventorySnapshot(querySnapshot);
+
     // Cache the results
     inventoryCache = { data: inventoryData, timestamp: Date.now() };
-    
+
     console.log(`✅ Loaded ${inventoryData.length} inventory items from Firebase`);
     return inventoryData;
-    
+
   } catch (error) {
     console.error('❌ Error fetching inventory items:', error);
     throw new Error('Failed to fetch inventory items from database');
   }
+};
+
+/**
+ * Subscribe to real-time inventory updates using Firestore onSnapshot.
+ * Keeps the shared cache in sync and pushes updates to the provided callback.
+ */
+export const subscribeToInventoryItems = (
+  onItems: (items: InventoryItem[]) => void,
+  onError?: (error: Error) => void
+): () => void => {
+  const inventoryQuery = query(
+    collection(db, 'inventory_items'),
+    orderBy('name', 'asc')
+  );
+
+  const unsubscribe = onSnapshot(
+    inventoryQuery,
+    (snapshot) => {
+      const inventoryData = mapInventorySnapshot(snapshot);
+      // Update cache so other consumers can use it without extra reads
+      inventoryCache = { data: inventoryData, timestamp: Date.now() };
+      onItems(inventoryData);
+    },
+    (error) => {
+      console.error('❌ Error in inventory snapshot listener:', error);
+      if (onError) {
+        onError(error as Error);
+      }
+    }
+  );
+
+  return unsubscribe;
 };
 
 /**

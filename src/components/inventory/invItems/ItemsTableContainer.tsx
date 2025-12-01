@@ -206,6 +206,7 @@ interface ItemsTableProps {
   currentPage: number;
   onPageChange: (page: number) => void;
   onViewDetails?: (item: InventoryItem) => void;
+  onEditItem?: (item: InventoryItem) => void;
 }
 
 export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
@@ -214,7 +215,8 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
   items,
   currentPage,
   onPageChange,
-  onViewDetails = () => {}
+  onViewDetails = () => {},
+  onEditItem = () => {}
 }) => {
   const itemsPerPage = 6;
 
@@ -275,160 +277,198 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
   return (
     <>
       {/* Items Table */}
-      <div style={{ height: '480px' }}>
-        <table className="w-full h-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="flex-1 overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Item ID</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Supplier</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                Item ID
+              </th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                Item
+              </th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">
+                Category
+              </th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                Status
+              </th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">
+                Stock
+              </th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                Location
+              </th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {/* Always render exactly 6 rows */}
+            {/* Always render exactly 6 rows for consistent height */}
             {Array.from({ length: 6 }).map((_, index) => {
               const item = currentItems[index];
+
               if (item) {
                 return (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-200 h-16">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900 font-mono">{item.id}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <tr
+                    key={item.id}
+                    className="group transition-all duration-300 hover:shadow-sm hover:bg-gray-50"
+                    style={{ height: '74px' }}
+                  >
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#82A33D]/10">
+                          <svg className="w-4 h-4 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{item.name}</span>
+                        <div>
+                          <div className="text-sm font-bold text-gray-900 transition-colors group-hover:text-[#82A33D]">
+                            {item.id}
+                          </div>
+                          <div className="text-xs font-medium text-gray-500">
+                            {item.supplier || 'No supplier'}
+                          </div>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-heritage-green/10 text-heritage-green border border-heritage-green/20">
-                        📂 {item.category === 'Housekeeping' ? 'Housekeeping Supplies' : item.category}
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-bold text-gray-900 transition-colors group-hover:text-[#82A33D]">
+                          {item.name}
+                        </div>
+                        <div className="text-xs font-medium text-gray-500">
+                          Min level: {item.reorderLevel}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <span className="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full bg-heritage-green/10 text-heritage-green border border-heritage-green/20">
+                        📂 {item.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{item.currentStock} {item.unit}</div>
-                        <div className="text-xs text-gray-500">Min: {item.reorderLevel}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(item.currentStock, item.reorderLevel)}`}>
-                        <div className="w-2 h-2 rounded-full mr-2 bg-current opacity-60"></div>
+                    <td className="px-6 py-5 text-center whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold shadow-sm border ${getStatusColor(item.currentStock, item.reorderLevel)}`}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 mr-2 rounded-full bg-current opacity-70"
+                        />
                         {getStatusText(item.currentStock, item.reorderLevel)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">{item.supplier}</span>
+                    <td className="px-6 py-5 text-right whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900">
+                        {item.currentStock} {item.unit}
+                      </div>
+                      <div className="text-xs font-medium text-gray-500">
+                        Reorder at {item.reorderLevel}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button 
-                        onClick={() => onViewDetails(item)}
-                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-heritage-green bg-heritage-green/10 border border-heritage-green/30 rounded-lg hover:bg-heritage-green hover:text-white transition-all duration-200 group"
-                      >
-                        <svg className="w-4 h-4 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        View Details
-                      </button>
+                    <td className="px-6 py-5 text-center whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{item.location || '—'}</div>
+                      <div className="text-xs font-medium text-gray-500">Last restocked: {item.lastRestocked || 'N/A'}</div>
                     </td>
-                  </tr>
-                );
-              } else {
-                return (
-                  <tr key={`empty-${index}`} className="h-16">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-400">-</span>
+                    <td className="px-6 py-5 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewDetails(item);
+                          }}
+                          className="px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditItem(item);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-gradient-to-r from-[#82A33D] to-emerald-600 hover:from-[#6d8735] hover:to-emerald-700 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               }
+
+              return (
+                <tr key={`empty-${index}`} style={{ height: '74px' }}>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300">-</td>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300">-</td>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300">-</td>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300 text-center">-</td>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300 text-right">-</td>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300 text-center">-</td>
+                  <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-300 text-center">-</td>
+                </tr>
+              );
             })}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination inside the container */}
+      {/* Pagination styled similar to InvoiceList */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center pt-6 pb-4 bg-white border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            {/* Previous Button */}
-            <button
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              } transition-colors`}
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Previous
-            </button>
+        <div className="p-4 border-t border-gray-100 bg-white/50">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="ml-1">Previous</span>
+              </button>
 
-            {/* Page Numbers */}
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = i + 1;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => onPageChange(page)}
-                    className={`inline-flex items-center justify-center w-10 h-10 text-sm font-medium rounded-md transition-colors ${
-                      page === currentPage
-                        ? 'bg-heritage-green text-white'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+              <div className="flex items-center space-x-2">
+                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                  let pageNum: number;
+
+                  if (totalPages <= 7) {
+                    pageNum = i + 1;
+                  } else {
+                    const start = Math.max(1, Math.min(currentPage - 3, totalPages - 6));
+                    pageNum = start + i;
+                  }
+
+                  const isActive = pageNum === currentPage;
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => onPageChange(pageNum)}
+                      className={`inline-flex items-center justify-center min-w-[38px] h-10 px-3 text-sm font-medium rounded-md transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-heritage-green to-heritage-neutral text-white shadow-sm'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="mr-1">Next</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-
-            {/* Next Button */}
-            <button
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                currentPage === totalPages
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              } transition-colors`}
-            >
-              Next
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
           </div>
         </div>
       )}

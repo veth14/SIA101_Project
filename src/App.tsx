@@ -26,7 +26,6 @@ import GuestServicesPage from './pages/admin/Front-Desk/GuestServicesPage'
 import AdminInventoryItemsPage from './pages/admin/Inventory/invitems'
 import AdminInventoryAnalyticsPage from './pages/admin/Inventory/invanalytics'
 import AdminInventoryDashboardPage from './pages/admin/Inventory/invdashboard'
-import AdminDepartmentsPage from './pages/admin/Inventory/invdepartments'
 import AdminProcurementPage from './pages/admin/Inventory/procurement'
 import AdminRequisitionsPage from './pages/admin/Inventory/requisitions'
 import AdminSuppliersPage from './pages/admin/Inventory/suppliers'
@@ -233,14 +232,6 @@ function App() {
                   element={
                     <ProtectedRoute allowedRoles={['admin']}>
                       <AdminSuppliersPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/inventory/departments" 
-                  element={
-                    <ProtectedRoute allowedRoles={['admin']}>
-                      <AdminDepartmentsPage />
                     </ProtectedRoute>
                   } 
                 />
