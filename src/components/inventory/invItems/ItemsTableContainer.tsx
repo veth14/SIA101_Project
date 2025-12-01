@@ -386,7 +386,7 @@ export const ItemsTableContainer: React.FC<ItemsTableProps> = ({
                             e.stopPropagation();
                             onEditItem(item);
                           }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-gradient-to-r from-[#82A33D] to-emerald-600 hover:from-[#6d8735] hover:to-emerald-700 transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-heritage-green hover:bg-heritage-green/90 transition-colors shadow-sm"
                         >
                           Edit
                         </button>

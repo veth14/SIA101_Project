@@ -119,7 +119,8 @@ const ItemsPage: React.FC = () => {
             <div className="flex flex-col h-full overflow-hidden bg-white border shadow-md rounded-xl border-gray-200/70">
               {/* Header */}
               <div className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  {/* Left: title + stats */}
                   <div className="flex items-center space-x-4">
                     <div className="p-2 bg-[#82A33D]/10 rounded-xl">
                       <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,29 +153,26 @@ const ItemsPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                </div>
 
-                {/* Search, Filters, and Add Button Row */}
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  {/* Search */}
-                  <div className="relative flex-1 max-w-xl min-w-[260px] group">
-
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
+                  {/* Right: search, filters, and Add Item button */}
+                  <div className="flex flex-wrap items-center gap-3 justify-end flex-1">
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-[260px] max-w-xl group">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search items, categories, or suppliers..."
+                        value={filters.searchTerm}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Search items, categories, or suppliers..."
-                      value={filters.searchTerm}
-                      onChange={(e) => handleSearchChange(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
-                    />
-                  </div>
 
-                  {/* Filters + Add Button */}
-                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    {/* Filters */}
                     <CategoryDropdown
                       selectedCategory={filters.selectedCategory}
                       onCategoryChange={handleCategoryChange}
@@ -185,7 +183,9 @@ const ItemsPage: React.FC = () => {
                       onStockStatusChange={handleStockStatusChange}
                       stockStatusOptions={filterOptions.stockStatusOptions}
                     />
-                    <button 
+
+                    {/* Add Item Button */}
+                    <button
                       onClick={handleAddItem}
                       className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
                     >

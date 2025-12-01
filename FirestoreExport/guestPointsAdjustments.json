@@ -1,0 +1,46 @@
+[
+  {
+    "id": "FpiS9Vp5Zip0WEQxOPjn",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "delta": 300,
+    "reason": "Points added by admin",
+    "adjustedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1763896900,
+      "_nanoseconds": 851000000
+    }
+  },
+  {
+    "id": "HgCA0ELkAtMnKb8zFBnO",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "delta": 300,
+    "reason": "Points added by admin",
+    "adjustedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1763896415,
+      "_nanoseconds": 153000000
+    }
+  },
+  {
+    "id": "RnFBfRiIwUXIfwlTfgj6",
+    "guestId": "gaM4UXVMutb1d1xmDs2xrhnJBkz2",
+    "delta": 5000,
+    "reason": "Points added by admin",
+    "adjustedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1764522231,
+      "_nanoseconds": 664000000
+    }
+  },
+  {
+    "id": "rc4c1aZ2QYiX8nFGXPk3",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "delta": 300,
+    "reason": "Points added by admin",
+    "adjustedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1763896902,
+      "_nanoseconds": 263000000
+    }
+  }
+]

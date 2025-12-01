@@ -84,10 +84,10 @@ const ItemEditModal: React.FC<ItemEditModalProps> = ({ item, isOpen, onClose }) 
       className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45 backdrop-blur-lg overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="relative z-10 w-full max-w-2xl rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
+      <div className="relative z-10 w-full max-w-2xl rounded-3xl bg-white/95 shadow-2xl border border-white/60">
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-[#82A33D] rounded-xl flex items-center justify-center shadow-lg">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -106,7 +106,7 @@ const ItemEditModal: React.FC<ItemEditModalProps> = ({ item, isOpen, onClose }) 
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -114,8 +114,8 @@ const ItemEditModal: React.FC<ItemEditModalProps> = ({ item, isOpen, onClose }) 
           </button>
         </div>
 
-        <div className="p-6 bg-gradient-to-br from-heritage-light/30 via-white to-emerald-50/30">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/60 p-6">
+        <div className="p-6 bg-gradient-to-br from-gray-50 via-white to-emerald-50/20">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Item Name *</label>
@@ -123,7 +123,7 @@ const ItemEditModal: React.FC<ItemEditModalProps> = ({ item, isOpen, onClose }) 
                   type="text"
                   value={editedItem.name}
                   onChange={(e) => setEditedItem({ ...editedItem, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                   placeholder="Enter item name"
                 />
               </div>
@@ -237,7 +237,7 @@ const ItemEditModal: React.FC<ItemEditModalProps> = ({ item, isOpen, onClose }) 
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 px-4 py-2 text-white bg-heritage-green rounded-lg hover:bg-heritage-green/90 transition-colors"
+                className="flex-1 px-4 py-2 text-sm font-bold text-white bg-[#82A33D] rounded-lg hover:bg-[#82A33D]/90 transition-colors"
               >
                 Save Changes
               </button>

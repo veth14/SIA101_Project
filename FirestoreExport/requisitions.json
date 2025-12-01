@@ -1,0 +1,332 @@
+[
+  {
+    "id": "REQ-2025-001",
+    "department": "Maintenance",
+    "items": [
+      {
+        "name": "LED Light Bulbs",
+        "quantity": 30,
+        "unit": "pieces",
+        "estimatedCost": 4500,
+        "reason": "Replace burnt bulbs"
+      },
+      {
+        "name": "Electrical Wire",
+        "quantity": 100,
+        "unit": "meters",
+        "estimatedCost": 2000,
+        "reason": "Repair work"
+      }
+    ],
+    "totalEstimatedCost": 6500,
+    "priority": "urgent",
+    "requestDate": "2024-09-15",
+    "requiredDate": "2024-09-20",
+    "justification": "Critical maintenance items needed for guest room repairs and safety compliance.",
+    "approvedBy": "Supervisor",
+    "requestNumber": "REQ-2025-001",
+    "createdAt": "2025-11-10T10:07:26.828Z",
+    "requestedBy": "Robert Garcia",
+    "hasInvoice": true,
+    "approvedDate": "2025-12-01T08:10:40.137Z",
+    "status": "fulfilled",
+    "updatedAt": {
+      "_seconds": 1764576640,
+      "_nanoseconds": 137000000
+    }
+  },
+  {
+    "id": "REQ-2025-002",
+    "department": "Maintenance",
+    "requestedBy": "Robert Garcia",
+    "items": [
+      {
+        "name": "LED Light Bulbs",
+        "quantity": 30,
+        "unit": "pieces",
+        "estimatedCost": 4500,
+        "reason": "Replace burnt bulbs"
+      },
+      {
+        "name": "Electrical Wire",
+        "quantity": 100,
+        "unit": "meters",
+        "estimatedCost": 2000,
+        "reason": "Repair work"
+      }
+    ],
+    "totalEstimatedCost": 6500,
+    "priority": "urgent",
+    "requestDate": "2024-09-15",
+    "requiredDate": "2024-09-20",
+    "justification": "Critical maintenance items needed for guest room repairs and safety compliance.",
+    "approvedBy": "Supervisor",
+    "requestNumber": "REQ-2025-002",
+    "createdAt": "2025-11-10T10:08:50.717Z",
+    "hasInvoice": true,
+    "approvedDate": "2025-12-01T08:10:36.670Z",
+    "status": "fulfilled",
+    "updatedAt": {
+      "_seconds": 1764576636,
+      "_nanoseconds": 670000000
+    }
+  },
+  {
+    "id": "REQ-2025-003",
+    "department": "Maintenance",
+    "requestedBy": "Robert Garcia",
+    "items": [
+      {
+        "name": "LED Light Bulbs",
+        "quantity": 30,
+        "unit": "pieces",
+        "estimatedCost": 4500,
+        "reason": "Replace burnt bulbs"
+      },
+      {
+        "name": "Electrical Wire",
+        "quantity": 100,
+        "unit": "meters",
+        "estimatedCost": 2000,
+        "reason": "Repair work"
+      }
+    ],
+    "totalEstimatedCost": 6500,
+    "priority": "urgent",
+    "requestDate": "2024-09-15",
+    "requiredDate": "2024-09-20",
+    "justification": "Critical maintenance items needed for guest room repairs and safety compliance.",
+    "approvedBy": "Supervisor",
+    "requestNumber": "REQ-2025-003",
+    "createdAt": "2025-11-10T10:08:52.803Z",
+    "approvedDate": "2025-11-13T07:58:32.170Z",
+    "status": "rejected",
+    "updatedAt": "2025-11-13T07:58:32.579Z"
+  },
+  {
+    "id": "REQ-2025-004",
+    "department": "Maintenance",
+    "requestedBy": "Robert Garcia",
+    "items": [
+      {
+        "name": "LED Light Bulbs",
+        "quantity": 30,
+        "unit": "pieces",
+        "estimatedCost": 4500,
+        "reason": "Replace burnt bulbs"
+      },
+      {
+        "name": "Electrical Wire",
+        "quantity": 100,
+        "unit": "meters",
+        "estimatedCost": 2000,
+        "reason": "Repair work"
+      }
+    ],
+    "totalEstimatedCost": 6500,
+    "priority": "urgent",
+    "requestDate": "2024-09-15",
+    "requiredDate": "2024-09-20",
+    "justification": "Critical maintenance items needed for guest room repairs and safety compliance.",
+    "approvedBy": "Supervisor",
+    "requestNumber": "REQ-2025-004",
+    "createdAt": "2025-11-10T10:08:54.725Z",
+    "hasInvoice": true,
+    "approvedDate": "2025-12-01T08:10:32.347Z",
+    "status": "fulfilled",
+    "updatedAt": {
+      "_seconds": 1764576632,
+      "_nanoseconds": 347000000
+    }
+  },
+  {
+    "id": "REQ-2025-005",
+    "department": "Front Desk",
+    "requestedBy": "a",
+    "requestDate": "2025-11-12",
+    "requiredDate": "2025-11-26",
+    "priority": "low",
+    "justification": "aa",
+    "items": [
+      {
+        "name": "aa",
+        "quantity": 2,
+        "unit": "2",
+        "estimatedCost": 12,
+        "reason": "21"
+      }
+    ],
+    "totalEstimatedCost": 24,
+    "requestNumber": "REQ-2025-005",
+    "createdAt": "2025-11-12T18:48:15.776Z",
+    "approvedBy": "Supervisor",
+    "approvedDate": "2025-11-13T07:51:25.554Z",
+    "status": "rejected",
+    "updatedAt": "2025-11-13T07:51:26.165Z"
+  },
+  {
+    "id": "REQ-2025-006",
+    "department": "Front Desk",
+    "requestedBy": "qwer",
+    "requestDate": "2025-11-13",
+    "requiredDate": "2025-11-14",
+    "priority": "medium",
+    "justification": "dsa",
+    "items": [
+      {
+        "name": "1",
+        "quantity": 1,
+        "unit": "1",
+        "estimatedCost": 1,
+        "reason": "1"
+      },
+      {
+        "name": "2",
+        "quantity": 2,
+        "unit": "2",
+        "estimatedCost": 2,
+        "reason": "2"
+      }
+    ],
+    "totalEstimatedCost": 5,
+    "requestNumber": "REQ-2025-006",
+    "createdAt": "2025-11-13T07:39:39.500Z",
+    "approvedBy": "Supervisor",
+    "hasInvoice": true,
+    "approvedDate": "2025-12-01T08:10:28.835Z",
+    "status": "fulfilled",
+    "updatedAt": {
+      "_seconds": 1764576628,
+      "_nanoseconds": 835000000
+    }
+  },
+  {
+    "id": "REQ-2025-007",
+    "department": "Front Desk",
+    "requestedBy": "John DOEZERS",
+    "requestDate": "2025-11-13",
+    "requiredDate": "2025-11-14",
+    "priority": "medium",
+    "justification": "dsa",
+    "items": [
+      {
+        "name": "Test Item",
+        "quantity": 123,
+        "unit": "123",
+        "estimatedCost": 13,
+        "reason": "dsa"
+      }
+    ],
+    "totalEstimatedCost": 1599,
+    "requestNumber": "REQ-2025-007",
+    "createdAt": "2025-11-13T07:57:43.322Z",
+    "approvedDate": "2025-11-15T14:15:39.876Z",
+    "approvedBy": "Supervisor",
+    "status": "rejected",
+    "updatedAt": "2025-11-15T14:15:40.309Z"
+  },
+  {
+    "id": "REQ-2025-008",
+    "department": "Front Office",
+    "requestedBy": "afa",
+    "requestDate": "2025-11-19",
+    "requiredDate": "2025-11-26",
+    "priority": "medium",
+    "justification": "fafa",
+    "items": [
+      {
+        "name": "aa",
+        "quantity": 11,
+        "unit": "111",
+        "estimatedCost": 11,
+        "reason": "haha"
+      }
+    ],
+    "totalEstimatedCost": 121,
+    "requestNumber": "REQ-2025-008",
+    "createdAt": "2025-11-19T07:04:33.863Z",
+    "approvedDate": "2025-11-23T07:47:46.389Z",
+    "approvedBy": "Supervisor",
+    "status": "rejected",
+    "updatedAt": "2025-11-23T07:47:46.695Z"
+  },
+  {
+    "id": "REQ-2025-009",
+    "department": "Food & Beverage",
+    "requestedBy": "asddfg",
+    "requestDate": "2025-11-23",
+    "requiredDate": "2025-11-24",
+    "priority": "urgent",
+    "justification": "sdfsdsdfds",
+    "items": [
+      {
+        "name": "itlog",
+        "quantity": 123,
+        "unit": "123",
+        "estimatedCost": 600,
+        "reason": "naubusan"
+      }
+    ],
+    "totalEstimatedCost": 73800,
+    "requestNumber": "REQ-2025-009",
+    "createdAt": "2025-11-23T07:46:41.216Z",
+    "approvedBy": "Supervisor",
+    "hasInvoice": true,
+    "approvedDate": "2025-11-28T17:39:55.179Z",
+    "status": "fulfilled",
+    "updatedAt": {
+      "_seconds": 1764351595,
+      "_nanoseconds": 179000000
+    }
+  },
+  {
+    "id": "REQ-2025-011",
+    "department": "Food & Beverage",
+    "requestedBy": "das",
+    "requestDate": "2025-11-29",
+    "requiredDate": "2025-11-29",
+    "priority": "low",
+    "justification": "dasdas",
+    "items": [
+      {
+        "name": "dasdas",
+        "quantity": 12,
+        "unit": "12",
+        "estimatedCost": 12,
+        "reason": "dsa"
+      }
+    ],
+    "totalEstimatedCost": 144,
+    "requestNumber": "REQ-2025-011",
+    "createdAt": "2025-11-29T13:20:49.403Z",
+    "approvedBy": "Supervisor",
+    "approvedDate": "2025-11-29T13:36:05.126Z",
+    "status": "fulfilled",
+    "updatedAt": "2025-11-29T13:36:05.437Z"
+  },
+  {
+    "id": "REQ-2025-012",
+    "department": "Food & Beverage",
+    "requestedBy": "123",
+    "requestDate": "2025-11-29",
+    "requiredDate": "2025-12-03",
+    "priority": "urgent",
+    "justification": "123",
+    "items": [
+      {
+        "name": "123",
+        "quantity": 123,
+        "unit": "123",
+        "estimatedCost": 122.99,
+        "reason": "123"
+      }
+    ],
+    "totalEstimatedCost": 15127.769999999999,
+    "requestNumber": "REQ-2025-012",
+    "createdAt": "2025-11-29T13:26:05.742Z",
+    "approvedDate": "2025-11-29T13:26:20.709Z",
+    "approvedBy": "Supervisor",
+    "status": "rejected",
+    "updatedAt": "2025-11-29T13:26:20.936Z"
+  }
+]

@@ -1,0 +1,890 @@
+[
+  {
+    "id": "1uXmyuJy26aas2hRlz8U",
+    "type": "requisition",
+    "title": "Requisition fulfilled",
+    "message": "REQ-REQ-2025-004",
+    "sourceId": "REQ-2025-004",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576632,
+      "_nanoseconds": 624000000
+    }
+  },
+  {
+    "id": "1w4b3dxzIShcJvTaB8hY",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-SXC6",
+    "message": "Maintenance Tools Inc. • ₱10,100",
+    "sourceId": "lLE7wDd8lxdIRbgNvh9U",
+    "createdAt": {
+      "_seconds": 1764349946,
+      "_nanoseconds": 598000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "251YoNSOhvwz8OmOhX4T",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-L0U8",
+    "message": "Premium Coffee Co. • ₱12,221",
+    "sourceId": "BQotpE0AFDuaPjloyTWN",
+    "createdAt": {
+      "_seconds": 1764349875,
+      "_nanoseconds": 735000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "2eXkTtbAJuYDVpZ9VkcJ",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-012",
+    "sourceId": "PO-2025-012",
+    "createdAt": {
+      "_seconds": 1764350564,
+      "_nanoseconds": 988000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "2u1emRqhc6C8zivimWIN",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-5P1Z",
+    "message": "Office Supplies Pro • ₱9,600",
+    "sourceId": "KL70hyhDjBl0V3AWrRx7",
+    "createdAt": {
+      "_seconds": 1764349932,
+      "_nanoseconds": 860000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "30WwL2SNlyVkwSvq8QyJ",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-AG5B",
+    "message": "Food & Beverage • ₱73,800",
+    "sourceId": "rr82QuRilVVGHqIXp991",
+    "createdAt": {
+      "_seconds": 1764349492,
+      "_nanoseconds": 249000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "3UdDZYFG0DSJIsq5VYLq",
+    "type": "reservation",
+    "title": "New reservation",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK17644084118105x7r68i",
+    "createdAt": {
+      "_seconds": 1764408416,
+      "_nanoseconds": 564000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "4iuNS4yHsiCqRCABGxgW",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-013",
+    "sourceId": "PO-2025-013",
+    "createdAt": {
+      "_seconds": 1764351556,
+      "_nanoseconds": 689000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "4mmoRmZfrTPYIlCreCzl",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-P80A",
+    "message": "Khyte Cyril Infiesto • ₱6,720",
+    "sourceId": "a98c4FhNFBswWsQHfDWm",
+    "createdAt": {
+      "_seconds": 1764349614,
+      "_nanoseconds": 4000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "56eOrkbkrpRRzOftO9qT",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "jojit oliva • Silid Payapa (2025-12-17–2025-12-24)",
+    "sourceId": "BK17645240654205bvyjjro9",
+    "createdAt": {
+      "_seconds": 1764524705,
+      "_nanoseconds": 353000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "8CpGNvv00F2G72Xw0ADZ",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-6MHR",
+    "message": "Khyte Cyril Infiesto • ₱13,440",
+    "sourceId": "gdtXd82sHiaiOf8vACWT",
+    "createdAt": {
+      "_seconds": 1764349605,
+      "_nanoseconds": 960000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "8EnS9MpVZMgeQevRGCQQ",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-006",
+    "sourceId": "REQ-2025-006",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576281,
+      "_nanoseconds": 634000000
+    }
+  },
+  {
+    "id": "8XUliCVRpTSgY0pFlWqG",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-THRT",
+    "message": "Cleaning Supplies Inc. • ₱12,250",
+    "sourceId": "Nf0uxLm3oWWdtvfbBRKq",
+    "createdAt": {
+      "_seconds": 1764349953,
+      "_nanoseconds": 242000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "8xr03rVLoGBgrEvkisK7",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK17644024246871lbi7cw",
+    "createdAt": {
+      "_seconds": 1764408011,
+      "_nanoseconds": 166000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "AYzuKWFeZmzXu097lDSL",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-007",
+    "sourceId": "PO-2025-007",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764577023,
+      "_nanoseconds": 74000000
+    }
+  },
+  {
+    "id": "ArQnKdFqAAVIOJVoobIO",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-JC7V",
+    "message": "Premium Coffee Co. • ₱22,000",
+    "sourceId": "UHINeVJ0iOfyFS3Kqzi6",
+    "createdAt": {
+      "_seconds": 1764349958,
+      "_nanoseconds": 957000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "BioYSnOYNVVROGFAsxj1",
+    "type": "requisition",
+    "title": "Requisition fulfilled",
+    "message": "REQ-REQ-2025-006",
+    "sourceId": "REQ-2025-006",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576630,
+      "_nanoseconds": 295000000
+    }
+  },
+  {
+    "id": "D1Z4OsgeBz7UgISVRTf1",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-011",
+    "sourceId": "PO-2025-011",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576300,
+      "_nanoseconds": 873000000
+    }
+  },
+  {
+    "id": "E7NUAIloUVAvL8sMqTwm",
+    "type": "purchaseOrder",
+    "title": "Purchase order received",
+    "message": "PO-PO-2025-006",
+    "sourceId": "PO-2025-006",
+    "createdAt": {
+      "_seconds": 1764351602,
+      "_nanoseconds": 305000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "ETfhqvtxNYlWGLqcKdHS",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-MYWH",
+    "message": "Hotel Linens Co. • ₱121",
+    "sourceId": "ghrHt1XLwboeRcC29vnh",
+    "createdAt": {
+      "_seconds": 1764349977,
+      "_nanoseconds": 752000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "F0WXVjcUtzO4vfCh1Kg7",
+    "type": "purchaseOrder",
+    "title": "Purchase order received",
+    "message": "PO-PO-2025-003",
+    "sourceId": "PO-2025-003",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764577802,
+      "_nanoseconds": 482000000
+    }
+  },
+  {
+    "id": "FNCCODC4rapWjJTeEgSA",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-1G10",
+    "message": "Guest Amenities Co. • ₱8,250",
+    "sourceId": "UFoZnujGk2GIa7iCLekk",
+    "createdAt": {
+      "_seconds": 1764349969,
+      "_nanoseconds": 48000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "FcMjH8lG3VChAtZf3Gvl",
+    "type": "reservation",
+    "title": "New reservation",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK1764400939236m4jo64f",
+    "createdAt": {
+      "_seconds": 1764400951,
+      "_nanoseconds": 632000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "Hn87H7JpZYpQREdWl7Jl",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-004",
+    "sourceId": "REQ-2025-004",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576283,
+      "_nanoseconds": 284000000
+    }
+  },
+  {
+    "id": "IEVFMNd2hpg7h7eDv8U6",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-005",
+    "sourceId": "PO-2025-005",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764577110,
+      "_nanoseconds": 30000000
+    }
+  },
+  {
+    "id": "IkXk7YxUHMdbzAuHTUKK",
+    "type": "reservation",
+    "title": "Guest checked in",
+    "message": "Axel Lomigo • Silid Payapa (2025-12-09–2025-12-10)",
+    "sourceId": "BK17642923013239xknzv3i9",
+    "createdAt": {
+      "_seconds": 1764373351,
+      "_nanoseconds": 241000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "JADyZ5NiQtW75tinANuH",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-011",
+    "sourceId": "PO-2025-011",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576296,
+      "_nanoseconds": 57000000
+    }
+  },
+  {
+    "id": "LD3BfqvXSmbpxF4YFzOf",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-28–2025-11-29)",
+    "sourceId": "BK1764400939236m4jo64f",
+    "createdAt": {
+      "_seconds": 1764401326,
+      "_nanoseconds": 712000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "N1SfVBdcaEAtzG9ENryh",
+    "type": "reservation",
+    "title": "New reservation",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK1764408877879yst8k4q",
+    "createdAt": {
+      "_seconds": 1764408883,
+      "_nanoseconds": 798000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "NZZXjRbOsTTCZWohdTIK",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-001",
+    "sourceId": "REQ-2025-001",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576287,
+      "_nanoseconds": 420000000
+    }
+  },
+  {
+    "id": "OkHcbWWbIi1MmI6dSD8T",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-009",
+    "sourceId": "REQ-2025-009",
+    "createdAt": {
+      "_seconds": 1764350723,
+      "_nanoseconds": 7000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "PZXpXLcsftjJKVpHw07T",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-2G2J",
+    "message": "Khyte Cyril Infiesto • ₱57,344",
+    "sourceId": "Kjv2rN4jrbDPGVHZPZmb",
+    "createdAt": {
+      "_seconds": 1764352859,
+      "_nanoseconds": 590000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "RMuxgCaCPu52PZ8t4JRh",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-002",
+    "sourceId": "REQ-2025-002",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576285,
+      "_nanoseconds": 475000000
+    }
+  },
+  {
+    "id": "UApgOlJtgZtIHoC081ss",
+    "type": "reservation",
+    "title": "Reservation cancelled",
+    "message": "jojit oliva • Silid Payapa (2025-12-17–2025-12-24)",
+    "sourceId": "BK176452366821478t8v7kt1",
+    "createdAt": {
+      "_seconds": 1764524390,
+      "_nanoseconds": 168000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "UngWEHduPrT56R3glE5b",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-004",
+    "sourceId": "PO-2025-004",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576325,
+      "_nanoseconds": 698000000
+    }
+  },
+  {
+    "id": "VZUYc5RK8OfKYvbwqaov",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-011",
+    "sourceId": "PO-2025-011",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576309,
+      "_nanoseconds": 855000000
+    }
+  },
+  {
+    "id": "VvtuhktHTMniFADqgcbb",
+    "type": "purchaseOrder",
+    "title": "Purchase order received",
+    "message": "PO-PO-2025-013",
+    "sourceId": "PO-2025-013",
+    "createdAt": {
+      "_seconds": 1764351596,
+      "_nanoseconds": 162000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "W95DLlq8V5PIfbfbA2vD",
+    "type": "requisition",
+    "title": "Requisition fulfilled",
+    "message": "REQ-REQ-2025-002",
+    "sourceId": "REQ-2025-002",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576636,
+      "_nanoseconds": 942000000
+    }
+  },
+  {
+    "id": "X7w103D7kGSKpoHdp6vO",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-013",
+    "sourceId": "PO-2025-013",
+    "createdAt": {
+      "_seconds": 1764350537,
+      "_nanoseconds": 732000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "XqghapDjbXJdOYVXZLbX",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-008",
+    "sourceId": "PO-2025-008",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576329,
+      "_nanoseconds": 630000000
+    }
+  },
+  {
+    "id": "YBsyCWsd4simxG9f8qCC",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Khyte Cyril Infiesto • Silid Ginhawa (2025-12-14–2025-12-25)",
+    "sourceId": "BK17641509332902usmbekkl",
+    "createdAt": {
+      "_seconds": 1764444328,
+      "_nanoseconds": 51000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "YwXSXTpcBHAoUFcZ16Nj",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-009",
+    "sourceId": "REQ-2025-009",
+    "createdAt": {
+      "_seconds": 1764350646,
+      "_nanoseconds": 857000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "b3PPHbx4PETey7Bsl1B5",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-006",
+    "sourceId": "PO-2025-006",
+    "createdAt": {
+      "_seconds": 1764351554,
+      "_nanoseconds": 507000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "bkRio6tra0OHDgYF01jX",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-92DG",
+    "message": "Kitchen Equipment Ltd. • ₱20,500",
+    "sourceId": "cKnt2mopV91stE8Ke9K8",
+    "createdAt": {
+      "_seconds": 1764349938,
+      "_nanoseconds": 599000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "byuDHMiwe01QylkdRj43",
+    "type": "reservation",
+    "title": "Guest checked in",
+    "message": "Jonathan Madimatibag • Silid Payapa (2025-12-01–2025-12-02)",
+    "sourceId": "KJgvSxWqZf3B2w81GCTk",
+    "createdAt": {
+      "_seconds": 1764489974,
+      "_nanoseconds": 766000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "cFYQJEXwrBfgb0SKRFCH",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-009",
+    "sourceId": "PO-2025-009",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576315,
+      "_nanoseconds": 973000000
+    }
+  },
+  {
+    "id": "dJvPX4x9WKXSORFewFOQ",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-009",
+    "sourceId": "REQ-2025-009",
+    "createdAt": {
+      "_seconds": 1764350562,
+      "_nanoseconds": 811000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "dZAmEsxNBb0jNavxY8ng",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Axel Lomigo • Silid Payapa (2025-12-09–2025-12-10)",
+    "sourceId": "BK17642923013239xknzv3i9",
+    "createdAt": {
+      "_seconds": 1764375178,
+      "_nanoseconds": 896000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "fW0dCvMmdZEx4D7eIrph",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Axel Lomigo • Silid Haraya (2025-11-28–2025-11-29)",
+    "sourceId": "BK1764184543654chr4872hp",
+    "createdAt": {
+      "_seconds": 1764375192,
+      "_nanoseconds": 518000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "fZ10uKO858W664y9YmlG",
+    "type": "reservation",
+    "title": "New reservation",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK1764408325808249ofi7",
+    "createdAt": {
+      "_seconds": 1764408331,
+      "_nanoseconds": 652000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "hA3W00esXd7VpsDDzINQ",
+    "type": "requisition",
+    "title": "Requisition fulfilled",
+    "message": "REQ-REQ-2025-009",
+    "sourceId": "REQ-2025-009",
+    "createdAt": {
+      "_seconds": 1764351592,
+      "_nanoseconds": 606000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "hJ7UiUr9MuPIeM3nPymT",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Abalos Jane • Silid Payapa (2026-01-02–2026-01-03)",
+    "sourceId": "BK1764522258720cn4r04fgx",
+    "createdAt": {
+      "_seconds": 1764524544,
+      "_nanoseconds": 883000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "iN6GAXzUHUAgjaH3DM88",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-42RL",
+    "message": "Maintenance • ₱6,500",
+    "sourceId": "SMmuiKZegQvjnUomRTsm",
+    "createdAt": {
+      "_seconds": 1764349884,
+      "_nanoseconds": 816000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "iWN68RJPyxco57932dCQ",
+    "type": "reservation",
+    "title": "Guest checked in",
+    "message": "Axel Lomigo • Silid Payapa (2025-12-09–2025-12-10)",
+    "sourceId": "BK17642923013239xknzv3i9",
+    "createdAt": {
+      "_seconds": 1764373351,
+      "_nanoseconds": 734000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "j2tINWfVrH8Wk4MkF44a",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-002",
+    "sourceId": "PO-2025-002",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576359,
+      "_nanoseconds": 734000000
+    }
+  },
+  {
+    "id": "jRC3CEeq3kbeDOMx1maq",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-Y1BW",
+    "message": "Maintenance • ₱1,100",
+    "sourceId": "vUiqRQsFhQF3I2kEPpHE",
+    "createdAt": {
+      "_seconds": 1764349802,
+      "_nanoseconds": 729000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "jyZEfru0y2cAhPu1nnIZ",
+    "type": "purchaseOrder",
+    "title": "Purchase order received",
+    "message": "PO-PO-2025-012",
+    "sourceId": "PO-2025-012",
+    "createdAt": {
+      "_seconds": 1764351598,
+      "_nanoseconds": 681000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "kV7TFSBYbGsYmIks6F7i",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-014",
+    "sourceId": "PO-2025-014",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576293,
+      "_nanoseconds": 659000000
+    }
+  },
+  {
+    "id": "lHsRqlqwUKnKGKMXt54C",
+    "type": "purchaseOrder",
+    "title": "Purchase order received",
+    "message": "PO-PO-2025-008",
+    "sourceId": "PO-2025-008",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764578004,
+      "_nanoseconds": 433000000
+    }
+  },
+  {
+    "id": "mEoRK1gzpawKSJFj5zs8",
+    "type": "reservation",
+    "title": "Guest checked in",
+    "message": "jojit oliva • Silid Payapa (2025-12-17–2025-12-24)",
+    "sourceId": "BK17645240654205bvyjjro9",
+    "createdAt": {
+      "_seconds": 1764524557,
+      "_nanoseconds": 264000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "mhO7BDnNFHm3DyJbrVxu",
+    "type": "requisition",
+    "title": "Requisition fulfilled",
+    "message": "REQ-REQ-2025-001",
+    "sourceId": "REQ-2025-001",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764576640,
+      "_nanoseconds": 410000000
+    }
+  },
+  {
+    "id": "oDDcsmdSR8oZl6PhDVSw",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-012",
+    "sourceId": "PO-2025-012",
+    "createdAt": {
+      "_seconds": 1764351560,
+      "_nanoseconds": 411000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "p52bW5tcE15Cyl04SFOL",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-F01T",
+    "message": "Hotel Linens Co. • ₱11",
+    "sourceId": "3qR9QTB8ASO8VlNcqX71",
+    "createdAt": {
+      "_seconds": 1764349963,
+      "_nanoseconds": 935000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "psYijjmbeoHVSqCBzlHQ",
+    "type": "reservation",
+    "title": "Guest checked out",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK1764408877879yst8k4q",
+    "createdAt": {
+      "_seconds": 1764411360,
+      "_nanoseconds": 891000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "sFpXKW3oUzEUEbQjzB3D",
+    "type": "reservation",
+    "title": "Guest checked in",
+    "message": "Axel Lomigo • Silid Payapa (2025-12-09–2025-12-10)",
+    "sourceId": "BK17642923013239xknzv3i9",
+    "createdAt": {
+      "_seconds": 1764373351,
+      "_nanoseconds": 195000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "sL9R1KBxfMM91yu06LE1",
+    "type": "purchaseOrder",
+    "title": "Purchase order received",
+    "message": "PO-PO-2025-011",
+    "sourceId": "PO-2025-011",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764577124,
+      "_nanoseconds": 4000000
+    }
+  },
+  {
+    "id": "srZDfcEIkjkE7HAW6Bkr",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-0UCD",
+    "message": "Electrical Supplies Ltd. • ₱1,500",
+    "sourceId": "zfahfyhbe4X6w34UfRlE",
+    "createdAt": {
+      "_seconds": 1764349588,
+      "_nanoseconds": 686000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "uRyjsClkb4kNVYNxrgFe",
+    "type": "requisition",
+    "title": "Requisition approved",
+    "message": "REQ-REQ-2025-009",
+    "sourceId": "REQ-2025-009",
+    "createdAt": {
+      "_seconds": 1764350557,
+      "_nanoseconds": 410000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "uZUT9cHJRqoNLZPvSqn5",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-XXCK",
+    "message": "Maintenance • ₱6,500",
+    "sourceId": "NvIjqX9mtp2snWg3QrhF",
+    "createdAt": {
+      "_seconds": 1764349927,
+      "_nanoseconds": 156000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "vXfPu1p84Eh0RfF2fcn7",
+    "type": "reservation",
+    "title": "Guest checked in",
+    "message": "Abalos Jane • Silid Payapa (2026-01-02–2026-01-03)",
+    "sourceId": "BK1764522258720cn4r04fgx",
+    "createdAt": {
+      "_seconds": 1764523194,
+      "_nanoseconds": 250000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "x236LUQXIOfh0bRk7ZFH",
+    "type": "purchaseOrder",
+    "title": "Purchase order approved",
+    "message": "PO-PO-2025-013",
+    "sourceId": "PO-2025-013",
+    "createdAt": {
+      "_seconds": 1764350536,
+      "_nanoseconds": 14000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "yBmyoyoNiascBpzRF85c",
+    "type": "reservation",
+    "title": "New reservation",
+    "message": "Khyte Cyril N/A Infiesto • Silid Payapa (2025-11-30–2025-12-06)",
+    "sourceId": "BK1764489802245bhyxi3t",
+    "createdAt": {
+      "_seconds": 1764489848,
+      "_nanoseconds": 703000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "zXDwKP9H3h9C3rBPmSlB",
+    "type": "reservation",
+    "title": "New reservation",
+    "message": "Emmanuel Detera • Silid Payapa (2025-11-29–2025-11-30)",
+    "sourceId": "BK17644024246871lbi7cw",
+    "createdAt": {
+      "_seconds": 1764402433,
+      "_nanoseconds": 994000000
+    },
+    "status": "read"
+  },
+  {
+    "id": "zYhVBjlyr9wJG5FTM4DQ",
+    "type": "invoice",
+    "title": "New invoice INV-20251129-CUOB",
+    "message": "Front Desk • ₱5",
+    "sourceId": "Q2tsRMExVmxfapJzhPPT",
+    "createdAt": {
+      "_seconds": 1764349919,
+      "_nanoseconds": 325000000
+    },
+    "status": "read"
+  }
+]

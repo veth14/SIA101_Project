@@ -1,0 +1,109 @@
+[
+  {
+    "id": "2qdcGJ34nxDFr2uB62sM",
+    "adminId": "Admin: Administrator",
+    "fullName": "Ellizier Patriarca",
+    "age": 20,
+    "gender": "Male",
+    "classification": "Housekeeping",
+    "email": "patriarcaellizier@gmail.com",
+    "phoneNumber": "0987446565",
+    "rfid": "1226204341",
+    "createdAt": {
+      "_seconds": 1762584207,
+      "_nanoseconds": 937000000
+    },
+    "staffId": "1",
+    "status": "scheduled",
+    "isActive": true
+  },
+  {
+    "id": "SW04KdfDR5Sbq0Z6NC6y",
+    "adminId": "Admin: balayginhawaadmin123@gmail.com",
+    "fullName": "Miyuki Salvador",
+    "age": 21,
+    "gender": "Male",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "092184315373",
+    "rfid": "1188271941",
+    "baseSalaryPerDay": "",
+    "createdAt": {
+      "_seconds": 1764573258,
+      "_nanoseconds": 996000000
+    }
+  },
+  {
+    "id": "V7TZRYuHgZCjSKDwkqGI",
+    "adminId": "Admin: Administrator",
+    "fullName": "Garnel Macalos",
+    "age": 19,
+    "gender": "Male",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "rfid": "1188320101",
+    "createdAt": {
+      "_seconds": 1762594086,
+      "_nanoseconds": 550000000
+    },
+    "staffId": "2",
+    "status": "scheduled",
+    "isActive": true,
+    "baseSalaryPerDay": 580,
+    "classification": "Maintenance"
+  },
+  {
+    "id": "aMoei5nGagOIl3Iplc6m",
+    "adminId": "Admin: Administrator",
+    "age": 20,
+    "gender": "Male",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "rfid": "1188218709",
+    "createdAt": {
+      "_seconds": 1762594377,
+      "_nanoseconds": 527000000
+    },
+    "staffId": "3",
+    "status": "scheduled",
+    "isActive": true,
+    "fullName": "John Emmanuel Bote Mamaril"
+  },
+  {
+    "id": "gJUIDPma8ak5KvXTlVPU",
+    "adminId": "Admin: Administrator",
+    "fullName": "John Rex Landar",
+    "age": 20,
+    "gender": "Male",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "rfid": "1225679973",
+    "createdAt": {
+      "_seconds": 1762594210,
+      "_nanoseconds": 409000000
+    },
+    "staffId": "5",
+    "status": "scheduled",
+    "isActive": true,
+    "classification": "Maintenance"
+  },
+  {
+    "id": "noOZEKnHU5wT5yiBTmCl",
+    "adminId": "Admin: Administrator",
+    "fullName": "Mark Noel Ceriola",
+    "age": 20,
+    "gender": "Male",
+    "email": "marknoelceriola@gmail.com",
+    "phoneNumber": "097852453",
+    "rfid": "1189531221",
+    "createdAt": {
+      "_seconds": 1762593914,
+      "_nanoseconds": 776000000
+    },
+    "staffId": "6",
+    "status": "scheduled",
+    "isActive": true,
+    "classification": "Housekeeping"
+  }
+]

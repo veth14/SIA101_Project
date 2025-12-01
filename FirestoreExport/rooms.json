@@ -1,0 +1,1967 @@
+[
+  {
+    "id": "101",
+    "bedType": "Queen Bed",
+    "createdAt": {
+      "_seconds": 1759285677,
+      "_nanoseconds": 556000000
+    },
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "roomType": "Standard Room",
+    "maxGuests": 2,
+    "roomName": "Silid Payapa",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "floor": 1,
+    "basePrice": 2500,
+    "roomNumber": "101",
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "size": "25 sqm",
+    "currentReservation": "BK1764489802245bhyxi3t",
+    "isActive": false,
+    "status": "occupied",
+    "updatedAt": {
+      "_seconds": 1764489845,
+      "_nanoseconds": 533000000
+    }
+  },
+  {
+    "id": "102",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "size": "25 sqm",
+    "roomName": "Silid Payapa",
+    "roomNumber": "102",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "floor": 1,
+    "roomType": "Standard Room",
+    "basePrice": 2500,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "maxGuests": 2,
+    "bedType": "Queen Bed",
+    "createdAt": {
+      "_seconds": 1759285679,
+      "_nanoseconds": 40000000
+    },
+    "currentReservation": "KJgvSxWqZf3B2w81GCTk",
+    "isActive": false,
+    "status": "occupied",
+    "updatedAt": {
+      "_seconds": 1764489973,
+      "_nanoseconds": 970000000
+    }
+  },
+  {
+    "id": "103",
+    "bedType": "Twin Beds",
+    "size": "25 sqm",
+    "floor": 1,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "basePrice": 2500,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "roomType": "Standard Room",
+    "roomNumber": "103",
+    "createdAt": {
+      "_seconds": 1759285679,
+      "_nanoseconds": 293000000
+    },
+    "maxGuests": 2,
+    "roomName": "Silid Payapa",
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764524543,
+      "_nanoseconds": 750000000
+    }
+  },
+  {
+    "id": "104",
+    "floor": 1,
+    "roomType": "Standard Room",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "createdAt": {
+      "_seconds": 1759285679,
+      "_nanoseconds": 804000000
+    },
+    "size": "25 sqm",
+    "bedType": "Queen Bed",
+    "maxGuests": 2,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "roomNumber": "104",
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "roomName": "Silid Payapa",
+    "basePrice": 2500,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764524704,
+      "_nanoseconds": 141000000
+    }
+  },
+  {
+    "id": "105",
+    "floor": 1,
+    "createdAt": {
+      "_seconds": 1759285680,
+      "_nanoseconds": 50000000
+    },
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "size": "25 sqm",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "roomType": "Standard Room",
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "bedType": "Queen Bed",
+    "roomNumber": "105",
+    "basePrice": 2500,
+    "maxGuests": 2,
+    "roomName": "Silid Payapa",
+    "currentReservation": null,
+    "updatedAt": {
+      "_seconds": 1764375177,
+      "_nanoseconds": 662000000
+    },
+    "isActive": true,
+    "status": "available"
+  },
+  {
+    "id": "106",
+    "maxGuests": 2,
+    "bedType": "Twin Beds",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "createdAt": {
+      "_seconds": 1759285680,
+      "_nanoseconds": 288000000
+    },
+    "floor": 1,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "size": "25 sqm",
+    "roomName": "Silid Payapa",
+    "roomNumber": "106",
+    "roomType": "Standard Room",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "basePrice": 2500,
+    "currentReservation": null,
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    },
+    "isActive": true,
+    "status": "available"
+  },
+  {
+    "id": "107",
+    "basePrice": 2500,
+    "size": "25 sqm",
+    "floor": 1,
+    "maxGuests": 2,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "roomNumber": "107",
+    "bedType": "Queen Bed",
+    "createdAt": {
+      "_seconds": 1759285680,
+      "_nanoseconds": 525000000
+    },
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "roomName": "Silid Payapa",
+    "roomType": "Standard Room",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764401325,
+      "_nanoseconds": 635000000
+    }
+  },
+  {
+    "id": "108",
+    "floor": 1,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "maxGuests": 2,
+    "createdAt": {
+      "_seconds": 1759285680,
+      "_nanoseconds": 765000000
+    },
+    "basePrice": 2500,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "bedType": "Queen Bed",
+    "size": "25 sqm",
+    "roomNumber": "108",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "roomType": "Standard Room",
+    "roomName": "Silid Payapa",
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764408010,
+      "_nanoseconds": 99000000
+    }
+  },
+  {
+    "id": "109",
+    "basePrice": 2500,
+    "size": "25 sqm",
+    "floor": 1,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "bedType": "Twin Beds",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "maxGuests": 2,
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "roomNumber": "109",
+    "roomType": "Standard Room",
+    "roomName": "Silid Payapa",
+    "createdAt": {
+      "_seconds": 1759285681,
+      "_nanoseconds": 8000000
+    },
+    "isActive": false,
+    "updatedAt": {
+      "_seconds": 1764408327,
+      "_nanoseconds": 852000000
+    },
+    "currentReservation": null,
+    "status": "cleaning"
+  },
+  {
+    "id": "110",
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "roomName": "Silid Payapa",
+    "bedType": "Queen Bed",
+    "roomNumber": "110",
+    "basePrice": 2500,
+    "createdAt": {
+      "_seconds": 1759285681,
+      "_nanoseconds": 244000000
+    },
+    "floor": 1,
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "maxGuests": 2,
+    "roomType": "Standard Room",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "size": "25 sqm",
+    "isActive": false,
+    "updatedAt": {
+      "_seconds": 1764408414,
+      "_nanoseconds": 31000000
+    },
+    "currentReservation": null,
+    "status": "cleaning"
+  },
+  {
+    "id": "201",
+    "basePrice": 2500,
+    "floor": 2,
+    "createdAt": {
+      "_seconds": 1759285681,
+      "_nanoseconds": 490000000
+    },
+    "maxGuests": 2,
+    "roomName": "Silid Payapa",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "roomNumber": "201",
+    "size": "25 sqm",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "roomType": "Standard Room",
+    "bedType": "Queen Bed",
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764444171,
+      "_nanoseconds": 622000000
+    }
+  },
+  {
+    "id": "202",
+    "roomType": "Standard Room",
+    "bedType": "Twin Beds",
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "basePrice": 2500,
+    "maxGuests": 2,
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "roomName": "Silid Payapa",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "floor": 2,
+    "createdAt": {
+      "_seconds": 1759285681,
+      "_nanoseconds": 734000000
+    },
+    "roomNumber": "202",
+    "size": "25 sqm",
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764411359,
+      "_nanoseconds": 900000000
+    }
+  },
+  {
+    "id": "203",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "createdAt": {
+      "_seconds": 1759285681,
+      "_nanoseconds": 979000000
+    },
+    "roomName": "Silid Payapa",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "roomNumber": "203",
+    "bedType": "Queen Bed",
+    "roomType": "Standard Room",
+    "updatedAt": {
+      "_seconds": 1759285681,
+      "_nanoseconds": 979000000
+    },
+    "maxGuests": 2,
+    "size": "25 sqm",
+    "basePrice": 2500,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "floor": 2,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "204",
+    "floor": 2,
+    "bedType": "Queen Bed",
+    "basePrice": 2500,
+    "roomType": "Standard Room",
+    "roomName": "Silid Payapa",
+    "updatedAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 230000000
+    },
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "roomNumber": "204",
+    "maxGuests": 2,
+    "createdAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 230000000
+    },
+    "size": "25 sqm",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "205",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "basePrice": 2500,
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "floor": 2,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "roomType": "Standard Room",
+    "bedType": "Twin Beds",
+    "roomName": "Silid Payapa",
+    "createdAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 473000000
+    },
+    "maxGuests": 2,
+    "updatedAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 473000000
+    },
+    "size": "25 sqm",
+    "roomNumber": "205",
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "206",
+    "floor": 2,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "basePrice": 2500,
+    "roomNumber": "206",
+    "roomName": "Silid Payapa",
+    "bedType": "Queen Bed",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "createdAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 713000000
+    },
+    "maxGuests": 2,
+    "size": "25 sqm",
+    "updatedAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 713000000
+    },
+    "roomType": "Standard Room",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "207",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "bedType": "Queen Bed",
+    "createdAt": {
+      "_seconds": 1759285682,
+      "_nanoseconds": 946000000
+    },
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "floor": 2,
+    "roomNumber": "207",
+    "maxGuests": 2,
+    "roomType": "Standard Room",
+    "roomName": "Silid Payapa",
+    "basePrice": 2500,
+    "size": "25 sqm",
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763631795,
+      "_nanoseconds": 671000000
+    }
+  },
+  {
+    "id": "208",
+    "size": "25 sqm",
+    "roomNumber": "208",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "createdAt": {
+      "_seconds": 1759285683,
+      "_nanoseconds": 176000000
+    },
+    "floor": 2,
+    "basePrice": 2500,
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "roomName": "Silid Payapa",
+    "bedType": "Twin Beds",
+    "roomType": "Standard Room",
+    "maxGuests": 2,
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "updatedAt": {
+      "_seconds": 1759285683,
+      "_nanoseconds": 176000000
+    },
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "209",
+    "roomName": "Silid Payapa",
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "maxGuests": 2,
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "floor": 2,
+    "roomNumber": "209",
+    "basePrice": 2500,
+    "bedType": "Queen Bed",
+    "createdAt": {
+      "_seconds": 1759285683,
+      "_nanoseconds": 383000000
+    },
+    "roomType": "Standard Room",
+    "size": "25 sqm",
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763633894,
+      "_nanoseconds": 755000000
+    }
+  },
+  {
+    "id": "210",
+    "maxGuests": 2,
+    "size": "25 sqm",
+    "floor": 2,
+    "bedType": "Queen Bed",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping"
+    ],
+    "description": "Comfortable and cozy room perfect for couples or solo travelers seeking tranquility.",
+    "basePrice": 2500,
+    "roomNumber": "210",
+    "roomName": "Silid Payapa",
+    "createdAt": {
+      "_seconds": 1759285683,
+      "_nanoseconds": 620000000
+    },
+    "roomType": "Standard Room",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Refrigerator",
+      "Work Desk"
+    ],
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "301",
+    "basePrice": 3800,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "bedType": "King Bed",
+    "size": "35 sqm",
+    "createdAt": {
+      "_seconds": 1759285683,
+      "_nanoseconds": 865000000
+    },
+    "floor": 3,
+    "roomNumber": "301",
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "roomName": "Silid Marahuyo",
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "roomType": "Deluxe Room",
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763386068,
+      "_nanoseconds": 709000000
+    }
+  },
+  {
+    "id": "302",
+    "roomNumber": "302",
+    "roomType": "Deluxe Room",
+    "roomName": "Silid Marahuyo",
+    "createdAt": {
+      "_seconds": 1759285684,
+      "_nanoseconds": 112000000
+    },
+    "description": "Spacious and elegant room with premium amenities and stunning city views.",
+    "bedType": "King Bed",
+    "size": "35 sqm",
+    "basePrice": 3800,
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "floor": 3,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "maxGuests": 5,
+    "currentReservation": null,
+    "updatedAt": {
+      "_seconds": 1762745341,
+      "_nanoseconds": 975000000
+    },
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "303",
+    "bedType": "King Bed + Sofa Bed",
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "roomName": "Silid Marahuyo",
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "roomType": "Deluxe Room",
+    "createdAt": {
+      "_seconds": 1759285684,
+      "_nanoseconds": 357000000
+    },
+    "basePrice": 3800,
+    "floor": 3,
+    "size": "35 sqm",
+    "roomNumber": "303",
+    "updatedAt": {
+      "_seconds": 1759285684,
+      "_nanoseconds": 357000000
+    },
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning"
+  },
+  {
+    "id": "304",
+    "description": "Spacious and elegant room with premium amenities and stunning garden views.",
+    "floor": 3,
+    "roomNumber": "304",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "roomName": "Silid Marahuyo",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "roomType": "Deluxe Room",
+    "bedType": "King Bed",
+    "basePrice": 3800,
+    "createdAt": {
+      "_seconds": 1759285684,
+      "_nanoseconds": 601000000
+    },
+    "size": "35 sqm",
+    "maxGuests": 5,
+    "currentReservation": null,
+    "updatedAt": {
+      "_seconds": 1763125114,
+      "_nanoseconds": 307000000
+    },
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "305",
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "createdAt": {
+      "_seconds": 1759285684,
+      "_nanoseconds": 842000000
+    },
+    "roomNumber": "305",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "size": "35 sqm",
+    "roomName": "Silid Marahuyo",
+    "basePrice": 3800,
+    "floor": 3,
+    "bedType": "King Bed",
+    "updatedAt": {
+      "_seconds": 1759285684,
+      "_nanoseconds": 842000000
+    },
+    "roomType": "Deluxe Room",
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning"
+  },
+  {
+    "id": "306",
+    "floor": 3,
+    "bedType": "King Bed + Sofa Bed",
+    "size": "35 sqm",
+    "basePrice": 3800,
+    "roomType": "Deluxe Room",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "roomName": "Silid Marahuyo",
+    "createdAt": {
+      "_seconds": 1759285685,
+      "_nanoseconds": 53000000
+    },
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "description": "Spacious and elegant room with premium amenities and stunning city views.",
+    "roomNumber": "306",
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763386067,
+      "_nanoseconds": 907000000
+    }
+  },
+  {
+    "id": "307",
+    "updatedAt": {
+      "_seconds": 1759285685,
+      "_nanoseconds": 306000000
+    },
+    "roomName": "Silid Marahuyo",
+    "createdAt": {
+      "_seconds": 1759285685,
+      "_nanoseconds": 306000000
+    },
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "basePrice": 3800,
+    "bedType": "King Bed",
+    "floor": 3,
+    "roomType": "Deluxe Room",
+    "roomNumber": "307",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "size": "35 sqm",
+    "maxGuests": 5,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "308",
+    "bedType": "King Bed",
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "description": "Spacious and elegant room with premium amenities and stunning garden views.",
+    "size": "35 sqm",
+    "floor": 3,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "roomType": "Deluxe Room",
+    "createdAt": {
+      "_seconds": 1759285685,
+      "_nanoseconds": 544000000
+    },
+    "roomNumber": "308",
+    "basePrice": 3800,
+    "roomName": "Silid Marahuyo",
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763700866,
+      "_nanoseconds": 616000000
+    }
+  },
+  {
+    "id": "309",
+    "basePrice": 3800,
+    "bedType": "King Bed + Sofa Bed",
+    "roomNumber": "309",
+    "roomName": "Silid Marahuyo",
+    "updatedAt": {
+      "_seconds": 1759285685,
+      "_nanoseconds": 786000000
+    },
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "description": "Spacious and elegant room with premium amenities and stunning city views.",
+    "roomType": "Deluxe Room",
+    "size": "35 sqm",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "floor": 3,
+    "createdAt": {
+      "_seconds": 1759285685,
+      "_nanoseconds": 786000000
+    },
+    "maxGuests": 5,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "310",
+    "bedType": "King Bed",
+    "roomNumber": "310",
+    "roomName": "Silid Marahuyo",
+    "basePrice": 3800,
+    "updatedAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 28000000
+    },
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "createdAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 28000000
+    },
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "floor": 3,
+    "roomType": "Deluxe Room",
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "size": "35 sqm",
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning"
+  },
+  {
+    "id": "401",
+    "createdAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 278000000
+    },
+    "roomNumber": "401",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "floor": 4,
+    "size": "35 sqm",
+    "basePrice": 3800,
+    "bedType": "King Bed",
+    "updatedAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 278000000
+    },
+    "roomType": "Deluxe Room",
+    "roomName": "Silid Marahuyo",
+    "maxGuests": 5,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "402",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "floor": 4,
+    "description": "Spacious and elegant room with premium amenities and stunning city views.",
+    "createdAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 495000000
+    },
+    "roomNumber": "402",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "size": "35 sqm",
+    "roomType": "Deluxe Room",
+    "basePrice": 3800,
+    "bedType": "King Bed + Sofa Bed",
+    "roomName": "Silid Marahuyo",
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763633940,
+      "_nanoseconds": 779000000
+    }
+  },
+  {
+    "id": "403",
+    "bedType": "King Bed",
+    "floor": 4,
+    "size": "35 sqm",
+    "basePrice": 3800,
+    "createdAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 728000000
+    },
+    "description": "Spacious and elegant room with premium amenities and stunning garden views.",
+    "roomName": "Silid Marahuyo",
+    "roomType": "Deluxe Room",
+    "roomNumber": "403",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "maxGuests": 5,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763386067,
+      "_nanoseconds": 108000000
+    }
+  },
+  {
+    "id": "404",
+    "bedType": "King Bed",
+    "description": "Spacious and elegant room with premium amenities and stunning ocean views.",
+    "roomName": "Silid Marahuyo",
+    "basePrice": 3800,
+    "roomType": "Deluxe Room",
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "roomNumber": "404",
+    "size": "35 sqm",
+    "floor": 4,
+    "createdAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 948000000
+    },
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "updatedAt": {
+      "_seconds": 1759285686,
+      "_nanoseconds": 948000000
+    },
+    "maxGuests": 5,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "405",
+    "description": "Spacious and elegant room with premium amenities and stunning city views.",
+    "floor": 4,
+    "createdAt": {
+      "_seconds": 1759285687,
+      "_nanoseconds": 162000000
+    },
+    "updatedAt": {
+      "_seconds": 1759285687,
+      "_nanoseconds": 162000000
+    },
+    "roomType": "Deluxe Room",
+    "features": [
+      "City View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens"
+    ],
+    "bedType": "King Bed + Sofa Bed",
+    "basePrice": 3800,
+    "size": "35 sqm",
+    "roomName": "Silid Marahuyo",
+    "roomNumber": "405",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Cable TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Balcony",
+      "Room Service"
+    ],
+    "maxGuests": 5,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "501",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "basePrice": 5500,
+    "roomNumber": "501",
+    "description": "Luxurious suite with separate living area, kitchenette, and panoramic ocean views.",
+    "roomType": "Suite Room",
+    "bedType": "King Bed + Living Area",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "floor": 5,
+    "createdAt": {
+      "_seconds": 1759285687,
+      "_nanoseconds": 478000000
+    },
+    "roomName": "Silid Ginhawa",
+    "size": "55 sqm",
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763862447,
+      "_nanoseconds": 658000000
+    }
+  },
+  {
+    "id": "502",
+    "bedType": "King Bed + Living Area",
+    "features": [
+      "City Skyline View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "description": "Luxurious suite with separate living area, kitchenette, and city skyline views.",
+    "roomNumber": "502",
+    "floor": 5,
+    "roomName": "Silid Ginhawa",
+    "roomType": "Suite Room",
+    "basePrice": 5500,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "createdAt": {
+      "_seconds": 1759285687,
+      "_nanoseconds": 700000000
+    },
+    "size": "55 sqm",
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "503",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "floor": 5,
+    "bedType": "King Bed + Sofa Bed",
+    "size": "55 sqm",
+    "updatedAt": {
+      "_seconds": 1759285687,
+      "_nanoseconds": 919000000
+    },
+    "basePrice": 5500,
+    "roomType": "Suite Room",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "description": "Luxurious suite with separate living area, kitchenette, and panoramic ocean views.",
+    "roomNumber": "503",
+    "roomName": "Silid Ginhawa",
+    "createdAt": {
+      "_seconds": 1759285687,
+      "_nanoseconds": 919000000
+    },
+    "maxGuests": 6,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "504",
+    "description": "Luxurious suite with separate living area, kitchenette, and garden views.",
+    "basePrice": 5500,
+    "size": "55 sqm",
+    "createdAt": {
+      "_seconds": 1759285688,
+      "_nanoseconds": 157000000
+    },
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "roomName": "Silid Ginhawa",
+    "bedType": "King Bed + Living Area",
+    "floor": 5,
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "roomNumber": "504",
+    "roomType": "Suite Room",
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763125453,
+      "_nanoseconds": 430000000
+    }
+  },
+  {
+    "id": "505",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "size": "55 sqm",
+    "roomNumber": "505",
+    "createdAt": {
+      "_seconds": 1759285688,
+      "_nanoseconds": 389000000
+    },
+    "roomName": "Silid Ginhawa",
+    "roomType": "Suite Room",
+    "floor": 5,
+    "description": "Luxurious suite with separate living area, kitchenette, and panoramic ocean views.",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "basePrice": 5500,
+    "bedType": "King Bed + Living Area",
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763126272,
+      "_nanoseconds": 775000000
+    }
+  },
+  {
+    "id": "506",
+    "description": "Luxurious suite with separate living area, kitchenette, and city skyline views.",
+    "createdAt": {
+      "_seconds": 1759285688,
+      "_nanoseconds": 602000000
+    },
+    "bedType": "King Bed + Sofa Bed",
+    "basePrice": 5500,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "roomType": "Suite Room",
+    "features": [
+      "City Skyline View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "roomNumber": "506",
+    "updatedAt": {
+      "_seconds": 1759285688,
+      "_nanoseconds": 602000000
+    },
+    "size": "55 sqm",
+    "floor": 5,
+    "roomName": "Silid Ginhawa",
+    "maxGuests": 6,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  },
+  {
+    "id": "507",
+    "bedType": "King Bed + Living Area",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "roomName": "Silid Ginhawa",
+    "roomNumber": "507",
+    "floor": 5,
+    "size": "55 sqm",
+    "description": "Luxurious suite with separate living area, kitchenette, and ocean views.",
+    "roomType": "Suite Room",
+    "createdAt": {
+      "_seconds": 1759285688,
+      "_nanoseconds": 836000000
+    },
+    "basePrice": 5500,
+    "features": [
+      "Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763633873,
+      "_nanoseconds": 731000000
+    }
+  },
+  {
+    "id": "508",
+    "roomNumber": "508",
+    "roomName": "Silid Ginhawa",
+    "createdAt": {
+      "_seconds": 1759285689,
+      "_nanoseconds": 74000000
+    },
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "size": "55 sqm",
+    "floor": 5,
+    "bedType": "King Bed + Living Area",
+    "basePrice": 5500,
+    "description": "Luxurious suite with separate living area, kitchenette, and garden views.",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "roomType": "Suite Room",
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763125122,
+      "_nanoseconds": 143000000
+    }
+  },
+  {
+    "id": "509",
+    "bedType": "King Bed + Sofa Bed",
+    "roomName": "Silid Ginhawa",
+    "createdAt": {
+      "_seconds": 1759285689,
+      "_nanoseconds": 288000000
+    },
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "description": "Luxurious suite with separate living area, kitchenette, and panoramic ocean views.",
+    "size": "55 sqm",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "basePrice": 5500,
+    "roomType": "Suite Room",
+    "floor": 5,
+    "roomNumber": "509",
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764444327,
+      "_nanoseconds": 243000000
+    }
+  },
+  {
+    "id": "510",
+    "features": [
+      "City Skyline View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Living Area"
+    ],
+    "roomName": "Silid Ginhawa",
+    "roomType": "Suite Room",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Kitchenette",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast"
+    ],
+    "basePrice": 5500,
+    "bedType": "King Bed + Living Area",
+    "size": "55 sqm",
+    "description": "Luxurious suite with separate living area, kitchenette, and city skyline views.",
+    "roomNumber": "510",
+    "createdAt": {
+      "_seconds": 1759285689,
+      "_nanoseconds": 535000000
+    },
+    "floor": 5,
+    "maxGuests": 6,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764444171,
+      "_nanoseconds": 622000000
+    }
+  },
+  {
+    "id": "601",
+    "roomName": "Silid Haraya",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Bedrooms",
+      "Family Friendly"
+    ],
+    "size": "75 sqm",
+    "description": "Spacious family suite with separate bedrooms, full kitchen, and panoramic ocean views.",
+    "createdAt": {
+      "_seconds": 1759285689,
+      "_nanoseconds": 762000000
+    },
+    "basePrice": 8000,
+    "roomType": "Premium Family Suite",
+    "floor": 6,
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Full Kitchen",
+      "Dining Area",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast",
+      "Laundry Service"
+    ],
+    "roomNumber": "601",
+    "bedType": "King Bed + 2 Single Beds",
+    "maxGuests": 8,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764151173,
+      "_nanoseconds": 995000000
+    }
+  },
+  {
+    "id": "602",
+    "size": "75 sqm",
+    "basePrice": 8000,
+    "createdAt": {
+      "_seconds": 1759285690,
+      "_nanoseconds": 8000000
+    },
+    "roomType": "Premium Family Suite",
+    "roomName": "Silid Haraya",
+    "bedType": "King Bed + 2 Single Beds",
+    "description": "Spacious family suite with separate bedrooms, full kitchen, and city skyline views.",
+    "roomNumber": "602",
+    "floor": 6,
+    "features": [
+      "City Skyline View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Bedrooms",
+      "Family Friendly"
+    ],
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Full Kitchen",
+      "Dining Area",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast",
+      "Laundry Service"
+    ],
+    "maxGuests": 8,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "603",
+    "floor": 6,
+    "basePrice": 8000,
+    "size": "75 sqm",
+    "description": "Spacious family suite with separate bedrooms, full kitchen, and panoramic ocean views.",
+    "roomType": "Premium Family Suite",
+    "roomNumber": "603",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Bedrooms",
+      "Family Friendly"
+    ],
+    "bedType": "King Bed + Queen Bed",
+    "roomName": "Silid Haraya",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Full Kitchen",
+      "Dining Area",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast",
+      "Laundry Service"
+    ],
+    "createdAt": {
+      "_seconds": 1759285690,
+      "_nanoseconds": 226000000
+    },
+    "maxGuests": 8,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1764375191,
+      "_nanoseconds": 226000000
+    }
+  },
+  {
+    "id": "604",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Full Kitchen",
+      "Dining Area",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast",
+      "Laundry Service"
+    ],
+    "features": [
+      "Garden View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Bedrooms",
+      "Family Friendly"
+    ],
+    "size": "75 sqm",
+    "bedType": "King Bed + 2 Single Beds",
+    "basePrice": 8000,
+    "roomName": "Silid Haraya",
+    "description": "Spacious family suite with separate bedrooms, full kitchen, and garden views.",
+    "createdAt": {
+      "_seconds": 1759285690,
+      "_nanoseconds": 480000000
+    },
+    "floor": 6,
+    "roomNumber": "604",
+    "roomType": "Premium Family Suite",
+    "maxGuests": 8,
+    "isActive": false,
+    "currentReservation": null,
+    "status": "cleaning",
+    "updatedAt": {
+      "_seconds": 1763631795,
+      "_nanoseconds": 671000000
+    }
+  },
+  {
+    "id": "605",
+    "roomNumber": "605",
+    "features": [
+      "Panoramic Ocean View",
+      "Non-smoking",
+      "Daily Housekeeping",
+      "Premium Linens",
+      "Separate Bedrooms",
+      "Family Friendly"
+    ],
+    "bedType": "King Bed + Queen Bed",
+    "roomName": "Silid Haraya",
+    "description": "Spacious family suite with separate bedrooms, full kitchen, and panoramic ocean views.",
+    "roomType": "Premium Family Suite",
+    "createdAt": {
+      "_seconds": 1759285690,
+      "_nanoseconds": 719000000
+    },
+    "floor": 6,
+    "basePrice": 8000,
+    "updatedAt": {
+      "_seconds": 1759285690,
+      "_nanoseconds": 719000000
+    },
+    "size": "75 sqm",
+    "amenities": [
+      "Air Conditioning",
+      "Free WiFi",
+      "Smart TV",
+      "Private Bathroom",
+      "Mini Bar",
+      "Work Desk",
+      "Living Area",
+      "Full Kitchen",
+      "Dining Area",
+      "Balcony",
+      "Room Service",
+      "Complimentary Breakfast",
+      "Laundry Service"
+    ],
+    "maxGuests": 8,
+    "currentReservation": null,
+    "isActive": false,
+    "status": "cleaning"
+  }
+]

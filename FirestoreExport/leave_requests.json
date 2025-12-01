@@ -1,0 +1,93 @@
+[
+  {
+    "id": "2LuTx3a5UOi6zmhvQ1DP",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "fullName": "John Rex Landar",
+    "classification": "Inventory Clerk",
+    "startDate": "2025-12-04",
+    "endDate": "2025-12-05",
+    "leaveType": "Emergency",
+    "notes": "",
+    "totalDays": 2,
+    "status": "pending",
+    "deductedFromBalance": false,
+    "createdAt": {
+      "_seconds": 1764255252,
+      "_nanoseconds": 654000000
+    }
+  },
+  {
+    "id": "4viIbU6TPAi6e5TGU3c2",
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "2qdcGJ34nxDFr2uB62sM"
+        ]
+      },
+      "_converter": {}
+    },
+    "fullName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "startDate": "2025-11-27",
+    "endDate": "2025-11-29",
+    "leaveType": "Sick",
+    "notes": "",
+    "createdAt": {
+      "_seconds": 1764103727,
+      "_nanoseconds": 340000000
+    },
+    "status": "approved",
+    "updatedAt": {
+      "_seconds": 1764150792,
+      "_nanoseconds": 155000000
+    }
+  },
+  {
+    "id": "u9WMnjHriatocvqmIRP9",
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "2qdcGJ34nxDFr2uB62sM"
+        ]
+      },
+      "_converter": {}
+    },
+    "fullName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "startDate": "2025-11-27",
+    "endDate": "2025-11-29",
+    "leaveType": "Sick",
+    "notes": "",
+    "createdAt": {
+      "_seconds": 1764151099,
+      "_nanoseconds": 433000000
+    },
+    "status": "rejected",
+    "updatedAt": {
+      "_seconds": 1764153203,
+      "_nanoseconds": 753000000
+    }
+  }
+]

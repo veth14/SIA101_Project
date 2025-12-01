@@ -1,0 +1,28 @@
+[
+  {
+    "id": "dashboard",
+    "migratedAt": {
+      "_seconds": 1762774713,
+      "_nanoseconds": 503000000
+    },
+    "arrivals": {
+      "2025-11-06": 3
+    },
+    "updatedAt": {
+      "_seconds": 1762774713,
+      "_nanoseconds": 503000000
+    },
+    "arrivals.2025-11-13": 1,
+    "arrivals.2025-11-14": 6,
+    "arrivals.2025-11-17": 2,
+    "arrivals.2025-11-20": 2,
+    "arrivals.2025-11-21": 1,
+    "arrivals.2025-11-26": 8,
+    "arrivals.2025-11-29": 5,
+    "monthly.2025-11": 26,
+    "totalBookings": 54,
+    "totalRevenue": 1395296,
+    "arrivals.2025-11-30": 1,
+    "currentGuests": 15
+  }
+]

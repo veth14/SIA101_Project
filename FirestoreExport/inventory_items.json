@@ -1,0 +1,3051 @@
+[
+  {
+    "id": "FB001",
+    "unit": "kg",
+    "unitPrice": 850,
+    "reorderLevel": 20,
+    "description": "Premium Arabica coffee beans, 1kg bags",
+    "lastRestocked": "2024-01-18",
+    "supplier": "Coffee Masters Ltd.",
+    "createdAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 113000000
+    },
+    "category": "Food & Beverage",
+    "updatedAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 113000000
+    },
+    "location": "Kitchen Storage A",
+    "name": "Coffee Beans - Arabica",
+    "initialStock": 50,
+    "currentStock": 10
+  },
+  {
+    "id": "FB002",
+    "supplier": "Tea Garden Co.",
+    "createdAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 322000000
+    },
+    "location": "Kitchen Storage A",
+    "currentStock": 80,
+    "reorderLevel": 30,
+    "updatedAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 322000000
+    },
+    "description": "Premium tea bags, assorted flavors, 100 bags per box",
+    "name": "Tea Bags - Assorted",
+    "category": "Food & Beverage",
+    "unitPrice": 320,
+    "lastRestocked": "2024-01-17",
+    "unit": "boxes",
+    "initialStock": 80
+  },
+  {
+    "id": "FB003",
+    "createdAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 561000000
+    },
+    "unit": "boxes",
+    "description": "White sugar packets, 5g each, 1000 per box",
+    "name": "Sugar Packets",
+    "category": "Food & Beverage",
+    "location": "Kitchen Storage A",
+    "supplier": "Sweet Supply Corp.",
+    "reorderLevel": 8,
+    "updatedAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 561000000
+    },
+    "currentStock": 20,
+    "unitPrice": 180,
+    "lastRestocked": "2024-01-19",
+    "initialStock": 20
+  },
+  {
+    "id": "FB004",
+    "lastRestocked": "2024-01-21",
+    "unit": "cartons",
+    "location": "Kitchen Refrigerator",
+    "currentStock": 30,
+    "name": "Milk - Fresh",
+    "updatedAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 794000000
+    },
+    "unitPrice": 85,
+    "category": "Food & Beverage",
+    "reorderLevel": 15,
+    "createdAt": {
+      "_seconds": 1759290279,
+      "_nanoseconds": 794000000
+    },
+    "supplier": "Dairy Fresh Inc.",
+    "description": "Fresh whole milk, 1L cartons",
+    "initialStock": 30
+  },
+  {
+    "id": "FB005",
+    "unitPrice": 65,
+    "location": "Kitchen Storage B",
+    "supplier": "Bakery Express",
+    "reorderLevel": 10,
+    "category": "Food & Beverage",
+    "unit": "loaves",
+    "updatedAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 85000000
+    },
+    "lastRestocked": "2024-01-22",
+    "name": "Bread - Sliced White",
+    "description": "Fresh sliced white bread loaves",
+    "currentStock": 25,
+    "createdAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 85000000
+    },
+    "initialStock": 25
+  },
+  {
+    "id": "FB006",
+    "createdAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 324000000
+    },
+    "category": "Food & Beverage",
+    "description": "Fresh large eggs, 30 pieces per tray",
+    "reorderLevel": 8,
+    "unit": "trays",
+    "currentStock": 15,
+    "lastRestocked": "2024-01-21",
+    "supplier": "Farm Fresh Eggs",
+    "name": "Eggs - Large",
+    "updatedAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 324000000
+    },
+    "location": "Kitchen Refrigerator",
+    "unitPrice": 180,
+    "initialStock": 15
+  },
+  {
+    "id": "FB007",
+    "reorderLevel": 10,
+    "updatedAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 560000000
+    },
+    "description": "Unsalted butter, 500g blocks",
+    "category": "Food & Beverage",
+    "location": "Kitchen Refrigerator",
+    "unitPrice": 220,
+    "currentStock": 20,
+    "lastRestocked": "2024-01-20",
+    "createdAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 560000000
+    },
+    "unit": "blocks",
+    "name": "Butter",
+    "supplier": "Dairy Fresh Inc.",
+    "initialStock": 20
+  },
+  {
+    "id": "FB008",
+    "createdAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 805000000
+    },
+    "supplier": "Golden Oil Co.",
+    "unit": "containers",
+    "currentStock": 12,
+    "name": "Cooking Oil",
+    "unitPrice": 450,
+    "updatedAt": {
+      "_seconds": 1759290280,
+      "_nanoseconds": 805000000
+    },
+    "lastRestocked": "2024-01-15",
+    "category": "Food & Beverage",
+    "reorderLevel": 5,
+    "location": "Kitchen Storage C",
+    "description": "Vegetable cooking oil, 5L containers",
+    "initialStock": 12
+  },
+  {
+    "id": "FB009",
+    "updatedAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 44000000
+    },
+    "reorderLevel": 12,
+    "name": "Salt",
+    "category": "Food & Beverage",
+    "currentStock": 30,
+    "location": "Kitchen Storage C",
+    "unit": "packs",
+    "unitPrice": 45,
+    "lastRestocked": "2024-01-10",
+    "supplier": "Seasoning Supplies",
+    "description": "Iodized table salt, 1kg packs",
+    "createdAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 44000000
+    },
+    "initialStock": 30
+  },
+  {
+    "id": "FB010",
+    "lastRestocked": "2024-01-10",
+    "reorderLevel": 8,
+    "createdAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 282000000
+    },
+    "description": "Ground black pepper, 500g containers",
+    "unit": "containers",
+    "name": "Black Pepper",
+    "unitPrice": 180,
+    "category": "Food & Beverage",
+    "location": "Kitchen Storage C",
+    "supplier": "Seasoning Supplies",
+    "initialStock": 15,
+    "currentStock": 1,
+    "updatedAt": "November 25, 2025 at 6:35:26 PM GMT+8"
+  },
+  {
+    "id": "FB011",
+    "unitPrice": 1200,
+    "category": "Food & Beverage",
+    "name": "Rice",
+    "description": "Premium jasmine rice, 25kg sacks",
+    "createdAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 523000000
+    },
+    "lastRestocked": "2024-01-12",
+    "supplier": "Rice Traders Inc.",
+    "updatedAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 523000000
+    },
+    "currentStock": 8,
+    "unit": "sacks",
+    "location": "Kitchen Storage D",
+    "reorderLevel": 3,
+    "initialStock": 8
+  },
+  {
+    "id": "FB012",
+    "supplier": "Italian Foods Co.",
+    "category": "Food & Beverage",
+    "name": "Pasta - Spaghetti",
+    "unitPrice": 120,
+    "currentStock": 25,
+    "reorderLevel": 10,
+    "location": "Kitchen Storage D",
+    "description": "Italian spaghetti pasta, 1kg packs",
+    "createdAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 755000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290281,
+      "_nanoseconds": 755000000
+    },
+    "lastRestocked": "2024-01-14",
+    "unit": "packs",
+    "initialStock": 25
+  },
+  {
+    "id": "FB013",
+    "name": "Tomato Sauce",
+    "supplier": "Italian Foods Co.",
+    "createdAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 10000000
+    },
+    "currentStock": 40,
+    "description": "Premium tomato sauce, 400g cans",
+    "reorderLevel": 20,
+    "location": "Kitchen Storage D",
+    "unit": "cans",
+    "category": "Food & Beverage",
+    "unitPrice": 65,
+    "lastRestocked": "2024-01-14",
+    "updatedAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 10000000
+    },
+    "initialStock": 40
+  },
+  {
+    "id": "FB014",
+    "reorderLevel": 10,
+    "createdAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 250000000
+    },
+    "category": "Food & Beverage",
+    "location": "Kitchen Freezer",
+    "name": "Chicken Breast",
+    "updatedAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 250000000
+    },
+    "lastRestocked": "2024-01-22",
+    "description": "Fresh chicken breast fillets, per kg",
+    "unit": "kg",
+    "supplier": "Fresh Meat Co.",
+    "currentStock": 20,
+    "unitPrice": 280,
+    "initialStock": 20
+  },
+  {
+    "id": "FB015",
+    "unit": "kg",
+    "currentStock": 15,
+    "unitPrice": 650,
+    "createdAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 460000000
+    },
+    "category": "Food & Beverage",
+    "location": "Kitchen Freezer",
+    "description": "Premium beef sirloin steaks, per kg",
+    "supplier": "Premium Meats Ltd.",
+    "lastRestocked": "2024-01-21",
+    "reorderLevel": 8,
+    "name": "Beef Sirloin",
+    "updatedAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 460000000
+    },
+    "initialStock": 15
+  },
+  {
+    "id": "FB016",
+    "unit": "kg",
+    "lastRestocked": "2024-01-22",
+    "location": "Kitchen Freezer",
+    "category": "Food & Beverage",
+    "currentStock": 12,
+    "reorderLevel": 6,
+    "createdAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 698000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 698000000
+    },
+    "name": "Fresh Salmon",
+    "supplier": "Ocean Fresh Seafood",
+    "unitPrice": 850,
+    "description": "Atlantic salmon fillets, per kg",
+    "initialStock": 12
+  },
+  {
+    "id": "FB017",
+    "reorderLevel": 15,
+    "unit": "kg",
+    "category": "Food & Beverage",
+    "supplier": "Garden Fresh Produce",
+    "unitPrice": 120,
+    "createdAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 935000000
+    },
+    "lastRestocked": "2024-01-22",
+    "location": "Kitchen Refrigerator",
+    "updatedAt": {
+      "_seconds": 1759290282,
+      "_nanoseconds": 935000000
+    },
+    "name": "Mixed Vegetables",
+    "currentStock": 30,
+    "description": "Fresh mixed vegetables, seasonal selection",
+    "initialStock": 30
+  },
+  {
+    "id": "FB018",
+    "unit": "kg",
+    "description": "Yellow onions, per kg",
+    "name": "Onions",
+    "location": "Kitchen Storage E",
+    "reorderLevel": 10,
+    "lastRestocked": "2024-01-20",
+    "updatedAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 145000000
+    },
+    "category": "Food & Beverage",
+    "supplier": "Garden Fresh Produce",
+    "currentStock": 25,
+    "createdAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 145000000
+    },
+    "unitPrice": 65,
+    "initialStock": 25
+  },
+  {
+    "id": "FB019",
+    "reorderLevel": 4,
+    "currentStock": 8,
+    "updatedAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 382000000
+    },
+    "lastRestocked": "2024-01-20",
+    "unit": "kg",
+    "unitPrice": 180,
+    "category": "Food & Beverage",
+    "name": "Garlic",
+    "createdAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 382000000
+    },
+    "supplier": "Garden Fresh Produce",
+    "location": "Kitchen Storage E",
+    "description": "Fresh garlic bulbs, per kg",
+    "initialStock": 8
+  },
+  {
+    "id": "FB020",
+    "unit": "pieces",
+    "reorderLevel": 30,
+    "supplier": "Glassware Pro",
+    "location": "Bar Storage",
+    "updatedAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 627000000
+    },
+    "createdAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 627000000
+    },
+    "unitPrice": 85,
+    "name": "Wine Glasses",
+    "lastRestocked": "2024-01-08",
+    "description": "Crystal wine glasses, 350ml capacity",
+    "category": "Food & Beverage",
+    "currentStock": 100,
+    "initialStock": 100
+  },
+  {
+    "id": "FO005",
+    "unitPrice": 280,
+    "updatedAt": {
+      "_seconds": 1759290289,
+      "_nanoseconds": 342000000
+    },
+    "reorderLevel": 2,
+    "location": "Front Office Storage",
+    "lastRestocked": "2024-01-10",
+    "currentStock": 6,
+    "category": "Front Office",
+    "name": "Staplers",
+    "supplier": "Office Supplies Co.",
+    "createdAt": {
+      "_seconds": 1759290289,
+      "_nanoseconds": 342000000
+    },
+    "unit": "pieces",
+    "description": "Heavy-duty office staplers, 25 sheet capacity",
+    "initialStock": 6
+  },
+  {
+    "id": "FO006",
+    "name": "Staples",
+    "reorderLevel": 6,
+    "category": "Front Office",
+    "currentStock": 15,
+    "unitPrice": 45,
+    "lastRestocked": "2024-01-10",
+    "location": "Front Office Storage",
+    "description": "Standard staples, 26/6, 5000 per box",
+    "createdAt": {
+      "_seconds": 1759290289,
+      "_nanoseconds": 550000000
+    },
+    "supplier": "Office Supplies Co.",
+    "unit": "boxes",
+    "updatedAt": {
+      "_seconds": 1759290289,
+      "_nanoseconds": 550000000
+    },
+    "initialStock": 15
+  },
+  {
+    "id": "FO007",
+    "currentStock": 12,
+    "lastRestocked": "2024-01-14",
+    "name": "File Folders",
+    "location": "Front Office Storage",
+    "supplier": "Office Supplies Co.",
+    "reorderLevel": 5,
+    "createdAt": {
+      "_seconds": 1759290289,
+      "_nanoseconds": 794000000
+    },
+    "unitPrice": 320,
+    "unit": "packs",
+    "category": "Front Office",
+    "updatedAt": {
+      "_seconds": 1759290289,
+      "_nanoseconds": 794000000
+    },
+    "description": "Manila file folders, A4 size, 100 per pack",
+    "initialStock": 12
+  },
+  {
+    "id": "FO008",
+    "createdAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 24000000
+    },
+    "currentStock": 25,
+    "updatedAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 24000000
+    },
+    "unit": "pieces",
+    "reorderLevel": 10,
+    "name": "Binders",
+    "supplier": "Office Supplies Co.",
+    "description": "3-ring binders, 2 inch capacity, assorted colors",
+    "category": "Front Office",
+    "lastRestocked": "2024-01-14",
+    "location": "Front Office Storage",
+    "unitPrice": 85,
+    "initialStock": 25
+  },
+  {
+    "id": "FO009",
+    "lastRestocked": "2024-01-16",
+    "currentStock": 8,
+    "createdAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 261000000
+    },
+    "reorderLevel": 3,
+    "category": "Front Office",
+    "supplier": "Hotel Forms Co.",
+    "name": "Guest Registration Cards",
+    "unit": "packs",
+    "unitPrice": 450,
+    "updatedAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 261000000
+    },
+    "description": "Hotel guest registration cards, 1000 per pack",
+    "location": "Front Desk",
+    "initialStock": 8
+  },
+  {
+    "id": "FO010",
+    "description": "RFID hotel key cards, blank, 500 per pack",
+    "unit": "packs",
+    "location": "Front Desk",
+    "lastRestocked": "2024-01-18",
+    "name": "Key Cards",
+    "reorderLevel": 8,
+    "createdAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 500000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 500000000
+    },
+    "category": "Front Office",
+    "supplier": "Security Systems Inc.",
+    "unitPrice": 650,
+    "currentStock": 20,
+    "initialStock": 20
+  },
+  {
+    "id": "FO011",
+    "location": "Front Desk",
+    "unit": "rolls",
+    "createdAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 735000000
+    },
+    "unitPrice": 35,
+    "category": "Front Office",
+    "updatedAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 735000000
+    },
+    "currentStock": 30,
+    "supplier": "POS Supplies Ltd.",
+    "reorderLevel": 12,
+    "name": "Receipt Paper",
+    "description": "Thermal receipt paper rolls, 80mm x 80mm",
+    "lastRestocked": "2024-01-17",
+    "initialStock": 30
+  },
+  {
+    "id": "FO012",
+    "category": "Front Office",
+    "currentStock": 10,
+    "unitPrice": 180,
+    "unit": "boxes",
+    "supplier": "Office Supplies Co.",
+    "updatedAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 959000000
+    },
+    "createdAt": {
+      "_seconds": 1759290290,
+      "_nanoseconds": 959000000
+    },
+    "reorderLevel": 4,
+    "location": "Front Office Storage",
+    "description": "White business envelopes, #10 size, 500 per box",
+    "name": "Envelopes - Business",
+    "lastRestocked": "2024-01-13",
+    "initialStock": 10
+  },
+  {
+    "id": "FO013",
+    "category": "Front Office",
+    "description": "Custom hotel rubber stamps (PAID, RECEIVED, etc.)",
+    "name": "Rubber Stamps",
+    "lastRestocked": "2024-01-08",
+    "location": "Front Desk",
+    "currentStock": 8,
+    "createdAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 167000000
+    },
+    "unit": "pieces",
+    "reorderLevel": 3,
+    "supplier": "Stamp Makers Co.",
+    "unitPrice": 120,
+    "updatedAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 167000000
+    },
+    "initialStock": 8
+  },
+  {
+    "id": "FO014",
+    "unit": "pieces",
+    "category": "Front Office",
+    "currentStock": 12,
+    "unitPrice": 65,
+    "reorderLevel": 5,
+    "createdAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 377000000
+    },
+    "supplier": "Stamp Makers Co.",
+    "location": "Front Desk",
+    "description": "Blue ink pads for rubber stamps",
+    "updatedAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 377000000
+    },
+    "lastRestocked": "2024-01-08",
+    "name": "Ink Pads",
+    "initialStock": 12
+  },
+  {
+    "id": "FO015",
+    "currentStock": 4,
+    "name": "Calculator",
+    "description": "Desktop calculator, 12-digit display",
+    "updatedAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 606000000
+    },
+    "supplier": "Office Electronics",
+    "unit": "pieces",
+    "unitPrice": 450,
+    "reorderLevel": 2,
+    "createdAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 606000000
+    },
+    "lastRestocked": "2024-01-05",
+    "category": "Front Office",
+    "location": "Front Desk",
+    "initialStock": 4
+  },
+  {
+    "id": "FO016",
+    "supplier": "Telecom Solutions",
+    "updatedAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 817000000
+    },
+    "unitPrice": 850,
+    "category": "Front Office",
+    "location": "Front Desk",
+    "createdAt": {
+      "_seconds": 1759290291,
+      "_nanoseconds": 817000000
+    },
+    "currentStock": 6,
+    "unit": "pieces",
+    "reorderLevel": 2,
+    "name": "Telephone Headsets",
+    "lastRestocked": "2024-01-07",
+    "description": "Wireless telephone headsets for front desk",
+    "initialStock": 6
+  },
+  {
+    "id": "FO017",
+    "currentStock": 100,
+    "reorderLevel": 40,
+    "updatedAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 47000000
+    },
+    "name": "Guest Welcome Folders",
+    "unit": "pieces",
+    "createdAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 47000000
+    },
+    "location": "Front Desk",
+    "unitPrice": 25,
+    "supplier": "Print Shop Pro",
+    "category": "Front Office",
+    "lastRestocked": "2024-01-19",
+    "description": "Hotel branded welcome folders for guests",
+    "initialStock": 100
+  },
+  {
+    "id": "FO018",
+    "location": "Front Desk",
+    "unitPrice": 320,
+    "name": "Business Cards",
+    "category": "Front Office",
+    "currentStock": 5,
+    "supplier": "Print Shop Pro",
+    "updatedAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 256000000
+    },
+    "description": "Hotel business cards, 1000 per box",
+    "createdAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 256000000
+    },
+    "reorderLevel": 2,
+    "unit": "boxes",
+    "lastRestocked": "2024-01-11",
+    "initialStock": 5
+  },
+  {
+    "id": "FO019",
+    "createdAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 466000000
+    },
+    "category": "Front Office",
+    "name": "Hotel Brochures",
+    "updatedAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 466000000
+    },
+    "reorderLevel": 3,
+    "lastRestocked": "2024-01-19",
+    "unitPrice": 450,
+    "supplier": "Print Shop Pro",
+    "unit": "packs",
+    "currentStock": 8,
+    "location": "Front Desk",
+    "description": "Hotel information brochures, 500 per pack",
+    "initialStock": 8
+  },
+  {
+    "id": "FO020",
+    "location": "Front Desk",
+    "category": "Front Office",
+    "supplier": "Packaging Solutions",
+    "name": "Guest Amenity Bags",
+    "lastRestocked": "2024-01-20",
+    "unitPrice": 15,
+    "currentStock": 200,
+    "unit": "pieces",
+    "updatedAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 675000000
+    },
+    "createdAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 675000000
+    },
+    "description": "Small paper bags for guest amenities",
+    "reorderLevel": 80,
+    "initialStock": 200
+  },
+  {
+    "id": "FO021",
+    "category": "Front Office",
+    "currentStock": 50,
+    "lastRestocked": "2024-01-20",
+    "description": "White A4 copy paper, 80gsm, 500 sheets per ream",
+    "location": "Front Office Storage",
+    "name": "New Name from Postman",
+    "reorderLevel": 20,
+    "supplier": "Office Supplies Co.",
+    "unit": "reams",
+    "unitPrice": 180,
+    "createdAt": "November 10, 2025 at 7:01:06 PM GMT+8",
+    "status": "pending",
+    "initialStock": 50
+  },
+  {
+    "id": "FO022",
+    "category": "Front Office",
+    "currentStock": 50,
+    "description": "White A4 copy paper, 80gsm, 500 sheets per ream",
+    "location": "Front Office Storage",
+    "name": "New Name from Postman",
+    "reorderLevel": 20,
+    "supplier": "Office Supplies Co.",
+    "unit": "reams",
+    "unitPrice": 180,
+    "createdAt": "November 10, 2025 at 7:02:42 PM GMT+8",
+    "status": "pending",
+    "initialStock": 50
+  },
+  {
+    "id": "GA001",
+    "updatedAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 77000000
+    },
+    "currentStock": 15,
+    "category": "Guest Amenities",
+    "createdAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 77000000
+    },
+    "unit": "baskets",
+    "supplier": "Fresh Fruit Co.",
+    "reorderLevel": 6,
+    "lastRestocked": "2024-01-21",
+    "location": "Guest Services",
+    "description": "Fresh fruit welcome baskets for VIP guests",
+    "unitPrice": 450,
+    "name": "Welcome Fruit Baskets",
+    "initialStock": 15
+  },
+  {
+    "id": "GA002",
+    "reorderLevel": 10,
+    "lastRestocked": "2024-01-19",
+    "unitPrice": 320,
+    "updatedAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 287000000
+    },
+    "supplier": "Sweet Delights Ltd.",
+    "category": "Guest Amenities",
+    "currentStock": 25,
+    "name": "Chocolate Gift Boxes",
+    "description": "Premium chocolate gift boxes for special occasions",
+    "location": "Guest Services",
+    "unit": "boxes",
+    "createdAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 287000000
+    },
+    "initialStock": 25
+  },
+  {
+    "id": "GA003",
+    "unit": "bottles",
+    "reorderLevel": 12,
+    "unitPrice": 850,
+    "updatedAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 504000000
+    },
+    "currentStock": 30,
+    "location": "Guest Services",
+    "supplier": "Wine Merchants Co.",
+    "name": "Wine Bottles - House Selection",
+    "description": "Complimentary wine bottles for special guests",
+    "lastRestocked": "2024-01-18",
+    "category": "Guest Amenities",
+    "createdAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 504000000
+    },
+    "initialStock": 30
+  },
+  {
+    "id": "GA004",
+    "supplier": "Premium Spirits Ltd.",
+    "unit": "bottles",
+    "createdAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 759000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290302,
+      "_nanoseconds": 759000000
+    },
+    "lastRestocked": "2024-01-16",
+    "location": "Guest Services",
+    "reorderLevel": 5,
+    "currentStock": 12,
+    "unitPrice": 1500,
+    "category": "Guest Amenities",
+    "description": "Champagne bottles for anniversaries and celebrations",
+    "name": "Champagne - Celebration",
+    "initialStock": 12
+  },
+  {
+    "id": "GA005",
+    "category": "Guest Amenities",
+    "description": "Fresh flower arrangements for room decoration",
+    "name": "Flower Arrangements",
+    "lastRestocked": "2024-01-22",
+    "currentStock": 20,
+    "unitPrice": 280,
+    "updatedAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 101000000
+    },
+    "reorderLevel": 8,
+    "unit": "arrangements",
+    "location": "Guest Services",
+    "supplier": "Floral Designs Co.",
+    "createdAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 101000000
+    },
+    "initialStock": 20
+  },
+  {
+    "id": "GA006",
+    "reorderLevel": 15,
+    "updatedAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 316000000
+    },
+    "createdAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 316000000
+    },
+    "name": "Scented Candles",
+    "unitPrice": 180,
+    "description": "Luxury scented candles for room ambiance",
+    "unit": "pieces",
+    "lastRestocked": "2024-01-20",
+    "location": "Guest Services",
+    "currentStock": 40,
+    "supplier": "Aromatherapy Plus",
+    "category": "Guest Amenities",
+    "initialStock": 40
+  },
+  {
+    "id": "GA007",
+    "createdAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 526000000
+    },
+    "location": "Guest Services",
+    "currentStock": 15,
+    "lastRestocked": "2024-01-17",
+    "unitPrice": 650,
+    "name": "Essential Oil Diffusers",
+    "description": "Portable essential oil diffusers for guest rooms",
+    "unit": "pieces",
+    "updatedAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 526000000
+    },
+    "category": "Guest Amenities",
+    "supplier": "Aromatherapy Plus",
+    "reorderLevel": 6,
+    "initialStock": 15
+  },
+  {
+    "id": "GA008",
+    "currentStock": 50,
+    "description": "Premium cotton bathrobes, one size fits all",
+    "unitPrice": 850,
+    "supplier": "Luxury Linens Co.",
+    "unit": "pieces",
+    "category": "Guest Amenities",
+    "reorderLevel": 20,
+    "lastRestocked": "2024-01-14",
+    "createdAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 761000000
+    },
+    "name": "Bathrobes - Luxury",
+    "location": "Housekeeping Storage",
+    "updatedAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 761000000
+    },
+    "initialStock": 50
+  },
+  {
+    "id": "GA009",
+    "unitPrice": 25,
+    "supplier": "Hotel Amenities Co.",
+    "name": "Slippers - Disposable",
+    "category": "Guest Amenities",
+    "description": "Disposable hotel slippers, various sizes",
+    "location": "Housekeeping Storage",
+    "createdAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 971000000
+    },
+    "currentStock": 200,
+    "unit": "pairs",
+    "updatedAt": {
+      "_seconds": 1759290303,
+      "_nanoseconds": 971000000
+    },
+    "lastRestocked": "2024-01-21",
+    "reorderLevel": 80,
+    "initialStock": 200
+  },
+  {
+    "id": "GA010",
+    "updatedAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 186000000
+    },
+    "createdAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 186000000
+    },
+    "description": "Spa service gift certificates for guest packages",
+    "lastRestocked": "2024-01-15",
+    "location": "Guest Services",
+    "reorderLevel": 20,
+    "currentStock": 50,
+    "unit": "certificates",
+    "supplier": "Spa Services Ltd.",
+    "name": "Spa Gift Certificates",
+    "category": "Guest Amenities",
+    "unitPrice": 1200,
+    "initialStock": 50
+  },
+  {
+    "id": "GA011",
+    "reorderLevel": 40,
+    "supplier": "Restaurant Services",
+    "updatedAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 396000000
+    },
+    "currentStock": 100,
+    "name": "Breakfast Vouchers",
+    "unit": "vouchers",
+    "description": "Complimentary breakfast vouchers for guest packages",
+    "category": "Guest Amenities",
+    "unitPrice": 350,
+    "createdAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 396000000
+    },
+    "lastRestocked": "2024-01-19",
+    "location": "Guest Services",
+    "initialStock": 100
+  },
+  {
+    "id": "GA012",
+    "updatedAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 714000000
+    },
+    "supplier": "Tourism Board",
+    "unitPrice": 15,
+    "location": "Front Desk",
+    "name": "Local Tour Brochures",
+    "currentStock": 500,
+    "createdAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 714000000
+    },
+    "reorderLevel": 200,
+    "lastRestocked": "2024-01-18",
+    "category": "Guest Amenities",
+    "description": "Tourist information brochures and maps",
+    "unit": "pieces",
+    "initialStock": 500
+  },
+  {
+    "id": "GA013",
+    "unit": "pieces",
+    "updatedAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 939000000
+    },
+    "reorderLevel": 12,
+    "createdAt": {
+      "_seconds": 1759290304,
+      "_nanoseconds": 939000000
+    },
+    "name": "Umbrella - Hotel Branded",
+    "unitPrice": 180,
+    "supplier": "Promotional Items Co.",
+    "currentStock": 30,
+    "category": "Guest Amenities",
+    "lastRestocked": "2024-01-16",
+    "location": "Guest Services",
+    "description": "Compact umbrellas with hotel branding",
+    "initialStock": 30
+  },
+  {
+    "id": "GA014",
+    "unitPrice": 320,
+    "description": "Universal phone chargers for guest convenience",
+    "unit": "pieces",
+    "reorderLevel": 10,
+    "supplier": "Tech Accessories Ltd.",
+    "createdAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 145000000
+    },
+    "category": "Guest Amenities",
+    "name": "Phone Chargers - Universal",
+    "updatedAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 145000000
+    },
+    "currentStock": 25,
+    "location": "Guest Services",
+    "lastRestocked": "2024-01-20",
+    "initialStock": 25
+  },
+  {
+    "id": "GA015",
+    "category": "Guest Amenities",
+    "updatedAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 369000000
+    },
+    "description": "Magazines and newspapers for guest rooms",
+    "createdAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 369000000
+    },
+    "name": "Reading Materials",
+    "currentStock": 100,
+    "supplier": "Media Distribution Co.",
+    "unitPrice": 35,
+    "unit": "pieces",
+    "location": "Guest Services",
+    "lastRestocked": "2024-01-22",
+    "reorderLevel": 40,
+    "initialStock": 100
+  },
+  {
+    "id": "GA016",
+    "name": "Bottled Water - Premium",
+    "currentStock": 500,
+    "createdAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 580000000
+    },
+    "category": "Guest Amenities",
+    "reorderLevel": 200,
+    "updatedAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 580000000
+    },
+    "lastRestocked": "2024-01-21",
+    "supplier": "Pure Water Co.",
+    "unit": "bottles",
+    "location": "Housekeeping Storage",
+    "description": "Premium bottled water for guest rooms, 500ml",
+    "unitPrice": 25,
+    "initialStock": 500
+  },
+  {
+    "id": "GA017",
+    "updatedAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 816000000
+    },
+    "category": "Guest Amenities",
+    "name": "Coffee Capsules - Premium",
+    "lastRestocked": "2024-01-19",
+    "reorderLevel": 120,
+    "unitPrice": 45,
+    "unit": "capsules",
+    "supplier": "Coffee Masters Ltd.",
+    "createdAt": {
+      "_seconds": 1759290305,
+      "_nanoseconds": 816000000
+    },
+    "description": "Premium coffee capsules for in-room coffee makers",
+    "currentStock": 300,
+    "location": "Housekeeping Storage",
+    "initialStock": 300
+  },
+  {
+    "id": "GA018",
+    "category": "Guest Amenities",
+    "name": "Tea Selection Boxes",
+    "unit": "boxes",
+    "supplier": "Tea Garden Co.",
+    "updatedAt": {
+      "_seconds": 1759290306,
+      "_nanoseconds": 26000000
+    },
+    "lastRestocked": "2024-01-17",
+    "location": "Housekeeping Storage",
+    "reorderLevel": 30,
+    "currentStock": 80,
+    "description": "Assorted tea selection boxes for guest rooms",
+    "unitPrice": 120,
+    "createdAt": {
+      "_seconds": 1759290306,
+      "_nanoseconds": 26000000
+    },
+    "initialStock": 80
+  },
+  {
+    "id": "GA019",
+    "category": "Guest Amenities",
+    "updatedAt": {
+      "_seconds": 1759290306,
+      "_nanoseconds": 242000000
+    },
+    "reorderLevel": 60,
+    "lastRestocked": "2024-01-22",
+    "createdAt": {
+      "_seconds": 1759290306,
+      "_nanoseconds": 242000000
+    },
+    "location": "Guest Services",
+    "supplier": "Bakery Express",
+    "currentStock": 150,
+    "unitPrice": 35,
+    "name": "Cookies - Welcome Treats",
+    "description": "Welcome cookies in individual packaging",
+    "unit": "packages",
+    "initialStock": 150
+  },
+  {
+    "id": "GA020",
+    "updatedAt": {
+      "_seconds": 1759290306,
+      "_nanoseconds": 486000000
+    },
+    "unitPrice": 500,
+    "supplier": "Restaurant Partners",
+    "location": "Guest Services",
+    "currentStock": 40,
+    "reorderLevel": 15,
+    "createdAt": {
+      "_seconds": 1759290306,
+      "_nanoseconds": 486000000
+    },
+    "category": "Guest Amenities",
+    "unit": "cards",
+    "lastRestocked": "2024-01-18",
+    "description": "Gift cards for partner restaurants, various amounts",
+    "name": "Gift Cards - Local Restaurants",
+    "initialStock": 40
+  },
+  {
+    "id": "HK001",
+    "description": "Premium cotton bath towels, white, 70x140cm",
+    "currentStock": 150,
+    "reorderLevel": 50,
+    "unit": "pieces",
+    "name": "Bath Towels",
+    "unitPrice": 350,
+    "supplier": "Textile Solutions Inc.",
+    "lastRestocked": "2024-01-15",
+    "createdAt": {
+      "_seconds": 1759290272,
+      "_nanoseconds": 823000000
+    },
+    "location": "Housekeeping Storage A",
+    "category": "Housekeeping",
+    "updatedAt": {
+      "_seconds": 1759290272,
+      "_nanoseconds": 823000000
+    },
+    "initialStock": 150
+  },
+  {
+    "id": "HK002",
+    "createdAt": {
+      "_seconds": 1759290274,
+      "_nanoseconds": 572000000
+    },
+    "name": "Hand Towels",
+    "supplier": "Textile Solutions Inc.",
+    "updatedAt": {
+      "_seconds": 1759290274,
+      "_nanoseconds": 572000000
+    },
+    "currentStock": 200,
+    "unitPrice": 180,
+    "unit": "pieces",
+    "location": "Housekeeping Storage A",
+    "reorderLevel": 75,
+    "category": "Housekeeping",
+    "lastRestocked": "2024-01-15",
+    "description": "Premium cotton hand towels, white, 50x100cm",
+    "initialStock": 200
+  },
+  {
+    "id": "HK003",
+    "lastRestocked": "2024-01-15",
+    "location": "Housekeeping Storage A",
+    "supplier": "Textile Solutions Inc.",
+    "updatedAt": {
+      "_seconds": 1759290274,
+      "_nanoseconds": 825000000
+    },
+    "description": "Premium cotton face towels, white, 30x30cm",
+    "unit": "pieces",
+    "name": "Face Towels",
+    "currentStock": 300,
+    "unitPrice": 85,
+    "reorderLevel": 100,
+    "category": "Housekeeping",
+    "createdAt": {
+      "_seconds": 1759290274,
+      "_nanoseconds": 825000000
+    },
+    "initialStock": 300
+  },
+  {
+    "id": "HK004",
+    "lastRestocked": "2024-01-10",
+    "category": "Housekeeping",
+    "createdAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 83000000
+    },
+    "supplier": "Linen World Co.",
+    "location": "Housekeeping Storage B",
+    "unitPrice": 450,
+    "currentStock": 120,
+    "reorderLevel": 40,
+    "unit": "sets",
+    "description": "100% cotton bed sheets, white, single size",
+    "name": "Bed Sheets - Single",
+    "updatedAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 83000000
+    },
+    "initialStock": 120
+  },
+  {
+    "id": "HK005",
+    "location": "Housekeeping Storage B",
+    "currentStock": 180,
+    "description": "100% cotton bed sheets, white, double size",
+    "category": "Housekeeping",
+    "updatedAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 339000000
+    },
+    "createdAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 339000000
+    },
+    "unit": "sets",
+    "name": "Bed Sheets - Double",
+    "supplier": "Linen World Co.",
+    "reorderLevel": 60,
+    "unitPrice": 650,
+    "lastRestocked": "2024-01-10",
+    "initialStock": 180
+  },
+  {
+    "id": "HK006",
+    "description": "100% cotton bed sheets, white, king size",
+    "reorderLevel": 35,
+    "category": "Housekeeping",
+    "createdAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 583000000
+    },
+    "unit": "sets",
+    "updatedAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 583000000
+    },
+    "currentStock": 100,
+    "unitPrice": 850,
+    "lastRestocked": "2024-01-10",
+    "supplier": "Linen World Co.",
+    "location": "Housekeeping Storage B",
+    "name": "Bed Sheets - King",
+    "initialStock": 100
+  },
+  {
+    "id": "HK007",
+    "supplier": "Linen World Co.",
+    "reorderLevel": 150,
+    "currentStock": 400,
+    "location": "Housekeeping Storage B",
+    "lastRestocked": "2024-01-10",
+    "unitPrice": 120,
+    "category": "Housekeeping",
+    "name": "Pillowcases",
+    "description": "100% cotton pillowcases, white, standard size",
+    "updatedAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 820000000
+    },
+    "unit": "pieces",
+    "createdAt": {
+      "_seconds": 1759290275,
+      "_nanoseconds": 820000000
+    },
+    "initialStock": 400
+  },
+  {
+    "id": "HK008",
+    "lastRestocked": "2024-01-05",
+    "supplier": "Comfort Textiles Ltd.",
+    "unit": "pieces",
+    "location": "Housekeeping Storage C",
+    "createdAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 146000000
+    },
+    "name": "Blankets",
+    "reorderLevel": 25,
+    "category": "Housekeeping",
+    "updatedAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 146000000
+    },
+    "unitPrice": 1200,
+    "description": "Wool blend blankets, beige, queen size",
+    "currentStock": 80,
+    "initialStock": 80
+  },
+  {
+    "id": "HK009",
+    "unit": "pieces",
+    "updatedAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 387000000
+    },
+    "unitPrice": 850,
+    "reorderLevel": 50,
+    "lastRestocked": "2024-01-08",
+    "createdAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 387000000
+    },
+    "name": "Pillows",
+    "description": "Memory foam pillows, hypoallergenic",
+    "supplier": "Sleep Comfort Co.",
+    "currentStock": 160,
+    "category": "Housekeeping",
+    "location": "Housekeeping Storage C",
+    "initialStock": 160
+  },
+  {
+    "id": "HK010",
+    "category": "Housekeeping",
+    "description": "2-ply toilet paper, premium quality",
+    "name": "Toilet Paper",
+    "supplier": "Hygiene Plus Corp.",
+    "reorderLevel": 200,
+    "unit": "rolls",
+    "createdAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 625000000
+    },
+    "currentStock": 500,
+    "lastRestocked": "2024-01-20",
+    "unitPrice": 45,
+    "updatedAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 625000000
+    },
+    "location": "Housekeeping Storage D",
+    "initialStock": 500
+  },
+  {
+    "id": "HK011",
+    "reorderLevel": 100,
+    "supplier": "Hygiene Plus Corp.",
+    "unit": "boxes",
+    "description": "Soft facial tissues, 200 sheets per box",
+    "lastRestocked": "2024-01-20",
+    "location": "Housekeeping Storage D",
+    "name": "Facial Tissues",
+    "unitPrice": 65,
+    "updatedAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 832000000
+    },
+    "currentStock": 300,
+    "createdAt": {
+      "_seconds": 1759290276,
+      "_nanoseconds": 832000000
+    },
+    "category": "Housekeeping",
+    "initialStock": 300
+  },
+  {
+    "id": "HK012",
+    "name": "Shampoo",
+    "reorderLevel": 300,
+    "description": "Hotel guest shampoo, 30ml bottles",
+    "createdAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 39000000
+    },
+    "location": "Housekeeping Storage E",
+    "updatedAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 39000000
+    },
+    "supplier": "Amenities Direct Ltd.",
+    "lastRestocked": "2024-01-18",
+    "unitPrice": 25,
+    "unit": "bottles",
+    "currentStock": 800,
+    "category": "Housekeeping",
+    "initialStock": 800
+  },
+  {
+    "id": "HK013",
+    "currentStock": 750,
+    "unitPrice": 25,
+    "supplier": "Amenities Direct Ltd.",
+    "lastRestocked": "2024-01-18",
+    "unit": "bottles",
+    "updatedAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 283000000
+    },
+    "category": "Housekeeping",
+    "description": "Hotel guest conditioner, 30ml bottles",
+    "reorderLevel": 300,
+    "name": "Conditioner",
+    "location": "Housekeeping Storage E",
+    "createdAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 283000000
+    },
+    "initialStock": 750
+  },
+  {
+    "id": "HK014",
+    "updatedAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 524000000
+    },
+    "createdAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 524000000
+    },
+    "location": "Housekeeping Storage E",
+    "name": "Body Soap",
+    "supplier": "Amenities Direct Ltd.",
+    "reorderLevel": 250,
+    "category": "Housekeeping",
+    "description": "Hotel guest body soap, 40g bars",
+    "currentStock": 600,
+    "unit": "bars",
+    "lastRestocked": "2024-01-18",
+    "unitPrice": 18,
+    "initialStock": 600
+  },
+  {
+    "id": "HK015",
+    "lastRestocked": "2024-01-12",
+    "createdAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 764000000
+    },
+    "reorderLevel": 30,
+    "updatedAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 764000000
+    },
+    "unit": "pieces",
+    "supplier": "Cleaning Equipment Co.",
+    "description": "Replacement bags for Hoover vacuum cleaners",
+    "category": "Housekeeping",
+    "unitPrice": 85,
+    "location": "Housekeeping Storage F",
+    "currentStock": 100,
+    "name": "Vacuum Cleaner Bags",
+    "initialStock": 100
+  },
+  {
+    "id": "HK016",
+    "name": "All-Purpose Cleaner",
+    "unitPrice": 120,
+    "category": "Housekeeping",
+    "unit": "bottles",
+    "lastRestocked": "2024-01-14",
+    "createdAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 998000000
+    },
+    "location": "Housekeeping Storage F",
+    "description": "Multi-surface cleaning solution, 1L bottles",
+    "reorderLevel": 25,
+    "currentStock": 80,
+    "supplier": "CleanPro Chemicals",
+    "updatedAt": {
+      "_seconds": 1759290277,
+      "_nanoseconds": 998000000
+    },
+    "initialStock": 80
+  },
+  {
+    "id": "HK017",
+    "createdAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 228000000
+    },
+    "unitPrice": 95,
+    "category": "Housekeeping",
+    "description": "Streak-free glass cleaner, 750ml spray bottles",
+    "currentStock": 60,
+    "supplier": "CleanPro Chemicals",
+    "location": "Housekeeping Storage F",
+    "reorderLevel": 20,
+    "unit": "bottles",
+    "updatedAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 228000000
+    },
+    "lastRestocked": "2024-01-14",
+    "name": "Glass Cleaner",
+    "initialStock": 60
+  },
+  {
+    "id": "HK018",
+    "unit": "bottles",
+    "currentStock": 90,
+    "description": "Hospital-grade disinfectant, 1L bottles",
+    "category": "Housekeeping",
+    "reorderLevel": 30,
+    "updatedAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 437000000
+    },
+    "unitPrice": 180,
+    "location": "Housekeeping Storage F",
+    "lastRestocked": "2024-01-14",
+    "createdAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 437000000
+    },
+    "name": "Disinfectant",
+    "supplier": "CleanPro Chemicals",
+    "initialStock": 90
+  },
+  {
+    "id": "HK019",
+    "reorderLevel": 15,
+    "unitPrice": 450,
+    "supplier": "Laundry Solutions Inc.",
+    "updatedAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 685000000
+    },
+    "currentStock": 40,
+    "name": "Laundry Detergent",
+    "location": "Laundry Room",
+    "description": "Industrial laundry detergent, 5kg bags",
+    "category": "Housekeeping",
+    "createdAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 685000000
+    },
+    "unit": "bags",
+    "lastRestocked": "2024-01-16",
+    "initialStock": 40
+  },
+  {
+    "id": "HK020",
+    "unit": "containers",
+    "createdAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 894000000
+    },
+    "location": "Laundry Room",
+    "lastRestocked": "2024-01-16",
+    "description": "Commercial fabric softener, 5L containers",
+    "updatedAt": {
+      "_seconds": 1759290278,
+      "_nanoseconds": 894000000
+    },
+    "currentStock": 25,
+    "name": "Fabric Softener",
+    "unitPrice": 320,
+    "reorderLevel": 10,
+    "supplier": "Laundry Solutions Inc.",
+    "category": "Housekeeping",
+    "initialStock": 25
+  },
+  {
+    "id": "LD001",
+    "lastRestocked": "2024-01-02",
+    "name": "Industrial Washing Machine",
+    "description": "Commercial washing machine, 50kg capacity",
+    "updatedAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 354000000
+    },
+    "reorderLevel": 1,
+    "supplier": "Laundry Equipment Co.",
+    "location": "Laundry Room",
+    "createdAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 354000000
+    },
+    "unitPrice": 85000,
+    "category": "Laundry",
+    "currentStock": 2,
+    "unit": "pieces",
+    "initialStock": 2
+  },
+  {
+    "id": "LD002",
+    "supplier": "Laundry Equipment Co.",
+    "reorderLevel": 1,
+    "unitPrice": 75000,
+    "updatedAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 567000000
+    },
+    "createdAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 567000000
+    },
+    "name": "Industrial Dryer",
+    "description": "Commercial tumble dryer, 50kg capacity",
+    "currentStock": 2,
+    "lastRestocked": "2024-01-02",
+    "category": "Laundry",
+    "location": "Laundry Room",
+    "unit": "pieces",
+    "initialStock": 2
+  },
+  {
+    "id": "LD003",
+    "createdAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 777000000
+    },
+    "unit": "bags",
+    "supplier": "Chemical Solutions Inc.",
+    "description": "Industrial strength laundry detergent, 25kg bags",
+    "category": "Laundry",
+    "name": "Laundry Detergent - Heavy Duty",
+    "reorderLevel": 8,
+    "unitPrice": 850,
+    "currentStock": 20,
+    "updatedAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 777000000
+    },
+    "lastRestocked": "2024-01-15",
+    "location": "Laundry Storage",
+    "initialStock": 20
+  },
+  {
+    "id": "LD004",
+    "location": "Laundry Storage",
+    "supplier": "Chemical Solutions Inc.",
+    "createdAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 15000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 15000000
+    },
+    "unit": "containers",
+    "description": "Commercial fabric softener, 20L containers",
+    "lastRestocked": "2024-01-15",
+    "unitPrice": 650,
+    "category": "Laundry",
+    "currentStock": 15,
+    "name": "Fabric Softener - Commercial",
+    "reorderLevel": 6,
+    "initialStock": 15
+  },
+  {
+    "id": "LD005",
+    "currentStock": 12,
+    "category": "Laundry",
+    "reorderLevel": 5,
+    "lastRestocked": "2024-01-15",
+    "name": "Bleach - Oxygen",
+    "unitPrice": 450,
+    "updatedAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 234000000
+    },
+    "supplier": "Chemical Solutions Inc.",
+    "description": "Oxygen bleach for white linens, 10L containers",
+    "location": "Laundry Storage",
+    "unit": "containers",
+    "createdAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 234000000
+    },
+    "initialStock": 12
+  },
+  {
+    "id": "LD006",
+    "category": "Laundry",
+    "supplier": "Chemical Solutions Inc.",
+    "description": "Professional stain remover, 5L bottles",
+    "name": "Stain Remover",
+    "location": "Laundry Storage",
+    "unit": "bottles",
+    "reorderLevel": 3,
+    "lastRestocked": "2024-01-15",
+    "unitPrice": 320,
+    "createdAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 444000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 444000000
+    },
+    "currentStock": 8,
+    "initialStock": 8
+  },
+  {
+    "id": "LD007",
+    "name": "Laundry Baskets - Large",
+    "unit": "pieces",
+    "currentStock": 25,
+    "updatedAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 676000000
+    },
+    "createdAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 676000000
+    },
+    "location": "Laundry Room",
+    "lastRestocked": "2024-01-12",
+    "reorderLevel": 10,
+    "description": "Heavy-duty laundry baskets, 100L capacity",
+    "supplier": "Laundry Supplies Ltd.",
+    "unitPrice": 180,
+    "category": "Laundry",
+    "initialStock": 25
+  },
+  {
+    "id": "LD008",
+    "name": "Laundry Bags - Mesh",
+    "supplier": "Laundry Supplies Ltd.",
+    "unitPrice": 45,
+    "updatedAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 888000000
+    },
+    "category": "Laundry",
+    "location": "Laundry Room",
+    "createdAt": {
+      "_seconds": 1759290298,
+      "_nanoseconds": 888000000
+    },
+    "lastRestocked": "2024-01-12",
+    "currentStock": 50,
+    "reorderLevel": 20,
+    "unit": "pieces",
+    "description": "Mesh laundry bags for delicate items, various sizes",
+    "initialStock": 50
+  },
+  {
+    "id": "LD009",
+    "currentStock": 4,
+    "reorderLevel": 2,
+    "description": "Heavy-duty commercial ironing boards",
+    "createdAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 104000000
+    },
+    "lastRestocked": "2024-01-08",
+    "updatedAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 104000000
+    },
+    "unit": "pieces",
+    "category": "Laundry",
+    "location": "Laundry Room",
+    "supplier": "Laundry Equipment Co.",
+    "unitPrice": 1200,
+    "name": "Ironing Boards - Commercial",
+    "initialStock": 4
+  },
+  {
+    "id": "LD010",
+    "location": "Laundry Room",
+    "reorderLevel": 2,
+    "unit": "pieces",
+    "category": "Laundry",
+    "description": "Industrial steam irons with continuous steam",
+    "currentStock": 6,
+    "supplier": "Laundry Equipment Co.",
+    "name": "Steam Irons - Industrial",
+    "unitPrice": 2500,
+    "lastRestocked": "2024-01-08",
+    "updatedAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 341000000
+    },
+    "createdAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 341000000
+    },
+    "initialStock": 6
+  },
+  {
+    "id": "LD011",
+    "unit": "pieces",
+    "unitPrice": 45000,
+    "updatedAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 619000000
+    },
+    "name": "Pressing Machine",
+    "reorderLevel": 1,
+    "currentStock": 1,
+    "location": "Laundry Room",
+    "supplier": "Laundry Equipment Co.",
+    "createdAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 619000000
+    },
+    "lastRestocked": "2024-01-03",
+    "category": "Laundry",
+    "description": "Commercial pressing machine for linens",
+    "initialStock": 1
+  },
+  {
+    "id": "LD012",
+    "supplier": "Laundry Equipment Co.",
+    "createdAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 829000000
+    },
+    "lastRestocked": "2024-01-10",
+    "name": "Folding Tables",
+    "unitPrice": 3500,
+    "description": "Stainless steel folding tables for laundry",
+    "location": "Laundry Room",
+    "category": "Laundry",
+    "updatedAt": {
+      "_seconds": 1759290299,
+      "_nanoseconds": 829000000
+    },
+    "reorderLevel": 1,
+    "currentStock": 3,
+    "unit": "pieces",
+    "initialStock": 3
+  },
+  {
+    "id": "LD013",
+    "location": "Laundry Room",
+    "supplier": "Laundry Supplies Ltd.",
+    "unitPrice": 850,
+    "lastRestocked": "2024-01-14",
+    "description": "Mobile laundry carts with wheels, 3-compartment",
+    "category": "Laundry",
+    "unit": "pieces",
+    "currentStock": 8,
+    "name": "Laundry Carts",
+    "reorderLevel": 3,
+    "updatedAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 51000000
+    },
+    "createdAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 51000000
+    },
+    "initialStock": 8
+  },
+  {
+    "id": "LD014",
+    "lastRestocked": "2024-01-16",
+    "reorderLevel": 8,
+    "location": "Laundry Storage",
+    "updatedAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 304000000
+    },
+    "createdAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 304000000
+    },
+    "category": "Laundry",
+    "unitPrice": 120,
+    "name": "Hangers - Plastic",
+    "supplier": "Laundry Supplies Ltd.",
+    "unit": "packs",
+    "description": "Heavy-duty plastic hangers, 100 per pack",
+    "currentStock": 20,
+    "initialStock": 20
+  },
+  {
+    "id": "LD015",
+    "currentStock": 500,
+    "unit": "pieces",
+    "unitPrice": 8,
+    "category": "Laundry",
+    "updatedAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 527000000
+    },
+    "location": "Laundry Storage",
+    "createdAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 527000000
+    },
+    "supplier": "Packaging Solutions",
+    "reorderLevel": 200,
+    "description": "Clear plastic garment bags for dry cleaning",
+    "lastRestocked": "2024-01-18",
+    "name": "Garment Bags",
+    "initialStock": 500
+  },
+  {
+    "id": "LD016",
+    "createdAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 750000000
+    },
+    "location": "Laundry Room",
+    "name": "Lint Rollers",
+    "unitPrice": 85,
+    "lastRestocked": "2024-01-17",
+    "updatedAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 750000000
+    },
+    "category": "Laundry",
+    "unit": "pieces",
+    "currentStock": 15,
+    "supplier": "Cleaning Supplies Co.",
+    "description": "Heavy-duty lint rollers with refills",
+    "reorderLevel": 6,
+    "initialStock": 15
+  },
+  {
+    "id": "LD017",
+    "unitPrice": 65,
+    "lastRestocked": "2024-01-11",
+    "supplier": "Laundry Supplies Ltd.",
+    "location": "Laundry Storage",
+    "description": "Chemical measuring cups, 500ml capacity",
+    "category": "Laundry",
+    "createdAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 986000000
+    },
+    "currentStock": 10,
+    "reorderLevel": 4,
+    "name": "Measuring Cups",
+    "updatedAt": {
+      "_seconds": 1759290300,
+      "_nanoseconds": 986000000
+    },
+    "unit": "pieces",
+    "initialStock": 10
+  },
+  {
+    "id": "LD018",
+    "unit": "pairs",
+    "description": "Chemical-resistant rubber gloves, size L",
+    "unitPrice": 45,
+    "createdAt": {
+      "_seconds": 1759290301,
+      "_nanoseconds": 256000000
+    },
+    "location": "Laundry Storage",
+    "supplier": "Safety Equipment Co.",
+    "lastRestocked": "2024-01-19",
+    "name": "Rubber Gloves",
+    "reorderLevel": 10,
+    "category": "Laundry",
+    "updatedAt": {
+      "_seconds": 1759290301,
+      "_nanoseconds": 256000000
+    },
+    "currentStock": 25,
+    "initialStock": 25
+  },
+  {
+    "id": "LD019",
+    "location": "Laundry Storage",
+    "unit": "pieces",
+    "unitPrice": 120,
+    "createdAt": {
+      "_seconds": 1759290301,
+      "_nanoseconds": 478000000
+    },
+    "name": "Aprons - Waterproof",
+    "reorderLevel": 5,
+    "category": "Laundry",
+    "supplier": "Uniform Supply Co.",
+    "description": "Waterproof aprons for laundry staff",
+    "lastRestocked": "2024-01-13",
+    "initialStock": 12,
+    "currentStock": 2,
+    "updatedAt": "November 25, 2025 at 6:36:00 PM GMT+8"
+  },
+  {
+    "id": "LD020",
+    "createdAt": {
+      "_seconds": 1759290301,
+      "_nanoseconds": 755000000
+    },
+    "unit": "rolls",
+    "lastRestocked": "2024-01-20",
+    "reorderLevel": 3,
+    "description": "Waterproof laundry identification tags, 1000 per roll",
+    "updatedAt": {
+      "_seconds": 1759290301,
+      "_nanoseconds": 755000000
+    },
+    "supplier": "Laundry Supplies Ltd.",
+    "unitPrice": 180,
+    "currentStock": 8,
+    "location": "Laundry Storage",
+    "category": "Laundry",
+    "name": "Laundry Tags",
+    "initialStock": 8
+  },
+  {
+    "id": "MT001",
+    "name": "Screwdriver Set",
+    "category": "Maintenance",
+    "unitPrice": 450,
+    "updatedAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 835000000
+    },
+    "unit": "sets",
+    "supplier": "Tool Master Inc.",
+    "location": "Maintenance Workshop",
+    "description": "Professional screwdriver set, 12 pieces",
+    "createdAt": {
+      "_seconds": 1759290283,
+      "_nanoseconds": 835000000
+    },
+    "lastRestocked": "2024-01-05",
+    "currentStock": 8,
+    "reorderLevel": 3,
+    "initialStock": 8
+  },
+  {
+    "id": "MT002",
+    "updatedAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 68000000
+    },
+    "unitPrice": 280,
+    "lastRestocked": "2024-01-05",
+    "currentStock": 6,
+    "name": "Hammer",
+    "createdAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 68000000
+    },
+    "unit": "pieces",
+    "category": "Maintenance",
+    "location": "Maintenance Workshop",
+    "description": "Claw hammer, 16oz, steel handle",
+    "reorderLevel": 2,
+    "supplier": "Tool Master Inc.",
+    "initialStock": 6
+  },
+  {
+    "id": "MT003",
+    "createdAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 303000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 303000000
+    },
+    "name": "Drill Bits Set",
+    "unitPrice": 320,
+    "category": "Maintenance",
+    "lastRestocked": "2024-01-05",
+    "supplier": "Tool Master Inc.",
+    "currentStock": 5,
+    "unit": "sets",
+    "reorderLevel": 2,
+    "location": "Maintenance Workshop",
+    "description": "HSS drill bits set, 1-10mm, 19 pieces",
+    "initialStock": 5
+  },
+  {
+    "id": "MT004",
+    "category": "Maintenance",
+    "createdAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 515000000
+    },
+    "reorderLevel": 1,
+    "location": "Maintenance Workshop",
+    "unitPrice": 2500,
+    "name": "Electric Drill",
+    "updatedAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 515000000
+    },
+    "lastRestocked": "2024-01-03",
+    "supplier": "Power Tools Co.",
+    "currentStock": 3,
+    "description": "Cordless electric drill, 18V, with battery",
+    "unit": "pieces",
+    "initialStock": 3
+  },
+  {
+    "id": "MT005",
+    "category": "Maintenance",
+    "reorderLevel": 2,
+    "unitPrice": 650,
+    "currentStock": 4,
+    "name": "Plumbing Wrench Set",
+    "unit": "sets",
+    "updatedAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 757000000
+    },
+    "supplier": "Plumbing Supplies Ltd.",
+    "lastRestocked": "2024-01-07",
+    "description": "Adjustable plumbing wrenches, 3 sizes",
+    "location": "Maintenance Workshop",
+    "createdAt": {
+      "_seconds": 1759290284,
+      "_nanoseconds": 757000000
+    },
+    "initialStock": 4
+  },
+  {
+    "id": "MT006",
+    "supplier": "Plumbing Supplies Ltd.",
+    "name": "PVC Pipes - 1 inch",
+    "createdAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 15000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 15000000
+    },
+    "lastRestocked": "2024-01-07",
+    "currentStock": 20,
+    "location": "Maintenance Storage A",
+    "unitPrice": 120,
+    "description": "PVC pipes, 1 inch diameter, 3m length",
+    "category": "Maintenance",
+    "unit": "pieces",
+    "reorderLevel": 8,
+    "initialStock": 20
+  },
+  {
+    "id": "MT007",
+    "description": "Assorted PVC fittings, elbows and joints",
+    "category": "Maintenance",
+    "lastRestocked": "2024-01-07",
+    "unit": "pieces",
+    "supplier": "Plumbing Supplies Ltd.",
+    "unitPrice": 35,
+    "reorderLevel": 20,
+    "createdAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 255000000
+    },
+    "location": "Maintenance Storage A",
+    "name": "PVC Fittings",
+    "updatedAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 255000000
+    },
+    "currentStock": 50,
+    "initialStock": 50
+  },
+  {
+    "id": "MT008",
+    "location": "Maintenance Storage B",
+    "unitPrice": 850,
+    "description": "Electrical wire, 2.5mm², 100m rolls",
+    "createdAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 493000000
+    },
+    "lastRestocked": "2024-01-09",
+    "unit": "rolls",
+    "updatedAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 493000000
+    },
+    "category": "Maintenance",
+    "name": "Electrical Wire",
+    "currentStock": 8,
+    "reorderLevel": 3,
+    "supplier": "Electric Supply Co.",
+    "initialStock": 8
+  },
+  {
+    "id": "MT009",
+    "createdAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 715000000
+    },
+    "currentStock": 15,
+    "unit": "pieces",
+    "supplier": "Electric Supply Co.",
+    "location": "Maintenance Storage B",
+    "unitPrice": 180,
+    "category": "Maintenance",
+    "reorderLevel": 6,
+    "lastRestocked": "2024-01-09",
+    "name": "Circuit Breakers",
+    "updatedAt": {
+      "_seconds": 1759290285,
+      "_nanoseconds": 715000000
+    },
+    "description": "Circuit breakers, 20A, single pole",
+    "initialStock": 15
+  },
+  {
+    "id": "MT010",
+    "unitPrice": 85,
+    "createdAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 14000000
+    },
+    "location": "Maintenance Storage B",
+    "reorderLevel": 40,
+    "updatedAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 14000000
+    },
+    "lastRestocked": "2024-01-11",
+    "currentStock": 100,
+    "name": "Light Bulbs - LED",
+    "category": "Maintenance",
+    "description": "LED light bulbs, 9W, warm white, E27",
+    "supplier": "Lighting Solutions",
+    "unit": "pieces",
+    "initialStock": 100
+  },
+  {
+    "id": "MT011",
+    "supplier": "Lighting Solutions",
+    "unitPrice": 120,
+    "unit": "pieces",
+    "location": "Maintenance Storage B",
+    "category": "Maintenance",
+    "name": "Fluorescent Tubes",
+    "updatedAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 249000000
+    },
+    "createdAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 249000000
+    },
+    "lastRestocked": "2024-01-11",
+    "currentStock": 30,
+    "reorderLevel": 12,
+    "description": "T8 fluorescent tubes, 36W, 4ft",
+    "initialStock": 30
+  },
+  {
+    "id": "MT012",
+    "updatedAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 487000000
+    },
+    "createdAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 487000000
+    },
+    "lastRestocked": "2024-01-13",
+    "unit": "cans",
+    "reorderLevel": 5,
+    "category": "Maintenance",
+    "currentStock": 12,
+    "name": "Paint - White",
+    "location": "Maintenance Storage C",
+    "unitPrice": 450,
+    "description": "Interior wall paint, white, 4L cans",
+    "supplier": "Paint Pro Ltd.",
+    "initialStock": 12
+  },
+  {
+    "id": "MT013",
+    "createdAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 698000000
+    },
+    "description": "Paint brushes, assorted sizes, 2-4 inches",
+    "name": "Paint Brushes",
+    "category": "Maintenance",
+    "currentStock": 25,
+    "updatedAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 698000000
+    },
+    "lastRestocked": "2024-01-13",
+    "unitPrice": 65,
+    "reorderLevel": 10,
+    "supplier": "Paint Pro Ltd.",
+    "location": "Maintenance Storage C",
+    "unit": "pieces",
+    "initialStock": 25
+  },
+  {
+    "id": "MT014",
+    "unit": "pieces",
+    "lastRestocked": "2024-01-13",
+    "location": "Maintenance Storage C",
+    "currentStock": 15,
+    "name": "Paint Rollers",
+    "updatedAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 936000000
+    },
+    "unitPrice": 85,
+    "category": "Maintenance",
+    "reorderLevel": 6,
+    "supplier": "Paint Pro Ltd.",
+    "description": "Paint rollers with handles, 9 inch",
+    "createdAt": {
+      "_seconds": 1759290286,
+      "_nanoseconds": 936000000
+    },
+    "initialStock": 15
+  },
+  {
+    "id": "MT015",
+    "reorderLevel": 20,
+    "unit": "sheets",
+    "currentStock": 50,
+    "category": "Maintenance",
+    "unitPrice": 25,
+    "description": "Sandpaper sheets, assorted grits, 120-400",
+    "supplier": "Paint Pro Ltd.",
+    "lastRestocked": "2024-01-13",
+    "updatedAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 143000000
+    },
+    "location": "Maintenance Storage C",
+    "name": "Sandpaper",
+    "createdAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 143000000
+    },
+    "initialStock": 50
+  },
+  {
+    "id": "MT016",
+    "unit": "boxes",
+    "description": "Wood screws, assorted sizes, 1000 per box",
+    "category": "Maintenance",
+    "location": "Maintenance Storage D",
+    "currentStock": 8,
+    "reorderLevel": 3,
+    "supplier": "Hardware Central",
+    "createdAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 355000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 355000000
+    },
+    "lastRestocked": "2024-01-06",
+    "unitPrice": 180,
+    "name": "Screws - Wood",
+    "initialStock": 8
+  },
+  {
+    "id": "MT017",
+    "name": "Nails",
+    "lastRestocked": "2024-01-06",
+    "description": "Common nails, assorted sizes, 5kg boxes",
+    "unitPrice": 220,
+    "updatedAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 563000000
+    },
+    "reorderLevel": 2,
+    "createdAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 563000000
+    },
+    "category": "Maintenance",
+    "location": "Maintenance Storage D",
+    "unit": "boxes",
+    "currentStock": 6,
+    "supplier": "Hardware Central",
+    "initialStock": 6
+  },
+  {
+    "id": "MT018",
+    "category": "Maintenance",
+    "updatedAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 795000000
+    },
+    "supplier": "Hardware Central",
+    "reorderLevel": 8,
+    "currentStock": 20,
+    "lastRestocked": "2024-01-06",
+    "location": "Maintenance Storage D",
+    "unitPrice": 85,
+    "unit": "rolls",
+    "name": "Duct Tape",
+    "description": "Heavy-duty duct tape, 50mm x 50m rolls",
+    "createdAt": {
+      "_seconds": 1759290287,
+      "_nanoseconds": 795000000
+    },
+    "initialStock": 20
+  },
+  {
+    "id": "MT019",
+    "currentStock": 10,
+    "unit": "packs",
+    "reorderLevel": 4,
+    "unitPrice": 180,
+    "description": "Work safety gloves, size L, 12 pairs per pack",
+    "location": "Maintenance Storage D",
+    "name": "Safety Gloves",
+    "updatedAt": {
+      "_seconds": 1759290288,
+      "_nanoseconds": 6000000
+    },
+    "supplier": "Safety First Co.",
+    "category": "Maintenance",
+    "lastRestocked": "2024-01-04",
+    "createdAt": {
+      "_seconds": 1759290288,
+      "_nanoseconds": 6000000
+    },
+    "initialStock": 10
+  },
+  {
+    "id": "MT020",
+    "reorderLevel": 5,
+    "currentStock": 12,
+    "location": "Maintenance Storage D",
+    "description": "Protective safety goggles, anti-fog",
+    "unit": "pieces",
+    "unitPrice": 120,
+    "updatedAt": {
+      "_seconds": 1759290288,
+      "_nanoseconds": 239000000
+    },
+    "supplier": "Safety First Co.",
+    "category": "Maintenance",
+    "name": "Safety Goggles",
+    "createdAt": {
+      "_seconds": 1759290288,
+      "_nanoseconds": 239000000
+    },
+    "lastRestocked": "2024-01-04",
+    "initialStock": 12
+  },
+  {
+    "id": "MT021",
+    "name": "motor",
+    "description": "",
+    "category": "Maintenance",
+    "supplier": "jay",
+    "location": "quezon city",
+    "unit": "pieces",
+    "unitPrice": 100,
+    "reorderLevel": 5,
+    "initialStock": 5,
+    "currentStock": 5,
+    "lastRestocked": "2025-11-23",
+    "timestamp": "2025-11-23T08:03:03.613Z",
+    "createdAt": "November 23, 2025 at 4:03:05 PM GMT+8",
+    "status": "pending"
+  },
+  {
+    "id": "SC001",
+    "createdAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 885000000
+    },
+    "location": "Security Office",
+    "reorderLevel": 3,
+    "lastRestocked": "2024-01-10",
+    "description": "HD security cameras for indoor surveillance, 1080p",
+    "supplier": "SecureTech Solutions",
+    "name": "Security Cameras - Indoor",
+    "unit": "pieces",
+    "unitPrice": 2500,
+    "currentStock": 8,
+    "updatedAt": {
+      "_seconds": 1759290292,
+      "_nanoseconds": 885000000
+    },
+    "category": "Security",
+    "initialStock": 8
+  },
+  {
+    "id": "SC002",
+    "name": "Security Cameras - Outdoor",
+    "updatedAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 94000000
+    },
+    "location": "Security Office",
+    "reorderLevel": 2,
+    "unitPrice": 3200,
+    "lastRestocked": "2024-01-10",
+    "currentStock": 6,
+    "category": "Security",
+    "description": "Weatherproof HD cameras for outdoor surveillance, 1080p",
+    "unit": "pieces",
+    "supplier": "SecureTech Solutions",
+    "createdAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 94000000
+    },
+    "initialStock": 6
+  },
+  {
+    "id": "SC003",
+    "category": "Security",
+    "unitPrice": 15000,
+    "reorderLevel": 1,
+    "currentStock": 2,
+    "createdAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 302000000
+    },
+    "lastRestocked": "2024-01-05",
+    "unit": "pieces",
+    "supplier": "SecureTech Solutions",
+    "name": "DVR System",
+    "description": "16-channel digital video recorder with 2TB storage",
+    "location": "Security Office",
+    "updatedAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 302000000
+    },
+    "initialStock": 2
+  },
+  {
+    "id": "SC004",
+    "currentStock": 4,
+    "createdAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 518000000
+    },
+    "lastRestocked": "2024-01-08",
+    "reorderLevel": 2,
+    "location": "Security Office",
+    "unitPrice": 8500,
+    "supplier": "Display Tech Co.",
+    "updatedAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 518000000
+    },
+    "name": "Security Monitor",
+    "description": "24-inch LED monitor for security surveillance",
+    "unit": "pieces",
+    "category": "Security",
+    "initialStock": 4
+  },
+  {
+    "id": "SC005",
+    "currentStock": 12,
+    "createdAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 756000000
+    },
+    "name": "Two-Way Radios",
+    "supplier": "Communication Systems",
+    "location": "Security Office",
+    "unit": "pieces",
+    "updatedAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 756000000
+    },
+    "category": "Security",
+    "reorderLevel": 5,
+    "description": "Professional two-way radios with earpieces",
+    "unitPrice": 850,
+    "lastRestocked": "2024-01-12",
+    "initialStock": 12
+  },
+  {
+    "id": "SC006",
+    "lastRestocked": "2024-01-12",
+    "unit": "pieces",
+    "name": "Radio Batteries",
+    "description": "Rechargeable batteries for two-way radios",
+    "category": "Security",
+    "reorderLevel": 10,
+    "unitPrice": 120,
+    "location": "Security Office",
+    "supplier": "Communication Systems",
+    "createdAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 980000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290293,
+      "_nanoseconds": 980000000
+    },
+    "currentStock": 25,
+    "initialStock": 25
+  },
+  {
+    "id": "SC007",
+    "reorderLevel": 20,
+    "createdAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 212000000
+    },
+    "supplier": "Access Control Inc.",
+    "location": "Security Office",
+    "unitPrice": 85,
+    "description": "RFID access control cards for staff areas",
+    "unit": "pieces",
+    "currentStock": 50,
+    "name": "Access Control Cards",
+    "lastRestocked": "2024-01-15",
+    "initialStock": 50,
+    "category": "Maintenance",
+    "updatedAt": {
+      "_seconds": 1764571685,
+      "_nanoseconds": 7000000
+    }
+  },
+  {
+    "id": "SC008",
+    "reorderLevel": 3,
+    "supplier": "Access Control Inc.",
+    "unit": "pieces",
+    "createdAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 447000000
+    },
+    "lastRestocked": "2024-01-15",
+    "name": "Card Readers",
+    "location": "Security Office",
+    "unitPrice": 1200,
+    "category": "Security",
+    "updatedAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 447000000
+    },
+    "description": "RFID card readers for door access control",
+    "currentStock": 8,
+    "initialStock": 8
+  },
+  {
+    "id": "SC009",
+    "location": "Security Office",
+    "lastRestocked": "2024-01-14",
+    "category": "Security",
+    "supplier": "Alarm Systems Co.",
+    "reorderLevel": 6,
+    "unit": "pieces",
+    "createdAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 658000000
+    },
+    "name": "Motion Sensors",
+    "unitPrice": 450,
+    "description": "PIR motion sensors for security system",
+    "currentStock": 15,
+    "updatedAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 658000000
+    },
+    "initialStock": 15
+  },
+  {
+    "id": "SC010",
+    "lastRestocked": "2024-01-14",
+    "unit": "pieces",
+    "unitPrice": 180,
+    "updatedAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 897000000
+    },
+    "supplier": "Alarm Systems Co.",
+    "category": "Security",
+    "createdAt": {
+      "_seconds": 1759290294,
+      "_nanoseconds": 897000000
+    },
+    "name": "Door Sensors",
+    "description": "Magnetic door/window sensors for alarm system",
+    "reorderLevel": 8,
+    "currentStock": 20,
+    "location": "Security Office",
+    "initialStock": 20
+  },
+  {
+    "id": "SC011",
+    "name": "Alarm Control Panel",
+    "currentStock": 2,
+    "lastRestocked": "2024-01-06",
+    "description": "Central alarm control panel with keypad",
+    "category": "Security",
+    "supplier": "Alarm Systems Co.",
+    "unitPrice": 5500,
+    "updatedAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 187000000
+    },
+    "createdAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 187000000
+    },
+    "location": "Security Office",
+    "unit": "pieces",
+    "reorderLevel": 1,
+    "initialStock": 2
+  },
+  {
+    "id": "SC012",
+    "unit": "sets",
+    "lastRestocked": "2024-01-18",
+    "supplier": "Uniform Supply Co.",
+    "description": "Security guard uniforms, complete set (shirt, pants, cap)",
+    "location": "Security Office",
+    "createdAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 396000000
+    },
+    "name": "Security Uniforms",
+    "currentStock": 12,
+    "unitPrice": 850,
+    "category": "Security",
+    "reorderLevel": 5,
+    "updatedAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 396000000
+    },
+    "initialStock": 12
+  },
+  {
+    "id": "SC013",
+    "createdAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 624000000
+    },
+    "updatedAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 624000000
+    },
+    "lastRestocked": "2024-01-16",
+    "reorderLevel": 6,
+    "category": "Security",
+    "unitPrice": 65,
+    "description": "Security guard ID badges with lanyards",
+    "name": "Security Badges",
+    "supplier": "ID Solutions Ltd.",
+    "location": "Security Office",
+    "currentStock": 15,
+    "unit": "pieces",
+    "initialStock": 15
+  },
+  {
+    "id": "SC014",
+    "supplier": "Safety Equipment Co.",
+    "category": "Security",
+    "name": "Flashlights",
+    "reorderLevel": 4,
+    "unitPrice": 320,
+    "currentStock": 10,
+    "unit": "pieces",
+    "updatedAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 835000000
+    },
+    "createdAt": {
+      "_seconds": 1759290295,
+      "_nanoseconds": 835000000
+    },
+    "location": "Security Office",
+    "lastRestocked": "2024-01-11",
+    "description": "Heavy-duty LED flashlights with rechargeable batteries",
+    "initialStock": 10
+  },
+  {
+    "id": "SC015",
+    "updatedAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 66000000
+    },
+    "currentStock": 8,
+    "unit": "books",
+    "description": "Security incident report logbooks",
+    "supplier": "Office Forms Co.",
+    "createdAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 66000000
+    },
+    "unitPrice": 120,
+    "name": "Security Logs",
+    "reorderLevel": 3,
+    "location": "Security Office",
+    "category": "Security",
+    "lastRestocked": "2024-01-13",
+    "initialStock": 8
+  },
+  {
+    "id": "SC016",
+    "category": "Security",
+    "reorderLevel": 2,
+    "createdAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 275000000
+    },
+    "unitPrice": 450,
+    "lastRestocked": "2024-01-09",
+    "location": "Security Office",
+    "name": "First Aid Kits",
+    "supplier": "Medical Supplies Inc.",
+    "updatedAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 275000000
+    },
+    "currentStock": 6,
+    "unit": "kits",
+    "description": "Complete first aid kits for security personnel",
+    "initialStock": 6
+  },
+  {
+    "id": "SC017",
+    "unit": "pieces",
+    "category": "Security",
+    "updatedAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 486000000
+    },
+    "location": "Security Office",
+    "reorderLevel": 5,
+    "currentStock": 12,
+    "unitPrice": 180,
+    "createdAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 486000000
+    },
+    "supplier": "Lock & Key Co.",
+    "lastRestocked": "2024-01-17",
+    "description": "Heavy-duty cable locks for securing equipment",
+    "name": "Cable Locks",
+    "initialStock": 12
+  },
+  {
+    "id": "SC018",
+    "lastRestocked": "2024-01-17",
+    "updatedAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 696000000
+    },
+    "reorderLevel": 8,
+    "location": "Security Office",
+    "description": "Heavy-duty padlocks with keys, various sizes",
+    "supplier": "Lock & Key Co.",
+    "unitPrice": 120,
+    "createdAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 696000000
+    },
+    "unit": "pieces",
+    "name": "Padlocks",
+    "category": "Security",
+    "currentStock": 20,
+    "initialStock": 20
+  },
+  {
+    "id": "SC019",
+    "location": "Security Office",
+    "lastRestocked": "2024-01-19",
+    "updatedAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 904000000
+    },
+    "unit": "rolls",
+    "supplier": "Security Supplies",
+    "name": "Security Tape",
+    "reorderLevel": 6,
+    "category": "Security",
+    "createdAt": {
+      "_seconds": 1759290296,
+      "_nanoseconds": 904000000
+    },
+    "unitPrice": 85,
+    "currentStock": 15,
+    "description": "Evidence security tape for crime scene protection",
+    "initialStock": 15
+  },
+  {
+    "id": "SC020",
+    "unitPrice": 35,
+    "lastRestocked": "2024-01-20",
+    "description": "Emergency whistles for security personnel",
+    "category": "Security",
+    "createdAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 142000000
+    },
+    "supplier": "Safety Equipment Co.",
+    "unit": "pieces",
+    "name": "Emergency Whistles",
+    "reorderLevel": 10,
+    "updatedAt": {
+      "_seconds": 1759290297,
+      "_nanoseconds": 142000000
+    },
+    "currentStock": 25,
+    "location": "Security Office",
+    "initialStock": 25
+  },
+  {
+    "id": "SC021",
+    "category": "Security",
+    "currentStock": 50,
+    "description": "White A4 copy paper, 80gsm, 500 sheets per ream",
+    "location": "Front Office Storage",
+    "name": "New Name from Postman",
+    "reorderLevel": 20,
+    "supplier": "Office Supplies Co.",
+    "unit": "reams",
+    "unitPrice": 180,
+    "createdAt": "November 10, 2025 at 7:05:01 PM GMT+8",
+    "status": "pending",
+    "initialStock": 50
+  }
+]

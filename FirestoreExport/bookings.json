@@ -1,0 +1,3322 @@
+[
+  {
+    "id": "0oZYb2U1ruR6M3VAgjKW",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1762563885315ci15sqx",
+    "checkOut": "2025-11-15",
+    "guests": 2,
+    "nights": 7,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": "Khyte Cyril N/A Infiesto",
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762563885,
+        "_nanoseconds": 314000000
+      },
+      "paymentMethod": "gcash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 3800,
+    "roomType": "deluxe",
+    "subtotal": 26600,
+    "tax": 3192,
+    "taxRate": 0.12,
+    "totalAmount": 29792,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": null,
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1762563938,
+      "_nanoseconds": 398000000
+    },
+    "checkIn": "2025-11-08",
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1763033121,
+      "_nanoseconds": 141000000
+    }
+  },
+  {
+    "id": "1BR5KIdenJoMebBXlY1V",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1762569836469elp19dl",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-15",
+    "guests": 1,
+    "nights": 7,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762569836,
+        "_nanoseconds": 467000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "105",
+    "subtotal": 17500,
+    "tax": 2100,
+    "taxRate": 0.12,
+    "totalAmount": 19600,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1762569836469da4hy",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1762569889,
+      "_nanoseconds": 629000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762570779,
+      "_nanoseconds": 30000000
+    }
+  },
+  {
+    "id": "33kGGU6SRsUNUHsqDYJ4",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-15",
+    "guests": 3,
+    "nights": 7,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762563688,
+        "_nanoseconds": 361000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 4550,
+    "roomType": "deluxe",
+    "subtotal": 31850,
+    "tax": 3822,
+    "taxRate": 0.12,
+    "totalAmount": 35672,
+    "userEmail": "erenkirito84@gmail.com",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1762563741,
+      "_nanoseconds": 396000000
+    },
+    "roomNumber": "310",
+    "userId": "U-UNKNOWN-33kGGU6SRsUNUHsqDYJ4",
+    "bookingId": "33kGGU6SRsUNUHsqDYJ4",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763051309,
+      "_nanoseconds": 812000000
+    }
+  },
+  {
+    "id": "4JNW7tTSTnnjo5keGYsk",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1762565976023j82psc6",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-09",
+    "guests": 1,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762565976,
+        "_nanoseconds": 20000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 3800,
+    "roomType": "deluxe",
+    "roomNumber": "302",
+    "subtotal": 3800,
+    "tax": 456,
+    "taxRate": 0.12,
+    "totalAmount": 4256,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U17625659760230txzi",
+    "userName": "Khyte Cyri",
+    "createdAt": {
+      "_seconds": 1762566028,
+      "_nanoseconds": 891000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762745341,
+      "_nanoseconds": 524000000
+    }
+  },
+  {
+    "id": "4lUbdkL9MWJSu9HavA1y",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1763125928069h51caxi",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-21",
+    "guests": 4,
+    "nights": 7,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763125928,
+        "_nanoseconds": 67000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 5300,
+    "roomType": "deluxe",
+    "roomNumber": "402",
+    "subtotal": 37100,
+    "tax": 4452,
+    "taxRate": 0.12,
+    "totalAmount": 41552,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763125928069395in",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763125978,
+      "_nanoseconds": 334000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763633940,
+      "_nanoseconds": 779000000
+    }
+  },
+  {
+    "id": "5yY5qi8jTt4PCcbYc9F2",
+    "bookingId": "BK1763993700664ap2f5lozk",
+    "userId": "0UJyCW1mzrYNPnTIf6t81PLOZ1K3",
+    "userEmail": "gsource763@gmail.com",
+    "userName": "Jonathan Madimatibag",
+    "checkIn": "2025-11-29",
+    "checkOut": "2025-11-30",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 2,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763994125,
+      "_nanoseconds": 387000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09943541057",
+      "gcashName": "jonathan ",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1763994125,
+        "_nanoseconds": 387000000
+      }
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764518403,
+      "_nanoseconds": 576000000
+    }
+  },
+  {
+    "id": "7AuqiIj4sWkounlWzBLi",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1763125990777e5gaj12",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-15",
+    "guests": 4,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": "Khyt",
+      "gcashNumber": "09757511899",
+      "paidAt": {
+        "_seconds": 1763125990,
+        "_nanoseconds": 777000000
+      },
+      "paymentMethod": "gcash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 5300,
+    "roomType": "deluxe",
+    "roomNumber": "403",
+    "subtotal": 5300,
+    "tax": 636,
+    "taxRate": 0.12,
+    "totalAmount": 5936,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763125990777oc0x5",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763126040,
+      "_nanoseconds": 796000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763386066,
+      "_nanoseconds": 710000000
+    }
+  },
+  {
+    "id": "7rQ8bSMKpGZ4JvwwZMgw",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "7rQ8bSMKpGZ4JvwwZMgw",
+    "bookingType": "walk-in",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764147569,
+        "_nanoseconds": 950000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "210",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1764147569950zmkjk",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1764147616,
+      "_nanoseconds": 379000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "WI1762442971777VPUM",
+    "guestName": "Khyte Cyril Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomType": "Silid Payapa",
+    "roomTypeName": "Silid Payapa",
+    "roomNumber": "204",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "totalAmount": 61600,
+    "paymentReceived": 61600,
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762443025,
+      "_nanoseconds": 159000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762574121,
+      "_nanoseconds": 838000000
+    }
+  },
+  {
+    "id": "AYmiK18sbwkwM2oIvFkE",
+    "bookingId": "BK17637351055283xbly9zhf",
+    "userId": "9r1fhufYgZYnJyBmGKO9ex67UFo1",
+    "userEmail": "detera.emmanuel.escalicas@gmail.com",
+    "userName": "Emmanuel  Detera",
+    "checkIn": "2025-11-21",
+    "checkOut": "2025-11-22",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 5,
+    "nights": 1,
+    "basePrice": 5500,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1000,
+    "roomPricePerNight": 6500,
+    "subtotal": 6500,
+    "tax": 780,
+    "taxRate": 0.12,
+    "totalAmount": 7280,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763735152,
+      "_nanoseconds": 614000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09123472938",
+      "gcashName": "Emmanuel Detera",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1763735152,
+        "_nanoseconds": 614000000
+      }
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763862447,
+      "_nanoseconds": 658000000
+    }
+  },
+  {
+    "id": "BK1764148707826c10ox8j",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1764148707826c10ox8j",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764148707,
+        "_nanoseconds": 822000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "106",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1764148707825wsj80",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1764148754,
+      "_nanoseconds": 212000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "BK1764148852865y74eo3uop",
+    "bookingId": "BK1764148852865y74eo3uop",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-27",
+    "checkOut": "2025-11-29",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 3,
+    "nights": 2,
+    "basePrice": 5500,
+    "additionalGuestPrice": 1000,
+    "taxRate": 0.12,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764148904,
+      "_nanoseconds": 898000000
+    },
+    "totalAmount": 14560,
+    "roomNumber": "510",
+    "roomPricePerNight": 6500,
+    "subtotal": 13000,
+    "tax": 1560,
+    "baseGuests": 2,
+    "paymentDetails": {
+      "paidAt": {
+        "_seconds": 1764148904,
+        "_nanoseconds": 898000000
+      },
+      "gcashName": "fgyt",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764444171,
+      "_nanoseconds": 622000000
+    }
+  },
+  {
+    "id": "BK17641509332902usmbekkl",
+    "bookingId": "BK17641509332902usmbekkl",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-12-14",
+    "checkOut": "2025-12-25",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 3,
+    "nights": 11,
+    "basePrice": 5500,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1000,
+    "roomPricePerNight": 5500,
+    "subtotal": 60500,
+    "tax": 7260,
+    "taxRate": 0.12,
+    "totalAmount": 67760,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764150984,
+      "_nanoseconds": 308000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "asf",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764150984,
+        "_nanoseconds": 308000000
+      }
+    },
+    "roomNumber": "509",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764444327,
+      "_nanoseconds": 243000000
+    }
+  },
+  {
+    "id": "BK17641511112018gnzouf",
+    "additionalGuestPrice": 1200,
+    "baseGuests": 4,
+    "basePrice": 8000,
+    "bookingId": "BK17641511112018gnzouf",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764151111,
+        "_nanoseconds": 200000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Haraya",
+    "roomPricePerNight": 8000,
+    "roomType": "family",
+    "roomNumber": "601",
+    "subtotal": 16000,
+    "tax": 1920,
+    "taxRate": 0.12,
+    "totalAmount": 17920,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U17641511112009g94t",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1764151157,
+      "_nanoseconds": 915000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764151173,
+      "_nanoseconds": 995000000
+    }
+  },
+  {
+    "id": "BK1764151154688jey1mro",
+    "additionalGuestPrice": 1200,
+    "baseGuests": 4,
+    "basePrice": 8000,
+    "bookingId": "BK1764151154688jey1mro",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764151154,
+        "_nanoseconds": 688000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Haraya",
+    "roomPricePerNight": 8000,
+    "roomType": "family",
+    "roomNumber": "602",
+    "subtotal": 16000,
+    "tax": 1920,
+    "taxRate": 0.12,
+    "totalAmount": 17920,
+    "userEmail": "articpanda097@gmail.com",
+    "userId": "U17641511546883r8it",
+    "userName": "Khyte Cyril Infiesto",
+    "createdAt": {
+      "_seconds": 1764151200,
+      "_nanoseconds": 762000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "BK1764151366752xtcq1k7",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1764151366752xtcq1k7",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "nights": 2,
+    "paymentMethod": "cash",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764151366,
+        "_nanoseconds": 751000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "articpanda097@gmail.com",
+    "userId": "U17641513667514xw19",
+    "userName": "Khyte Cyril Infiesto",
+    "createdAt": {
+      "_seconds": 1764151367,
+      "_nanoseconds": 9000000
+    },
+    "roomNumber": "104",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764151635,
+      "_nanoseconds": 266000000
+    }
+  },
+  {
+    "id": "BK1764151932128z4h2szs",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1764151932128z4h2szs",
+    "checkIn": "2025-11-26",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": "1234",
+      "cardholderName": "Khyte Cyril Infiesto",
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764151932,
+        "_nanoseconds": 125000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "101",
+    "taxRate": 0.12,
+    "userEmail": "articpanda097@gmail.com",
+    "userId": "U1764151932128pe36r",
+    "userName": "Khyte Cyril Infiesto",
+    "createdAt": {
+      "_seconds": 1764151933,
+      "_nanoseconds": 221000000
+    },
+    "totalAmount": 8400,
+    "nights": 3,
+    "subtotal": 7500,
+    "paymentMethod": "cash",
+    "tax": 900,
+    "checkOut": "2025-11-29",
+    "guests": 2,
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764444171,
+      "_nanoseconds": 622000000
+    }
+  },
+  {
+    "id": "BK17641525096688n3tx5l",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK17641525096688n3tx5l",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-27",
+    "guests": 1,
+    "nights": 1,
+    "paymentMethod": "cash",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764152509,
+        "_nanoseconds": 667000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "102",
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "userEmail": "articpanda097@gmail.com",
+    "userId": "U1764152509667t3f41",
+    "userName": "Khyte Cyril Infiesto",
+    "createdAt": {
+      "_seconds": 1764152555,
+      "_nanoseconds": 549000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764289147,
+      "_nanoseconds": 780000000
+    }
+  },
+  {
+    "id": "BK1764184543654chr4872hp",
+    "bookingId": "BK1764184543654chr4872hp",
+    "userId": "SEAk3YteIsSBkrP3EDw6kKaByMl1",
+    "userEmail": "lomigo.lordaxel.taladhay@gmail.com",
+    "userName": "Axel Lomigo",
+    "checkIn": "2025-11-28",
+    "checkOut": "2025-11-29",
+    "roomType": "family",
+    "roomName": "Silid Haraya",
+    "guests": 1,
+    "nights": 1,
+    "basePrice": 8000,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1200,
+    "roomPricePerNight": 8000,
+    "subtotal": 8000,
+    "tax": 960,
+    "taxRate": 0.12,
+    "totalAmount": 8960,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764184675,
+      "_nanoseconds": 480000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09659994987",
+      "gcashName": "Asddd Dasdsad",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764184675,
+        "_nanoseconds": 480000000
+      }
+    },
+    "roomNumber": "603",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764375191,
+      "_nanoseconds": 226000000
+    }
+  },
+  {
+    "id": "BK17642066510676euyoalqh",
+    "bookingId": "BK17642066510676euyoalqh",
+    "userId": "B4c6OaH9pBWvxk3gRJi5b4cxQT62",
+    "userEmail": "landar.johnrex.catedralc@gmail.com",
+    "userName": "John Rex Landar",
+    "checkIn": "2025-11-27",
+    "checkOut": "2025-11-28",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 1,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764207027,
+      "_nanoseconds": 635000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09260610279",
+      "gcashName": "John Rex Landar",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764207027,
+        "_nanoseconds": 635000000
+      }
+    },
+    "roomNumber": "104",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "BK17642923013239xknzv3i9",
+    "bookingId": "BK17642923013239xknzv3i9",
+    "userId": "SEAk3YteIsSBkrP3EDw6kKaByMl1",
+    "userEmail": "lomigo.lordaxel.taladhay@gmail.com",
+    "userName": "Axel Lomigo",
+    "checkIn": "2025-12-09",
+    "checkOut": "2025-12-10",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 8,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 6700,
+    "subtotal": 6700,
+    "tax": 804,
+    "taxRate": 0.12,
+    "totalAmount": 7504,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764292331,
+      "_nanoseconds": 510000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09749993383",
+      "gcashName": "AxelLomigo",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764292331,
+        "_nanoseconds": 510000000
+      }
+    },
+    "roomNumber": "105",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764375177,
+      "_nanoseconds": 662000000
+    }
+  },
+  {
+    "id": "BK1764400939236m4jo64f",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1764400939236m4jo64f",
+    "guests": 2,
+    "nights": 1,
+    "paymentMethod": "cash",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764400939,
+        "_nanoseconds": 235000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "107",
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "userEmail": "detera.emmanuel.escalicas@gmail.com",
+    "userId": "U1764400939235wquci",
+    "userName": "Emmanuel Detera",
+    "createdAt": {
+      "_seconds": 1764400940,
+      "_nanoseconds": 706000000
+    },
+    "checkIn": "2025-11-28",
+    "checkOut": "2025-11-29",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764401325,
+      "_nanoseconds": 635000000
+    }
+  },
+  {
+    "id": "BK17644024246871lbi7cw",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK17644024246871lbi7cw",
+    "checkIn": "2025-11-29",
+    "checkOut": "2025-11-30",
+    "guests": 2,
+    "nights": 1,
+    "paymentMethod": "cash",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764402424,
+        "_nanoseconds": 687000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "108",
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "userEmail": "detera.emmanuel.escalicas@gmail.com",
+    "userId": "U1764402424687jnk40",
+    "userName": "Emmanuel Detera",
+    "createdAt": {
+      "_seconds": 1764402426,
+      "_nanoseconds": 92000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764408010,
+      "_nanoseconds": 99000000
+    }
+  },
+  {
+    "id": "BK1764408877879yst8k4q",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1764408877879yst8k4q",
+    "checkIn": "2025-11-29",
+    "checkOut": "2025-11-30",
+    "guests": 1,
+    "nights": 1,
+    "paymentMethod": "cash",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764408877,
+        "_nanoseconds": 878000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "202",
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "userEmail": "detera.emmanuel.escalicas@gmail.com",
+    "userId": "U17644088778782iude",
+    "userName": "Emmanuel Detera",
+    "createdAt": {
+      "_seconds": 1764408879,
+      "_nanoseconds": 395000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764411359,
+      "_nanoseconds": 900000000
+    }
+  },
+  {
+    "id": "BK1764479685194s069k778e",
+    "bookingId": "BK1764479685194s069k778e",
+    "userId": "kzJmaQISa4gRiCcgSDgZNk7Oogw2",
+    "userEmail": "casaberde.mariel.aranez@gmail.com",
+    "userName": "Mariel casaberde",
+    "checkIn": "2025-11-30",
+    "checkOut": "2025-12-01",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 1,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764479739,
+      "_nanoseconds": 963000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09604472123",
+      "gcashName": "Mariel C",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764479739,
+        "_nanoseconds": 963000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764479739,
+      "_nanoseconds": 963000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK1764489802245bhyxi3t",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1764489802245bhyxi3t",
+    "checkIn": "2025-11-30",
+    "checkOut": "2025-12-06",
+    "guests": 1,
+    "nights": 6,
+    "paymentMethod": "cash",
+    "paymentStatus": "paid",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764489802,
+        "_nanoseconds": 241000000
+      }
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "101",
+    "status": "checked-in",
+    "subtotal": 15000,
+    "tax": 1800,
+    "taxRate": 0.12,
+    "totalAmount": 16800,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U17644898022430cl7y",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1764489845,
+      "_nanoseconds": 533000000
+    },
+    "updatedAt": {
+      "_seconds": 1764489845,
+      "_nanoseconds": 533000000
+    }
+  },
+  {
+    "id": "BK1764492798326fktkfzn5u",
+    "bookingId": "BK1764492798326fktkfzn5u",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-12-01",
+    "checkOut": "2025-12-02",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 1,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764492858,
+      "_nanoseconds": 373000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "asd",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764492858,
+        "_nanoseconds": 373000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764492858,
+      "_nanoseconds": 373000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK17645214489937ar72sjk7",
+    "bookingId": "BK17645214489937ar72sjk7",
+    "userId": "gaM4UXVMutb1d1xmDs2xrhnJBkz2",
+    "userEmail": "aguiowyethandes@gmail.com",
+    "userName": "Yeth Aguio",
+    "checkIn": "2025-12-17",
+    "checkOut": "2025-12-21",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 2,
+    "nights": 4,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 10000,
+    "tax": 1200,
+    "taxRate": 0.12,
+    "totalAmount": 11200,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764521582,
+      "_nanoseconds": 979000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09976769211",
+      "gcashName": "yeth",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764521582,
+        "_nanoseconds": 979000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764521582,
+      "_nanoseconds": 979000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK1764521955984j7h76vp0q",
+    "bookingId": "BK1764521955984j7h76vp0q",
+    "userId": "kzJmaQISa4gRiCcgSDgZNk7Oogw2",
+    "userEmail": "casaberde.mariel.aranez@gmail.com",
+    "userName": "Mariel casaberde",
+    "checkIn": "2025-11-30",
+    "checkOut": "2025-12-01",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 4,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3500,
+    "subtotal": 3500,
+    "tax": 420,
+    "taxRate": 0.12,
+    "totalAmount": 3920,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764521982,
+      "_nanoseconds": 839000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09923356214",
+      "gcashName": "Wilms",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764521982,
+        "_nanoseconds": 839000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764521982,
+      "_nanoseconds": 839000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK1764522258720cn4r04fgx",
+    "bookingId": "BK1764522258720cn4r04fgx",
+    "userId": "ObMZ9lEerYSrqraaPRTUyvYdc5W2",
+    "userEmail": "abalos.jane.martinez@gmail.com",
+    "userName": "Abalos Jane",
+    "checkIn": "2026-01-02",
+    "checkOut": "2026-01-03",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 4,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3500,
+    "subtotal": 3500,
+    "tax": 420,
+    "taxRate": 0.12,
+    "totalAmount": 3920,
+    "paymentStatus": "paid",
+    "createdAt": {
+      "_seconds": 1764522490,
+      "_nanoseconds": 734000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09553500282",
+      "gcashName": "Jane Abalos",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764522490,
+        "_nanoseconds": 734000000
+      }
+    },
+    "loyaltyApplied": true,
+    "roomNumber": "103",
+    "paymentMethod": "card",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764524543,
+      "_nanoseconds": 750000000
+    }
+  },
+  {
+    "id": "BK1764522829346i3k2q6pu4",
+    "bookingId": "BK1764522829346i3k2q6pu4",
+    "userId": "DOLVid80ADeaq2mRlfY4h9p4HZy2",
+    "userEmail": "ayuyang.elizar.yu@gmail.com",
+    "userName": "Elizar Yu",
+    "checkIn": "2025-12-10",
+    "checkOut": "2025-12-10",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 4,
+    "nights": 0,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3500,
+    "subtotal": 0,
+    "tax": 0,
+    "taxRate": 0.12,
+    "totalAmount": 0,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764522862,
+      "_nanoseconds": 818000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09398546143",
+      "gcashName": "Elizar Ayuyang",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764522862,
+        "_nanoseconds": 818000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764522862,
+      "_nanoseconds": 818000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK176452366821478t8v7kt1",
+    "bookingId": "BK176452366821478t8v7kt1",
+    "userId": "3LogXRzyPDNtynIJ5C978Z2Hsji1",
+    "userEmail": "pellejojit@gmail.com",
+    "userName": "jojit oliva",
+    "checkIn": "2025-12-17",
+    "checkOut": "2025-12-24",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 1,
+    "nights": 7,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 17500,
+    "tax": 2100,
+    "taxRate": 0.12,
+    "totalAmount": 19600,
+    "paymentStatus": "paid",
+    "paymentMethod": "card",
+    "createdAt": {
+      "_seconds": 1764523735,
+      "_nanoseconds": 691000000
+    },
+    "paymentDetails": {
+      "gcashNumber": null,
+      "gcashName": null,
+      "cardLast4": "4564",
+      "cardholderName": "jojit",
+      "paidAt": {
+        "_seconds": 1764523735,
+        "_nanoseconds": 691000000
+      }
+    },
+    "loyaltyApplied": true,
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1764524389,
+      "_nanoseconds": 312000000
+    }
+  },
+  {
+    "id": "BK1764523713242637lvga1m",
+    "bookingId": "BK1764523713242637lvga1m",
+    "userId": "VectIHgUFeZuDlWMvKXLSoZhyQY2",
+    "userEmail": "cataluna.jhonepaul.borja@gmail.com",
+    "userName": "Jhone Paul Cataluna",
+    "checkIn": "2025-12-02",
+    "checkOut": "2025-12-06",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 2,
+    "nights": 4,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 10000,
+    "tax": 1200,
+    "taxRate": 0.12,
+    "totalAmount": 11200,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764524944,
+      "_nanoseconds": 336000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09314543467",
+      "gcashName": "Cata Nimida",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764524944,
+        "_nanoseconds": 336000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764524944,
+      "_nanoseconds": 336000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK1764524018406g75w204hv",
+    "bookingId": "BK1764524018406g75w204hv",
+    "userId": "lRVv06yrmSY52GvjT3fs3ADwN0n1",
+    "userEmail": "refuerzonicoleann@gmail.com",
+    "userName": "Nicole Refuerzo",
+    "checkIn": "2026-01-01",
+    "checkOut": "2026-01-08",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 1,
+    "nights": 7,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 17500,
+    "tax": 2100,
+    "taxRate": 0.12,
+    "totalAmount": 19600,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764524056,
+      "_nanoseconds": 474000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09451239494",
+      "gcashName": "Nicole Refuerzo",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764524056,
+        "_nanoseconds": 474000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764524056,
+      "_nanoseconds": 474000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BK17645240654205bvyjjro9",
+    "bookingId": "BK17645240654205bvyjjro9",
+    "userId": "3LogXRzyPDNtynIJ5C978Z2Hsji1",
+    "userEmail": "pellejojit@gmail.com",
+    "userName": "jojit oliva",
+    "checkIn": "2025-12-17",
+    "checkOut": "2025-12-24",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 2,
+    "nights": 7,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 17500,
+    "tax": 2100,
+    "taxRate": 0.12,
+    "totalAmount": 19600,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764524168,
+      "_nanoseconds": 666000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09123456789",
+      "gcashName": "jojit",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764524168,
+        "_nanoseconds": 666000000
+      }
+    },
+    "loyaltyApplied": true,
+    "roomNumber": "104",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764524704,
+      "_nanoseconds": 141000000
+    }
+  },
+  {
+    "id": "BK17645745222643jzuavkfc",
+    "bookingId": "BK17645745222643jzuavkfc",
+    "userId": "TslIEPpOo0XGs7h98qdc3H4UD9F2",
+    "userEmail": "kranws1220@gmail.com",
+    "userName": "Aaron Pahente",
+    "checkIn": "2025-12-10",
+    "checkOut": "2025-12-14",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 2,
+    "nights": 4,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 10000,
+    "tax": 1200,
+    "taxRate": 0.12,
+    "totalAmount": 11200,
+    "status": "confirmed",
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764574597,
+      "_nanoseconds": 195000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09261345679",
+      "gcashName": "Johsua",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764574597,
+        "_nanoseconds": 195000000
+      }
+    },
+    "updatedAt": {
+      "_seconds": 1764574597,
+      "_nanoseconds": 195000000
+    },
+    "loyaltyApplied": true
+  },
+  {
+    "id": "BMPxvyLA0f9Y8v6tpa6z",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BMPxvyLA0f9Y8v6tpa6z",
+    "checkIn": "2025-11-21",
+    "checkOut": "2025-11-22",
+    "guests": 1,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763700392,
+        "_nanoseconds": 335000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "101",
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763700392337xrf1k",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763700439,
+      "_nanoseconds": 68000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763862447,
+      "_nanoseconds": 658000000
+    }
+  },
+  {
+    "id": "BYztPGgwYx1lTkJCt29k",
+    "additionalGuestPrice": 1000,
+    "baseGuests": 2,
+    "basePrice": 5500,
+    "bookingId": "BK1763125347262bfkqo69",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-15",
+    "guests": 5,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763125347,
+        "_nanoseconds": 261000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Ginhawa",
+    "roomPricePerNight": 8500,
+    "roomType": "suite",
+    "roomNumber": "504",
+    "subtotal": 8500,
+    "tax": 1020,
+    "taxRate": 0.12,
+    "totalAmount": 9520,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763125347262y2tns",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763125397,
+      "_nanoseconds": 108000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763125453,
+      "_nanoseconds": 155000000
+    }
+  },
+  {
+    "id": "EsPEdwwHEDO2tklQpgmn",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "EsPEdwwHEDO2tklQpgmn",
+    "checkIn": "2025-11-20",
+    "checkOut": "2025-11-28",
+    "guests": 1,
+    "nights": 8,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763631877,
+        "_nanoseconds": 456000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "209",
+    "subtotal": 20000,
+    "tax": 2400,
+    "taxRate": 0.12,
+    "totalAmount": 22400,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U17636318774587btrj",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763631922,
+      "_nanoseconds": 788000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763633894,
+      "_nanoseconds": 755000000
+    }
+  },
+  {
+    "id": "F5jl9RUpPPDt9j6KufX8",
+    "bookingId": "BK1763125387769yjh24s2gw",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-20",
+    "roomType": "deluxe",
+    "roomName": "Silid Marahuyo",
+    "guests": 5,
+    "nights": 6,
+    "basePrice": 3800,
+    "baseGuests": 2,
+    "additionalGuestPrice": 750,
+    "roomPricePerNight": 6050,
+    "subtotal": 36300,
+    "tax": 4356,
+    "taxRate": 0.12,
+    "totalAmount": 40656,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763125446,
+      "_nanoseconds": 535000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "asd",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1763125446,
+        "_nanoseconds": 535000000
+      }
+    },
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1763125463,
+      "_nanoseconds": 332000000
+    }
+  },
+  {
+    "id": "WI1762433689592ELHF",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomType": "Silid Payapa",
+    "roomTypeName": "Silid Payapa",
+    "roomNumber": "206",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-14",
+    "guests": 3,
+    "totalAmount": 26880,
+    "paymentReceived": 26880,
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762433742,
+      "_nanoseconds": 737000000
+    },
+    "checkOutDate": "2025-11-14",
+    "checkInDate": "2025-11-06",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762433935,
+      "_nanoseconds": 139000000
+    }
+  },
+  {
+    "id": "JY9PpA6LBr5YkSU5YtFs",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-14",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "taxRate": 0.12,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763125515,
+      "_nanoseconds": 738000000
+    },
+    "roomPricePerNight": 3500,
+    "guests": 4,
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763125515,
+        "_nanoseconds": 738000000
+      },
+      "gcashName": "asd",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "JY9PpA6LBr5YkSU5YtFs",
+    "totalAmount": 58800,
+    "nights": 15,
+    "subtotal": 52500,
+    "tax": 6300,
+    "checkOut": "2025-11-29",
+    "roomNumber": "201",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764444171,
+      "_nanoseconds": 622000000
+    }
+  },
+  {
+    "id": "KJgvSxWqZf3B2w81GCTk",
+    "userId": "0UJyCW1mzrYNPnTIf6t81PLOZ1K3",
+    "userEmail": "gsource763@gmail.com",
+    "userName": "Jonathan Madimatibag",
+    "checkIn": "2025-12-01",
+    "checkOut": "2025-12-02",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 1,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764074079,
+      "_nanoseconds": 500000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09943541058",
+      "gcashName": "jonathan",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1764074079,
+        "_nanoseconds": 500000000
+      }
+    },
+    "roomNumber": "102",
+    "bookingId": "KJgvSxWqZf3B2w81GCTk",
+    "status": "checked-in",
+    "updatedAt": {
+      "_seconds": 1764489973,
+      "_nanoseconds": 970000000
+    }
+  },
+  {
+    "id": "WI1762426224219U7ZR",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomTypeName": "Deluxe Room",
+    "roomNumber": "405",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-11",
+    "guests": 3,
+    "totalAmount": 25480,
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762426277,
+      "_nanoseconds": 254000000
+    },
+    "checkOutDate": "2025-11-11",
+    "checkInDate": "2025-11-06",
+    "roomType": "Silid Marahuyo",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762574126,
+      "_nanoseconds": 576000000
+    }
+  },
+  {
+    "id": "MMEHGiA6uoFeRYhzhnrw",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-20",
+    "checkOut": "2025-12-04",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 1,
+    "nights": 14,
+    "basePrice": 5500,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1000,
+    "roomPricePerNight": 5500,
+    "subtotal": 77000,
+    "tax": 9240,
+    "taxRate": 0.12,
+    "totalAmount": 86240,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763633543,
+      "_nanoseconds": 349000000
+    },
+    "roomNumber": "507",
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763633543,
+        "_nanoseconds": 349000000
+      },
+      "gcashName": "asd",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "MMEHGiA6uoFeRYhzhnrw",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763633873,
+      "_nanoseconds": 731000000
+    }
+  },
+  {
+    "id": "NwjZpu6vrkXCqg7YF8PY",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-17",
+    "checkOut": "2025-11-19",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 3,
+    "nights": 2,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3000,
+    "subtotal": 6000,
+    "tax": 720,
+    "taxRate": 0.12,
+    "totalAmount": 6720,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763390554,
+      "_nanoseconds": 469000000
+    },
+    "roomNumber": "207",
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763390554,
+        "_nanoseconds": 469000000
+      },
+      "gcashName": "Khyt",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "NwjZpu6vrkXCqg7YF8PY",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763631795,
+      "_nanoseconds": 671000000
+    }
+  },
+  {
+    "id": "OpWyfEkCthOcc5ZXZ0DE",
+    "bookingId": "BK1762569392693qxea1qgci",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-12",
+    "roomType": "family",
+    "roomName": "Silid Haraya",
+    "guests": 8,
+    "nights": 4,
+    "basePrice": 8000,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1200,
+    "roomPricePerNight": 12800,
+    "subtotal": 51200,
+    "tax": 6144,
+    "taxRate": 0.12,
+    "totalAmount": 57344,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1762569458,
+      "_nanoseconds": 12000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "Pand",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1762569458,
+        "_nanoseconds": 12000000
+      }
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763020916,
+      "_nanoseconds": 145000000
+    }
+  },
+  {
+    "id": "QqmgncLUbZoGqGzKaccl",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-17",
+    "checkOut": "2025-11-20",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 4,
+    "nights": 3,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3500,
+    "subtotal": 10500,
+    "tax": 1260,
+    "taxRate": 0.12,
+    "totalAmount": 11760,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763389962,
+      "_nanoseconds": 588000000
+    },
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763389962,
+        "_nanoseconds": 588000000
+      },
+      "gcashName": "Khyte",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "QqmgncLUbZoGqGzKaccl",
+    "roomNumber": "107",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763631883,
+      "_nanoseconds": 402000000
+    }
+  },
+  {
+    "id": "SDkBGQBgDixg7t1Q7EkK",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1763041726795kqed6fh",
+    "checkIn": "2025-11-13",
+    "checkOut": "2025-11-14",
+    "guests": 3,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763041726,
+        "_nanoseconds": 795000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 3000,
+    "roomType": "standard",
+    "roomNumber": "104",
+    "subtotal": 3000,
+    "tax": 360,
+    "taxRate": 0.12,
+    "totalAmount": 3360,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763041726795h5igs",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763041776,
+      "_nanoseconds": 692000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763047679,
+      "_nanoseconds": 367000000
+    }
+  },
+  {
+    "id": "SyqJZOx5jswXCrxVNenc",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "SyqJZOx5jswXCrxVNenc",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "guests": 2,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1764163795,
+        "_nanoseconds": 174000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "103",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "aasdasdas@gmail.com",
+    "userId": "U17641637951742ocs1",
+    "userName": "asdasd",
+    "createdAt": {
+      "_seconds": 1764163796,
+      "_nanoseconds": 682000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764164011,
+      "_nanoseconds": 199000000
+    }
+  },
+  {
+    "id": "TVUooBIXjtjIboN6k2Fy",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "checkIn": "2025-11-08",
+    "guests": 3,
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 3000,
+    "roomType": "standard",
+    "roomNumber": "109",
+    "taxRate": 0.12,
+    "userEmail": "articpanda097@gmail.com",
+    "userId": "U1762571392443plbcq",
+    "userName": "Khyte Cyril Infiesto",
+    "createdAt": {
+      "_seconds": 1762571393,
+      "_nanoseconds": 352000000
+    },
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": null,
+      "paymentMethod": "cash",
+      "paymentStatus": "pending"
+    },
+    "bookingId": "TVUooBIXjtjIboN6k2Fy",
+    "totalAmount": 3360,
+    "nights": 1,
+    "subtotal": 3000,
+    "tax": 360,
+    "checkOut": "2025-11-09",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762575277,
+      "_nanoseconds": 787000000
+    }
+  },
+  {
+    "id": "WI1762426260946D2L7",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomType": "suite",
+    "roomTypeName": "Suite Room",
+    "roomNumber": "503",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-28",
+    "guests": 3,
+    "totalAmount": 160160,
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762426313,
+      "_nanoseconds": 353000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762574125,
+      "_nanoseconds": 653000000
+    }
+  },
+  {
+    "id": "Th0ppN85BLLzAJaoBfly",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-08",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 3,
+    "nights": 2,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3000,
+    "subtotal": 6000,
+    "tax": 720,
+    "taxRate": 0.12,
+    "totalAmount": 6720,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1762568654,
+      "_nanoseconds": 233000000
+    },
+    "roomNumber": "103",
+    "paymentDetails": {
+      "paymentStatus": "pending",
+      "paymentMethod": "cash",
+      "paidAt": null,
+      "gcashName": "Panda",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "Th0ppN85BLLzAJaoBfly",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762665640,
+      "_nanoseconds": 423000000
+    },
+    "checkOut": "2025-11-10"
+  },
+  {
+    "id": "Wg2RclI9fcDQI0mpEcay",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1762566214635pi7ax3o",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-14",
+    "guests": 1,
+    "nights": 6,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762566214,
+        "_nanoseconds": 633000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 3800,
+    "roomType": "deluxe",
+    "roomNumber": "305",
+    "subtotal": 22800,
+    "tax": 2736,
+    "taxRate": 0.12,
+    "totalAmount": 25536,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1762566214635lnj0x",
+    "userName": "Khyte Cyr",
+    "createdAt": {
+      "_seconds": 1762566267,
+      "_nanoseconds": 542000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763033275,
+      "_nanoseconds": 877000000
+    }
+  },
+  {
+    "id": "XOuaN2XeBqasGn0E9Qm3",
+    "bookingId": "BK176312274779650d4xzngw",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-18",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 3,
+    "nights": 4,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3000,
+    "subtotal": 12000,
+    "tax": 1440,
+    "taxRate": 0.12,
+    "totalAmount": 13440,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763122811,
+      "_nanoseconds": 218000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "Khy",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1763122811,
+        "_nanoseconds": 218000000
+      }
+    },
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1763125284,
+      "_nanoseconds": 278000000
+    }
+  },
+  {
+    "id": "WI1762425959336VZRD",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomType": "deluxe",
+    "roomTypeName": "Deluxe Room",
+    "roomNumber": "404",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-14",
+    "guests": 3,
+    "totalAmount": 40768,
+    "paymentStatus": "pending",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762426012,
+      "_nanoseconds": 403000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762426177,
+      "_nanoseconds": 766000000
+    }
+  },
+  {
+    "id": "b9itG2VEwVYC9RQE1X57",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1762569297197u7uqu61",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-12",
+    "guests": 1,
+    "nights": 4,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762569297,
+        "_nanoseconds": 195000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 3800,
+    "roomType": "deluxe",
+    "roomNumber": "309",
+    "subtotal": 15200,
+    "tax": 1824,
+    "taxRate": 0.12,
+    "totalAmount": 17024,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U176256929719777fly",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1762569350,
+      "_nanoseconds": 335000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762583611,
+      "_nanoseconds": 624000000
+    }
+  },
+  {
+    "id": "bQS9bEywBgOL8n0xLTpR",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-26",
+    "checkOut": "2025-11-28",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 3,
+    "nights": 2,
+    "basePrice": 5500,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1000,
+    "roomPricePerNight": 5500,
+    "subtotal": 11000,
+    "tax": 1320,
+    "taxRate": 0.12,
+    "totalAmount": 12320,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1764147752,
+      "_nanoseconds": 891000000
+    },
+    "roomNumber": "502",
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1764147752,
+        "_nanoseconds": 891000000
+      },
+      "gcashName": "asd",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "bQS9bEywBgOL8n0xLTpR",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1764347284,
+      "_nanoseconds": 265000000
+    }
+  },
+  {
+    "id": "cbVhojccs064kqRhiJXy",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1762565530870meejlj3",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-15",
+    "guests": 3,
+    "nights": 7,
+    "paymentDetails": {
+      "cardLast4": "1234",
+      "cardholderName": "Khyte Cyril Infiesto",
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762565530,
+        "_nanoseconds": 870000000
+      },
+      "paymentMethod": "card",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 4550,
+    "roomType": "deluxe",
+    "roomNumber": "303",
+    "subtotal": 31850,
+    "tax": 3822,
+    "taxRate": 0.12,
+    "totalAmount": 35672,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1762565530870kkaqf",
+    "userName": "Khyte Cyril",
+    "createdAt": {
+      "_seconds": 1762565583,
+      "_nanoseconds": 952000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763049668,
+      "_nanoseconds": 612000000
+    }
+  },
+  {
+    "id": "WI1762432949785UOWB",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomType": "deluxe",
+    "roomTypeName": "Silid Marahuyo",
+    "roomNumber": "401",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-13",
+    "guests": 1,
+    "totalAmount": 29792,
+    "paymentReceived": 29792,
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762433002,
+      "_nanoseconds": 311000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762568402,
+      "_nanoseconds": 242000000
+    }
+  },
+  {
+    "id": "eaSFTIC10Mnh7zyStnrp",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1763125594289jzyl1qf",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-15",
+    "guests": 4,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763125594,
+        "_nanoseconds": 289000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 5300,
+    "roomType": "deluxe",
+    "roomNumber": "306",
+    "subtotal": 5300,
+    "tax": 636,
+    "taxRate": 0.12,
+    "totalAmount": 5936,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763125594289ivzti",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763125643,
+      "_nanoseconds": 713000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763386067,
+      "_nanoseconds": 511000000
+    }
+  },
+  {
+    "id": "WI1762427412134EWGC",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "+639757511899",
+    "roomType": "suite",
+    "roomTypeName": "Suite Room",
+    "roomNumber": "506",
+    "checkIn": "2025-11-06",
+    "checkOut": "2025-11-28",
+    "guests": 2,
+    "totalAmount": 135520,
+    "paymentStatus": "pending",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762427465,
+      "_nanoseconds": 187000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762574124,
+      "_nanoseconds": 823000000
+    }
+  },
+  {
+    "id": "WI1762561938910HV2I",
+    "guestName": "Khyte Cyril N/A Infiesto",
+    "email": "erenkirito84@gmail.com",
+    "phone": "09757511899",
+    "roomType": "Silid Ginhawa",
+    "roomTypeName": "Silid Ginhawa",
+    "roomNumber": "508",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-14",
+    "guests": 3,
+    "totalAmount": 43680,
+    "paymentReceived": 43680,
+    "paymentStatus": "paid",
+    "paymentMethod": "cash",
+    "specialRequests": "",
+    "bookingType": "walk-in",
+    "createdAt": {
+      "_seconds": 1762561991,
+      "_nanoseconds": 930000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763125121,
+      "_nanoseconds": 903000000
+    }
+  },
+  {
+    "id": "lYx6UImjJQytXVXivvVq",
+    "bookingId": "BK1763041455012ceqil7bmh",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-13",
+    "checkOut": "2025-11-15",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 3,
+    "nights": 2,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3000,
+    "subtotal": 6000,
+    "tax": 720,
+    "taxRate": 0.12,
+    "totalAmount": 6720,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763041521,
+      "_nanoseconds": 595000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "Khyte",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1763041521,
+        "_nanoseconds": 595000000
+      }
+    },
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1763054581,
+      "_nanoseconds": 311000000
+    }
+  },
+  {
+    "id": "lgqebJe4HNFftEvUqmau",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK1762566302909to49dlr",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-09",
+    "guests": 1,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762566302,
+        "_nanoseconds": 907000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 3800,
+    "roomType": "deluxe",
+    "roomNumber": "307",
+    "subtotal": 3800,
+    "tax": 456,
+    "taxRate": 0.12,
+    "totalAmount": 4256,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1762566302909ow12z",
+    "userName": "Khyte Cyrie",
+    "createdAt": {
+      "_seconds": 1762566355,
+      "_nanoseconds": 978000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762665644,
+      "_nanoseconds": 896000000
+    }
+  },
+  {
+    "id": "oEFJ8wAVS5PG0BFV2YsJ",
+    "additionalGuestPrice": 1000,
+    "baseGuests": 2,
+    "basePrice": 5500,
+    "bookingId": "BK1763126140084y4mugcc",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-21",
+    "guests": 4,
+    "nights": 7,
+    "paymentDetails": {
+      "cardLast4": "1241",
+      "cardholderName": "Khyt",
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763126140,
+        "_nanoseconds": 83000000
+      },
+      "paymentMethod": "card",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Ginhawa",
+    "roomPricePerNight": 7500,
+    "roomType": "suite",
+    "roomNumber": "505",
+    "subtotal": 52500,
+    "tax": 6300,
+    "taxRate": 0.12,
+    "totalAmount": 58800,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763126140084avdam",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763126190,
+      "_nanoseconds": 135000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763126272,
+      "_nanoseconds": 532000000
+    }
+  },
+  {
+    "id": "oLRgZ60WtIQdr7fxxE3I",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "checkIn": "2025-11-17",
+    "checkOut": "2025-11-19",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763390412,
+        "_nanoseconds": 588000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763390412590uq0eq",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763390460,
+      "_nanoseconds": 151000000
+    },
+    "bookingId": "oLRgZ60WtIQdr7fxxE3I",
+    "roomNumber": "202",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763631795,
+      "_nanoseconds": 671000000
+    }
+  },
+  {
+    "id": "p4jgKtfjQ5lzteUVoGBa",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "checkIn": "2025-11-08",
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": "Khyte Cyril Infiesto",
+      "gcashNumber": "09757511899",
+      "paidAt": {
+        "_seconds": 1762564800,
+        "_nanoseconds": 852000000
+      },
+      "paymentMethod": "gcash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomType": "standard",
+    "taxRate": 0.12,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1762564800854bsb1e",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1762564853,
+      "_nanoseconds": 938000000
+    },
+    "roomNumber": "101",
+    "nights": 9,
+    "checkOut": "2025-11-17",
+    "bookingId": "p4jgKtfjQ5lzteUVoGBa",
+    "totalAmount": 35280,
+    "roomPricePerNight": 3500,
+    "subtotal": 31500,
+    "guests": 4,
+    "tax": 3780,
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763049678,
+      "_nanoseconds": 887000000
+    }
+  },
+  {
+    "id": "pjD7lIRz4GIiesEX3F3V",
+    "bookingId": "BK1762330915247ni0h3km1b",
+    "userId": "q7qFZ8VYzkWAJvgj9uJ8EKMhtYA2",
+    "userEmail": "vianangelo.14@gmail.com",
+    "userName": "Ian Angelo Valmores",
+    "checkIn": "2025-11-13",
+    "checkOut": "2025-11-15",
+    "roomType": "deluxe",
+    "roomName": "Silid Marahuyo",
+    "guests": 5,
+    "nights": 2,
+    "basePrice": 3800,
+    "baseGuests": 2,
+    "additionalGuestPrice": 750,
+    "roomPricePerNight": 6050,
+    "subtotal": 12100,
+    "tax": 1452,
+    "taxRate": 0.12,
+    "totalAmount": 13552,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1762330992,
+      "_nanoseconds": 959000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09957419175",
+      "gcashName": "Ian Angelo Valmores",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1762330992,
+        "_nanoseconds": 959000000
+      }
+    },
+    "roomNumber": "301",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763386068,
+      "_nanoseconds": 307000000
+    }
+  },
+  {
+    "id": "s0J4bi8og5P3uDxAdcir",
+    "bookingId": "BK1762329423574pmx8it7mu",
+    "userId": "q7qFZ8VYzkWAJvgj9uJ8EKMhtYA2",
+    "userEmail": "vianangelo.14@gmail.com",
+    "userName": "Ian Angelo Valmores",
+    "checkIn": "2025-11-05",
+    "checkOut": "2025-11-07",
+    "roomType": "family",
+    "roomName": "Silid Haraya",
+    "guests": 8,
+    "nights": 2,
+    "basePrice": 8000,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1200,
+    "roomPricePerNight": 12800,
+    "subtotal": 25600,
+    "tax": 3072,
+    "taxRate": 0.12,
+    "totalAmount": 28672,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1762329568,
+      "_nanoseconds": 560000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09957419175",
+      "gcashName": "Ian Angelo Valmores",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1762329568,
+        "_nanoseconds": 560000000
+      }
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762560271,
+      "_nanoseconds": 731000000
+    }
+  },
+  {
+    "id": "sDecVQtzJBSNWK1gZQXM",
+    "userId": "9r1fhufYgZYnJyBmGKO9ex67UFo1",
+    "userEmail": "detera.emmanuel.escalicas@gmail.com",
+    "userName": "Emmanuel  Detera",
+    "checkIn": "2025-11-21",
+    "checkOut": "2025-11-22",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 2,
+    "nights": 1,
+    "basePrice": 5500,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1000,
+    "roomPricePerNight": 5500,
+    "subtotal": 5500,
+    "tax": 660,
+    "taxRate": 0.12,
+    "totalAmount": 6160,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763706603,
+      "_nanoseconds": 844000000
+    },
+    "roomNumber": "501",
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763706603,
+        "_nanoseconds": 844000000
+      },
+      "gcashName": "Emmanuel Detera",
+      "gcashNumber": "09984567839",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "sDecVQtzJBSNWK1gZQXM",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763862447,
+      "_nanoseconds": 658000000
+    }
+  },
+  {
+    "id": "uhpsTLP5x1WElCjupUFE",
+    "additionalGuestPrice": 750,
+    "baseGuests": 2,
+    "basePrice": 3800,
+    "bookingId": "BK17631226245142srqrh0",
+    "checkIn": "2025-11-14",
+    "checkOut": "2025-11-15",
+    "guests": 3,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763122624,
+        "_nanoseconds": 512000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Marahuyo",
+    "roomPricePerNight": 4550,
+    "roomType": "deluxe",
+    "roomNumber": "304",
+    "subtotal": 4550,
+    "tax": 546,
+    "taxRate": 0.12,
+    "totalAmount": 5096,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U176312262451444b3l",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763122674,
+      "_nanoseconds": 511000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763125114,
+      "_nanoseconds": 53000000
+    }
+  },
+  {
+    "id": "uq4Rt91q9vGsC2NpxJXP",
+    "userId": "9r1fhufYgZYnJyBmGKO9ex67UFo1",
+    "userEmail": "detera.emmanuel.escalicas@gmail.com",
+    "userName": "Emmanuel  Detera",
+    "checkIn": "2025-12-09",
+    "checkOut": "2025-12-10",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 2,
+    "nights": 1,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 2500,
+    "subtotal": 2500,
+    "tax": 300,
+    "taxRate": 0.12,
+    "totalAmount": 2800,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763695536,
+      "_nanoseconds": 316000000
+    },
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763695536,
+        "_nanoseconds": 316000000
+      },
+      "gcashName": "Emmanuel Detera",
+      "gcashNumber": "09998989123",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "uq4Rt91q9vGsC2NpxJXP",
+    "roomNumber": "102",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763706710,
+      "_nanoseconds": 314000000
+    }
+  },
+  {
+    "id": "vcx1T7SRFRl9PoWehmwg",
+    "bookingId": "BK1763630667847c3mfe7l3f",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-20",
+    "checkOut": "2025-11-21",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "guests": 3,
+    "nights": 1,
+    "basePrice": 5500,
+    "baseGuests": 4,
+    "additionalGuestPrice": 1000,
+    "roomPricePerNight": 5500,
+    "subtotal": 5500,
+    "tax": 660,
+    "taxRate": 0.12,
+    "totalAmount": 6160,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763630718,
+      "_nanoseconds": 491000000
+    },
+    "paymentDetails": {
+      "gcashNumber": "09757511899",
+      "gcashName": "asd",
+      "cardLast4": null,
+      "cardholderName": null,
+      "paidAt": {
+        "_seconds": 1763630718,
+        "_nanoseconds": 491000000
+      }
+    },
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1763630762,
+      "_nanoseconds": 340000000
+    }
+  },
+  {
+    "id": "vnQ4uzR0blVPXErM0Z6m",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "vnQ4uzR0blVPXErM0Z6m",
+    "checkIn": "2025-11-20",
+    "checkOut": "2025-11-21",
+    "guests": 3,
+    "nights": 1,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763630313,
+        "_nanoseconds": 684000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 3000,
+    "roomType": "standard",
+    "roomNumber": "110",
+    "subtotal": 3000,
+    "tax": 360,
+    "taxRate": 0.12,
+    "totalAmount": 3360,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763630313686n7xqq",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763630359,
+      "_nanoseconds": 820000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763630571,
+      "_nanoseconds": 922000000
+    }
+  },
+  {
+    "id": "wFwmybXOgrCpS68BWSo3",
+    "additionalGuestPrice": 1200,
+    "baseGuests": 4,
+    "basePrice": 8000,
+    "bookingId": "BK1763389593039bu5d71u",
+    "checkIn": "2025-11-17",
+    "checkOut": "2025-11-19",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1763389593,
+        "_nanoseconds": 38000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Haraya",
+    "roomPricePerNight": 8000,
+    "roomType": "family",
+    "roomNumber": "604",
+    "subtotal": 16000,
+    "tax": 1920,
+    "taxRate": 0.12,
+    "totalAmount": 17920,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1763389593039io54j",
+    "userName": "Khyte Cyril N/A Infiesto",
+    "createdAt": {
+      "_seconds": 1763389640,
+      "_nanoseconds": 391000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763631795,
+      "_nanoseconds": 671000000
+    }
+  },
+  {
+    "id": "wqQrSznXElhBIomu77Z3",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-20",
+    "roomType": "standard",
+    "roomName": "Silid Payapa",
+    "guests": 4,
+    "nights": 12,
+    "basePrice": 2500,
+    "baseGuests": 2,
+    "additionalGuestPrice": 500,
+    "roomPricePerNight": 3500,
+    "subtotal": 42000,
+    "tax": 5040,
+    "taxRate": 0.12,
+    "totalAmount": 47040,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1762562823,
+      "_nanoseconds": 343000000
+    },
+    "roomNumber": "108",
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "cash",
+      "paidAt": {
+        "_seconds": 1762562823,
+        "_nanoseconds": 343000000
+      },
+      "gcashName": "Khyte Cryil Infiesto",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "wqQrSznXElhBIomu77Z3",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763051417,
+      "_nanoseconds": 863000000
+    }
+  },
+  {
+    "id": "y9pmamcnsfDnWapFAmvW",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK1762566621427yj9nvxo",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-10",
+    "guests": 2,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762566621,
+        "_nanoseconds": 425000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "203",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U176256662142787krj",
+    "userName": "Khyte Cyrie2",
+    "createdAt": {
+      "_seconds": 1762566674,
+      "_nanoseconds": 501000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762665643,
+      "_nanoseconds": 821000000
+    }
+  },
+  {
+    "id": "zm1ObWNLDknOmFkR3igR",
+    "additionalGuestPrice": 500,
+    "baseGuests": 2,
+    "basePrice": 2500,
+    "bookingId": "BK17625665282940de0z5l",
+    "checkIn": "2025-11-08",
+    "checkOut": "2025-11-10",
+    "guests": 1,
+    "nights": 2,
+    "paymentDetails": {
+      "cardLast4": null,
+      "cardholderName": null,
+      "gcashName": null,
+      "gcashNumber": null,
+      "paidAt": {
+        "_seconds": 1762566528,
+        "_nanoseconds": 292000000
+      },
+      "paymentMethod": "cash",
+      "paymentStatus": "paid"
+    },
+    "roomName": "Silid Payapa",
+    "roomPricePerNight": 2500,
+    "roomType": "standard",
+    "roomNumber": "205",
+    "subtotal": 5000,
+    "tax": 600,
+    "taxRate": 0.12,
+    "totalAmount": 5600,
+    "userEmail": "erenkirito84@gmail.com",
+    "userId": "U1762566528294ovthd",
+    "userName": "Khyte Cyrie1",
+    "createdAt": {
+      "_seconds": 1762566581,
+      "_nanoseconds": 378000000
+    },
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1762665922,
+      "_nanoseconds": 24000000
+    }
+  },
+  {
+    "id": "znmyjSNJARZdMPDQmsig",
+    "userId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "userEmail": "articpanda097@gmail.com",
+    "userName": "Khyte Cyril Infiesto",
+    "checkIn": "2025-11-21",
+    "checkOut": "2025-11-29",
+    "roomType": "deluxe",
+    "roomName": "Silid Marahuyo",
+    "guests": 1,
+    "nights": 8,
+    "basePrice": 3800,
+    "baseGuests": 2,
+    "additionalGuestPrice": 750,
+    "roomPricePerNight": 3800,
+    "subtotal": 30400,
+    "tax": 3648,
+    "taxRate": 0.12,
+    "totalAmount": 34048,
+    "paymentStatus": "paid",
+    "paymentMethod": "gcash",
+    "createdAt": {
+      "_seconds": 1763700676,
+      "_nanoseconds": 730000000
+    },
+    "roomNumber": "308",
+    "paymentDetails": {
+      "paymentStatus": "paid",
+      "paymentMethod": "gcash",
+      "paidAt": {
+        "_seconds": 1763700676,
+        "_nanoseconds": 730000000
+      },
+      "gcashName": "asd",
+      "gcashNumber": "09757511899",
+      "cardholderName": null,
+      "cardLast4": null
+    },
+    "bookingId": "znmyjSNJARZdMPDQmsig",
+    "status": "checked-out",
+    "updatedAt": {
+      "_seconds": 1763700866,
+      "_nanoseconds": 616000000
+    }
+  }
+]
