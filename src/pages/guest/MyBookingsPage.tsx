@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, getDocs, doc, updateDoc, DocumentData, QuerySnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, DocumentData, QuerySnapshot } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 
 interface Booking {
