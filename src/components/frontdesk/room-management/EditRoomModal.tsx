@@ -122,11 +122,11 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-[#82A33D]">
                 <IconBed />
               </div>
               <div className="flex flex-col">
-                <h2 className="text-lg font-semibold md:text-2xl text-emerald-700">
+                <h2 className="text-lg font-semibold md:text-2xl text-[#82A33D]">
                   Edit Room Details
                 </h2>
                 <p className="mt-1 text-sm text-gray-500">
@@ -136,7 +136,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100 hover:bg-emerald-100"
+              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20 hover:bg-[#82A33D]/20"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -206,7 +206,7 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                       value={formData.status}
                       // @ts-ignore
                       onChange={e => setFormData({...formData, status: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                     >
                       <option value="available">Available</option>
                       <option value="occupied">Occupied</option>
@@ -231,19 +231,19 @@ export const EditRoomModal: React.FC<EditRoomModalProps> = ({
                       value={amenityInput}
                       onChange={e => setAmenityInput(e.target.value)}
                       onKeyDown={handleAddAmenity}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] outline-none transition-all"
                       placeholder="Type feature and press Enter (e.g. 'Smart TV')"
                     />
                     <p className="text-xs text-gray-500 mt-1">Press Enter to add a tag</p>
                   </div>
-                  <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-xl border border-gray-100">
+                      <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-xl border border-gray-100">
                     {formData.amenities.length === 0 && <span className="text-sm text-gray-400 italic">No amenities added yet.</span>}
                     {formData.amenities.map((amenity, idx) => (
-                      <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm">
+                      <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#82A33D]/10 text-[#4c6a2a] border border-[#82A33D]/20 shadow-sm">
                         {amenity}
                         <button 
                             onClick={() => removeAmenity(amenity)} 
-                            className="ml-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-200 rounded-full w-4 h-4 flex items-center justify-center"
+                            className="ml-2 text-[#82A33D] hover:text-[#6d8a33] hover:bg-[#82A33D]/20 rounded-full w-4 h-4 flex items-center justify-center"
                         >
                             ×
                         </button>

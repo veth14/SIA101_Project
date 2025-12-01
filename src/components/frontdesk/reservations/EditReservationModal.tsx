@@ -36,6 +36,10 @@ const formatDate = (dateString: string) => {
   });
 };
 
+// --- HELPER REGEX ---
+const NAME_REGEX = /[^a-zA-Z\s.\-]/g; // Only letters, spaces, dots, hyphens
+const NUMBER_ONLY_REGEX = /\D/g; // Only digits
+
 // --- MAIN COMPONENT ---
 export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: EditReservationModalProps) => {
   
@@ -158,17 +162,22 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
 
     if (formData.paymentMethod === 'gcash') {
       if (!formData.gcashName.trim()) newErrors.gcashName = 'GCash name is required';
-      if (!formData.gcashNumber.trim()) newErrors.gcashNumber = 'GCash number is required';
-      else if (formData.gcashNumber.replace(/\D/g, '').length < 11) newErrors.gcashNumber = 'Must be a valid 11-digit number';
+      if (!formData.gcashNumber.trim()) {
+        newErrors.gcashNumber = 'GCash number is required';
+      } else if (formData.gcashNumber.length !== 11) {
+        newErrors.gcashNumber = 'Must be exactly 11 digits';
+      } else if (!formData.gcashNumber.startsWith('09')) {
+        newErrors.gcashNumber = 'Must start with 09';
+      }
     }
     if (formData.paymentMethod === 'card') {
       if (!formData.cardholderName.trim()) newErrors.cardholderName = 'Cardholder name is required';
       if (!formData.cardNumber.trim()) newErrors.cardNumber = 'Card number is required';
-      else if (formData.cardNumber.replace(/\D/g, '').length < 15) newErrors.cardNumber = 'Must be a valid card number';
+      else if (formData.cardNumber.length < 15) newErrors.cardNumber = 'Must be a valid card number';
       if (!formData.cardExpiry.trim()) newErrors.cardExpiry = 'Expiry date is required';
       else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.cardExpiry)) newErrors.cardExpiry = 'Must be MM/YY format';
       if (!formData.cardCvv.trim()) newErrors.cardCvv = 'CVV is required';
-      else if (formData.cardCvv.replace(/\D/g, '').length < 3) newErrors.cardCvv = 'Must be 3-4 digits';
+      else if (formData.cardCvv.length < 3) newErrors.cardCvv = 'Must be 3-4 digits';
     }
 
     setErrors(newErrors);
@@ -444,7 +453,11 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         <input
           type="text"
           value={formData.gcashName}
-          onChange={(e) => setFormData(prev => ({ ...prev, gcashName: e.target.value }))}
+          onChange={(e) => {
+            // Text only (Letters, spaces, dots, dashes)
+            const val = e.target.value.replace(NAME_REGEX, '');
+            setFormData(prev => ({ ...prev, gcashName: val }));
+          }}
           className={`w-full px-3 py-2 border rounded-md ${errors.gcashName ? 'border-red-300' : 'border-gray-300'}`}
           placeholder="Juan Dela Cruz"
         />
@@ -457,7 +470,14 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         <input
           type="tel"
           value={formData.gcashNumber}
-          onChange={(e) => setFormData(prev => ({ ...prev, gcashNumber: e.target.value }))}
+          maxLength={11}
+          onChange={(e) => {
+            // Numbers only, Max 11
+            const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+            if (val.length <= 11) {
+              setFormData(prev => ({ ...prev, gcashNumber: val }));
+            }
+          }}
           className={`w-full px-3 py-2 border rounded-md ${errors.gcashNumber ? 'border-red-300' : 'border-gray-300'}`}
           placeholder="0917XXXXXXX"
         />
@@ -475,7 +495,11 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         <input
           type="text"
           value={formData.cardholderName}
-          onChange={(e) => setFormData(prev => ({ ...prev, cardholderName: e.target.value }))}
+          onChange={(e) => {
+            // Text only
+            const val = e.target.value.replace(NAME_REGEX, '');
+            setFormData(prev => ({ ...prev, cardholderName: val }));
+          }}
           className={`w-full px-3 py-2 border rounded-md ${errors.cardholderName ? 'border-red-300' : 'border-gray-300'}`}
           placeholder="Juan Dela Cruz"
         />
@@ -488,9 +512,14 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         <input
           type="tel"
           value={formData.cardNumber}
-          onChange={(e) => setFormData(prev => ({ ...prev, cardNumber: e.target.value }))}
+          maxLength={19}
+          onChange={(e) => {
+            // Numbers only
+            const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+            setFormData(prev => ({ ...prev, cardNumber: val }));
+          }}
           className={`w-full px-3 py-2 border rounded-md ${errors.cardNumber ? 'border-red-300' : 'border-gray-300'}`}
-          placeholder="0000 0000 0000 0000"
+          placeholder="0000000000000000"
         />
         {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
       </div>
@@ -502,7 +531,12 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
           <input
             type="text"
             value={formData.cardExpiry}
-            onChange={(e) => setFormData(prev => ({ ...prev, cardExpiry: e.target.value }))}
+            maxLength={5}
+            onChange={(e) => {
+              // Allow numbers and slash only
+              const val = e.target.value.replace(/[^0-9/]/g, '');
+              setFormData(prev => ({ ...prev, cardExpiry: val }));
+            }}
             className={`w-full px-3 py-2 border rounded-md ${errors.cardExpiry ? 'border-red-300' : 'border-gray-300'}`}
             placeholder="MM/YY"
           />
@@ -515,7 +549,12 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
           <input
             type="tel"
             value={formData.cardCvv}
-            onChange={(e) => setFormData(prev => ({ ...prev, cardCvv: e.target.value }))}
+            maxLength={4}
+            onChange={(e) => {
+              // Numbers only
+              const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+              setFormData(prev => ({ ...prev, cardCvv: val }));
+            }}
             className={`w-full px-3 py-2 border rounded-md ${errors.cardCvv ? 'border-red-300' : 'border-gray-300'}`}
             placeholder="123"
           />
@@ -533,7 +572,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center" role="dialog" aria-modal="true">
-      {/* Full-screen overlay */}
+      {/* Overlay */}
       <div
         className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
         onClick={onClose}
@@ -541,18 +580,22 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
+      <div className="relative z-10 w-full max-w-5xl max-h-[90vh] mx-6 overflow-hidden rounded-3xl bg-white/95 shadow-2xl border border-white/60 flex flex-col">
         
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
+        <div className="relative px-6 py-4 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
-                <IconCalendar />
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M11 5a2 2 0 114 0 2 2 0 01-4 0zM0 16.68l3.857-1.286A9 9 0 0112 9c2.916 0 5.649.84 7.952 2.295l3.857 1.286A1 1 0 0024 16.618v.764a9 9 0 01-9 9H9a9 9 0 01-9-9v-.764a1 1 0 01.86-.974z" />
+                </svg>
               </div>
               <div className="flex flex-col">
-                <h2 className="text-lg font-semibold md:text-2xl text-emerald-700">Edit Reservation</h2>
-                <p className="mt-1 text-sm text-gray-500">{reservation.bookingId}</p>
+                <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">Edit Reservation</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Update reservation details. Booking ID: <span className="font-semibold text-gray-700">{reservation.bookingId}</span>
+                </p>
               </div>
             </div>
           </div>
@@ -560,7 +603,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -569,16 +612,18 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)]">
+        <div className="p-6 pb-8 overflow-y-auto flex-1 min-h-0 space-y-6 bg-gray-50/40">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* --- Left Column: Form Fields --- */}
             <div className="lg:col-span-2 space-y-6">
               
               {/* Guest Information */}
-              <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
-                  <IconUser />
+              <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <h4 className="flex items-center text-lg font-semibold text-gray-800 mb-4">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
                   <span className="ml-2">Guest Information</span>
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -591,7 +636,11 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                       title="Full Name"
                       placeholder="Enter guest full name"
                       value={formData.guestName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, guestName: e.target.value }))}
+                      onChange={(e) => {
+                         // Text Only
+                         const val = e.target.value.replace(NAME_REGEX, '');
+                         setFormData(prev => ({ ...prev, guestName: val }));
+                      }}
                       className={`w-full px-3 py-2 border rounded-md ${errors.guestName ? 'border-red-300' : 'border-gray-300'}`}
                     />
                     {errors.guestName && <p className="text-red-500 text-xs mt-1">{errors.guestName}</p>}
@@ -634,9 +683,11 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
               </div>
 
               {/* Booking Details */}
-              <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5">
-                <h4 className="flex items-center text-lg font-semibold text-gray-900 mb-4">
-                  <IconCalendar />
+              <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <h4 className="flex items-center text-lg font-semibold text-gray-800 mb-4">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                   <span className="ml-2">Booking Details</span>
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -748,7 +799,7 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                         ₱{calculatePricing().totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
-                    <div className="flex justify-between text-lg font-bold text-emerald-700">
+                    <div className="flex justify-between text-lg font-bold text-[#82A33D]">
                       <span>Balance Due:</span>
                       <span>
                         ₱{formData.paymentReceived.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -779,9 +830,15 @@ export const EditReservationModal = ({ isOpen, onClose, reservation, onSave }: E
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Payment Received Now</label>
                     <input
-                      type="number"
+                      type="text" // changed from number to text to control input manually
                       value={formData.paymentReceived}
-                      onChange={(e) => setFormData(prev => ({ ...prev, paymentReceived: Number(e.target.value) }))}
+                      onChange={(e) => {
+                        // Allow only numbers and one decimal point
+                        const val = e.target.value;
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setFormData(prev => ({ ...prev, paymentReceived: val as unknown as number }));
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       placeholder="0"
                     />

@@ -124,11 +124,11 @@ export const ViewRoomDetailsModal: React.FC<ViewRoomDetailsModalProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {/* Room Number Display */}
-              <div className="relative">
-                <div className="flex items-center justify-center w-14 h-14 text-white rounded-2xl shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600">
+                <div className="relative">
+                <div className="flex items-center justify-center w-14 h-14 text-white rounded-2xl shadow-lg bg-gradient-to-br from-[#82A33D] to-[#6d8a33]">
                   <span className="text-xl font-bold">{room.roomNumber}</span>
                 </div>
-                <div className="absolute -inset-1 bg-emerald-500 blur opacity-20 rounded-2xl"></div>
+                <div className="absolute -inset-1 bg-[#82A33D] blur opacity-20 rounded-2xl"></div>
               </div>
               
               <div className="flex flex-col">
@@ -140,7 +140,7 @@ export const ViewRoomDetailsModal: React.FC<ViewRoomDetailsModalProps> = ({
                 <div className="flex items-center mt-1 space-x-2">
                   {/* If Name exists, show Type as a badge */}
                   {room.roomName && (
-                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
+                    <span className="text-xs font-bold text-[#82A33D] uppercase tracking-wide bg-[#82A33D]/10 px-2 py-1 rounded-md border border-[#82A33D]/20">
                       {room.roomType}
                     </span>
                   )}
@@ -153,7 +153,7 @@ export const ViewRoomDetailsModal: React.FC<ViewRoomDetailsModalProps> = ({
               </div>
             </div>
             
-            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-full hover:bg-gray-100 transition">
+                <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-full hover:bg-gray-100 transition">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
@@ -167,7 +167,7 @@ export const ViewRoomDetailsModal: React.FC<ViewRoomDetailsModalProps> = ({
             
             {/* Price & Capacity */}
             <div className="p-5 bg-white rounded-2xl ring-1 ring-black/5 shadow-sm">
-              <div className="flex items-center space-x-2 mb-4 text-emerald-700">
+              <div className="flex items-center space-x-2 mb-4 text-[#82A33D]">
                 <IconBed />
                 <h4 className="font-semibold">Details</h4>
               </div>
@@ -182,7 +182,7 @@ export const ViewRoomDetailsModal: React.FC<ViewRoomDetailsModalProps> = ({
 
             {/* Amenities */}
             <div className="md:col-span-2 p-5 bg-white rounded-2xl ring-1 ring-black/5 shadow-sm">
-              <div className="flex items-center space-x-2 mb-4 text-emerald-700">
+              <div className="flex items-center space-x-2 mb-4 text-[#82A33D]">
                 <IconInfo />
                 <h4 className="font-semibold">Amenities & Description</h4>
               </div>
@@ -257,7 +257,7 @@ export const ViewRoomDetailsModal: React.FC<ViewRoomDetailsModalProps> = ({
                   onEdit(room);
                   onClose();
                 }}
-                className="px-5 py-2.5 text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-2xl hover:bg-emerald-100 shadow-sm transition"
+                className="px-5 py-2.5 text-sm font-bold text-white bg-[#82A33D] border border-[#82A33D]-100 rounded-2xl hover:bg-[#82A33D]-100 shadow-sm transition"
               >
                 Edit Room
               </button>
