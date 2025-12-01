@@ -362,7 +362,7 @@ const EditSupplierModal: React.FC<EditSupplierModalProps> = ({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md bg-[#82A33D] border border-[#82A33D]/20 focus:outline-none focus:ring-2 focus:ring-[#82A33D]/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md bg-gradient-to-r from-heritage-green to-emerald-600 border border-heritage-green/20 focus:outline-none focus:ring-2 focus:ring-heritage-green/30 transition-all hover:from-heritage-green/90 hover:to-emerald-600/90 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

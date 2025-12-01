@@ -263,7 +263,7 @@ const NewRequisitionModal: React.FC<NewRequisitionModalProps> = ({ isOpen, onClo
                     { name: '', quantity: 1, unit: '', estimatedCost: 0, reason: '' },
                   ])
                 }
-                className="px-3 py-1 text-xs font-medium rounded-md bg-[#82A33D]/10 text-[#82A33D] border border-[#82A33D]/30 hover:bg-[#82A33D] hover:text-white transition-colors"
+                className="px-3 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-heritage-green to-emerald-600 text-white border border-heritage-green/20 hover:from-heritage-green/90 hover:to-emerald-600/90 transition-colors"
               >
                 Add Item
               </button>
