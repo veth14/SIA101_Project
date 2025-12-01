@@ -4,7 +4,8 @@
  * Shows maximum 6 items per page with pagination controls.
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import FilterDropdown, { FilterOption } from '../../shared/FilterDropdown';
 import type { LostFoundItem } from './types';
 interface LostFoundGridProps {
   /** Array of lost and found items to display */
@@ -13,103 +14,13 @@ interface LostFoundGridProps {
   activeTab: 'found' | 'lost';
   /** Function to handle viewing item details */
   onViewDetails: (item: LostFoundItem) => void;
+  /** Function to handle view-only modal */
+  onViewOnly?: (item: LostFoundItem) => void;
   /** Function to handle marking item as claimed */
   onMarkClaimed: (item: LostFoundItem) => void;
 }
 
-// Status Dropdown Component
-const StatusDropdown: React.FC<{
-  selectedStatus: string;
-  onStatusChange: (status: string) => void;
-}> = ({ selectedStatus, onStatusChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const statuses = [
-    'All Status',
-    'Unclaimed',
-    'Claimed', 
-    'Disposed'
-  ];
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleStatusSelect = (status: string) => {
-    onStatusChange(status);
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="relative z-[100000]" ref={dropdownRef}>
-      <div className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="relative flex items-center justify-between px-6 py-3 w-full min-[1370px]:w-48 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 cursor-pointer hover:bg-white/90"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="w-2 h-2 bg-gradient-to-r from-heritage-green to-emerald-500 rounded-full"></div>
-            <span className="text-gray-800">{selectedStatus}</span>
-          </div>
-          <svg 
-            className={`w-4 h-4 text-heritage-green transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-      </div>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-[99999]">
-          {statuses.map((status) => (
-            <button
-              key={status}
-              onClick={() => handleStatusSelect(status)}
-              className={`w-full flex items-center space-x-3 px-6 py-3 text-left text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-heritage-green/10 hover:to-emerald-500/10 ${
-                selectedStatus === status 
-                  ? 'bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 text-heritage-green border-l-4 border-heritage-green' 
-                  : 'text-gray-700 hover:text-heritage-green'
-              }`}
-            >
-              <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                selectedStatus === status 
-                  ? 'bg-gradient-to-r from-heritage-green to-emerald-500' 
-                  : 'bg-gray-300'
-              }`}></div>
-              <span className="flex-1">{status}</span>
-              {selectedStatus === status && (
-                <svg className="w-4 h-4 text-heritage-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-[99998]" 
-          onClick={() => setIsOpen(false)}
-        ></div>
-      )}
-    </div>
-  );
-};
+// Replace custom status dropdown with shared FilterDropdown
 
 /**
  * Grid component for displaying lost and found items with pagination
@@ -132,17 +43,19 @@ const StatusBadge: React.FC<{ status: LostFoundItem['status'] }> = ({ status }) 
 );
 
 // Shared actions used both in table rows and mobile cards
-const ItemActions: React.FC<{ item: LostFoundItem; onViewDetails: (i: LostFoundItem) => void; onMarkClaimed: (i: LostFoundItem) => void }> = ({ item, onViewDetails, onMarkClaimed }) => (
+const ItemActions: React.FC<{ item: LostFoundItem; onViewDetails: (i: LostFoundItem) => void; onMarkClaimed: (i: LostFoundItem) => void; onViewOnly?: (i: LostFoundItem) => void }> = ({ item, onViewDetails, onMarkClaimed, onViewOnly }) => (
   <div className="flex items-center space-x-2">
-    <button 
-      onClick={() => onViewDetails(item)}
-      className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-heritage-green bg-heritage-green/10 border border-heritage-green/30 rounded-lg hover:bg-heritage-green hover:text-white transition-all duration-200"
+    <button
+      onClick={() => onViewOnly ? onViewOnly(item) : onViewDetails(item)}
+      className="px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
     >
-      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-      </svg>
       View
+    </button>
+    <button
+      onClick={() => onViewDetails(item)}
+      className="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-heritage-green hover:bg-heritage-green/90 transition-colors shadow-sm"
+    >
+      Edit
     </button>
     {item.status !== 'claimed' && (
       <button 
@@ -162,11 +75,12 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
   items, 
   activeTab,
   onViewDetails, 
-  onMarkClaimed 
+  onMarkClaimed,
+  onViewOnly
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const itemsPerPage = 6;
 
   // Reset to page 1 when items change (e.g., after filtering)
@@ -207,9 +121,7 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
         (item.foundBy && item.foundBy.toLowerCase().includes(searchLower));
       
       // Status filter
-      const matchesStatus = !selectedStatus || 
-        selectedStatus === 'All Status' || 
-        item.status.toLowerCase() === selectedStatus.toLowerCase();
+      const matchesStatus = selectedStatus === 'all' || item.status.toLowerCase() === selectedStatus.toLowerCase();
       
       return matchesSearch && matchesStatus;
     });
@@ -263,58 +175,63 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
   const isEmptyAfterFilter = filteredItems.length === 0;
 
   return (
-    <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
+    <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-visible relative">
       {/* Header */}
-      <div className="px-4 sm:px-8 py-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200/50">
-        <div className="flex flex-col min-[1370px]:flex-row min-[1370px]:items-center min-[1370px]:justify-between">
-          <div className="flex items-center space-x-4 mb-4 min-[1370px]:mb-0">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
+      <div className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50 relative z-10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+              <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
             <div>
-              <h3 className="text-xl font-black text-gray-900">Lost & Found Items</h3>
-              <p className="text-sm text-gray-500 font-medium">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length} items • Page {currentPage} of {totalPages}
-                {searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{searchTerm}"</span>}
-                {selectedStatus !== 'All Status' && <span className="ml-2 text-blue-600">• Status: {selectedStatus}</span>}
+              <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">Lost & Found Items</h3>
+              <p className="flex items-center gap-2 mt-2 text-sm text-gray-600 font-medium">
+                <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                  {filteredItems.length ? `${startIndex + 1}-${Math.min(endIndex, filteredItems.length)} of ${filteredItems.length}` : '0 results'}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span>Paginated view</span>
               </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0 min-[1370px]:space-y-0">
-            <div className="relative group w-full sm:w-auto">
-              <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center">
-                <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-wrap items-center gap-3 justify-end flex-1 relative z-10">
+            <div className="relative flex-1 min-w-[260px] max-w-xl group">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <input
-                  type="text"
-                  placeholder="Search items, categories, or locations..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-6 py-3 w-full sm:w-80 md:w-72 min-[1370px]:w-80 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/70 backdrop-blur-sm shadow-lg placeholder-gray-500 transition-all duration-300"
-                />
               </div>
-            </div>
-            <div className="w-full sm:w-auto">
-              <StatusDropdown
-                selectedStatus={selectedStatus}
-                onStatusChange={setSelectedStatus}
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search items, categories, or locations..."
+                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
               />
             </div>
-            <div className="w-full sm:w-auto">
-              <button onClick={handleAddNew} className="w-full sm:w-auto min-[1370px]:w-auto inline-flex justify-center items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <FilterDropdown
+              selected={selectedStatus}
+              onChange={setSelectedStatus}
+              options={[
+                { value: 'all', label: 'All Status' },
+                { value: 'unclaimed', label: 'Unclaimed' },
+                { value: 'claimed', label: 'Claimed' },
+                { value: 'disposed', label: 'Disposed' },
+              ] as FilterOption[]}
+              widthClass="w-48"
+              ariaLabel="Filter status"
+            />
+            <button
+              onClick={handleAddNew}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add Item
+              <span>Add Item</span>
             </button>
-            </div>
           </div>
         </div>
       </div>
@@ -346,7 +263,7 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
                   </div>
                 </div>
                 <div className="mt-3 flex space-x-2">
-                  <ItemActions item={item} onViewDetails={onViewDetails} onMarkClaimed={onMarkClaimed} />
+                  <ItemActions item={item} onViewDetails={onViewDetails} onMarkClaimed={onMarkClaimed} onViewOnly={onViewOnly} />
                 </div>
               </div>
             ))}
@@ -357,15 +274,15 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
       {/* Table for large screens (desktop) */}
   <div className="hidden min-[1370px]:block" style={{ height: '480px' }}>
         <table className="w-full h-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Item ID</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Item Name</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{activeTab === 'found' ? 'Location Found' : 'Location Lost'}</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{activeTab === 'found' ? 'Date Found' : 'Date Lost'}</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Item ID</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Item Name</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Category</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">{activeTab === 'found' ? 'Location Found' : 'Location Lost'}</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Status</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">{activeTab === 'found' ? 'Date Found' : 'Date Lost'}</th>
+              <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -378,7 +295,7 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
               const item = currentItems[index];
               if (item) {
                 return (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-200 h-16">
+                  <tr key={item.id} className="group transition-all duration-300 hover:shadow-sm hover:bg-gray-50" style={{ height: '74px' }}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900 font-mono">{item.id}</span>
                     </td>
@@ -398,27 +315,29 @@ const LostFoundGrid: React.FC<LostFoundGridProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">{item.location}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
                       <StatusBadge status={item.status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-gray-900">{new Date(item.dateFound).toLocaleDateString()}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <ItemActions item={item} onViewDetails={onViewDetails} onMarkClaimed={onMarkClaimed} />
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="inline-flex">
+                        <ItemActions item={item} onViewDetails={onViewDetails} onMarkClaimed={onMarkClaimed} onViewOnly={onViewOnly} />
+                      </div>
                     </td>
                   </tr>
                 );
               }
               return (
-                <tr key={`empty-${index}`} className="h-16">
+                <tr key={`empty-${index}`} style={{ height: '74px' }}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 text-center">—</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">—</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 text-center">—</td>
                 </tr>
               );
             })}

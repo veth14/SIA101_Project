@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, DocumentData, QuerySnapshot } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 
 interface Booking {
@@ -46,6 +47,7 @@ const getRoomDisplayName = (roomType: string) => {
 
 export const MyBookingsPage: React.FC = () => {
   const { userData } = useAuth();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -63,29 +65,38 @@ export const MyBookingsPage: React.FC = () => {
   }, [userData]);
 
   const fetchBookings = async () => {
-    if (!userData?.email) return;
+    if (!userData?.email && !userData?.uid) return;
     
     try {
-      const bookingsQuery = query(
-        collection(db, 'bookings'),
-        where('userEmail', '==', userData.email)
-      );
-      
-      const querySnapshot = await getDocs(bookingsQuery);
-      const bookingsData: Booking[] = [];
-      
-      querySnapshot.forEach((doc) => {
-        bookingsData.push({
-          id: doc.id,
-          ...doc.data()
-        } as Booking);
-      });
-      
+      const qPromises: Promise<QuerySnapshot<DocumentData>>[] = [];
+      if (userData?.email) {
+        const qEmail = query(collection(db, 'bookings'), where('userEmail', '==', userData.email));
+        qPromises.push(getDocs(qEmail));
+      }
+      if (userData?.uid) {
+        const qUid = query(collection(db, 'bookings'), where('userId', '==', userData.uid));
+        qPromises.push(getDocs(qUid));
+      }
+
+      const snaps = await Promise.all(qPromises);
+      const merged = new Map<string, Booking>();
+
+      for (const snap of snaps) {
+        snap.forEach((d) => {
+          const data = d.data();
+          const item = { id: d.id, ...data } as Booking;
+          const key = item.bookingId || item.id;
+          if (!merged.has(key)) merged.set(key, item);
+        });
+      }
+
+      const bookingsData = Array.from(merged.values());
+
       bookingsData.sort((a, b) => {
         if (a.createdAt && b.createdAt) {
-          return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
+          return a.createdAt.toDate().getTime() < b.createdAt.toDate().getTime() ? 1 : -1;
         }
-        return new Date(b.bookingDate || '').getTime() - new Date(a.bookingDate || '').getTime();
+        return new Date(a.bookingDate || '').getTime() < new Date(b.bookingDate || '').getTime() ? 1 : -1;
       });
       
       setBookings(bookingsData);
@@ -395,7 +406,7 @@ export const MyBookingsPage: React.FC = () => {
                    filter === 'cancelled' ? 'You don\'t have any cancelled bookings.' :
                    'Try adjusting your search criteria or create a new booking.'}
                 </p>
-                <button className="px-5 sm:px-6 py-2.5 sm:py-3 mt-4 sm:mt-6 text-sm sm:text-base font-semibold text-white transition-all duration-300 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl sm:rounded-2xl hover:shadow-xl hover:scale-105">
+                <button onClick={() => navigate('/booking')} className="px-5 sm:px-6 py-2.5 sm:py-3 mt-4 sm:mt-6 text-sm sm:text-base font-semibold text-white transition-all duration-300 transform bg-gradient-to-r from-heritage-green to-emerald-600 rounded-xl sm:rounded-2xl hover:shadow-xl hover:scale-105">
                   Book New Stay
                 </button>
               </div>
@@ -547,7 +558,7 @@ export const MyBookingsPage: React.FC = () => {
                           {/* Review Button - Show for checkout status OR confirmed/completed after checkout date */}
                           {(booking.status === 'Checkout' || ((booking.status === 'completed' || booking.status === 'confirmed' || booking.status === 'Confirmed') && new Date(booking.checkOut) < new Date())) && (
                             <button
-                              onClick={() => window.location.href = `/submit-review/${booking.bookingId}`}
+                              onClick={() => navigate(`/submit-review/${booking.bookingId}`, { state: { booking } })}
                               className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-heritage-green bg-white border-2 border-heritage-green transition-all duration-200 transform rounded-lg sm:rounded-xl hover:bg-heritage-green hover:text-white hover:shadow-lg active:scale-95 sm:hover:scale-105"
                             >
                               <svg className="w-4 h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -632,6 +643,128 @@ export const MyBookingsPage: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Booking Details Modal */}
+      {selectedBooking && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setSelectedBooking(null)}
+        >
+          <div
+            className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200/50 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-heritage-green to-emerald-600 flex items-center justify-center text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Reservation Details</h3>
+                  <div className="text-xs text-slate-500 font-mono">ID: {selectedBooking.bookingId || selectedBooking.id.slice(-8)}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Room</div>
+                  <div className="text-sm font-bold text-slate-900">{selectedBooking.roomName || getRoomDisplayName(selectedBooking.roomType)}</div>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Status</div>
+                  <div className="inline-flex items-center px-2 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">
+                    {selectedBooking.status}
+                  </div>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Check-in</div>
+                  <div className="text-sm font-bold text-slate-900">{new Date(selectedBooking.checkIn).toLocaleString()}</div>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Check-out</div>
+                  <div className="text-sm font-bold text-slate-900">{new Date(selectedBooking.checkOut).toLocaleString()}</div>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Guests</div>
+                  <div className="text-sm font-bold text-slate-900">{selectedBooking.guests}</div>
+                </div>
+                {typeof selectedBooking.nights === 'number' && (
+                  <div className="bg-slate-50 rounded-xl p-4">
+                    <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Nights</div>
+                    <div className="text-sm font-bold text-slate-900">{selectedBooking.nights}</div>
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-slate-200 pt-4">
+                <div className="text-xs font-semibold uppercase text-slate-600 mb-3">Pricing</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-3">
+                    <div className="text-sm text-slate-600">Room Price/Night</div>
+                    <div className="text-sm font-bold text-slate-900">₱{(selectedBooking.roomPricePerNight ?? selectedBooking.basePrice)?.toLocaleString()}</div>
+                  </div>
+                  <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-3">
+                    <div className="text-sm text-slate-600">Subtotal</div>
+                    <div className="text-sm font-bold text-slate-900">₱{(selectedBooking.subtotal ?? 0).toLocaleString()}</div>
+                  </div>
+                  <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-3">
+                    <div className="text-sm text-slate-600">Tax ({selectedBooking.taxRate ? `${(selectedBooking.taxRate * 100).toFixed(0)}%` : '—'})</div>
+                    <div className="text-sm font-bold text-slate-900">₱{(selectedBooking.tax ?? 0).toLocaleString()}</div>
+                  </div>
+                  <div className="flex items-center justify-between bg-white rounded-lg border border-slate-200 p-3">
+                    <div className="text-sm text-slate-600">Total</div>
+                    <div className="text-base font-black text-heritage-green">₱{(selectedBooking.totalAmount ?? 0).toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+
+              {selectedBooking.specialRequests && (
+                <div className="border-t border-slate-200 pt-4">
+                  <div className="text-xs font-semibold uppercase text-slate-600 mb-1">Special Requests</div>
+                  <p className="text-sm text-slate-700 whitespace-pre-line">{selectedBooking.specialRequests}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
+              {(selectedBooking.status === 'Checkout' || ((selectedBooking.status === 'completed' || selectedBooking.status === 'confirmed' || selectedBooking.status === 'Confirmed') && new Date(selectedBooking.checkOut) < new Date())) && (
+                <button
+                  onClick={() => {
+                    navigate(`/submit-review/${selectedBooking.bookingId}`, { state: { booking: selectedBooking } });
+                    setSelectedBooking(null);
+                  }}
+                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-heritage-green bg-white border-2 border-heritage-green rounded-xl hover:bg-heritage-green hover:text-white transition-all"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                  Write Review
+                </button>
+              )}
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-heritage-green rounded-xl hover:bg-heritage-green/90 transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

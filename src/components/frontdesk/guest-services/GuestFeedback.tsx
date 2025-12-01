@@ -4,6 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { db } from '../../../config/firebase';
 import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, QueryConstraint, serverTimestamp, limit } from 'firebase/firestore';
 import { getTimeValue } from '../../../lib/utils';
+import FilterDropdown, { FilterOption } from '../../shared/FilterDropdown';
 
 interface FeedbackItem {
   id: string;
@@ -124,8 +125,8 @@ export const GuestFeedback: React.FC = () => {
     return categoryMatch && statusMatch && searchMatch;
   });
 
-  // Pagination (reservations design)
-  const itemsPerPage = 5;
+  // Pagination (match inventory table design)
+  const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState<number>(1);
   const totalPages = Math.max(1, Math.ceil(filteredFeedback.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -213,45 +214,73 @@ export const GuestFeedback: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filters and Search Bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search feedback, guest names, or rooms..."
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
+    <div className="space-y-0 p-0 m-0">
+      {/* Header: Title, Counts, Search & Filters (matches Inventory design) */}
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-visible relative">
+        <div className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Left: title + counts */}
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">Guest Feedback</h3>
+                <p className="flex items-center gap-2 mt-2 text-sm text-gray-600 font-medium">
+                  <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                    {filteredFeedback.length ? `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, filteredFeedback.length)} of ${filteredFeedback.length}` : '0 results'}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span>Paginated view</span>
+                </p>
+              </div>
+            </div>
+            {/* Right: search + category/status filters */}
+            <div className="flex flex-wrap items-center gap-3 justify-end flex-1">
+              <div className="relative flex-1 min-w-[260px] max-w-xl group">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search feedback, guest names, or rooms..."
+                  className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+                />
+              </div>
+              <FilterDropdown
+                selected={selectedCategory}
+                onChange={setSelectedCategory}
+                options={[
+                  { value: 'all', label: 'All Categories' },
+                  { value: 'service', label: 'Service' },
+                  { value: 'cleanliness', label: 'Cleanliness' },
+                  { value: 'amenities', label: 'Amenities' },
+                  { value: 'food', label: 'Food & Dining' },
+                  { value: 'general', label: 'General' }
+                ] as FilterOption[]}
+                widthClass="w-52"
+                ariaLabel="Filter by category"
               />
+              <FilterDropdown
+                selected={selectedStatus}
+                onChange={setSelectedStatus}
+                options={[
+                  { value: 'all', label: 'All Status' },
+                  { value: 'new', label: 'New' },
+                  { value: 'reviewed', label: 'Reviewed' },
+                  { value: 'responded', label: 'Responded' }
+                ] as FilterOption[]}
+                widthClass="w-44"
+                ariaLabel="Filter by status"
+              />
+            </div>
           </div>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white"
-          >
-            <option value="all">All Categories</option>
-            <option value="service">Service</option>
-            <option value="cleanliness">Cleanliness</option>
-            <option value="amenities">Amenities</option>
-            <option value="food">Food & Dining</option>
-            <option value="general">General</option>
-          </select>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white"
-          >
-            <option value="all">All Status</option>
-            <option value="new">New</option>
-            <option value="reviewed">Reviewed</option>
-            <option value="responded">Responded</option>
-          </select>
-          {/* no pagination controls — showing all matching feedback */}
         </div>
       </div>
 
@@ -259,19 +288,19 @@ export const GuestFeedback: React.FC = () => {
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Guest Info</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rating</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Feedback</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Guest Info</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Rating</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Category</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Feedback</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Status</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {paginatedFeedback.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={item.id} className="group transition-all duration-300 hover:shadow-sm hover:bg-gray-50" style={{ height: '74px' }}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
@@ -300,13 +329,13 @@ export const GuestFeedback: React.FC = () => {
                   <td className="px-6 py-4 max-w-xs">
                     <p className="text-sm text-gray-700 truncate">{item.feedback}</p>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
                       {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
+                  <td className="px-6 py-4 text-center">
+                    <div className="inline-flex items-center space-x-2">
                       <button
                         onClick={() => openModal(item)}
                         className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors"
@@ -325,6 +354,16 @@ export const GuestFeedback: React.FC = () => {
                       )}
                     </div>
                   </td>
+                </tr>
+              ))}
+              {Array.from({ length: Math.max(0, 6 - paginatedFeedback.length) }).map((_, idx) => (
+                <tr key={`empty-${idx}`} style={{ height: '74px' }}>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
                 </tr>
               ))}
             </tbody>
