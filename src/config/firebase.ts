@@ -6,13 +6,13 @@ import { getAnalytics } from 'firebase/analytics';
 import type { Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAnPd-oqi2Wxb9KAX8eg9hA231S82WCer8",
-  authDomain: "hotel-management-d5827.firebaseapp.com",
-  projectId: "hotel-management-d5827",
-  storageBucket: "hotel-management-d5827.firebasestorage.app",
-  messagingSenderId: "207200611187",
-  appId: "1:207200611187:web:72d4a57e3e4abcbc44b306",
-  measurementId: "G-KH6S7HLEK7" 
+  apiKey: "AIzaSyD9pcPxzhwFnEfZmWVyD1tdzM0-oqQr6Vo",
+  authDomain: "hotelplanb-39e2a.firebaseapp.com",
+  projectId: "hotelplanb-39e2a",
+  storageBucket: "hotelplanb-39e2a.firebasestorage.app",
+  messagingSenderId: "864251380224",
+  appId: "1:864251380224:web:47ef0cbbf7873b7e260ee5",
+  measurementId: "G-VNLJXNG3V6"
 };
 
 // Initialize Firebase

@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Bell, Clock } from 'lucide-react';
+import { subscribeToRequisitions, type RequisitionRecord } from '../../../backend/requisitions/requisitionsService';
+import { subscribeToPurchaseOrders, type PurchaseOrderRecord } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
 interface Activity {
   id: string;
@@ -9,40 +12,14 @@ interface Activity {
   timestamp: string;
 }
 
-const recentActivities: Activity[] = [
-  {
-    id: '1',
-    type: 'approved',
-    title: 'Purchase Order approved',
-    code: 'PO-2024-001',
-    department: 'Housekeeping',
-    timestamp: '2 hours ago'
-  },
-  {
-    id: '2',
-    type: 'submitted',
-    title: 'Requisition submitted',
-    code: 'REQ-2024-045',
-    department: 'F&B',
-    timestamp: '4 hours ago'
-  },
-  {
-    id: '3',
-    type: 'delivered',
-    title: 'Order delivered',
-    code: 'PO-2024-002',
-    department: 'Kitchen',
-    timestamp: '1 day ago'
-  },
-  {
-    id: '4',
-    type: 'replenished',
-    title: 'Stock replenished',
-    code: 'INV-2024-156',
-    department: 'Housekeeping',
-    timestamp: '1 day ago'
-  }
-];
+interface InternalActivity {
+  id: string;
+  type: Activity['type'];
+  title: string;
+  code: string;
+  department: string;
+  timestamp: Date;
+}
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -84,47 +61,179 @@ const getActivityIcon = (type: string) => {
 };
 
 export const DashboardActivity: React.FC = () => {
+  const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderRecord[]>([]);
+
+  useEffect(() => {
+    const unsubscribeReq = subscribeToRequisitions((loaded) => {
+      setRequisitions(loaded || []);
+    });
+    const unsubscribePo = subscribeToPurchaseOrders((loaded) => {
+      setPurchaseOrders(loaded || []);
+    });
+    return () => {
+      unsubscribeReq();
+      unsubscribePo();
+    };
+  }, []);
+
+  const formatRelativeTime = (date: Date): string => {
+    const now = new Date().getTime();
+    const diffMs = now - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHr = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHr / 24);
+
+    if (diffDay > 0) {
+      return diffDay === 1 ? '1 day ago' : `${diffDay} days ago`;
+    }
+    if (diffHr > 0) {
+      return diffHr === 1 ? '1 hour ago' : `${diffHr} hours ago`;
+    }
+    if (diffMin > 0) {
+      return diffMin === 1 ? '1 minute ago' : `${diffMin} minutes ago`;
+    }
+    return 'Just now';
+  };
+
+  const activities: Activity[] = useMemo(() => {
+    const items: InternalActivity[] = [];
+
+    requisitions.forEach((req) => {
+      const rawStatus = (req.status || '').toString().toLowerCase();
+      const createdAt = req.createdAt || (req.requestDate ? new Date(req.requestDate) : new Date());
+      const dept = req.department || 'Requisition';
+      const code = req.requestNumber || req.id || 'REQ';
+
+      if (rawStatus === 'submitted' || rawStatus === 'pending') {
+        items.push({
+          id: `req-submitted-${code}`,
+          type: 'submitted',
+          title: 'Requisition submitted',
+          code,
+          department: dept,
+          timestamp: createdAt,
+        });
+      }
+
+      if (rawStatus === 'approved' || rawStatus === 'fulfilled') {
+        const ts = req.approvedDate ? new Date(req.approvedDate) : createdAt;
+        items.push({
+          id: `req-approved-${code}`,
+          type: 'approved',
+          title: 'Requisition approved',
+          code,
+          department: dept,
+          timestamp: ts,
+        });
+      }
+    });
+
+    purchaseOrders.forEach((po) => {
+      const rawStatus = (po.status || '').toString().toLowerCase();
+      const createdAt = po.createdAt || (po.orderDate ? new Date(po.orderDate) : new Date());
+      const dept = po.supplier || 'Purchase Order';
+      const code = po.orderNumber || po.id || 'PO';
+
+      if (rawStatus === 'approved') {
+        const ts = po.approvedDate ? new Date(po.approvedDate) : createdAt;
+        items.push({
+          id: `po-approved-${code}`,
+          type: 'approved',
+          title: 'Purchase order approved',
+          code,
+          department: dept,
+          timestamp: ts,
+        });
+      }
+
+      if (rawStatus === 'received' || rawStatus === 'delivered') {
+        const ts = createdAt;
+        items.push({
+          id: `po-delivered-${code}`,
+          type: 'delivered',
+          title: 'Order delivered',
+          code,
+          department: dept,
+          timestamp: ts,
+        });
+      }
+    });
+
+    items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const capped = items.slice(0, 5);
+
+    return capped.map((item) => ({
+      id: item.id,
+      type: item.type,
+      title: item.title,
+      code: item.code,
+      department: item.department,
+      timestamp: formatRelativeTime(item.timestamp),
+    }));
+  }, [requisitions, purchaseOrders]);
+
   return (
-    <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700 group overflow-hidden">
-      {/* Enhanced Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-emerald-50/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+    <div className="overflow-hidden relative bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 shadow-2xl animate-fade-in min-h-[320px]">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
       <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-heritage-green/15 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-emerald-100/20 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
-      
-      {/* Floating Decorative Elements */}
-      <div className="absolute top-6 left-6 w-2 h-2 bg-heritage-green/40 rounded-full animate-ping"></div>
-      <div className="absolute bottom-6 right-6 w-1 h-1 bg-emerald-400/50 rounded-full animate-ping delay-700"></div>
-      
-      <div className="relative mb-8">
-        <div className="flex items-center space-x-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-heritage-green drop-shadow-sm">Recent Procurement Activities</h3>
-            <p className="text-sm text-gray-600 font-medium">Latest inventory and procurement updates</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="space-y-4">
-        {recentActivities.map((activity) => (
-          <div key={activity.id} className="flex items-start space-x-3">
-            {getActivityIcon(activity.type)}
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                  <p className="text-sm text-gray-500">{activity.code} • {activity.department}</p>
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="px-8 py-7 border-b bg-gradient-to-r from-white via-slate-50/80 to-white border-gray-200/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-5">
+              <div className="relative group">
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <Bell className="w-6 h-6 text-[#82A33D]" />
                 </div>
-                <span className="text-xs text-gray-400">{activity.timestamp}</span>
+                <div className="absolute -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              <div>
+                <h3 className="text-2xl font-black bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                  Recent Procurement Activities
+                </h3>
+                <p className="text-sm font-semibold text-gray-600 mt-1 flex items-center gap-2">
+                  <span>Latest inventory and procurement updates</span>
+                  <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
+                </p>
               </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Activities List */}
+        <div className="relative z-10 px-8 py-6">
+          <div className="space-y-4">
+            {activities.map((activity) => (
+              <div
+                key={activity.id}
+                className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {getActivityIcon(activity.type)}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                        <span className="text-xs text-gray-500">
+                          {activity.code} • {activity.department}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Clock className="w-3 h-3" />
+                        <span>{activity.timestamp}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

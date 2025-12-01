@@ -23,6 +23,8 @@ interface SupplierCardProps {
   formatCurrency: (amount: number) => string;
   getStatusBadge: (status: string) => React.ReactNode;
   getRatingStars: (rating: number) => React.ReactNode;
+  onViewDetails?: (supplier: Supplier) => void;
+  onEdit?: (supplier: Supplier) => void;
 }
 
 export const SupplierCard: React.FC<SupplierCardProps> = ({
@@ -30,6 +32,8 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({
   formatCurrency,
   getStatusBadge,
   getRatingStars,
+  onViewDetails,
+  onEdit,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow h-full flex flex-col">
@@ -114,13 +118,16 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({
       
       {/* Action Buttons */}
       <div className="mt-auto pt-4 flex gap-2">
-        <button className="flex-1 px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors text-sm font-medium">
+        <button
+          className="flex-1 px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors text-sm font-medium"
+          onClick={() => onViewDetails && onViewDetails(supplier)}
+        >
           View Details
         </button>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-          New Order
-        </button>
-        <button className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+        <button
+          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+          onClick={() => onEdit && onEdit(supplier)}
+        >
           Edit
         </button>
       </div>

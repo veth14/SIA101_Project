@@ -1,7 +1,7 @@
  import React, { useState } from 'react';
 import AnalyticsTabs from './AnalyticsTabs';
 import AnalyticsChart from './AnalyticsChartWorking';
-import AnalyticsBottomSections from './AnalyticsBottomSections';
+import InventoryStats from './InventoryStats';
 import ProcurementAnalyticsPage from './procurementAnalytics/ProcurementAnalyticsPage';
 import RequisitionAnalyticsPage from './requisitionAnalytics/RequisitionAnalyticsPage';
 
@@ -17,13 +17,12 @@ const InventoryAnalyticsPage: React.FC = () => {
       default:
         return (
           <div className="space-y-6">
-            
-            
+            {/* Inventory Stats Cards */}
+            <InventoryStats />
+
             {/* Chart */}
             <AnalyticsChart />
 
-            {/* Bottom Sections */}
-            <AnalyticsBottomSections />
           </div>
         );
     }

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { SupplierCard } from './SupplierCard';
+import { SupplierDetailsModal } from './SupplierDetailsModal';
+import { SupplierEditModal } from './SupplierEditModal';
+import { SupplierNewModal } from './SupplierNewModal';
 
 // Simple Category Dropdown Component
 const CategoryDropdown: React.FC<{
@@ -131,6 +134,12 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isNewOpen, setIsNewOpen] = useState(false);
+
   const itemsPerPage = 3;
 
   // Filter suppliers based on search term and selected category
@@ -177,6 +186,20 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
     setCurrentPage(page);
   };
 
+  const handleViewDetails = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setIsDetailsOpen(true);
+  };
+
+  const handleEditSupplier = (supplier: Supplier) => {
+    setEditingSupplier(supplier);
+    setIsEditOpen(true);
+  };
+
+  const handleNewSupplierClick = () => {
+    setIsNewOpen(true);
+  };
+
   const getPaginationRange = () => {
     const range = [];
     const showPages = 5;
@@ -195,81 +218,129 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
 
   if (suppliers.length === 0) {
     return (
-      <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200/50">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
-            </div>
+      <div className="overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
+        <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Left: title + stats */}
             <div>
-              <h3 className="text-xl font-black text-gray-900">Suppliers</h3>
-              <p className="text-sm text-gray-500 font-medium">No suppliers found</p>
+              <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                    />
+                  </svg>
+                </div>
+                Suppliers
+              </h3>
+              <p className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                  0 results
+                </span>
+                <span className="text-gray-400"> Paginated view</span>
+              </p>
             </div>
           </div>
         </div>
-        
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🏢</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No suppliers found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
+
+        <div className="flex items-center justify-center py-12 px-6">
+          <div className="w-full max-w-xl p-6 text-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/60">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 text-gray-400">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-2m3 2v-4m3 4v-6M4 6h16M6 6v12a2 2 0 002 2h8a2 2 0 002-2V6"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">No suppliers found</h3>
+            <p className="text-sm text-gray-600">Try adjusting your search criteria or category filters.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/60 overflow-hidden">
+    <div className="overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
       {/* Header */}
-      <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Left: title + stats */}
+          <div>
+            <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
                 </svg>
               </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-heritage-green to-emerald-400 rounded-2xl blur opacity-30"></div>
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-gray-900">Suppliers</h3>
-              <p className="text-sm text-gray-500 font-medium">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredSuppliers.length)} of {filteredSuppliers.length} suppliers • Page {currentPage} of {totalPages}
-                {searchTerm && <span className="ml-2 text-heritage-green">• Searching: "{searchTerm}"</span>}
-                {selectedCategory !== 'All Categories' && <span className="ml-2 text-blue-600">• Category: {selectedCategory}</span>}
-              </p>
-            </div>
+              Suppliers
+            </h3>
+            <p className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+              <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                {filteredSuppliers.length === 0
+                  ? '0 results'
+                  : `${startIndex + 1}-${Math.min(endIndex, filteredSuppliers.length)} of ${filteredSuppliers.length}`}
+              </span>
+              <span className="text-gray-400"> Paginated view</span>
+            </p>
           </div>
-          <div className="flex space-x-4">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-heritage-green/20 to-emerald-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center">
-                <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-heritage-green z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+
+          {/* Right: search, category filter, and New Supplier button */}
+          <div className="flex flex-wrap items-center gap-3 justify-end">
+            {/* Search */}
+            <div className="relative group max-w-sm w-full md:w-80">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <svg
+                  className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
-                <input
-                  type="text"
-                  placeholder="Search suppliers, contacts, or categories..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-6 py-3 w-80 border border-white/40 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-heritage-green/50 focus:border-heritage-green/50 bg-white/70 backdrop-blur-sm shadow-lg placeholder-gray-500 transition-all duration-300"
-                />
               </div>
+              <input
+                type="text"
+                placeholder="Search suppliers, contacts, or categories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+              />
             </div>
-            <CategoryDropdown
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
-            <button className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            {/* Category Filter */}
+            <div className="flex items-center min-w-[190px]">
+              <CategoryDropdown
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+            </div>
+
+            {/* Primary Action */}
+            <button
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
+              onClick={handleNewSupplierClick}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              New Supplier
+              <span>New Supplier</span>
             </button>
           </div>
         </div>
@@ -277,13 +348,13 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
 
       {/* Suppliers Grid */}
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2 lg:grid-cols-3 min-h-[260px]">
           {currentSuppliers.map((supplier, index) => (
             <div
               key={supplier.id}
               className="opacity-0 animate-pulse"
-              style={{ 
-                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`
+              style={{
+                animation: `fadeInUp 0.6s ease-out ${index * 100}ms forwards`,
               }}
             >
               <SupplierCard
@@ -291,10 +362,12 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
                 formatCurrency={formatCurrency}
                 getStatusBadge={getStatusBadge}
                 getRatingStars={getRatingStars}
+                onViewDetails={handleViewDetails}
+                onEdit={handleEditSupplier}
               />
             </div>
           ))}
-          
+
           {/* Placeholder cards for alignment */}
           {placeholders.map((_, index) => (
             <div key={`placeholder-${index}`} className="invisible">
@@ -363,6 +436,29 @@ export const SupplierGrid: React.FC<SupplierGridProps> = ({
           </div>
         )}
       </div>
+      {selectedSupplier && (
+        <SupplierDetailsModal
+          supplier={selectedSupplier}
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
+          formatCurrency={formatCurrency}
+          getStatusBadge={getStatusBadge}
+          getRatingStars={getRatingStars}
+        />
+      )}
+      {editingSupplier && (
+        <SupplierEditModal
+          supplier={editingSupplier}
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+        />
+      )}
+      {isNewOpen && (
+        <SupplierNewModal
+          isOpen={isNewOpen}
+          onClose={() => setIsNewOpen(false)}
+        />
+      )}
     </div>
   );
 };

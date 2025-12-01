@@ -39,127 +39,108 @@ export const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[99999] overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      ></div>
-
-      <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl transform transition-all">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-heritage-green/5 to-emerald-50/30">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45 backdrop-blur-lg overflow-y-auto"
+      onClick={(e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="relative z-10 w-full max-w-4xl rounded-3xl bg-white/95 shadow-2xl border border-white/60">
+        {/* Modal Header */}
+        <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M4 4h10l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                  <path d="M8 11h8M8 15h5" stroke="rgba(255,255,255,0.9)" strokeWidth="1" fill="none" />
                 </svg>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {supplier.name}
-                </h2>
-                <p className="text-sm text-gray-600">
-                  {supplier.contactPerson}
-                </p>
+              <div className="flex flex-col">
+                <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">Supplier Details</h2>
+                <p className="mt-1 text-sm text-gray-500">{supplier.name}</p>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            <div aria-hidden />
           </div>
 
-          {/* Scrollable Content */}
-          <div className="overflow-y-auto max-h-[calc(100vh-250px)] px-6 py-5">
-            <div className="space-y-5">
-              {/* Supplier Info Section */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Supplier Information
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Left Column - Overview & Contact */}
+            <div className="space-y-6">
+              {/* Supplier Overview */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-[#82A33D]/5 to-[#82A33D]/10 ring-1 ring-[#82A33D]/20">
+                <h3 className="flex items-center mb-4 text-lg font-semibold text-[#82A33D]">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 10h16M4 14h10M4 18h6"
+                    />
+                  </svg>
+                  Supplier Overview
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Status
-                    </label>
-                    <div className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white">
-                      {getStatusBadge(supplier.status)}
-                    </div>
+                    <label className="text-sm font-medium text-gray-600">Status</label>
+                    <div className="mt-1">{getStatusBadge(supplier.status)}</div>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Category
-                    </label>
-                    <input
-                      type="text"
-                      value={supplier.category}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 cursor-not-allowed"
-                    />
+                    <label className="text-sm font-medium text-gray-600">Category</label>
+                    <p className="mt-1 text-lg font-semibold text-gray-900">{supplier.category}</p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Contact Person
-                    </label>
-                    <input
-                      type="text"
-                      value={supplier.contactPerson}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 cursor-not-allowed"
-                    />
+                    <label className="text-sm font-medium text-gray-600">Contact Person</label>
+                    <p className="mt-1 text-sm font-semibold text-gray-900">{supplier.contactPerson}</p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Rating
-                    </label>
-                    <div className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white">
-                      {getRatingStars(supplier.rating)}
-                    </div>
+                    <label className="text-sm font-medium text-gray-600">Rating</label>
+                    <div className="mt-1">{getRatingStars(supplier.rating)}</div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Total Orders</label>
+                    <p className="mt-1 text-lg font-semibold text-gray-900">{supplier.totalOrders}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Total Value</label>
+                    <p className="mt-1 text-2xl font-black text-[#82A33D]">{formatCurrency(supplier.totalValue)}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Contact Information Section */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              {/* Contact Information */}
+              <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+                <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 5h18M5 5v14a2 2 0 002 2h10a2 2 0 002-2V5"
+                    />
+                  </svg>
                   Contact Information
                 </h3>
-
-                <div className="space-y-3">
+                <div className="space-y-3 text-sm">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Email Address
-                    </label>
-                    <div className="flex items-center w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+                    <div className="flex items-center w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-700">
                       <svg
                         className="w-4 h-4 mr-2 text-gray-400"
                         fill="none"
@@ -178,10 +159,8 @@ export const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Phone Number
-                    </label>
-                    <div className="flex items-center w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                    <div className="flex items-center w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-700">
                       <svg
                         className="w-4 h-4 mr-2 text-gray-400"
                         fill="none"
@@ -200,128 +179,136 @@ export const SupplierDetailsModal: React.FC<SupplierDetailsModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Address
-                    </label>
-                    <textarea
-                      value={supplier.address}
-                      disabled
-                      rows={2}
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 cursor-not-allowed resize-none"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Address</label>
+                    <div className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-700 leading-relaxed min-h-[60px]">
+                      {supplier.address}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Business Terms Section */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              {/* Notes */}
+              <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+                <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h8m-8 6h8"
+                    />
+                  </svg>
+                  Notes
+                </h3>
+                <div className="space-y-3 text-sm leading-relaxed text-gray-600">
+                  <p>
+                    {supplier.notes || 'No additional notes provided for this supplier.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Terms & Activity */}
+            <div className="space-y-6">
+              {/* Business Terms */}
+              <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+                <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 10h10M4 14h8M4 18h6"
+                    />
+                  </svg>
                   Business Terms
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4 text-sm">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Payment Terms
-                    </label>
-                    <input
-                      type="text"
-                      value={supplier.paymentTerms}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 cursor-not-allowed"
-                    />
+                    <p className="font-medium text-gray-900">Payment Terms</p>
+                    <p className="text-xs text-gray-500 mt-0.5">How and when this supplier is paid.</p>
+                    <p className="mt-1 text-sm text-gray-800">{supplier.paymentTerms}</p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Delivery Time
-                    </label>
-                    <input
-                      type="text"
-                      value={supplier.deliveryTime}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 cursor-not-allowed"
-                    />
+                    <p className="font-medium text-gray-900">Delivery Time</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Typical lead time for fulfilling orders.</p>
+                    <p className="mt-1 text-sm text-gray-800">{supplier.deliveryTime}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Order Statistics Section */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Order Statistics
+              {/* Activity / Dates */}
+              <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+                <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Activity
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Total Orders
-                    </label>
-                    <input
-                      type="text"
-                      value={supplier.totalOrders}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 font-semibold cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Total Value
-                    </label>
-                    <input
-                      type="text"
-                      value={formatCurrency(supplier.totalValue)}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-heritage-green font-semibold cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Last Order Date
-                    </label>
-                    <input
-                      type="text"
-                      value={new Date(
-                        supplier.lastOrderDate
-                      ).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                      disabled
-                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 cursor-not-allowed"
-                    />
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-3 h-3 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-gray-900">Last Order Date</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(supplier.lastOrderDate).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Notes Section */}
-              {supplier.notes && (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Notes
-                  </h3>
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-700">{supplier.notes}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+              {/* Quick Actions */}
+              <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+                <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  Quick Actions
+                </h3>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <button
-              onClick={onClose}
-              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              CLOSE
-            </button>
-            <button className="px-6 py-2.5 text-sm font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700 transition-colors">
-              EDIT SUPPLIER
-            </button>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <button className="flex items-center justify-center px-4 py-3 text-sm font-medium transition-colors bg-white border border-[#82A33D]/20 text-gray-700 rounded-xl hover:bg-[#82A33D]/5">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    Print
+                  </button>
+                  <button className="flex items-center justify-center px-4 py-3 text-sm font-medium transition-colors bg-white border border-[#82A33D]/20 text-gray-700 rounded-xl hover:bg-[#82A33D]/5">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
