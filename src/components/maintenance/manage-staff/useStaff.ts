@@ -20,6 +20,33 @@ export function useStaff() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const parseCreatedAt = (value: unknown): Date => {
+    if (!value) return new Date();
+
+    // Firestore Timestamp (has toDate)
+    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as any).toDate === 'function') {
+      return (value as any).toDate();
+    }
+
+    // Already a Date
+    if (value instanceof Date) {
+      return value;
+    }
+
+    // Numeric timestamp (ms)
+    if (typeof value === 'number') {
+      return new Date(value);
+    }
+
+    // String date/ISO
+    if (typeof value === 'string') {
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? new Date() : d;
+    }
+
+    return new Date();
+  };
+
   useEffect(() => {
     let unsubscribeAttendance: (() => void) | null = null;
 
@@ -40,7 +67,7 @@ export function useStaff() {
             email: data.email,
             phoneNumber: data.phoneNumber,
             rfid: data.rfid || '',
-            createdAt: data.createdAt?.toDate() || new Date(),
+            createdAt: parseCreatedAt(data.createdAt),
             isActive: false,
           });
         });
@@ -161,7 +188,7 @@ export function useStaff() {
           email: data.email,
           phoneNumber: data.phoneNumber,
           rfid: data.rfid || '',
-          createdAt: data.createdAt?.toDate() || new Date(),
+          createdAt: parseCreatedAt(data.createdAt),
         };
       }
       return null;

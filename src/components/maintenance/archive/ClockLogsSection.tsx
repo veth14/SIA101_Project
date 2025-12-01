@@ -195,15 +195,6 @@ const ClockLogsSection: React.FC<Props> = ({ logs, loading }) => {
             </div>
           ) : (
             <table className="w-full table-fixed">
-              <colgroup>
-                <col style={{ width: '22%' }} /> {/* Staff Member */}
-                <col style={{ width: '16%' }} /> {/* Classification */}
-                <col style={{ width: '12%' }} /> {/* Date */}
-                <col style={{ width: '12%' }} /> {/* Time In */}
-                <col style={{ width: '12%' }} /> {/* Time Out */}
-                <col style={{ width: '12%' }} /> {/* Hours Worked */}
-                <col style={{ width: '14%' }} /> {/* Status */}
-              </colgroup>
               <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
                 <tr>
                   <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Staff Member</th>

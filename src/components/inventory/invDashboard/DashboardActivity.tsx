@@ -198,7 +198,7 @@ export const DashboardActivity: React.FC = () => {
                 </h3>
                 <p className="text-sm font-semibold text-gray-600 mt-1 flex items-center gap-2">
                   <span>Latest inventory and procurement updates</span>
-                  <div className="w-1 h-1 bg-heritage-green rounded-full"></div>
+                  <span className="w-1 h-1 bg-heritage-green rounded-full inline-block"></span>
                 </p>
               </div>
             </div>

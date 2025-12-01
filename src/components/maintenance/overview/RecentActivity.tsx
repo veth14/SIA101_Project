@@ -115,9 +115,9 @@ const RecentActivity: React.FC = () => {
           {/* Activity list */}
           <div className="px-8 py-6">
             <div className="space-y-4">
-              {activities.map((activity) => (
+              {activities.map((activity, index) => (
                 <ActivityItem
-                  key={`${activity.title}-${activity.timeAgo}`}
+                  key={`${activity.title}-${activity.timeAgo}-${index}`}
                   title={activity.title}
                   description={activity.description}
                   timeAgo={activity.timeAgo}
