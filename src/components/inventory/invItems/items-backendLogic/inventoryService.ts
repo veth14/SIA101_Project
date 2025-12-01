@@ -1,4 +1,5 @@
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, deleteDoc, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, deleteDoc, where, Timestamp } from 'firebase/firestore';
+
 import { db } from '../../../../config/firebase';
 
 export interface InventoryItem {
@@ -74,6 +75,15 @@ export const fetchInventoryItems = async (forceRefresh = false): Promise<Invento
     
     querySnapshot.forEach((doc) => {
       const data = doc.data();
+
+      const normalizeDate = (value: any): Date | undefined => {
+        if (!value) return undefined;
+        if (value instanceof Timestamp) return value.toDate();
+        if (value instanceof Date) return value;
+        const parsed = new Date(value);
+        return isNaN(parsed.getTime()) ? undefined : parsed;
+      };
+
       inventoryData.push({
         id: doc.id,
         name: data.name || '',
@@ -87,8 +97,8 @@ export const fetchInventoryItems = async (forceRefresh = false): Promise<Invento
         image: data.image || undefined,
         unit: data.unit || 'pieces',
         location: data.location || '',
-        createdAt: data.createdAt?.toDate() || undefined,
-        updatedAt: data.updatedAt?.toDate() || undefined
+        createdAt: normalizeDate(data.createdAt),
+        updatedAt: normalizeDate(data.updatedAt)
       });
     });
     

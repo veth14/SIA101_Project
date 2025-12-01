@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import type { InventoryItem } from './items-backendLogic/inventoryService';
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave: (itemData: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void> | void;
 }
 
 interface NewItemData {
@@ -18,7 +20,8 @@ interface NewItemData {
   initialStock: number;
 }
 
-const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
+const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) => {
+
   const [newItem, setNewItem] = useState<NewItemData>({
     name: '',
     description: '',
@@ -31,7 +34,8 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
     initialStock: 0
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
+
     // Validation
     if (!newItem.name.trim() || !newItem.category.trim() || !newItem.supplier.trim()) {
       console.log('Validation failed: Missing required fields');
@@ -43,22 +47,26 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Generate new item ID (in real app, this would be handled by backend)
-    const newId = 'F' + String(Math.floor(Math.random() * 9000) + 1000);
-
-    // Here you would typically save to the database
-    console.log('New Item Created:', {
-      id: newId,
-      ...newItem,
+    const payload: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'> = {
+      name: newItem.name,
+      description: newItem.description,
+      category: newItem.category,
       currentStock: newItem.initialStock,
+      reorderLevel: newItem.reorderLevel,
+      unitPrice: newItem.unitPrice,
+      supplier: newItem.supplier,
       lastRestocked: new Date().toISOString().split('T')[0],
-      timestamp: new Date().toISOString()
-    });
+      image: undefined,
+      unit: newItem.unit || 'pieces',
+      location: newItem.location,
+    };
 
-    console.log(`Item created successfully: ${newItem.name}`);
-
-    // Reset form and close modal
-    handleCancel();
+    try {
+      await onSave(payload);
+      handleCancel();
+    } catch (error) {
+      console.error('Error saving new inventory item:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -79,192 +87,242 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[99999] overflow-y-auto" style={{ zIndex: 99999, position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      {/* Backdrop with blur */}
-      <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-        style={{ zIndex: 99998 }}
-      ></div>
-      
-      {/* Modal */}
-      <div className="relative min-h-screen flex items-center justify-center p-6" style={{ zIndex: 99999 }}>
-        <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl transform transition-all overflow-hidden" style={{ zIndex: 99999 }}>
-          {/* Header */}
-          <div className="bg-gradient-to-r from-heritage-green/5 to-emerald-50 border-b border-gray-200">
-            <div className="px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Add New Item</h1>
-                    <p className="text-sm text-gray-600">Create a new inventory item</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors group"
-                >
-                  <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+    >
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 transition-opacity duration-200 bg-black/45 backdrop-blur-lg"
+        onClick={handleCancel}
+        aria-label="Close overlay"
+      />
+
+      {/* Modal Card */}
+      <div className="relative z-10 w-full max-w-4xl max-h-[80vh] mx-6 my-6 overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5 flex flex-col">
+        {/* Header */}
+        <div className="relative px-6 py-4 bg-white border-b border-gray-100 rounded-t-3xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M4 7l8-4 8 4v10a2 2 0 01-1.106 1.79l-6.5 3.25a2 2 0 01-1.788 0l-6.5-3.25A2 2 0 014 17V7z" />
+                  <path d="M9 12h6M9 16h3" stroke="rgba(255,255,255,0.9)" strokeWidth="1" fill="none" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-lg font-semibold text-emerald-700 md:text-2xl">Add Inventory Item</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Create a new stock item for your inventory. Required fields are marked with
+                  <span className="ml-1 font-semibold text-red-500">*</span>.
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-heritage-light/30 via-white to-emerald-50/30">
-            <div className="px-6 py-6">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/60 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Item Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={newItem.name}
-                      onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="Enter item name"
-                    />
-                  </div>
+          <button
+            onClick={handleCancel}
+            aria-label="Close"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={newItem.category}
-                      onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                    >
-                      <option value="">Select category</option>
-                      <option value="Front Office">Front Office</option>
-                      <option value="Housekeeping">Housekeeping</option>
-                      <option value="Kitchen">Kitchen</option>
-                      <option value="Maintenance">Maintenance</option>
-                      <option value="Office Supplies">Office Supplies</option>
-                    </select>
-                  </div>
+        {/* Content */}
+        <div className="p-6 pb-8 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-6 bg-gray-50/40">
+          {/* Item & Supplier Details */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <h4 className="flex items-center mb-4 text-lg font-semibold text-gray-800">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7l9-4 9 4-9 4-9-4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 13l9 4 9-4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 17l9 4 9-4" />
+                </svg>
+                Item Details
+              </h4>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Supplier <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={newItem.supplier}
-                      onChange={(e) => setNewItem({...newItem, supplier: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="Enter supplier name"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Item Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newItem.name}
+                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    placeholder="Enter item name"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                    <input
-                      type="text"
-                      value={newItem.location}
-                      onChange={(e) => setNewItem({...newItem, location: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="Enter storage location"
-                    />
-                  </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={newItem.category}
+                    onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  >
+                    <option value="">Select category</option>
+                    <option value="Front Office">Front Office</option>
+                    <option value="Housekeeping">Housekeeping</option>
+                    <option value="Kitchen">Kitchen</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Office Supplies">Office Supplies</option>
+                  </select>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
-                    <select
-                      value={newItem.unit}
-                      onChange={(e) => setNewItem({...newItem, unit: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                    >
-                      <option value="">Select unit</option>
-                      <option value="pieces">Pieces</option>
-                      <option value="boxes">Boxes</option>
-                      <option value="reams">Reams</option>
-                      <option value="bottles">Bottles</option>
-                      <option value="packs">Packs</option>
-                      <option value="rolls">Rolls</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    value={newItem.location}
+                    onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    placeholder="Storage location (e.g., Security Office)"
+                  />
+                </div>
+              </div>
+            </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Unit Price (₱)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={newItem.unitPrice}
-                      onChange={(e) => setNewItem({...newItem, unitPrice: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="0.00"
-                    />
-                  </div>
+            <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <h4 className="flex items-center mb-4 text-lg font-semibold text-gray-800">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 10-8 0v4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 11h14l-1 9H6l-1-9z" />
+                </svg>
+                Supplier & Unit
+              </h4>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Initial Stock</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={newItem.initialStock}
-                      onChange={(e) => setNewItem({...newItem, initialStock: parseInt(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="0"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Supplier <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newItem.supplier}
+                    onChange={(e) => setNewItem({ ...newItem, supplier: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    placeholder="Supplier name"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Reorder Level</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={newItem.reorderLevel}
-                      onChange={(e) => setNewItem({...newItem, reorderLevel: parseInt(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="0"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                    <textarea
-                      value={newItem.description}
-                      onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green focus:border-heritage-green"
-                      placeholder="Enter item description"
-                    />
-                  </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Unit</label>
+                  <select
+                    value={newItem.unit}
+                    onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  >
+                    <option value="">Select unit</option>
+                    <option value="pieces">Pieces</option>
+                    <option value="boxes">Boxes</option>
+                    <option value="reams">Reams</option>
+                    <option value="bottles">Bottles</option>
+                    <option value="packs">Packs</option>
+                    <option value="rolls">Rolls</option>
+                  </select>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Action Bar */}
-          <div className="bg-gradient-to-r from-gray-50 to-white border-t border-gray-200">
-            <div className="px-6 py-4">
-              <div className="flex items-center justify-end space-x-3">
-                <button
-                  onClick={handleCancel}
-                  className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-6 py-2 text-sm font-medium text-white bg-heritage-green rounded-lg hover:bg-heritage-green/90 transition-all duration-200 shadow-sm"
-                >
-                  Create Item
-                </button>
+          {/* Stock & Pricing */}
+          <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <h4 className="flex items-center mb-4 text-lg font-semibold text-gray-800">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h18v4H3zM3 9h18v4H3zM3 15h18v4H3z" />
+              </svg>
+              Stock & Pricing
+            </h4>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">Unit Price (₱)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newItem.unitPrice}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, unitPrice: parseFloat(e.target.value) || 0 })
+                  }
+                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">Initial Stock</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={newItem.initialStock}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, initialStock: parseInt(e.target.value) || 0 })
+                  }
+                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">Reorder Level</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={newItem.reorderLevel}
+                  onChange={(e) =>
+                    setNewItem({ ...newItem, reorderLevel: parseInt(e.target.value) || 0 })
+                  }
+                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  placeholder="Minimum stock before alert"
+                />
               </div>
             </div>
           </div>
+
+          {/* Description */}
+          <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              value={newItem.description}
+              onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+              rows={3}
+              className="w-full px-4 py-3 transition-colors border rounded-lg resize-none border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+              placeholder="Add any useful details about this item..."
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/80">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-emerald-700 border border-emerald-700/20 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Create Item</span>
+          </button>
         </div>
       </div>
     </div>
