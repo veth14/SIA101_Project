@@ -29,24 +29,31 @@ export function useGuestServicesStats(): GuestServicesStatsData {
   useEffect(() => {
     const col = collection(db, 'guestReview');
     const qy = query(col, orderBy('submittedAt', 'desc'), limit(500));
-    const unsub = onSnapshot(qy, (snap) => {
-      let count = 0;
-      let ratingSum = 0;
-      let ratingCount = 0;
-      let responded = 0;
-      snap.forEach((docSnap) => {
-        const d = docSnap.data() as Record<string, any>;
-        const r = Number(d.rating ?? 0);
-        if (Number.isFinite(r) && r > 0) {
-          ratingSum += r;
-          ratingCount += 1;
-        }
-        const status = (d.status as string) || 'new';
-        if (status === 'responded') responded += 1;
-        count += 1;
-      });
-      setFeedbackAgg({ count, ratingSum, ratingCount, responded });
-    });
+    const unsub = onSnapshot(
+      qy,
+      (snap) => {
+        let count = 0;
+        let ratingSum = 0;
+        let ratingCount = 0;
+        let responded = 0;
+        snap.forEach((docSnap) => {
+          const d = docSnap.data() as Record<string, any>;
+          const r = Number(d.rating ?? 0);
+          if (Number.isFinite(r) && r > 0) {
+            ratingSum += r;
+            ratingCount += 1;
+          }
+          const status = (d.status as string) || 'new';
+          if (status === 'responded') responded += 1;
+          count += 1;
+        });
+        setFeedbackAgg({ count, ratingSum, ratingCount, responded });
+      },
+      (error) => {
+        console.error('useGuestServicesStats: feedback snapshot failed', error);
+        setFeedbackAgg({ count: 0, ratingSum: 0, ratingCount: 0, responded: 0 });
+      }
+    );
     return () => unsub();
   }, []);
 
