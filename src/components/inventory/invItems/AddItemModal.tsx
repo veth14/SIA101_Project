@@ -100,19 +100,19 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-4xl max-h-[80vh] mx-6 my-6 overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5 flex flex-col">
+      <div className="relative z-10 w-full max-w-4xl max-h-[80vh] mx-6 my-6 overflow-hidden rounded-3xl bg-white/95 shadow-2xl border border-white/60 flex flex-col">
         {/* Header */}
         <div className="relative px-6 py-4 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <path d="M4 7l8-4 8 4v10a2 2 0 01-1.106 1.79l-6.5 3.25a2 2 0 01-1.788 0l-6.5-3.25A2 2 0 014 17V7z" />
                   <path d="M9 12h6M9 16h3" stroke="rgba(255,255,255,0.9)" strokeWidth="1" fill="none" />
                 </svg>
               </div>
               <div className="flex flex-col">
-                <h2 className="text-lg font-semibold text-emerald-700 md:text-2xl">Add Inventory Item</h2>
+                <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">Add Inventory Item</h2>
                 <p className="mt-1 text-sm text-gray-500">
                   Create a new stock item for your inventory. Required fields are marked with
                   <span className="ml-1 font-semibold text-red-500">*</span>.
@@ -124,7 +124,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
           <button
             onClick={handleCancel}
             aria-label="Close"
-            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -155,7 +155,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                     type="text"
                     value={newItem.name}
                     onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                     placeholder="Enter item name"
                   />
                 </div>
@@ -167,7 +167,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                   <select
                     value={newItem.category}
                     onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                   >
                     <option value="">Select category</option>
                     <option value="Front Office">Front Office</option>
@@ -186,7 +186,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                     type="text"
                     value={newItem.location}
                     onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                     placeholder="Storage location (e.g., Security Office)"
                   />
                 </div>
@@ -211,7 +211,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                     type="text"
                     value={newItem.supplier}
                     onChange={(e) => setNewItem({ ...newItem, supplier: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                     placeholder="Supplier name"
                   />
                 </div>
@@ -221,7 +221,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                   <select
                     value={newItem.unit}
                     onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                   >
                     <option value="">Select unit</option>
                     <option value="pieces">Pieces</option>
@@ -256,7 +256,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                   onChange={(e) =>
                     setNewItem({ ...newItem, unitPrice: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                   placeholder="0.00"
                 />
               </div>
@@ -270,7 +270,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                   onChange={(e) =>
                     setNewItem({ ...newItem, initialStock: parseInt(e.target.value) || 0 })
                   }
-                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                   placeholder="0"
                 />
               </div>
@@ -284,7 +284,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
                   onChange={(e) =>
                     setNewItem({ ...newItem, reorderLevel: parseInt(e.target.value) || 0 })
                   }
-                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+                  className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
                   placeholder="Minimum stock before alert"
                 />
               </div>
@@ -298,7 +298,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
               value={newItem.description}
               onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
               rows={3}
-              className="w-full px-4 py-3 transition-colors border rounded-lg resize-none border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400"
+              className="w-full px-4 py-3 transition-colors border rounded-lg resize-none border-gray-200 focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D]"
               placeholder="Add any useful details about this item..."
             />
           </div>
@@ -309,14 +309,14 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
           <button
             type="button"
             onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#82A33D]/20"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-emerald-700 border border-emerald-700/20 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-md bg-[#82A33D] border border-[#82A33D]/20 focus:outline-none focus:ring-2 focus:ring-[#82A33D]/30 transition"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

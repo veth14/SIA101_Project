@@ -14,6 +14,7 @@ interface DashboardStats {
   activeStaff: number;
   totalRooms: number;
   availableRooms: number;
+  currentGuests: number;
 }
 
 type FieldDate = Date | { toDate: () => Date } | string | undefined;
@@ -47,6 +48,7 @@ export const AdminDashboardPage = () => {
     activeStaff: 0,
     totalRooms: 0,
     availableRooms: 0,
+    currentGuests: 0,
   });
 
   // Keep bookingsData empty — charts can render gracefully without it.
@@ -86,6 +88,10 @@ export const AdminDashboardPage = () => {
         const activeStaffFromStats = typeof statsData.activeStaff === 'number' ? Number(statsData.activeStaff) : null;
         const activeStaff = activeStaffFromStats ?? 0;
 
+        const currentGuestsFromStats = typeof statsData.currentGuests === 'number'
+          ? Number(statsData.currentGuests)
+          : null;
+
         // start with values from stats.dashboard when present
         let totalRooms = totalRoomsFromStats ?? 0;
         let availableRooms = availableRoomsFromStats ?? 0;
@@ -104,7 +110,7 @@ export const AdminDashboardPage = () => {
               availableRooms = Number(availableRoomsSnap.data().count || 0);
             }
 
-            let currentGuests = typeof statsData.currentGuests === 'number' ? Number(statsData.currentGuests) : null;
+            let currentGuests = currentGuestsFromStats;
             if (currentGuests === null) {
               const checkedInSnap = await getCountFromServer(
                 query(collection(db, 'bookings'), where('status', '==', 'checked-in'))
@@ -140,7 +146,9 @@ export const AdminDashboardPage = () => {
 
             const finalActiveStaff = resolvedActiveStaff ?? activeStaff;
 
-            const occupiedRooms = totalRooms > 0 ? Math.min(totalRooms, currentGuests) : Math.max(0, totalRooms - availableRooms);
+            const occupiedRooms = totalRooms > 0
+              ? (currentGuests !== null ? Math.min(totalRooms, currentGuests) : Math.max(0, totalRooms - availableRooms))
+              : Math.max(0, totalRooms - availableRooms);
             const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
 
             setStats({
@@ -152,6 +160,7 @@ export const AdminDashboardPage = () => {
               activeStaff: finalActiveStaff,
               totalRooms,
               availableRooms,
+              currentGuests: currentGuests ?? occupiedRooms,
             });
           } catch (err) {
             console.error('Error running fallback aggregation counts:', err);
@@ -166,6 +175,7 @@ export const AdminDashboardPage = () => {
               activeStaff,
               totalRooms,
               availableRooms,
+              currentGuests: currentGuestsFromStats ?? occupiedRooms,
             });
           }
         };
@@ -173,6 +183,7 @@ export const AdminDashboardPage = () => {
         // Set immediate stats using aggregated fields we have so dashboard isn't empty
         const occupiedRoomsNow = totalRooms > 0 ? Math.max(0, totalRooms - availableRooms) : 0;
         const occupancyRateNow = totalRooms > 0 ? Math.round((occupiedRoomsNow / totalRooms) * 100) : 0;
+        const currentGuestsNow = currentGuestsFromStats ?? occupiedRoomsNow;
         setStats({
           totalBookings,
           todayArrivals,
@@ -182,6 +193,7 @@ export const AdminDashboardPage = () => {
           activeStaff,
           totalRooms,
           availableRooms,
+          currentGuests: currentGuestsNow,
         });
 
         // Rate-limit fallback aggregation calls so a client won't trigger repeated getCountFromServer requests on every mount/refresh
@@ -213,6 +225,7 @@ export const AdminDashboardPage = () => {
           activeStaff: 0,
           totalRooms: 0,
           availableRooms: 0,
+          currentGuests: 0,
         });
         setBookingsData([]);
       });
@@ -229,6 +242,7 @@ export const AdminDashboardPage = () => {
         activeStaff: 0,
         totalRooms: 50,
         availableRooms: 50,
+        currentGuests: 0,
       });
       setBookingsData([]);
     }

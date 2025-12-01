@@ -1,0 +1,349 @@
+[
+  {
+    "id": "0A6dj8L12yDgCl0iMGa6",
+    "TimeIn": {
+      "_seconds": 1763794800,
+      "_nanoseconds": 738000000
+    },
+    "classification": "Maintenance",
+    "date": {
+      "_seconds": 1762241329,
+      "_nanoseconds": 498000000
+    },
+    "fullName": "Mark Noel Ceriola",
+    "rfid": "1226204343",
+    "staffId": "cS8l5U4ieXCA09OokpK3432",
+    "timeOut": {
+      "_seconds": 1763823600,
+      "_nanoseconds": 121000000
+    }
+  },
+  {
+    "id": "0vHBLayHlAbuebxZze9D",
+    "TimeIn": {
+      "_seconds": 1763794800,
+      "_nanoseconds": 578000000
+    },
+    "classification": "Housekeeping",
+    "date": {
+      "_seconds": 1762239600,
+      "_nanoseconds": 770000000
+    },
+    "fullName": "Ellizier Patriarca",
+    "rfid": "1225679973",
+    "staffId": "cS8l5U4ieXCA09Ookped",
+    "timeOut": {
+      "_seconds": 1763823600,
+      "_nanoseconds": 817000000
+    }
+  },
+  {
+    "id": "24PHgqt0rujxnUJnvBM6",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "rfid": "1225679973",
+    "fullName": "John Rex Landar",
+    "classification": "Inventory Clerk",
+    "timeIn": {
+      "_seconds": 1764391943,
+      "_nanoseconds": 777000000
+    },
+    "date": "2025-11-29"
+  },
+  {
+    "id": "8JMkKSAsgeppeHBVj016",
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "rfid": "1188218709",
+    "fullName": "John Emmanuel Bote Mamaril",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1764392070,
+      "_nanoseconds": 456000000
+    },
+    "date": "2025-11-29",
+    "working": true
+  },
+  {
+    "id": "9VgalVT3JOtzlkBVJbhP",
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "rfid": "1188320101",
+    "fullName": "Garnel Macalos",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1764574679,
+      "_nanoseconds": 537000000
+    },
+    "date": "2025-12-01",
+    "working": true
+  },
+  {
+    "id": "CYYWIAgZ3EAi38zNk7C4",
+    "TimeIn": {
+      "_seconds": 1763794800,
+      "_nanoseconds": 49000000
+    },
+    "classification": "Housekeeping",
+    "date": {
+      "_seconds": 1762239600,
+      "_nanoseconds": 217000000
+    },
+    "fullName": "Miyuki Salvador",
+    "rfid": "1188218709",
+    "staffId": "cS8l5U4ieXCA09OokpKP",
+    "timeOut": {
+      "_seconds": 1763823600,
+      "_nanoseconds": 552000000
+    },
+    "working": false
+  },
+  {
+    "id": "CcQxU42OEWJZLMgVze0r",
+    "staffId": "noOZEKnHU5wT5yiBTmCl",
+    "rfid": "1189531221",
+    "fullName": "Mark Noel Ceriola",
+    "classification": "Front Office Associate",
+    "timeIn": {
+      "_seconds": 1764391897,
+      "_nanoseconds": 604000000
+    },
+    "date": "2025-11-29"
+  },
+  {
+    "id": "DddsnRJMgUwEIVDsB52S",
+    "staffId": "noOZEKnHU5wT5yiBTmCl",
+    "rfid": "1189531221",
+    "fullName": "Mark Noel Ceriola",
+    "classification": "Housekeeping",
+    "timeIn": {
+      "_seconds": 1764574669,
+      "_nanoseconds": 56000000
+    },
+    "date": "2025-12-01"
+  },
+  {
+    "id": "HRRgteBF8G777mwyVZJE",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "rfid": "1225679973",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763888373,
+      "_nanoseconds": 254000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763888411,
+      "_nanoseconds": 318000000
+    }
+  },
+  {
+    "id": "Oz47xZufvwbyxKEgspE0",
+    "timeIn": {
+      "_seconds": 1764241290,
+      "_nanoseconds": 60000000
+    },
+    "classification": "Housekeeping",
+    "date": {
+      "_seconds": 1764241338,
+      "_nanoseconds": 667000000
+    },
+    "fullName": "Miyuki Salvador",
+    "timeOut": {
+      "_seconds": 1764255788,
+      "_nanoseconds": 677000000
+    }
+  },
+  {
+    "id": "VGqeRvHxBjOvlIo13j7o",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "rfid": "1225679973",
+    "fullName": "John Rex Landar",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763867795,
+      "_nanoseconds": 437000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763867802,
+      "_nanoseconds": 271000000
+    }
+  },
+  {
+    "id": "VrTrzVYQNpFMBaIrkSX3",
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "rfid": "1188218709",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763879143,
+      "_nanoseconds": 100000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763879163,
+      "_nanoseconds": 774000000
+    }
+  },
+  {
+    "id": "Y9tXWHBo9ToAW9mUQdbe",
+    "TimeIn": {
+      "_seconds": 1763796780,
+      "_nanoseconds": 348000000
+    },
+    "classification": "Maintenance",
+    "date": {
+      "_seconds": 1762234200,
+      "_nanoseconds": 683000000
+    },
+    "fullName": "John Rex Landar",
+    "rfid": "1226204341",
+    "staffId": "cS8l5U4ieXCA09OokpKP",
+    "working": false,
+    "timeOut": {
+      "_seconds": 1763823600,
+      "_nanoseconds": 721000000
+    }
+  },
+  {
+    "id": "b19cP7UCDy0NPh4LjmZ7",
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "rfid": "1188320101",
+    "fullName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "timeIn": {
+      "_seconds": 1763878242,
+      "_nanoseconds": 968000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763879153,
+      "_nanoseconds": 164000000
+    },
+    "working": false
+  },
+  {
+    "id": "injzlpF6PmYn2tNmJh7h",
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "rfid": "1188218709",
+    "fullName": "John Emmanuel Bote Mamaril",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1764564990,
+      "_nanoseconds": 464000000
+    },
+    "date": "2025-12-01",
+    "working": true
+  },
+  {
+    "id": "jZaFufjWpcLx7ACYRa0Z",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "rfid": "1225679973",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763889112,
+      "_nanoseconds": 604000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763889142,
+      "_nanoseconds": 765000000
+    }
+  },
+  {
+    "id": "klv5xCoCebXE8LW2YbMz",
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "rfid": "1226204341",
+    "fullName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "timeIn": {
+      "_seconds": 1764574661,
+      "_nanoseconds": 872000000
+    },
+    "date": "2025-12-01"
+  },
+  {
+    "id": "m7juHQz0ktQiZQCpSPhF",
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "rfid": "1191062533",
+    "fullName": "Miyuki Salvador",
+    "classification": "Housekeeping Supervisor",
+    "timeIn": {
+      "_seconds": 1764328761,
+      "_nanoseconds": 512000000
+    },
+    "date": "2025-11-28",
+    "timeOut": {
+      "_seconds": 1764328769,
+      "_nanoseconds": 631000000
+    }
+  },
+  {
+    "id": "nQGcb0wtR9FvARas9TK2",
+    "TimeIn": {
+      "_seconds": 1763823600,
+      "_nanoseconds": 174000000
+    },
+    "date": {
+      "_seconds": 1762234200,
+      "_nanoseconds": 500000000
+    },
+    "fullName": "John Rex Landar",
+    "rfid": "1226204341",
+    "staffId": "cS8l5U4ieXCA09OokpKP",
+    "classification": "Maintenance",
+    "working": false,
+    "timeOut": {
+      "_seconds": 1763852400,
+      "_nanoseconds": 888000000
+    }
+  },
+  {
+    "id": "o0FKAJmYJtnFdytcG3lm",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "rfid": "1225679973",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763872247,
+      "_nanoseconds": 792000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763872254,
+      "_nanoseconds": 982000000
+    }
+  },
+  {
+    "id": "wwT2aaSt8KlcdSBN2fkh",
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "rfid": "1188218709",
+    "fullName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763878104,
+      "_nanoseconds": 123000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763878111,
+      "_nanoseconds": 752000000
+    }
+  },
+  {
+    "id": "xKI10gc6bqEk3nRZZtdo",
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "rfid": "1225679973",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "timeIn": {
+      "_seconds": 1763888927,
+      "_nanoseconds": 172000000
+    },
+    "date": "2025-11-23",
+    "timeOut": {
+      "_seconds": 1763888968,
+      "_nanoseconds": 895000000
+    }
+  }
+]

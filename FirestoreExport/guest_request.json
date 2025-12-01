@@ -1,0 +1,83 @@
+[
+  {
+    "id": "1bJgYTBMc7p0N15dtWRh",
+    "userId": "XJAJaidpLAMdCcghWYucjTHsnzB3",
+    "guestName": "Emmanuel Detera",
+    "roomNumber": "204",
+    "requestType": "housekeeping",
+    "priority": "medium",
+    "description": "need two extra pillows",
+    "assignedTo": null,
+    "estimatedTime": "15 minutes",
+    "notes": null,
+    "dueDateTime": "2025-11-29T19:23",
+    "createdAt": {
+      "_seconds": 1764414570,
+      "_nanoseconds": 554000000
+    },
+    "submittedAt": {
+      "_seconds": 1764414570,
+      "_nanoseconds": 554000000
+    },
+    "ticketNumber": "TKT000029",
+    "status": "completed",
+    "updatedAt": {
+      "_seconds": 1764415344,
+      "_nanoseconds": 335000000
+    }
+  },
+  {
+    "id": "aDpeDXVyW2rTxms8kdIi",
+    "userId": "XJAJaidpLAMdCcghWYucjTHsnzB3",
+    "guestName": "Emmanuel Detera",
+    "requestType": "maintenance",
+    "priority": "medium",
+    "description": "broken air conditioner",
+    "assignedTo": "Maintenance Team",
+    "estimatedTime": "30 minutes",
+    "notes": null,
+    "dueDateTime": "2025-11-29T14:20",
+    "createdAt": {
+      "_seconds": 1764395467,
+      "_nanoseconds": 70000000
+    },
+    "submittedAt": {
+      "_seconds": 1764395467,
+      "_nanoseconds": 70000000
+    },
+    "ticketNumber": "TKT000025",
+    "status": "completed",
+    "roomNumber": "204",
+    "updatedAt": {
+      "_seconds": 1764413536,
+      "_nanoseconds": 39000000
+    }
+  },
+  {
+    "id": "qptZ1a7hc40dLnjuqxOd",
+    "userId": "XJAJaidpLAMdCcghWYucjTHsnzB3",
+    "guestName": "Emmanuel Detera",
+    "roomNumber": "204",
+    "requestType": "housekeeping",
+    "priority": "medium",
+    "description": "broken air conditioner",
+    "assignedTo": null,
+    "estimatedTime": "15 minutes",
+    "notes": null,
+    "dueDateTime": "2025-11-29T18:25",
+    "createdAt": {
+      "_seconds": 1764411045,
+      "_nanoseconds": 926000000
+    },
+    "submittedAt": {
+      "_seconds": 1764411045,
+      "_nanoseconds": 926000000
+    },
+    "ticketNumber": "TKT000027",
+    "status": "in-progress",
+    "updatedAt": {
+      "_seconds": 1764413379,
+      "_nanoseconds": 223000000
+    }
+  }
+]

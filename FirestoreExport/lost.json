@@ -1,0 +1,30 @@
+[
+  {
+    "id": "LST001",
+    "itemId": "LST001",
+    "itemName": "Iphone 13",
+    "description": "Iphone 13 with orange casing and cat design",
+    "category": "electronics",
+    "location": "Room 204",
+    "guestInfo": null,
+    "claimedBy": null,
+    "dateLost": "2025-11-06T00:00:00.000Z",
+    "lostBy": "Mary Jones",
+    "claimedDate": "2025-11-28T01:46:00.507Z",
+    "status": "claimed"
+  },
+  {
+    "id": "LST002",
+    "itemName": "Wallet",
+    "description": "Wallet with 3000 pesos ",
+    "category": "personal",
+    "location": "Lobby",
+    "status": "unclaimed",
+    "guestInfo": null,
+    "claimedDate": null,
+    "claimedBy": null,
+    "dateLost": "2025-11-04T00:00:00.000Z",
+    "lostBy": "Aaron Smith",
+    "itemId": "LST002"
+  }
+]

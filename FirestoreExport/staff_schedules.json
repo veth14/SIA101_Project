@@ -1,0 +1,1520 @@
+[
+  {
+    "id": "1DBW3Ek29cU0ZCAEm2UW",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612957,
+      "_nanoseconds": 846000000
+    }
+  },
+  {
+    "id": "4udrt4BAshGW6rccJs7Z",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614866,
+      "_nanoseconds": 634000000
+    }
+  },
+  {
+    "id": "5j5KooRpZ1ZCXIGLTIYU",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Maintenance",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-12-01",
+    "day": "Monday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 12,
+    "createdAt": {
+      "_seconds": 1764584779,
+      "_nanoseconds": 607000000
+    }
+  },
+  {
+    "id": "7AIIHi2EsDTsyG9LAIHi",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614824,
+      "_nanoseconds": 784000000
+    }
+  },
+  {
+    "id": "AjmMh0NSeMuJxKmIQ9PE",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-11-15",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 47,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762659806,
+      "_nanoseconds": 937000000
+    }
+  },
+  {
+    "id": "Ak1V2U6WhLn5sv3KeMfh",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "date": "2025-11-22",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763724248,
+      "_nanoseconds": 353000000
+    }
+  },
+  {
+    "id": "CmWzc7yMHPtLfZ7P42M6",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Inventory Clerk",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "date": "2025-11-29",
+    "day": "Saturday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764319423,
+      "_nanoseconds": 437000000
+    }
+  },
+  {
+    "id": "Dbz7MoolHxJ6gyPh7hnt",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "date": "2025-11-09",
+    "day": "Monday",
+    "shift": "11pm-7am",
+    "shiftTime": "23:00-07:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614846,
+      "_nanoseconds": 65000000
+    }
+  },
+  {
+    "id": "F3NTLaHktMrn0xxAQjmZ",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "date": "2025-11-09",
+    "day": "Monday",
+    "shift": "11pm-7am",
+    "shiftTime": "23:00-07:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614846,
+      "_nanoseconds": 7000000
+    }
+  },
+  {
+    "id": "F5CwnsB2gqLnF4PpOMLe",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "REkJO5UESZRviRianIiM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "REkJO5UESZRviRianIiM",
+    "staffName": "Ian Valmores",
+    "classification": "Maintenance",
+    "email": "ValmoresIan@gmail.com",
+    "phoneNumber": 845621315,
+    "date": "2025-11-15",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 47,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762659806,
+      "_nanoseconds": 890000000
+    }
+  },
+  {
+    "id": "FDh1aZ9Vih6LwmSEVopY",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Accounting Staff",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-30",
+    "day": "Sunday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764259982,
+      "_nanoseconds": 764000000
+    }
+  },
+  {
+    "id": "L8VMzQwX56O6i0HryDSG",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "2qdcGJ34nxDFr2uB62sM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "staffName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "email": "patriarcaellizier@gmail.com",
+    "phoneNumber": "0987446565",
+    "date": "2025-11-22",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763724248,
+      "_nanoseconds": 482000000
+    }
+  },
+  {
+    "id": "M09d6Hi1iLygwBjT4uXX",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-26",
+    "day": "Wednesday",
+    "shift": "11pm-7am",
+    "shiftTime": "23:00-07:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764105126,
+      "_nanoseconds": 104000000
+    }
+  },
+  {
+    "id": "PjoVOGUkaTkKC7xv2nTg",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-15",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 47,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762659806,
+      "_nanoseconds": 988000000
+    }
+  },
+  {
+    "id": "QHVs74B0Z6JhOQDvQHuQ",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614824,
+      "_nanoseconds": 621000000
+    }
+  },
+  {
+    "id": "QJu5OPMIDBI37waEI2D8",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-11-09",
+    "day": "Monday",
+    "shift": "11pm-7am",
+    "shiftTime": "23:00-07:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614845,
+      "_nanoseconds": 952000000
+    }
+  },
+  {
+    "id": "QSiITmuY7izkDT4HrH7y",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "date": "2025-11-22",
+    "day": "Saturday",
+    "shift": "11pm-7am",
+    "shiftTime": "23:00-07:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763828437,
+      "_nanoseconds": 529000000
+    }
+  },
+  {
+    "id": "RtgXxyDfSheflIQ3jWVl",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Accounting Staff",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-27",
+    "day": "Thursday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764255157,
+      "_nanoseconds": 98000000
+    }
+  },
+  {
+    "id": "Sr4MCvE4Q890Vqjh42fv",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "date": "2025-11-15",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 47,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762659807,
+      "_nanoseconds": 44000000
+    }
+  },
+  {
+    "id": "VymKofWN4zWB9hP7ShRc",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "date": "2025-11-24",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763743214,
+      "_nanoseconds": 512000000
+    }
+  },
+  {
+    "id": "W0sbgdVy5RrjHdCYosi1",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "John Emmanuel Bote Mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-12-01",
+    "day": "Monday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 12,
+    "createdAt": {
+      "_seconds": 1764584936,
+      "_nanoseconds": 223000000
+    }
+  },
+  {
+    "id": "WVRwYgGSrmi7N5n0fJfs",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "date": "2025-11-22",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763724248,
+      "_nanoseconds": 415000000
+    }
+  },
+  {
+    "id": "WattNvH0HP2nA3yXyQLE",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "REkJO5UESZRviRianIiM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "REkJO5UESZRviRianIiM",
+    "staffName": "Ian Valmores",
+    "classification": "Maintenance",
+    "email": "ValmoresIan@gmail.com",
+    "phoneNumber": 845621315,
+    "date": "2025-11-09",
+    "day": "Monday",
+    "shift": "11pm-7am",
+    "shiftTime": "23:00-07:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614845,
+      "_nanoseconds": 754000000
+    }
+  },
+  {
+    "id": "YirzHoiBU7ruz2UFFzcY",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "noOZEKnHU5wT5yiBTmCl"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "noOZEKnHU5wT5yiBTmCl",
+    "staffName": "Mark Noel Ceriola",
+    "classification": "Maintenance",
+    "email": "marknoelceriola@gmail.com",
+    "phoneNumber": "097852453",
+    "day": "Tuesday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612977,
+      "_nanoseconds": 5000000
+    }
+  },
+  {
+    "id": "ZV4GHjUxVliuV5BQjv59",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-24",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763743214,
+      "_nanoseconds": 389000000
+    }
+  },
+  {
+    "id": "Zk1fz44jSK8GoXpdsjDo",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Accounting Staff",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-30",
+    "day": "Sunday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764259953,
+      "_nanoseconds": 473000000
+    }
+  },
+  {
+    "id": "ZpdGb6e79tRfkUM1BD7F",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "REkJO5UESZRviRianIiM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "REkJO5UESZRviRianIiM",
+    "staffName": "Ian Valmores",
+    "classification": "Maintenance",
+    "email": "ValmoresIan@gmail.com",
+    "phoneNumber": 845621315,
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612957,
+      "_nanoseconds": 786000000
+    }
+  },
+  {
+    "id": "aMVZ8TtIDruSuzX9tZKX",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612957,
+      "_nanoseconds": 908000000
+    }
+  },
+  {
+    "id": "bgPREcRczd31PClMisH4",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614824,
+      "_nanoseconds": 703000000
+    }
+  },
+  {
+    "id": "cRrzh8nLKYvBGzd8jDWx",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-11-24",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763743214,
+      "_nanoseconds": 447000000
+    }
+  },
+  {
+    "id": "fLLWVsqlQqn1uJF9O4JC",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614866,
+      "_nanoseconds": 733000000
+    }
+  },
+  {
+    "id": "g2ePmV9YZxfnHPtBNADK",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "John Emmanuel Bote Mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-12-01",
+    "day": "Monday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 12,
+    "createdAt": {
+      "_seconds": 1764584843,
+      "_nanoseconds": 681000000
+    }
+  },
+  {
+    "id": "iDtH56Cci0Xu9Z0s1rns",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614866,
+      "_nanoseconds": 425000000
+    }
+  },
+  {
+    "id": "idI1nW5sRLAhLWag9t8b",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "day": "Tuesday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612976,
+      "_nanoseconds": 953000000
+    }
+  },
+  {
+    "id": "j2jKmsrSJQnvCQWldYlL",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "2qdcGJ34nxDFr2uB62sM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "staffName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "email": "patriarcaellizier@gmail.com",
+    "phoneNumber": "0987446565",
+    "date": "2025-11-24",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763743214,
+      "_nanoseconds": 337000000
+    }
+  },
+  {
+    "id": "nJip0kaJLkLxhdjd3Mqd",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "day": "Tuesday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612976,
+      "_nanoseconds": 676000000
+    }
+  },
+  {
+    "id": "noAw76E9acv3PXOqU84a",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "bsi8RdZf2ShTxuLvcSnA"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "bsi8RdZf2ShTxuLvcSnA",
+    "staffName": "Miyuki Salvador",
+    "classification": "Housekeeping",
+    "email": "MiyukiSalvador@gmail.com",
+    "phoneNumber": "09126454654",
+    "day": "Tuesday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612976,
+      "_nanoseconds": 902000000
+    }
+  },
+  {
+    "id": "pLeZXANr86QkSwZpEoti",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "John Emmanuel Bote Mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "date": "2025-12-01",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 12,
+    "createdAt": {
+      "_seconds": 1764575392,
+      "_nanoseconds": 124000000
+    }
+  },
+  {
+    "id": "qZLRxRCS07PP5WtgLfK9",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "noOZEKnHU5wT5yiBTmCl"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "noOZEKnHU5wT5yiBTmCl",
+    "staffName": "Mark Noel Ceriola",
+    "classification": "Maintenance",
+    "email": "marknoelceriola@gmail.com",
+    "phoneNumber": "097852453",
+    "date": "2025-11-22",
+    "day": "Saturday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763724248,
+      "_nanoseconds": 284000000
+    }
+  },
+  {
+    "id": "qoXb8h9P11NgoBIRUmZm",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Housekeeping",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-11-23",
+    "day": "Sunday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1763878731,
+      "_nanoseconds": 65000000
+    }
+  },
+  {
+    "id": "r5xfuPUlQRxKD1YQZqQN",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "noOZEKnHU5wT5yiBTmCl"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "noOZEKnHU5wT5yiBTmCl",
+    "staffName": "Mark Noel Ceriola",
+    "classification": "Maintenance",
+    "email": "marknoelceriola@gmail.com",
+    "phoneNumber": "097852453",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614824,
+      "_nanoseconds": 839000000
+    }
+  },
+  {
+    "id": "sHNCLectAq4hmMqQwfYF",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "gJUIDPma8ak5KvXTlVPU"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "gJUIDPma8ak5KvXTlVPU",
+    "staffName": "John Rex Landar",
+    "classification": "Maintenance",
+    "email": "JohnRexLandar@gmail.com",
+    "phoneNumber": "0921465132",
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614866,
+      "_nanoseconds": 682000000
+    }
+  },
+  {
+    "id": "tZ0kDfougXsSGQFlwuKm",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "V7TZRYuHgZCjSKDwkqGI"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "V7TZRYuHgZCjSKDwkqGI",
+    "staffName": "Garnel Macalos",
+    "classification": "Maintenance",
+    "email": "MacalosGarnel@gmail.com",
+    "phoneNumber": "092154654",
+    "date": "2025-12-01",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 12,
+    "createdAt": {
+      "_seconds": 1764575392,
+      "_nanoseconds": 76000000
+    }
+  },
+  {
+    "id": "uVStrmX2JzAR03ePZOCL",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "aMoei5nGagOIl3Iplc6m"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "aMoei5nGagOIl3Iplc6m",
+    "staffName": "john emmanuel bote mamaril",
+    "classification": "Maintenance",
+    "email": "JohnMamaril+@gmail.com",
+    "phoneNumber": "09219171643",
+    "day": "Tuesday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612976,
+      "_nanoseconds": 871000000
+    }
+  },
+  {
+    "id": "wS6ZdWMXhCcyaUPTmihK",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "noOZEKnHU5wT5yiBTmCl"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "noOZEKnHU5wT5yiBTmCl",
+    "staffName": "Mark Noel Ceriola",
+    "classification": "Front Office Associate",
+    "email": "marknoelceriola@gmail.com",
+    "phoneNumber": "097852453",
+    "date": "2025-11-29",
+    "day": "Saturday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 49,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764319423,
+      "_nanoseconds": 494000000
+    }
+  },
+  {
+    "id": "wtZzuV97gBzquekldVLG",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "REkJO5UESZRviRianIiM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "REkJO5UESZRviRianIiM",
+    "staffName": "Ian Valmores",
+    "classification": "Maintenance",
+    "email": "ValmoresIan@gmail.com",
+    "phoneNumber": 845621315,
+    "date": "2025-11-08",
+    "day": "Sunday",
+    "shift": "3pm-11pm",
+    "shiftTime": "15:00-23:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1762614824,
+      "_nanoseconds": 554000000
+    }
+  },
+  {
+    "id": "xQSTuf6WXoiqT3oX1iya",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "2qdcGJ34nxDFr2uB62sM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "staffName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "email": "patriarcaellizier@gmail.com",
+    "phoneNumber": "0987446565",
+    "day": "Monday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 46,
+    "year": 2025,
+    "createdAt": {
+      "_seconds": 1762612957,
+      "_nanoseconds": 728000000
+    }
+  },
+  {
+    "id": "xV2NIDB9kdD1j0LRvtvn",
+    "staffRef": {
+      "_firestore": {
+        "projectId": "hotel-management-d5827"
+      },
+      "_path": {
+        "segments": [
+          "staff",
+          "2qdcGJ34nxDFr2uB62sM"
+        ]
+      },
+      "_converter": {}
+    },
+    "staffId": "2qdcGJ34nxDFr2uB62sM",
+    "staffName": "Ellizier Patriarca",
+    "classification": "Housekeeping",
+    "email": "patriarcaellizier@gmail.com",
+    "phoneNumber": "0987446565",
+    "date": "2025-11-26",
+    "day": "Wednesday",
+    "shift": "7am-3pm",
+    "shiftTime": "07:00-15:00",
+    "status": "scheduled",
+    "week": 48,
+    "year": 2025,
+    "month": 11,
+    "createdAt": {
+      "_seconds": 1764102498,
+      "_nanoseconds": 467000000
+    }
+  }
+]

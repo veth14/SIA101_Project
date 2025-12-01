@@ -1,0 +1,29 @@
+[
+  {
+    "id": "XhrfQCPJdm5EPmdtBZCF",
+    "reviewId": "REV1763788056760svtkgs3n1",
+    "userId": "9r1fhufYgZYnJyBmGKO9ex67UFo1",
+    "bookingId": "BK17637351055283xbly9zhf",
+    "roomType": "suite",
+    "roomName": "Silid Ginhawa",
+    "rating": 5,
+    "category": "Service",
+    "review": "Staff was very accommodating. We enjoyed our stay",
+    "photos": [],
+    "guestName": "Emmanuel  Detera",
+    "guestEmail": "detera.emmanuel.escalicas@gmail.com",
+    "stayDate": "November 2025",
+    "checkInDate": "2025-11-21",
+    "checkOutDate": "2025-11-22",
+    "helpful": 0,
+    "verified": true,
+    "submittedAt": {
+      "_seconds": 1763788058,
+      "_nanoseconds": 702000000
+    },
+    "response": "Thank you for highlighting our team's service. We're glad they made your stay comfortable — we'll share your kind words with the staff.",
+    "respondedBy": "Admin User",
+    "responseDate": "2025-11-22T07:26:55.767Z",
+    "status": "responded"
+  }
+]

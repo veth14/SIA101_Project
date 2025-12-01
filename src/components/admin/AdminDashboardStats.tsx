@@ -11,13 +11,16 @@ interface AdminDashboardStatsProps {
     activeStaff: number;
     totalRooms: number;
     availableRooms: number;
+    currentGuests: number;
   };
 }
 
 export const AdminDashboardStats: React.FC<AdminDashboardStatsProps> = ({ stats }) => {
   const navigate = useNavigate();
   
-  const currentGuests = stats.totalRooms - stats.availableRooms;
+  const currentGuests = typeof stats.currentGuests === 'number'
+    ? stats.currentGuests
+    : Math.max(0, stats.totalRooms - stats.availableRooms);
 
   return (
     <div className="space-y-6">

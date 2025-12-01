@@ -211,12 +211,15 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
       className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/45 backdrop-blur-lg overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="relative z-10 w-full max-w-4xl rounded-3xl bg-white/95 shadow-2xl ring-1 ring-black/5">
+      <div className="relative z-10 w-full max-w-4xl rounded-3xl bg-white/95 shadow-2xl border border-white/60">
+
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
+
           {/* Left: icon + title */}
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-[#82A33D] rounded-2xl flex items-center justify-center shadow-lg">
+
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -228,6 +231,7 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{item.name}</h1>
+
               <p className="text-sm text-gray-600">Item ID: {item.id} • Category: {item.category}</p>
             </div>
           </div>
@@ -238,16 +242,18 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
               className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(
                 item.currentStock,
                 item.reorderLevel
-              )} bg-emerald-50`}
+              )}`}
             >
+
               <div className="w-2 h-2 rounded-full mr-2 bg-current opacity-80" />
               {getStatusText(item.currentStock, item.reorderLevel)}
             </span>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="flex items-center justify-center w-9 h-9 text-emerald-700 bg-emerald-50 rounded-md ring-1 ring-emerald-100 hover:bg-emerald-100 transition-colors"
+              className="flex items-center justify-center w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 rounded-md ring-1 ring-[#82A33D]/20 hover:bg-[#82A33D]/20 transition-colors"
             >
+
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -256,14 +262,16 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-heritage-light/30 via-white to-emerald-50/30">
+        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 via-white to-emerald-50/20">
+
           <div className="px-6 py-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Left Column - Overview & Description */}
               <div className="space-y-6">
                 {/* Item Overview */}
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-50/40 ring-1 ring-emerald-100">
-                  <h3 className="flex items-center mb-4 text-lg font-semibold text-emerald-700">
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-[#82A33D]/5 to-[#82A33D]/10 ring-1 ring-[#82A33D]/20">
+                  <h3 className="flex items-center mb-4 text-lg font-semibold text-[#82A33D]">
+
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -299,7 +307,8 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
                 </div>
 
                 {/* Description */}
-                <div className="p-6 bg-white rounded-2xl ring-1 ring-black/5">
+                <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+
                   <h3 className="flex items-center mb-3 text-lg font-semibold text-gray-900">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
@@ -313,7 +322,8 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
               {/* Right Column - Stock & Quick Actions */}
               <div className="space-y-6">
                 {/* Stock & Value */}
-                <div className="p-6 bg-white rounded-2xl ring-1 ring-black/5">
+                <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+
                   <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -346,7 +356,8 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
                 </div>
 
                 {/* Quick Actions */}
-                <div className="p-6 bg-white rounded-2xl ring-1 ring-black/5">
+                <div className="p-6 bg-white rounded-2xl ring-1 ring-gray-100">
+
                   <h3 className="flex items-center mb-4 text-lg font-semibold text-gray-900">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -358,7 +369,7 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
                     <div className="flex flex-col sm:flex-row sm:justify-center gap-3">
                       <button
                         onClick={handlePrintLabel}
-                        className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-200 rounded-xl hover:bg-gray-50"
+                        className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D]/5"
                       >
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -367,8 +378,9 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
                       </button>
                       <button
                         onClick={handleAdjustStock}
-                        className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 text-sm font-medium text-white transition-colors bg-blue-600 rounded-xl hover:bg-blue-700"
+                        className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 text-sm font-medium text-white transition-colors bg-[#82A33D] rounded-xl hover:bg-[#82A33D]/90"
                       >
+
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2M7 4h10M7 4l-1 16h12L17 4M10 8v8M14 8v8" />
                         </svg>
@@ -380,6 +392,7 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, isOpen, onClo
                       onClick={onClose}
                       className="w-full flex items-center justify-center px-4 py-3 text-sm font-medium transition-colors bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50"
                     >
+
                       Close
                     </button>
                   </div>

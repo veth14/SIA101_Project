@@ -360,8 +360,8 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
     <div className="overflow-hidden border shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60">
       {/* Header */}
       <div className="p-6 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
-        {/* Top row: title + stats pill */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Left: title + stats */}
           <div>
             <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">
               <div className="p-2 bg-[#82A33D]/10 rounded-xl">
@@ -393,11 +393,9 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
               )}
             </p>
           </div>
-        </div>
 
-        {/* Second row: search, status filter, and New Order button */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Right: search, status filter, and New Order button */}
+          <div className="flex flex-wrap items-center gap-3 justify-end">
             {/* Search */}
             <div className="relative group max-w-sm w-full md:w-80">
               <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
@@ -428,10 +426,8 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
             <div className="flex items-center min-w-[190px]">
               <StatusDropdown selectedStatus={selectedStatus} onStatusChange={setSelectedStatus} />
             </div>
-          </div>
 
-          {/* Primary Action */}
-          <div className="flex items-center justify-end">
+            {/* Primary Action */}
             <button
               onClick={handleOpenCreate}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"

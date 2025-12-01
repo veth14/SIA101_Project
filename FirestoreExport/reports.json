@@ -1,0 +1,74 @@
+[
+  {
+    "id": "6NIfSMIvivQ9b7g6NgPj",
+    "asd": "asd"
+  },
+  {
+    "id": "9LH4FBbK5E5rMVzI8Jxe",
+    "name": "IncomeReport-2025-11-v1.pdf",
+    "category": "income",
+    "month": 11,
+    "year": 2025,
+    "dateGenerated": "2025-11-26",
+    "preparedBy": "Finance Team",
+    "fileType": "PDF",
+    "fileSize": "1.0 MB",
+    "status": "active",
+    "version": 1,
+    "createdAt": {
+      "_seconds": 1764167973,
+      "_nanoseconds": 532000000
+    }
+  },
+  {
+    "id": "KfCPEz2eOky4P21S4R8P",
+    "name": "ExpenseReport-2025-02-v1.pdf",
+    "category": "expense",
+    "month": 2,
+    "year": 2025,
+    "dateGenerated": "2025-11-27",
+    "preparedBy": "Finance Team",
+    "fileType": "PDF",
+    "fileSize": "1.0 MB",
+    "status": "active",
+    "version": 1,
+    "createdAt": {
+      "_seconds": 1764207421,
+      "_nanoseconds": 5000000
+    }
+  },
+  {
+    "id": "jYt8yJNxusDTb8stUdvd",
+    "name": "ProfitReport-2025-01-v1.pdf",
+    "category": "profit-loss",
+    "month": 1,
+    "year": 2025,
+    "dateGenerated": "2025-11-27",
+    "preparedBy": "Finance Team",
+    "fileType": "PDF",
+    "fileSize": "1.0 MB",
+    "status": "active",
+    "version": 1,
+    "createdAt": {
+      "_seconds": 1764207450,
+      "_nanoseconds": 749000000
+    }
+  },
+  {
+    "id": "jjmWcNhSU9uhsC7sQIuz",
+    "name": "IncomeReport-2025-10-v1.pdf",
+    "category": "income",
+    "month": 10,
+    "year": 2025,
+    "dateGenerated": "2025-11-29",
+    "preparedBy": "Finance Team",
+    "fileType": "PDF",
+    "fileSize": "1.0 MB",
+    "status": "active",
+    "version": 1,
+    "createdAt": {
+      "_seconds": 1764403798,
+      "_nanoseconds": 417000000
+    }
+  }
+]

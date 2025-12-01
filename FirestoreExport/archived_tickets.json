@@ -1,0 +1,113 @@
+[
+  {
+    "id": "TKT000017",
+    "ticketNumber": "TKT000017",
+    "taskTitle": "Room Cleaning",
+    "category": "Housekeeping",
+    "description": "Guest left the room.",
+    "roomNumber": "105",
+    "priority": "Medium",
+    "assignedTo": "Garnel Macalos",
+    "createdBy": "balayginhawaadmin123@gmail.com",
+    "createdAt": {
+      "_seconds": 1763878824,
+      "_nanoseconds": 190000000
+    },
+    "completedAt": {
+      "_seconds": 1764423167,
+      "_nanoseconds": 338000000
+    },
+    "archivedAt": {
+      "_seconds": 1764423172,
+      "_nanoseconds": 295000000
+    }
+  },
+  {
+    "id": "TKT000031",
+    "ticketNumber": "TKT000031",
+    "taskTitle": "Room Cleaning",
+    "category": "Housekeeping",
+    "description": "Post-checkout cleaning required • Booking BK1764522258720cn4r04fgx",
+    "roomNumber": "103",
+    "priority": "Medium",
+    "assignedTo": "Unassigned",
+    "createdBy": "balayginhawaadmin123@gmail.com",
+    "createdAt": {
+      "_seconds": 1764524549,
+      "_nanoseconds": 245000000
+    },
+    "completedAt": {
+      "_seconds": 1764585034,
+      "_nanoseconds": 175000000
+    },
+    "archivedAt": {
+      "_seconds": 1764585070,
+      "_nanoseconds": 727000000
+    }
+  },
+  {
+    "id": "TKT000032",
+    "ticketNumber": "TKT000032",
+    "taskTitle": "Room Cleaning",
+    "category": "Housekeeping",
+    "description": "Post-checkout cleaning required • Booking BK17645240654205bvyjjro9",
+    "roomNumber": "104",
+    "priority": "Medium",
+    "assignedTo": "Unassigned",
+    "createdBy": "balayginhawaadmin123@gmail.com",
+    "createdAt": {
+      "_seconds": 1764524707,
+      "_nanoseconds": 720000000
+    },
+    "completedAt": {
+      "_seconds": 1764585027,
+      "_nanoseconds": 839000000
+    },
+    "archivedAt": {
+      "_seconds": 1764585066,
+      "_nanoseconds": 564000000
+    }
+  },
+  {
+    "id": "TKT000033",
+    "ticketNumber": "TKT000033",
+    "taskTitle": "Fix the what",
+    "category": "Maintenance",
+    "description": "The what is brookeen",
+    "roomNumber": "10",
+    "priority": "Medium",
+    "assignedTo": "Unassigned",
+    "createdBy": "balayginhawaadmin123@gmail.com",
+    "createdAt": {
+      "_seconds": 1764568728,
+      "_nanoseconds": 978000000
+    },
+    "completedAt": {
+      "_seconds": 1764585025,
+      "_nanoseconds": 562000000
+    },
+    "archivedAt": {
+      "_seconds": 1764585069,
+      "_nanoseconds": 287000000
+    }
+  },
+  {
+    "id": "qjOFPWkaieBloh9Xbb45",
+    "ticketNumber": "\"\"",
+    "taskTitle": "\"\"",
+    "category": "\"\"",
+    "description": "\"\"",
+    "roomNumber": "\"\"",
+    "priority": "\"\"",
+    "assignedTo": "\"\"",
+    "createdBy": "\"\"",
+    "createdAt": {
+      "_seconds": 1763827200,
+      "_nanoseconds": 989000000
+    },
+    "completedAt": {
+      "_seconds": 1763740800,
+      "_nanoseconds": 725000000
+    }
+  }
+]

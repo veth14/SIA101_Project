@@ -1,0 +1,42 @@
+[
+  {
+    "id": "DEPT001",
+    "name": "Front Desk",
+    "manager": "Ana Cruz",
+    "totalUsage": 8,
+    "monthlyConsumption": 12340,
+    "itemsAssigned": 90
+  },
+  {
+    "id": "DEPT002",
+    "name": "Laundry Services",
+    "manager": "Lisa Fernandez",
+    "itemsAssigned": 67,
+    "totalUsage": 6,
+    "monthlyConsumption": 18560
+  },
+  {
+    "id": "DEPT003",
+    "name": "Security",
+    "manager": "Roberto Garcia",
+    "itemsAssigned": 45,
+    "totalUsage": 5,
+    "monthlyConsumption": 8970
+  },
+  {
+    "id": "DEPT004",
+    "name": "Maintenance",
+    "manager": "Juan Dela Cruz",
+    "itemsAssigned": 156,
+    "totalUsage": 18,
+    "monthlyConsumption": 28450
+  },
+  {
+    "id": "DEPT005",
+    "name": "Food & Beverages",
+    "manager": "Carlos Rivera",
+    "itemsAssigned": 412,
+    "totalUsage": 28,
+    "monthlyConsumption": 76920
+  }
+]

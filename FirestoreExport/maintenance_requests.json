@@ -1,0 +1,162 @@
+[
+  {
+    "id": "#00000",
+    "department": "Housekeeping",
+    "itemService": "Floor Cleaning Machine Repair",
+    "requestedBy": "Maria Santos",
+    "date": "2025-09-10",
+    "approvedDate": "2025-11-13T15:18:38.650Z",
+    "approvedBy": "Manager Name",
+    "completedBy": "Manager Name",
+    "completedDate": "2025-11-13T15:19:44.091Z",
+    "status": "Completed",
+    "updatedAt": "2025-11-13T15:19:44.467Z"
+  },
+  {
+    "id": "#00001",
+    "department": "Housekeeping",
+    "itemService": "Floor Cleaning Machine Repair",
+    "requestedBy": "Maria Santos",
+    "date": "2025-09-10",
+    "approvedDate": "2025-11-13T15:24:36.248Z",
+    "approvedBy": "Manager Name",
+    "completedBy": "Manager Name",
+    "completedDate": "2025-11-13T15:25:34.012Z",
+    "status": "Completed",
+    "updatedAt": "2025-11-13T15:25:34.313Z"
+  },
+  {
+    "id": "#00002",
+    "department": "Maintenance",
+    "itemService": "AC Unit Service - Room 305",
+    "requestedBy": "Juan Dela Cruz",
+    "date": "2025-09-11",
+    "status": "Approved"
+  },
+  {
+    "id": "#00003",
+    "department": "F&B",
+    "itemService": "Kitchen Equipment Check",
+    "requestedBy": "Carlos Rivera",
+    "date": "2025-09-12",
+    "status": "Rejected"
+  },
+  {
+    "id": "#00004",
+    "department": "Housekeeping",
+    "itemService": "Linen Replacement - 5th Floor",
+    "requestedBy": "Maria Santos",
+    "date": "2025-09-13",
+    "status": "Completed"
+  },
+  {
+    "id": "#00005",
+    "department": "Maintenance",
+    "itemService": "Elevator Maintenance Check",
+    "requestedBy": "Juan Dela Cruz",
+    "date": "2025-09-13",
+    "status": "Completed"
+  },
+  {
+    "id": "#00006",
+    "department": "Security",
+    "itemService": "CCTV Camera Installation - Lobby",
+    "requestedBy": "Roberto Garcia",
+    "date": "2025-09-14",
+    "status": "Pending"
+  },
+  {
+    "id": "#00007",
+    "department": "Front Desk",
+    "itemService": "Computer System Upgrade",
+    "requestedBy": "Ana Reyes",
+    "date": "2025-09-14",
+    "status": "Approved"
+  },
+  {
+    "id": "#00008",
+    "department": "Housekeeping",
+    "itemService": "Vacuum Cleaner Replacement",
+    "requestedBy": "Lisa Cruz",
+    "date": "2025-09-15",
+    "status": "Pending"
+  },
+  {
+    "id": "#00009",
+    "department": "F&B",
+    "itemService": "Refrigerator Repair - Kitchen",
+    "requestedBy": "Miguel Torres",
+    "date": "2025-09-15",
+    "status": "Approved"
+  },
+  {
+    "id": "#00010",
+    "department": "Maintenance",
+    "itemService": "Plumbing Fix - Room 201",
+    "requestedBy": "Pedro Morales",
+    "date": "2025-09-16",
+    "status": "Completed"
+  },
+  {
+    "id": "#00011",
+    "department": "Security",
+    "itemService": "Access Card System Update",
+    "requestedBy": "Roberto Garcia",
+    "date": "2025-09-16",
+    "status": "Pending"
+  },
+  {
+    "id": "#00012",
+    "department": "Housekeeping",
+    "itemService": "Bed Sheet Inventory Restock",
+    "requestedBy": "Maria Santos",
+    "date": "2025-09-17",
+    "status": "Approved"
+  },
+  {
+    "id": "#00013",
+    "department": "F&B",
+    "itemService": "Coffee Machine Maintenance",
+    "requestedBy": "Carlos Rivera",
+    "date": "2025-09-17",
+    "status": "Completed"
+  },
+  {
+    "id": "#00014",
+    "department": "Front Desk",
+    "itemService": "Phone System Repair",
+    "requestedBy": "Ana Reyes",
+    "date": "2025-09-18",
+    "status": "Pending"
+  },
+  {
+    "id": "#00015",
+    "department": "Maintenance",
+    "itemService": "Generator Testing and Service",
+    "requestedBy": "Juan Dela Cruz",
+    "date": "2025-09-18",
+    "status": "Approved"
+  },
+  {
+    "id": "#00016",
+    "department": "Housekeeping",
+    "itemService": "h",
+    "requestedBy": "haha",
+    "date": "2025-11-17",
+    "approvedDate": "2025-11-17T06:49:26.343Z",
+    "approvedBy": "Manager Name",
+    "status": "Approved",
+    "updatedAt": "2025-11-17T06:49:26.636Z"
+  },
+  {
+    "id": "#00017",
+    "department": "Food & Beverage",
+    "itemService": "aircon",
+    "requestedBy": "jay",
+    "date": "2025-11-23",
+    "rejectedBy": "Manager Name",
+    "rejectedDate": "2025-11-23T07:57:56.228Z",
+    "status": "Rejected",
+    "updatedAt": "2025-11-23T07:57:56.806Z"
+  }
+]

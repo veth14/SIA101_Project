@@ -30,6 +30,7 @@ interface RequisitionCardProps {
   formatCurrency: (amount: number) => string;
   getStatusBadge: (status: string) => React.ReactNode;
   getPriorityBadge: (priority: string) => React.ReactNode;
+  onViewDetails?: (requisition: Requisition) => void;
 }
 
 export const RequisitionCard: React.FC<RequisitionCardProps> = ({
@@ -37,6 +38,7 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({
   formatCurrency,
   getStatusBadge,
   getPriorityBadge,
+  onViewDetails,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow h-full flex flex-col">
@@ -132,22 +134,15 @@ export const RequisitionCard: React.FC<RequisitionCardProps> = ({
       
       {/* Action Buttons */}
       <div className="mt-auto pt-4 flex gap-2">
-        <button className="flex-1 px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors text-sm font-medium">
+        <button
+          className="flex-1 px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors text-sm font-medium"
+          onClick={() => onViewDetails?.(requisition)}
+        >
           View Details
         </button>
-        {requisition.status === 'pending' && (
-          <>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-              Approve
-            </button>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
-              Reject
-            </button>
-          </>
-        )}
         {requisition.status === 'approved' && (
           <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-            Mark Fulfilled
+            Mark Received
           </button>
         )}
       </div>

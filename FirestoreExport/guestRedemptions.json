@@ -1,0 +1,46 @@
+[
+  {
+    "id": "GfRokRaDMr1EFXuEdjkm",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "rewardLabel": "Free welcome drink",
+    "cost": 300,
+    "redeemedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1763896884,
+      "_nanoseconds": 970000000
+    }
+  },
+  {
+    "id": "SQ9bnPfyx6tns7rD0GRL",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "rewardLabel": "10% room discount",
+    "cost": 3000,
+    "redeemedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1764373459,
+      "_nanoseconds": 555000000
+    }
+  },
+  {
+    "id": "s1F5ycxdtG1Dc05NN3b9",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "rewardLabel": "Free welcome drink",
+    "cost": 300,
+    "redeemedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1763896932,
+      "_nanoseconds": 466000000
+    }
+  },
+  {
+    "id": "ve6p3xz88YMMRhITClFc",
+    "guestId": "zH25hqbAtuS0nyTIOQjszhGHz2Q2",
+    "rewardLabel": "Free welcome drink",
+    "cost": 300,
+    "redeemedBy": "balayginhawaadmin123@gmail.com",
+    "timestamp": {
+      "_seconds": 1763895180,
+      "_nanoseconds": 895000000
+    }
+  }
+]

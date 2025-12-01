@@ -1,5 +1,5 @@
 import { db } from '../../config/firebase';
-import { collection, onSnapshot, orderBy, query, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, setDoc } from 'firebase/firestore';
 
 export interface RequisitionItemRecord {
   name: string;
@@ -118,4 +118,62 @@ export const updateRequisitionStatus = async (
   }
 
   await updateDoc(ref, payload);
+};
+
+export const createRequisition = async (input: {
+  id: string;
+  requestNumber: string;
+  department: string;
+  requestedBy: string;
+  priority: RequisitionRecord['priority'];
+  requestDate: string;
+  requiredDate?: string;
+  justification: string;
+  notes?: string;
+  items: RequisitionItemRecord[];
+  totalEstimatedCost: number;
+}) => {
+  const {
+    id,
+    requestNumber,
+    department,
+    requestedBy,
+    priority,
+    requestDate,
+    requiredDate,
+    justification,
+    notes,
+    items,
+    totalEstimatedCost,
+  } = input;
+
+  const ref = doc(collection(db, 'requisitions'), id);
+
+  const now = new Date();
+
+  const payload: any = {
+    id,
+    requestNumber,
+    department,
+    requestedBy,
+    items,
+    totalEstimatedCost,
+    status: 'pending',
+    priority,
+    requestDate,
+    justification,
+    createdAt: now,
+    updatedAt: now,
+    hasInvoice: false,
+  };
+
+  if (requiredDate) {
+    payload.requiredDate = requiredDate;
+  }
+
+  if (notes && notes.trim().length > 0) {
+    payload.notes = notes;
+  }
+
+  await setDoc(ref, payload);
 };

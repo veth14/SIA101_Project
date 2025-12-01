@@ -1,0 +1,81 @@
+[
+  {
+    "id": "Iz1gnMz8ZPB6uf3GqzQO",
+    "userId": "9r1fhufYgZYnJyBmGKO9ex67UFo1",
+    "firstName": "Emmanuel",
+    "lastName": " Detera",
+    "email": "detera.emmanuel.escalicas@gmail.com",
+    "phone": "09121244922",
+    "inquiryType": "complaint",
+    "subject": "Unacceptable Room Conditions and Service",
+    "message": "I recently stayed at your hotel, and unfortunately, my experience was far below the standard I expected. Upon arrival, I was greeted with a room that had a strong musty odor, and the air conditioning unit was not functioning properly, making the room uncomfortable. I immediately contacted the front desk to request a change, but it took over an hour for a staff member to address the issue.",
+    "referenceNumber": "REQ-1763808806779-X74UOVE83",
+    "createdAt": {
+      "_seconds": 1763808807,
+      "_nanoseconds": 505000000
+    },
+    "submittedAt": {
+      "_seconds": 1763808807,
+      "_nanoseconds": 505000000
+    },
+    "priority": "medium",
+    "bookingReference": "—",
+    "assignedTo": "Front Desk",
+    "status": "cancelled",
+    "notes": "Contact: 25435421",
+    "updatedAt": {
+      "_seconds": 1764404472,
+      "_nanoseconds": 221000000
+    }
+  },
+  {
+    "id": "V9rQ4WsLRHWwkK4IGBny",
+    "userId": "q7qFZ8VYzkWAJvgj9uJ8EKMhtYA2",
+    "firstName": "Ian",
+    "lastName": "Angelo Valmores",
+    "email": "vianangelo.14@gmail.com",
+    "phone": "+639957419175",
+    "inquiryType": "cancellation",
+    "bookingReference": "BK1761629662783i7bw7dtsz",
+    "subject": "Cancellation Request",
+    "message": "Cancel Room",
+    "referenceNumber": "REQ-1762322576976-OG8TFX7BR",
+    "submittedAt": "2025-11-05T06:02:56.976Z",
+    "createdAt": {
+      "_seconds": 1762322577,
+      "_nanoseconds": 761000000
+    },
+    "cancelledAt": "2025-11-05T06:08:05.612Z",
+    "cancelledBy": "q7qFZ8VYzkWAJvgj9uJ8EKMhtYA2",
+    "status": "cancelled",
+    "updatedAt": {
+      "_seconds": 1763822785,
+      "_nanoseconds": 614000000
+    }
+  },
+  {
+    "id": "zEr4mJIE3eak03xXAhhn",
+    "userId": "KEDgdIYh9qf8yhhldybdYI383HB2",
+    "firstName": "Ian",
+    "lastName": "Angelo Valmores",
+    "email": "vianangelo.14@gmail.com",
+    "phone": "+639957419175",
+    "inquiryType": "cancellation",
+    "bookingReference": "BK1761629662783i7bw7dtsz",
+    "subject": "Cancellation Request",
+    "message": "Request to Cancel booking",
+    "referenceNumber": "REQ-1762316697959-3OR6A55BQ",
+    "submittedAt": "2025-11-05T04:24:57.959Z",
+    "createdAt": {
+      "_seconds": 1762316698,
+      "_nanoseconds": 802000000
+    },
+    "notes": null,
+    "assignedTo": "Front Desk",
+    "status": "pending",
+    "updatedAt": {
+      "_seconds": 1764447307,
+      "_nanoseconds": 535000000
+    }
+  }
+]
