@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Modal } from '../../admin/Modal';
 import { useAuth } from '../../../hooks/useAuth';
@@ -295,17 +296,22 @@ const TicketsTasksPage: React.FC = () => {
   const ErrorModal: React.FC<{ open: boolean; message: string | null; onClose: () => void }> = ({ open, message, onClose }) => {
     if (!open) return null;
     return createPortal(
-      <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4 bg-black/60">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-          <div className="px-6 py-4 border-b border-heritage-neutral/10">
-            <h3 className="text-xl font-semibold text-gray-900">Error</h3>
+      <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-5 md:p-6 bg-black/60">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl">
+          <div className="px-7 py-5 border-b border-heritage-neutral/10">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-red-50">
+                <AlertCircle className="w-5 h-5 text-red-600" aria-hidden="true" />
+              </span>
+              <h3 className="text-2xl md:text-3xl font-semibold text-gray-900">Error</h3>
+            </div>
           </div>
-          <div className="p-6">
-            <p className="text-sm text-gray-700">{message}</p>
-            <div className="flex justify-end mt-6">
+          <div className="p-7">
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed">{message}</p>
+            <div className="flex justify-end mt-7">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90"
+                className="px-5 py-2.5 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90"
               >
                 OK
               </button>
