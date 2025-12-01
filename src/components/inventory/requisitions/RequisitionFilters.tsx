@@ -89,7 +89,7 @@ export const RequisitionFilters: React.FC<RequisitionFiltersProps> = ({
   </svg>
   New Requisition
 </button>
-      </div>
+      </div> 
     </div>
   );
-};
+}
