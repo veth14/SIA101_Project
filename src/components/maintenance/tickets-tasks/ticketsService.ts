@@ -472,17 +472,31 @@ async function validateStaffSchedule(
 /**
  * Assign staff using FIFO rotation algorithm
  */
+type AssignResult = { assignee: string | null; reason?: string };
+
 async function assignStaffToTicket(
   category: string,
   dueDate: Date
-): Promise<string | null> {
+): Promise<AssignResult> {
   // Fetch eligible staff (present today, matching category, not working)
   const now = new Date();
   const eligibleStaff = await fetchEligibleStaff(category, now);
   
   if (eligibleStaff.length === 0) {
     console.warn(`No eligible staff found for category: ${category}`);
-    return null;
+    // Determine if the category has any staff defined at all (in schedules)
+    try {
+      const schedulesRef = collection(db, 'staff_schedules');
+      const schedQ = query(schedulesRef, where('classification', '==', category), limit(1));
+      const schedSnap = await getDocs(schedQ);
+      const hasCategoryStaff = !schedSnap.empty;
+      const reason = hasCategoryStaff
+        ? `No present staff are currently clocked in and available for ${category}.`
+        : `No staff match the category ${category}.`;
+      return { assignee: null, reason };
+    } catch {
+      return { assignee: null, reason: `No present staff are currently available for ${category}.` };
+    }
   }
   
   // Sort by timeIn (FIFO)
@@ -510,12 +524,12 @@ async function assignStaffToTicket(
       // Increment rotation index for next assignment
       incrementRotationIndex(category, eligibleStaff.length);
       
-      return staff.fullName;
+      return { assignee: staff.fullName };
     }
   }
   
   console.warn(`No staff with valid schedule found for category: ${category}`);
-  return null;
+  return { assignee: null, reason: `There are staff present for ${category}, but none are scheduled to cover the ticket timeframe.` };
 }
 
 // ==================== TICKET OPERATIONS ====================
@@ -541,9 +555,11 @@ export async function createTicket(payload: {
     const ticketNumber = await generateTicketNumber();
     
     // Assign staff using FIFO algorithm
-    const assignedStaff = await assignStaffToTicket(payload.category, dueDate);
-    // If no eligible staff, allow creation with Unassigned so ticket still appears in maintenance view.
-    const finalAssignee = assignedStaff || 'Unassigned';
+    const { assignee, reason } = await assignStaffToTicket(payload.category, dueDate);
+    // If no eligible staff, block creation per requirement (do not allow Unassigned).
+    if (!assignee) {
+      throw new Error(reason || `No eligible staff found for ${payload.category}. Please try again later or adjust the ticket details.`);
+    }
 
     // Create ticket document
     const ticketData = {
@@ -552,7 +568,7 @@ export async function createTicket(payload: {
       category: payload.category,
       priority: payload.priority,
       roomNumber: payload.roomNumber,
-      assignedTo: finalAssignee,
+  assignedTo: assignee,
       createdAt: Timestamp.now(),
       createdBy: payload.createdBy,
       dueDate: dueDateTimestamp,
