@@ -25,6 +25,7 @@ const LostFoundPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<'found' | 'lost'>('found');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [formItem, setFormItem] = useState<LostFoundItem | null>(null);
   const [docMapFound, setDocMapFound] = useState<Record<string, string>>({}); // maps itemId -> firestore docId for found collection
   const [docMapLost, setDocMapLost] = useState<Record<string, string>>({}); // maps for lost collection
@@ -124,6 +125,14 @@ const LostFoundPage: React.FC = () => {
     setSelectedItem(item);
     // deep clone to avoid accidental mutation
     try { setFormItem(JSON.parse(JSON.stringify(item))); } catch { setFormItem({ ...item }); }
+    setIsReadOnly(false);
+    setIsModalOpen(true);
+  };
+  const handleViewOnly = (item: LostFoundItem) => {
+    setSelectedCollection(activeTab);
+    setSelectedItem(item);
+    try { setFormItem(JSON.parse(JSON.stringify(item))); } catch { setFormItem({ ...item }); }
+    setIsReadOnly(true);
     setIsModalOpen(true);
   };
 
@@ -300,6 +309,7 @@ const LostFoundPage: React.FC = () => {
     setIsModalOpen(false);
     setSelectedItem(null);
     setFormItem(null);
+    setIsReadOnly(false);
   };
 
   // keep formItem synced when selectedItem changes
@@ -376,18 +386,11 @@ const LostFoundPage: React.FC = () => {
             items={activeTab === 'found' ? foundItems : lostItems}
             activeTab={activeTab}
             onViewDetails={(item) => handleViewDetails(item)}
+            onViewOnly={(item) => handleViewOnly(item)}
             onMarkClaimed={(item) => handleMarkClaimed(item, activeTab)}
           />
         </div>
-        {/* Load more button for pagination (fetches next page) */}
-        <div className="mt-4 flex justify-center">
-          {activeTab === 'found' && hasMoreFound && (
-            <button onClick={() => loadMore('found')} className="px-4 py-2 bg-heritage-green text-white rounded-md">Load more found</button>
-          )}
-          {activeTab === 'lost' && hasMoreLost && (
-            <button onClick={() => loadMore('lost')} className="px-4 py-2 bg-heritage-green text-white rounded-md">Load more lost</button>
-          )}
-        </div>
+        {/* Removed legacy load-more buttons; rely on table pagination */}
   {/* Reuse shared Modal wrapper but render invoice-style header and content inside */}
         <Modal
           isOpen={isModalOpen}
@@ -399,17 +402,17 @@ const LostFoundPage: React.FC = () => {
           headerContent={formItem ? (
             <div className="relative z-30 flex w-[100%] px-8 py-4 items-center justify-between bg-white">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-600 text-white shadow-sm">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#82A33D] text-white shadow-sm">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>  
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-emerald-700">{formItem.id?.toString().startsWith('new-') ? `Add ${selectedCollection === 'found' ? 'Found' : 'Lost'} Item` : 'Item Details'}</h2>
+                  <h2 className="text-xl font-semibold text-[#82A33D]">{formItem.id?.toString().startsWith('new-') ? `Add ${selectedCollection === 'found' ? 'Found' : 'Lost'} Item` : 'Item Details'}</h2>
                   <p className="text-sm text-gray-500">{formItem.id?.toString().startsWith('new-') ? `Create a new ${selectedCollection === 'found' ? 'found' : 'lost'} item record` : 'View or edit the item information'}</p>
                 </div>
               </div>
-              <button onClick={handleModalClose} className="p-2 transition rounded-full text-emerald-700 hover:bg-emerald-50 ring-1 ring-emerald-100 ml-4">
+              <button onClick={handleModalClose} className="p-2 transition rounded-full text-[#82A33D] hover:bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20 ml-4">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -423,7 +426,8 @@ const LostFoundPage: React.FC = () => {
                     <input
                       value={formItem.itemName}
                       onChange={(e) => setFormItem({ ...formItem, itemName: e.target.value })}
-                      className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                      disabled={isReadOnly}
+                      className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                       placeholder="Enter item name"
                     />
                     {isFormNew && (!formItem.itemName || formItem.itemName.trim() === '') && (
@@ -436,7 +440,8 @@ const LostFoundPage: React.FC = () => {
                     <select
                       value={formItem.category}
                       onChange={(e) => setFormItem({ ...formItem, category: e.target.value as LostFoundItem['category'] })}
-                      className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                      disabled={isReadOnly}
+                      className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                     >
                       <option value="electronics">Electronics</option>
                       <option value="clothing">Clothing</option>
@@ -455,7 +460,8 @@ const LostFoundPage: React.FC = () => {
                     <select
                       value={formItem.status}
                       onChange={(e) => setFormItem({ ...formItem, status: e.target.value as LostFoundItem['status'] })}
-                      className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                      disabled={isReadOnly}
+                      className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                     >
                       <option value="unclaimed">Unclaimed</option>
                       <option value="claimed">Claimed</option>
@@ -469,7 +475,8 @@ const LostFoundPage: React.FC = () => {
                   <input
                     value={formItem.location}
                     onChange={(e) => setFormItem({ ...formItem, location: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                    disabled={isReadOnly}
+                    className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                     placeholder="e.g., Lobby, Poolside"
                   />
                   {isFormNew && (!formItem.location || formItem.location.trim() === '') && (
@@ -482,7 +489,8 @@ const LostFoundPage: React.FC = () => {
                   <input
                     value={formItem.foundBy}
                     onChange={(e) => setFormItem({ ...formItem, foundBy: e.target.value })}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                    disabled={isReadOnly}
+                    className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                     placeholder="Staff name or description"
                   />
                   {isFormNew && (!formItem.foundBy || formItem.foundBy.trim() === '') && (
@@ -507,7 +515,8 @@ const LostFoundPage: React.FC = () => {
                         dateLost: selectedCollection === 'lost' ? iso : formItem.dateLost
                       });
                     }}
-                    className="w-48 px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                    disabled={isReadOnly}
+                    className={`w-48 px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                   />
                   {isFormNew && ((selectedCollection === 'found' && (!formItem.dateFound || String(formItem.dateFound).trim() === '')) || (selectedCollection === 'lost' && !((formItem.dateLost ?? formItem.dateFound)))) && (
                     <p className="text-xs text-red-500 mt-1">{selectedCollection === 'found' ? 'Date found is required.' : 'Date lost is required.'}</p>
@@ -519,7 +528,8 @@ const LostFoundPage: React.FC = () => {
                   <textarea
                     value={formItem.description}
                     onChange={(e) => setFormItem({ ...formItem, description: e.target.value })}
-                    className="w-full px-4 py-1 transition-colors border rounded-lg resize-none border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 max-h-13 overflow-auto"
+                    disabled={isReadOnly}
+                    className={`w-full px-4 py-1 transition-colors border rounded-lg resize-none border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 max-h-13 overflow-auto ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                     rows={2}
                   />
                   {isFormNew && (!formItem.description || formItem.description.trim() === '') && (
@@ -536,7 +546,8 @@ const LostFoundPage: React.FC = () => {
                         <input
                           value={formItem.claimedBy ?? ''}
                           onChange={(e) => setFormItem({ ...formItem, claimedBy: e.target.value })}
-                          className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                          disabled={isReadOnly}
+                          className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                         />
                       </div>
 
@@ -546,7 +557,8 @@ const LostFoundPage: React.FC = () => {
                           type="date"
                           value={formItem.claimedDate ? new Date(formItem.claimedDate).toISOString().slice(0, 10) : ''}
                           onChange={(e) => setFormItem({ ...formItem, claimedDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                          className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                          disabled={isReadOnly}
+                          className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                         />
                       </div>
 
@@ -557,7 +569,7 @@ const LostFoundPage: React.FC = () => {
                     </div>
 
                     <div className="pt-4">
-                      <h4 className="flex items-center text-lg font-semibold text-emerald-700">
+                      <h4 className="flex items-center text-lg font-semibold text-[#82A33D]">
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -570,7 +582,8 @@ const LostFoundPage: React.FC = () => {
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.name) ?? ''}
                             onChange={(e) => updateGuestInfo('name', e.target.value)}
-                            className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                            disabled={isReadOnly}
+                            className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                             placeholder="Guest full name"
                           />
                         </div>
@@ -580,7 +593,8 @@ const LostFoundPage: React.FC = () => {
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.room) ?? ''}
                             onChange={(e) => updateGuestInfo('room', e.target.value)}
-                            className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                            disabled={isReadOnly}
+                            className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                             placeholder="Room number"
                           />
                         </div>
@@ -590,7 +604,8 @@ const LostFoundPage: React.FC = () => {
                           <input
                             value={(formItem.guestInfo && formItem.guestInfo.contact) ?? ''}
                             onChange={(e) => updateGuestInfo('contact', e.target.value)}
-                            className="w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 bg-white/80 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+                            disabled={isReadOnly}
+                            className={`w-full px-4 py-3 transition-colors border rounded-lg border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                             placeholder="Contact number or email"
                           />
                         </div>
@@ -601,11 +616,13 @@ const LostFoundPage: React.FC = () => {
 
                 {/* Action buttons - aligned with reservation modal */}
                 <div className="flex pt-6 mt-6 space-x-4 border-t border-gray-100">
-                  <button onClick={handleModalClose} className="flex-1 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
-                  <button onClick={() => formItem && handleSaveItem(formItem, selectedCollection)} disabled={saveDisabled} className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-2xl shadow-sm hover:bg-emerald-700 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    <span>Save</span>
-                  </button>
+                  <button onClick={handleModalClose} className="flex-1 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">{isReadOnly ? 'Close' : 'Cancel'}</button>
+                  {!isReadOnly && (
+                    <button onClick={() => formItem && handleSaveItem(formItem, selectedCollection)} disabled={saveDisabled} className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-[#82A33D] border border-transparent rounded-2xl shadow-sm hover:bg-[#82A33D]/90 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <span>Save</span>
+                    </button>
+                  )}
                 </div>
               </div>
           )}

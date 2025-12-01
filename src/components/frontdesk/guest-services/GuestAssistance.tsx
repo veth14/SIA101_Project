@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Modal } from '../../admin/Modal';
-import { collection, getDocs, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, where, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp, doc, updateDoc, limit } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../hooks/useAuth';
 import { createTicket } from '../../maintenance/tickets-tasks/ticketsService';
+import { getTimeValue } from '../../../lib/utils';
+import FilterDropdown, { FilterOption } from '../../shared/FilterDropdown';
 
 interface AssistanceRequest {
   id: string;
@@ -34,6 +36,7 @@ export const GuestAssistance: React.FC = () => {
 
   const [selectedRequest, setSelectedRequest] = useState<AssistanceRequest | null>(null);
   const [modalMode, setModalMode] = useState<'create' | 'view'>('create');
+  const [isReadOnlyView, setIsReadOnlyView] = useState<boolean>(false);
   const [status, setStatus] = useState<AssistanceRequest['status']>('pending');
   const [initialPriority, setInitialPriority] = useState<AssistanceRequest['priority'] | null>(null);
   const [initialStatus, setInitialStatus] = useState<AssistanceRequest['status'] | null>(null);
@@ -51,7 +54,9 @@ export const GuestAssistance: React.FC = () => {
     try {
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) cached = JSON.parse(raw)?.items || [];
-    } catch {}
+    } catch {
+      void 0; // ignore cache parse errors
+    }
     if (cached.length) {
       assistanceRef.current = cached;
       setAssistanceRequests(cached);
@@ -65,51 +70,62 @@ export const GuestAssistance: React.FC = () => {
     const sortAndCommit = () => {
       const sorted = [...assistanceRef.current].sort((a, b) => new Date(b.requestTime).getTime() - new Date(a.requestTime).getTime());
       setAssistanceRequests(sorted);
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ items: sorted })); } catch {}
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ items: sorted })); } catch {
+        void 0; // ignore cache write errors
+      }
     };
 
-    const mapContactDoc = (d: any, id: string): AssistanceRequest => {
-      const data = d;
-      const requestTime = data.submittedAt?.toDate?.() ? data.submittedAt.toDate().toISOString() : data.submittedAt || data.createdAt || new Date().toISOString();
-      const guestName = [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || data.email || 'Guest';
-      const requestType = data.inquiryType ? data.inquiryType.toString().toLowerCase() : 'other';
+    const mapContactDoc = (d: Record<string, unknown>, id: string): AssistanceRequest => {
+      const data = d as Record<string, unknown>;
+      const submittedMs = getTimeValue(data['submittedAt'] ?? data['createdAt']);
+      const requestTime = submittedMs ? new Date(submittedMs).toISOString() : new Date().toISOString();
+      const guestName = [data['firstName'], data['lastName']]
+        .map(v => (typeof v === 'string' ? v : ''))
+        .filter(Boolean)
+        .join(' ')
+        .trim() || (typeof data['email'] === 'string' ? (data['email'] as string) : 'Guest');
+      const requestType = typeof data['inquiryType'] === 'string' ? data['inquiryType'].toLowerCase() : 'other';
       let status: AssistanceRequest['status'] = 'pending';
-      if (data.status === 'resolved') status = 'completed';
-      else if (data.status === 'in-progress') status = 'in-progress';
-      else if (data.status === 'cancelled') status = 'cancelled';
+      if (data['status'] === 'resolved') status = 'completed';
+      else if (data['status'] === 'in-progress') status = 'in-progress';
+      else if (data['status'] === 'cancelled') status = 'cancelled';
       return {
         id,
         guestName,
-        roomNumber: data.bookingReference || '—',
+        roomNumber: typeof data['bookingReference'] === 'string' ? (data['bookingReference'] as string) : '—',
         requestType,
         priority: 'medium',
-        description: [data.subject, data.message].filter(Boolean).join(' — '),
+        description: [data['subject'], data['message']]
+          .map(v => (typeof v === 'string' ? v : ''))
+          .filter(Boolean)
+          .join(' — '),
         requestTime,
         status,
-        assignedTo: data.assignedTo || 'Front Desk',
-        estimatedTime: data.estimatedTime,
-        notes: data.notes,
-        ticketNumber: data.ticketNumber,
+        assignedTo: typeof data['assignedTo'] === 'string' ? (data['assignedTo'] as string) : 'Front Desk',
+        estimatedTime: typeof data['estimatedTime'] === 'string' ? (data['estimatedTime'] as string) : undefined,
+        notes: typeof data['notes'] === 'string' ? (data['notes'] as string) : undefined,
+        ticketNumber: typeof data['ticketNumber'] === 'string' ? (data['ticketNumber'] as string) : undefined,
         source: 'contactRequests'
       };
     };
 
-    const mapGuestDoc = (d: any, id: string): AssistanceRequest => {
-      const data = d;
-      const requestTime = data.submittedAt?.toDate?.() ? data.submittedAt.toDate().toISOString() : data.submittedAt || data.createdAt || new Date().toISOString();
+    const mapGuestDoc = (d: Record<string, unknown>, id: string): AssistanceRequest => {
+      const data = d as Record<string, unknown>;
+      const submittedMs = getTimeValue(data['submittedAt'] ?? data['createdAt']);
+      const requestTime = submittedMs ? new Date(submittedMs).toISOString() : new Date().toISOString();
       return {
         id,
-        guestName: data.guestName || data.firstName || 'Guest',
-        roomNumber: data.roomNumber || '—',
-        requestType: data.requestType || 'other',
-        priority: data.priority || 'medium',
-        description: data.description || '',
+        guestName: (typeof data['guestName'] === 'string' && data['guestName']) || (typeof data['firstName'] === 'string' ? (data['firstName'] as string) : 'Guest'),
+        roomNumber: typeof data['roomNumber'] === 'string' ? (data['roomNumber'] as string) : '—',
+        requestType: typeof data['requestType'] === 'string' ? (data['requestType'] as string) : 'other',
+        priority: (typeof data['priority'] === 'string' ? (data['priority'] as string) : 'medium') as AssistanceRequest['priority'],
+        description: typeof data['description'] === 'string' ? (data['description'] as string) : '',
         requestTime,
-        status: data.status || 'pending',
-        assignedTo: data.assignedTo || undefined,
-        estimatedTime: data.estimatedTime || undefined,
-        notes: data.notes || undefined,
-        ticketNumber: data.ticketNumber,
+        status: (typeof data['status'] === 'string' ? (data['status'] as string) : 'pending') as AssistanceRequest['status'],
+        assignedTo: typeof data['assignedTo'] === 'string' ? (data['assignedTo'] as string) : undefined,
+        estimatedTime: typeof data['estimatedTime'] === 'string' ? (data['estimatedTime'] as string) : undefined,
+        notes: typeof data['notes'] === 'string' ? (data['notes'] as string) : undefined,
+        ticketNumber: typeof data['ticketNumber'] === 'string' ? (data['ticketNumber'] as string) : undefined,
         source: 'guest_request'
       };
     };
@@ -132,7 +148,9 @@ export const GuestAssistance: React.FC = () => {
         });
 
         sortAndCommit();
-        try { localStorage.setItem('guest_assistance_cache_meta', JSON.stringify({ ts: Date.now() })); } catch {}
+        try { localStorage.setItem('guest_assistance_cache_meta', JSON.stringify({ ts: Date.now() })); } catch {
+          void 0; // ignore meta cache write errors
+        }
       } catch (err) {
         console.error('Failed to fetch assistance requests', err);
       }
@@ -219,14 +237,7 @@ export const GuestAssistance: React.FC = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  const getDefaultAssigneeForType = (type: string) => {
-    const t = (type || '').toLowerCase();
-    if (t === 'housekeeping') return 'Housekeeping Team';
-    if (t === 'maintenance') return 'Maintenance Team';
-    if (t === 'electrical') return 'Electrical Team';
-    if (t === 'plumbing') return 'Plumbing Team';
-    return 'Front Desk';
-  };
+  // Removed unused helper getDefaultAssigneeForType to satisfy linter
 
   const resetForm = () => {
     setGuestName('');
@@ -260,6 +271,34 @@ export const GuestAssistance: React.FC = () => {
 
   const openViewModal = (request: AssistanceRequest) => {
     setModalMode('view');
+    setIsReadOnlyView(true);
+    setSelectedRequest(request);
+    setGuestName(request.guestName || '');
+    setRoomNumber(request.roomNumber || '');
+    if (request.notes && request.notes.includes('Contact:')) {
+      setGuestContact(request.notes.replace('Contact:', '').trim());
+    } else {
+      setGuestContact('');
+    }
+    setRequestType(request.requestType || 'other');
+    setPriority(request.priority || 'medium');
+    setDescription(request.description || '');
+    setAssignedTo(request.assignedTo || 'Unassigned');
+    setStatus(request.status || 'pending');
+    setInitialPriority(request.priority || 'medium');
+    setInitialStatus(request.status || 'pending');
+    setInitialGuestName(request.guestName || '');
+    setInitialRoomNumber(request.roomNumber || '');
+    setInitialRequestType(request.requestType || '');
+    setInitialAssignedTo(request.assignedTo || 'Unassigned');
+    setInitialGuestContact(request.notes?.includes('Contact:') ? request.notes.replace('Contact:', '').trim() : '');
+    setDueDateTime('');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (request: AssistanceRequest) => {
+    setModalMode('view');
+    setIsReadOnlyView(false);
     setSelectedRequest(request);
     setGuestName(request.guestName || '');
     setRoomNumber(request.roomNumber || '');
@@ -620,61 +659,95 @@ export const GuestAssistance: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filters and Search Bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search requests, guests, or rooms..."
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
-            />
+    <div className="space-y-0 p-0 m-0">
+      {/* Header: Title, Counts, Search & Filters (matches Inventory design) */}
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-visible relative">
+        <div className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Left: title + counts */}
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 13V6a2 2 0 00-2-2H8a2 2 0 00-2 2v7m12 0l-6 6-6-6" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">Assistance Requests</h3>
+                <p className="flex items-center gap-2 mt-2 text-sm text-gray-600 font-medium">
+                  <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                    {filteredRequests.length ? `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, filteredRequests.length)} of ${filteredRequests.length}` : '0 results'}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span>Paginated view</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Right: search + filters + Add button */}
+            <div className="flex flex-wrap items-center gap-3 justify-end flex-1 relative z-10">
+              <div className="relative flex-1 min-w-[260px] max-w-xl group">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search requests, guests, or rooms..."
+                  className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+                />
+              </div>
+              <FilterDropdown
+                selected={selectedType}
+                onChange={setSelectedType}
+                options={[
+                  { value: 'all', label: 'All Types' },
+                  { value: 'housekeeping', label: 'Housekeeping' },
+                  { value: 'maintenance', label: 'Maintenance' }
+                ] as FilterOption[]}
+                widthClass="w-48"
+                ariaLabel="Filter by type"
+              />
+              <FilterDropdown
+                selected={selectedStatus}
+                onChange={setSelectedStatus}
+                options={[
+                  { value: 'all', label: 'All Status' },
+                  { value: 'pending', label: 'Pending' },
+                  { value: 'in-progress', label: 'In Progress' },
+                  { value: 'completed', label: 'Completed' },
+                  { value: 'cancelled', label: 'Cancelled' }
+                ] as FilterOption[]}
+                widthClass="w-52"
+                ariaLabel="Filter by status"
+              />
+              <FilterDropdown
+                selected={selectedPriority}
+                onChange={setSelectedPriority}
+                options={[
+                  { value: 'all', label: 'All Priority' },
+                  { value: 'urgent', label: 'Urgent' },
+                  { value: 'high', label: 'High' },
+                  { value: 'medium', label: 'Medium' },
+                  { value: 'low', label: 'Low' }
+                ] as FilterOption[]}
+                widthClass="w-48"
+                ariaLabel="Filter by priority"
+              />
+
+              <button
+                onClick={openModal}
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#82A33D] transition-all bg-white border-2 border-[#82A33D]/20 rounded-xl hover:bg-[#82A33D] hover:text-white hover:border-[#82A33D] shadow-sm hover:shadow-md"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>New Request</span>
+              </button>
+            </div>
           </div>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white"
-          >
-            <option value="all">All Types</option>
-            <option value="housekeeping">Housekeeping</option>
-            <option value="maintenance">Maintenance</option>
-          </select>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-          <select
-            value={selectedPriority}
-            onChange={(e) => setSelectedPriority(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white"
-          >
-            <option value="all">All Priority</option>
-            <option value="urgent">Urgent</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={openModal} className="w-auto inline-flex justify-center items-center px-6 py-3 bg-gradient-to-r from-heritage-green to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:from-heritage-green/90 hover:to-emerald-600/90 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span>New Request</span>
-          </button>
         </div>
       </div>
 
@@ -682,7 +755,7 @@ export const GuestAssistance: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
-        title={modalMode === 'view' ? 'Request Details' : 'Create New Request'}
+        title={modalMode === 'view' ? (isReadOnlyView ? 'Request Details' : 'Edit Request') : 'Create New Request'}
         subtitle={modalMode === 'view' && selectedRequest ? `Request #${selectedRequest.id} • ${selectedRequest.guestName || guestName || 'Guest'}${selectedRequest.ticketNumber ? ` • Ticket ${selectedRequest.ticketNumber}` : ''}` : undefined}
         size="md"
       >
@@ -722,7 +795,7 @@ export const GuestAssistance: React.FC = () => {
               <div>
                 <label className="block text-xs font-medium text-gray-600">Request Type <span className="text-rose-500">*</span></label>
                 {modalMode === 'view' ? (
-                  <input value={requestType} onChange={(e) => setRequestType(e.target.value)} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition" />
+                  <input value={requestType} onChange={(e) => setRequestType(e.target.value)} disabled={isReadOnlyView} className={`mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition ${isReadOnlyView ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`} />
                 ) : (
                   <select
                     value={requestType}
@@ -750,7 +823,7 @@ export const GuestAssistance: React.FC = () => {
                   if (modalMode === 'create') {
                     setDueDateTime(toDateTimeLocal(computeDueDateTime(requestType, val)));
                   }
-                }} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition">
+                }} disabled={modalMode === 'view' && isReadOnlyView} className={`mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition ${modalMode === 'view' && isReadOnlyView ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}>
                   <option value="urgent">Urgent</option>
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -762,7 +835,7 @@ export const GuestAssistance: React.FC = () => {
               {modalMode === 'view' && (
                 <div>
                   <label className="block text-xs font-medium text-gray-600">Status</label>
-                  <select value={status} onChange={(e) => setStatus(e.target.value as AssistanceRequest['status'])} className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition">
+                  <select value={status} onChange={(e) => setStatus(e.target.value as AssistanceRequest['status'])} disabled={isReadOnlyView} className={`mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition ${isReadOnlyView ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}>
                     <option value="pending">Pending</option>
                     <option value="in-progress">In Progress</option>
                     <option value="completed">Completed</option>
@@ -790,7 +863,7 @@ export const GuestAssistance: React.FC = () => {
                   type="datetime-local"
                   value={dueDateTime}
                   onChange={(e) => setDueDateTime(e.target.value)}
-                  className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+                  className={`mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition ${modalMode === 'view' ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                   disabled={modalMode === 'view'}
                 />
                 {formErrors.dueDateTime && <div className="text-rose-600 text-xs mt-1">{formErrors.dueDateTime}</div>}
@@ -808,7 +881,8 @@ export const GuestAssistance: React.FC = () => {
                   <select
                     value={assignedTo}
                     onChange={(e) => setAssignedTo(e.target.value)}
-                    className="mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition"
+                    disabled={isReadOnlyView}
+                    className={`mt-1 w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition ${isReadOnlyView ? 'bg-gray-50 cursor-not-allowed' : 'bg-white/80'}`}
                   >
                     <option value="Unassigned">Unassigned</option>
                     <option value="Front Desk">Front Desk</option>
@@ -822,8 +896,10 @@ export const GuestAssistance: React.FC = () => {
           )}
 
           <div className="flex items-center justify-end space-x-3 pt-2">
-            <button type="button" onClick={closeModal} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">Cancel</button>
-            <button type="submit" disabled={!isDirty || isSubmitting} className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${(!isDirty || isSubmitting) ? 'bg-emerald-600/50 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}>{modalMode === 'view' ? 'Save Changes' : (isSubmitting ? 'Submitting...' : 'Submit Request')}</button>
+            <button type="button" onClick={closeModal} className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5">{modalMode === 'view' && isReadOnlyView ? 'Close' : 'Cancel'}</button>
+            {!(modalMode === 'view' && isReadOnlyView) && (
+              <button type="submit" disabled={!isDirty || isSubmitting} className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${(!isDirty || isSubmitting) ? 'bg-[#82A33D]/50 cursor-not-allowed' : 'bg-[#82A33D] hover:bg-[#82A33D]/90'}`}>{modalMode === 'view' ? 'Save Changes' : (isSubmitting ? 'Submitting...' : 'Submit Request')}</button>
+            )}
           </div>
         </form>
       </Modal>
@@ -832,20 +908,20 @@ export const GuestAssistance: React.FC = () => {
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Guest Info</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Assigned To</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Guest Info</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Type</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Priority</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Description</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Status</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Assigned To</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {paginatedRequests.map((request) => (
-                <tr key={request.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={request.id} className="group transition-all duration-300 hover:shadow-sm hover:bg-gray-50" style={{ height: '74px' }}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
@@ -876,7 +952,7 @@ export const GuestAssistance: React.FC = () => {
                   <td className="px-6 py-4 max-w-xs">
                     <p className="text-sm text-gray-700 truncate">{request.description}</p>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
                       {request.status.replace('-', ' ').charAt(0).toUpperCase() + request.status.replace('-', ' ').slice(1)}
                     </span>
@@ -889,13 +965,33 @@ export const GuestAssistance: React.FC = () => {
                       <div className="text-xs text-gray-500">Est: {request.estimatedTime}</div>
                     )}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button onClick={() => openViewModal(request)} className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors">View</button>
-                      {/* 'Start' action removed per UI policy change */}
-                      {/* Complete button removed per request */}
+                  <td className="px-6 py-4 text-center">
+                    <div className="inline-flex items-center space-x-2">
+                      <button
+                        onClick={() => openViewModal(request)}
+                        className="px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => openEditModal(request)}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-heritage-green hover:bg-heritage-green/90 transition-colors shadow-sm"
+                      >
+                        Edit
+                      </button>
                     </div>
                   </td>
+                </tr>
+              ))}
+              {Array.from({ length: Math.max(0, 6 - paginatedRequests.length) }).map((_, idx) => (
+                <tr key={`empty-${idx}`} style={{ height: '74px' }}>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
                 </tr>
               ))}
             </tbody>

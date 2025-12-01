@@ -3,6 +3,7 @@ import Modal from '../../admin/Modal';
 import loyaltyService, { GuestProfile, RewardRedemption } from '../../../services/loyaltyService';
 import { getTimeValue } from '../../../lib/utils';
 import { useAuth } from '../../../hooks/useAuth';
+import FilterDropdown, { FilterOption } from '../../shared/FilterDropdown';
 
 type LoyaltyMember = {
   id: string;
@@ -114,6 +115,7 @@ export const LoyaltyProgram: React.FC = () => {
 
   // modals and active member state
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDetailsReadOnly, setIsDetailsReadOnly] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [activeMember, setActiveMember] = useState<LoyaltyMember | null>(null);
   const [formMember, setFormMember] = useState<Partial<LoyaltyMember> | null>(null);
@@ -130,13 +132,17 @@ export const LoyaltyProgram: React.FC = () => {
   const [addPointsReason, setAddPointsReason] = useState<string>('');
   const [addPointsError, setAddPointsError] = useState<string | null>(null);
 
-  const openDetails = (m: LoyaltyMember) => {
-    // Open edit modal directly so 'View' doubles as 'Edit'
+  const openEdit = (m: LoyaltyMember) => {
     setActiveMember(m);
     setFormMember({ ...m });
     setFormInitial({ ...m });
     setIsFormDirty(false);
     setIsAddOpen(true);
+  };
+  const openView = (m: LoyaltyMember) => {
+    setActiveMember(m);
+    setIsDetailsReadOnly(true);
+    setIsDetailsOpen(true);
   };
   const closeDetails = () => {
     setIsDetailsOpen(false);
@@ -294,6 +300,8 @@ export const LoyaltyProgram: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
+  const displayedStart = filteredMembers.length === 0 ? 0 : startIndex + 1;
+  const displayedEnd = Math.min(endIndex, filteredMembers.length);
 
   // Cache of latest checkout per email, fetched lazily for the current page
   const [latestCheckoutByEmail, setLatestCheckoutByEmail] = useState<Record<string, string>>({});
@@ -329,54 +337,81 @@ export const LoyaltyProgram: React.FC = () => {
   }, [selectedTier, search]);
 
   return (
-    <div className="space-y-6">
-      {/* Filters and Search Bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search members, emails, or tiers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white w-80"
-            />
+    <div className="space-y-0 p-0 m-0">
+      {/* Header: Title, Counts, Search & Filters (matches Inventory design) */}
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-visible relative">
+        <div className="p-5 border-b border-gray-200/70 bg-gradient-to-r from-gray-50/50 via-white to-gray-50/50">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Left: title + counts */}
+            <div className="flex items-center space-x-4">
+              <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="flex items-center gap-3 text-2xl font-black text-gray-900">Loyalty Members</h3>
+                <p className="flex items-center gap-2 mt-2 text-sm text-gray-600 font-medium">
+                  <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
+                    {filteredMembers.length ? `${displayedStart}-${displayedEnd} of ${filteredMembers.length}` : '0 results'}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span>Paginated view</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Right: search + filter */}
+            <div className="flex flex-wrap items-center gap-3 justify-end flex-1">
+              <div className="relative flex-1 min-w-[260px] max-w-xl group">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400 group-focus-within:text-[#82A33D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search members, emails, or tiers..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#82A33D]/20 focus:border-[#82A33D] text-sm transition-all font-medium placeholder:text-gray-400 hover:border-gray-300"
+                />
+              </div>
+              <FilterDropdown
+                selected={selectedTier}
+                onChange={setSelectedTier}
+                options={[
+                  { value: 'all', label: 'All Tiers' },
+                  { value: 'Bronze', label: 'Bronze' },
+                  { value: 'Silver', label: 'Silver' },
+                  { value: 'Gold', label: 'Gold' },
+                  { value: 'Platinum', label: 'Platinum' }
+                ] as FilterOption[]}
+                widthClass="w-48"
+                ariaLabel="Filter by tier"
+              />
+            </div>
           </div>
-          <select
-            value={selectedTier}
-            onChange={(e) => setSelectedTier(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-heritage-green/20 focus:border-heritage-green bg-white"
-          >
-            <option value="all">All Tiers</option>
-            <option value="Bronze">Bronze</option>
-            <option value="Silver">Silver</option>
-            <option value="Gold">Gold</option>
-            <option value="Platinum">Platinum</option>
-          </select>
         </div>
-        {/* Add Member removed - members are now created from walk-in reservations */}
       </div>
 
       {/* Members Table */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Member Info</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tier</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Points Balance</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Spent</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Last Stay</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-left text-gray-700 uppercase">Member Info</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Tier</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">Points Balance</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-right text-gray-700 uppercase">Total Spent</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Last Stay</th>
+                <th className="px-6 py-5 text-xs font-black tracking-wider text-center text-gray-700 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {paginatedMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={member.id} className="group transition-all duration-300 hover:shadow-sm hover:bg-gray-50" style={{ height: '74px' }}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
@@ -391,21 +426,21 @@ export const LoyaltyProgram: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTierColor(member.tier)} space-x-1`}>
                       <span>{getTierIcon(member.tier)}</span>
                       <span>{member.tier}</span>
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-right">
                     <div className="font-semibold text-gray-900">{member.points.toLocaleString()}</div>
                     <div className="text-xs text-gray-500">points</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-right">
                     <div className="font-semibold text-gray-900">₱{member.totalSpent.toLocaleString()}</div>
                     <div className="text-xs text-gray-500">lifetime value</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <div className="text-sm text-gray-700">
                       {(() => {
                         const iso = (member.email && latestCheckoutByEmail[member.email]) || member.lastStay || null;
@@ -413,13 +448,36 @@ export const LoyaltyProgram: React.FC = () => {
                       })()}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button onClick={() => openDetails(member)} className="px-3 py-1 rounded-md text-sm text-heritage-green border border-gray-200 bg-heritage-green/10 hover:bg-heritage-green/20 transition-colors" aria-label="View member details">View</button>
+                  <td className="px-6 py-4 text-center">
+                    <div className="inline-flex items-center space-x-2">
+                      <button
+                        onClick={() => openView(member)}
+                        className="px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                        aria-label="View member details"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => openEdit(member)}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-heritage-green hover:bg-heritage-green/90 transition-colors shadow-sm"
+                        aria-label="Edit member"
+                      >
+                        Edit
+                      </button>
                       <button onClick={() => openRedeem(member)} className="px-3 py-1 rounded-md text-sm text-yellow-600 border border-gray-200 bg-yellow-50 hover:bg-yellow-100 transition-colors" aria-label="Redeem rewards">Redeem</button>
                       {/* Add Points removed from per-row actions — admin can add points from the member Edit/View modal */}
                     </div>
                   </td>
+                </tr>
+              ))}
+              {Array.from({ length: Math.max(0, 6 - paginatedMembers.length) }).map((_, idx) => (
+                <tr key={`empty-${idx}`} style={{ height: '74px' }}>
+                  <td className="px-6 py-4 text-sm text-gray-300">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-right">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-right">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-300 text-center">-</td>
                 </tr>
               ))}
             </tbody>
@@ -542,7 +600,8 @@ export const LoyaltyProgram: React.FC = () => {
                 <select
                   value={activeMember.status}
                   onChange={(e) => updateMemberStatus(e.target.value as LoyaltyMember['status'])}
-                  className="px-3 py-2 border border-gray-200 rounded-xl"
+                  disabled={isDetailsReadOnly}
+                  className={`px-3 py-2 border border-gray-200 rounded-xl ${isDetailsReadOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -691,7 +750,7 @@ export const LoyaltyProgram: React.FC = () => {
               <button
                 onClick={() => formMember && saveMember({ ...(formMember as Partial<LoyaltyMember>) })}
                 disabled={Boolean(activeMember) && !isFormDirty}
-                className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${Boolean(activeMember) && !isFormDirty ? 'bg-emerald-600/50 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-2xl shadow-sm transition transform hover:-translate-y-0.5 ${Boolean(activeMember) && !isFormDirty ? 'bg-[#82A33D]/50 cursor-not-allowed' : 'bg-[#82A33D] hover:bg-[#82A33D]/90'}`}
               >
                 Save
               </button>
@@ -720,7 +779,7 @@ export const LoyaltyProgram: React.FC = () => {
                       <button
                         disabled={redeemMember.points < r.cost}
                         onClick={() => confirmRedeem(redeemMember.id, r.id)}
-                        className="px-3 py-1 rounded-2xl bg-emerald-600 text-white border border-transparent shadow-sm hover:bg-emerald-700 transition disabled:opacity-40"
+                        className="px-3 py-1 rounded-2xl bg-[#82A33D] text-white border border-transparent shadow-sm hover:bg-[#82A33D]/90 transition disabled:opacity-40"
                       >
                         Redeem
                       </button>
