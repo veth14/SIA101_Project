@@ -231,17 +231,20 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
           <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
                 <div className="flex flex-col">
-                  <h2 className="text-lg font-semibold md:text-2xl text-emerald-700">
+                  <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">
                     {isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'}
                   </h2>
-                  <p className="mt-1 text-sm text-gray-500">Staff Management System</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Capture staff details and assign RFID for access control. This is a
+                    draft-only form for now.
+                  </p>
                 </div>
               </div>
 
@@ -252,7 +255,7 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
             <button
               onClick={onCloseWrapper}
               aria-label="Close"
-              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -894,6 +894,24 @@ const TicketsTasksPage: React.FC = () => {
         onClose={closeCreateModal}
         title="Create Ticket"
         size="md"
+        headerContent={
+          <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M9 2h6l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                <path d="M9 11h6M9 15h4" stroke="rgba(255,255,255,0.9)" strokeWidth="1" fill="none" />
+              </svg>
+            </div>
+            <div className="flex flex-col">
+              <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">
+                Create Ticket
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Create a new maintenance or housekeeping ticket for staff assignment.
+              </p>
+            </div>
+          </div>
+        }
       >
         <div className="space-y-4">
           {/* Task Title */}

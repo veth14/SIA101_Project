@@ -62,7 +62,7 @@ const ManageStaffPage: React.FC = () => {
             className="absolute inset-0"
             style={{
               backgroundImage:
-                "radial-gradient(circle at 25px 25px, rgba(134, 134, 134, 0.1) 1px, transparent 0)",
+                "radial-gradient(circle at 25px 25px, rgba(156, 35, 35, 0.1) 1px, transparent 0)",
               backgroundSize: "50px 50px",
             }}
           ></div>

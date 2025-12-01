@@ -308,7 +308,7 @@ export const navigation: NavItem[] = [
           </svg>
         ),
         description: 'Archived maintenance records and data'
-      } // Archive item - should be visible now
+      }
     ]
   },
 ];
@@ -346,12 +346,14 @@ export const Sidebar = ({ }: SidebarProps) => {
                            location.pathname === '/admin/guest-services';
 
   // Check if we're on maintenance pages
-  const isOnMaintenancePage = location.pathname === '/admin/maintenance' || 
-                             location.pathname === '/admin/manage-staff' || 
-                             location.pathname === '/admin/staff-schedules' || 
-                             location.pathname === '/admin/on-duty-staff' || 
-                             location.pathname === '/admin/tickets-tasks' || 
-                             location.pathname === '/admin/archive';
+  const isOnMaintenancePage = location.pathname === '/admin/maintenance' ||
+                             location.pathname === '/admin/manage-staff' ||
+                             location.pathname === '/admin/staff-schedules' ||
+                             location.pathname === '/admin/on-duty-staff' ||
+                             location.pathname === '/admin/tickets-tasks' ||
+                             location.pathname === '/admin/archive' ||
+                             location.pathname === '/admin/staff-login' ||
+                             location.pathname === '/admin/staff-task';
 
   // Check if we're on dashboard page (this should close all dropdowns)
   const isOnDashboardPage = location.pathname === '/admin/dashboard';

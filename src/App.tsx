@@ -350,12 +350,11 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Public Staff Routes - No Authentication Required */}
                 <Route
                   path="/staff-task"
                   element={<StaffTaskPage />}
                 />
-
-                {/* Staff Login Route - Public Access */}
                 <Route
                   path="/staff-login"
                   element={<StaffLoginPage />}

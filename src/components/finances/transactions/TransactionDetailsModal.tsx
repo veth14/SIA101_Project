@@ -42,15 +42,15 @@ const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = ({ trans
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <path d="M9 2h6l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" />
                   <path d="M9 11h6M9 15h4" stroke="rgba(255,255,255,0.9)" strokeWidth="1" fill="none" />
                 </svg>
               </div>
               <div className="flex flex-col">
-                <h2 className="text-lg font-semibold text-emerald-700 md:text-2xl">Complete Transaction Details</h2>
-                <p className="mt-1 text-sm text-gray-500">{transaction.reference}</p>
+                <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">Complete Transaction Details</h2>
+                <p className="mt-1 text-sm text-gray-500">View comprehensive transaction information and perform actions.</p>
               </div>
             </div>
             <div aria-hidden />
@@ -59,7 +59,7 @@ const TransactionDetailsModal: React.FC<TransactionDetailsModalProps> = ({ trans
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+            className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -1,5 +1,5 @@
 // CreateScheduleModal.tsx - UPDATED WITH ELEGANT DESIGN
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Staff, LeaveRequest } from './types';
 import { SHIFTS } from './constants';
 import { formatDateForDisplay } from './utils';
@@ -36,21 +36,21 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
   // Check which staff members are on approved leave for the selected date
   const staffOnLeaveMap = useMemo(() => {
     if (!selectedDate) return new Map<string, LeaveRequest>();
-    
+
     const scheduleDate = new Date(selectedDate);
     const onLeaveMap = new Map<string, LeaveRequest>();
-    
+
     leaveRequests.forEach(request => {
       if (request.status !== 'approved') return;
-      
+
       const leaveStart = new Date(request.startDate);
       const leaveEnd = new Date(request.endDate);
-      
+
       if (scheduleDate >= leaveStart && scheduleDate <= leaveEnd) {
         onLeaveMap.set(request.staffId, request);
       }
     });
-    
+
     return onLeaveMap;
   }, [selectedDate, leaveRequests]);
 
@@ -81,49 +81,52 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
             transform: translateY(0) scale(1);
           }
         }
-        
+
         .animate-slide-in-up {
           animation: slide-in-up 0.4s ease-out;
         }
       `}</style>
-      
+
       <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4 bg-black/40">
         <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-slide-in-up">
-          
-          {/* Header - matching TransactionDetails style */}
-          <div className="p-8 border-b border-gray-200 bg-gradient-to-r from-gray-50 via-white to-gray-50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
-                  <svg className="w-6 h-6 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+
+          <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-black text-gray-900">Create New Schedule</h3>
-                  <p className="mt-1 text-sm text-gray-600 flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-1 bg-[#82A33D]/10 text-[#82A33D] rounded-lg text-xs font-semibold">
-                      Staff Assignment
-                    </span>
-                    <span className="text-gray-400">•</span>
-                    <span>Assign staff to shifts</span>
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-semibold text-[#82A33D] md:text-2xl">
+                    Create New Schedule
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Assign staff members to shifts and manage scheduling. This is a
+                    draft-only form for now.
                   </p>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 transition-colors rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+
+              <div aria-hidden />
+
             </div>
+
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
           {/* Main Content - card-based layout */}
           <div className="p-8 overflow-y-auto max-h-[calc(90vh-240px)] space-y-6 bg-gray-50">
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#82A33D]"></div>
@@ -273,13 +276,13 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
                       staffList.map(staff => {
                         const onLeave = isStaffOnLeave(staff.id);
                         const leaveDetails = getLeaveDetails(staff.id);
-                        
+
                         return (
                           <label
                             key={staff.id}
                             className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                              onLeave 
-                                ? 'bg-red-50 border-red-200 opacity-60 cursor-not-allowed' 
+                              onLeave
+                                ? 'bg-red-50 border-red-200 opacity-60 cursor-not-allowed'
                                 : selectedStaff.includes(staff.id)
                                 ? 'bg-[#82A33D]/10 border-[#82A33D]'
                                 : 'bg-white border-gray-200 hover:border-[#82A33D]/50 hover:bg-gray-50'
@@ -306,7 +309,7 @@ const CreateScheduleModal: React.FC<CreateScheduleModalProps> = ({
                               <p className="text-xs text-gray-500 mt-0.5">
                                 {staff.classification || 'No classification'}
                               </p>
-                              
+
                               {/* Leave details */}
                               {onLeave && leaveDetails && (
                                 <div className="mt-2 p-2 bg-red-100 rounded-lg">

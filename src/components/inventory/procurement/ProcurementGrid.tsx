@@ -575,7 +575,7 @@ export const ProcurementGrid: React.FC<ProcurementGridProps> = ({
               <div className="relative px-6 py-4 bg-white border-b border-gray-100 rounded-t-3xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-[#82A33D]">
+                    <div className="flex items-center justify-center w-12 h-12 text-white rounded-2xl shadow-sm bg-[#82A33D]">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                         <path d="M9 2h6l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" />
                         <path
