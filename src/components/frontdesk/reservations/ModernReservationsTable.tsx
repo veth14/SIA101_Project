@@ -130,6 +130,33 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
       return 2;
     };
 
+    const getCreatedAtMs = (value: unknown): number => {
+      if (!value) return 0;
+
+      // Firestore Timestamp (has toMillis)
+      if (typeof value === 'object' && value !== null && 'toMillis' in value && typeof (value as any).toMillis === 'function') {
+        return (value as any).toMillis();
+      }
+
+      // JS Date instance
+      if (value instanceof Date) {
+        return value.getTime();
+      }
+
+      // Plain number (assume ms since epoch)
+      if (typeof value === 'number') {
+        return value;
+      }
+
+      // ISO/string date
+      if (typeof value === 'string') {
+        const ms = new Date(value).getTime();
+        return Number.isNaN(ms) ? 0 : ms;
+      }
+
+      return 0;
+    };
+
     return reservations
       .filter(reservation => {
         const searchLower = (searchTerm || '').toLowerCase().trim();
@@ -153,8 +180,8 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
         const priorityA = getStatusPriority(a.status);
         const priorityB = getStatusPriority(b.status);
         if (priorityA !== priorityB) return priorityA - priorityB; 
-        const timeA = a.createdAt?.toMillis() || 0;
-        const timeB = b.createdAt?.toMillis() || 0;
+        const timeA = getCreatedAtMs(a.createdAt as unknown);
+        const timeB = getCreatedAtMs(b.createdAt as unknown);
         return timeB - timeA; 
       });
   }, [reservations, searchTerm, selectedStatus]);
