@@ -71,6 +71,51 @@ export const subscribeToNotifications = (
   return unsubscribe;
 };
 
+export const subscribeToReadNotifications = (
+  onData: (notifications: NotificationRecord[]) => void,
+  onError?: (error: unknown) => void,
+) => {
+  const q = query(
+    collection(db, 'notifications'),
+    where('status', '==', 'read'),
+    orderBy('createdAt', 'desc'),
+    limit(50),
+  );
+
+  const unsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
+      const loaded: NotificationRecord[] = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data() as any;
+
+        let createdAt: Date | undefined;
+        if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+          const d = data.createdAt.toDate();
+          createdAt = Number.isNaN(d.getTime()) ? undefined : d;
+        }
+
+        return {
+          id: docSnap.id,
+          type: data.type || 'general',
+          title: data.title || 'Notification',
+          message: data.message || '',
+          status: data.status || 'read',
+          createdAt,
+          sourceId: data.sourceId,
+        };
+      });
+
+      onData(loaded);
+    },
+    (error) => {
+      console.error('Error listening to read notifications:', error);
+      if (onError) onError(error);
+    },
+  );
+
+  return unsubscribe;
+};
+
 export const markNotificationRead = async (id: string) => {
   const ref = doc(db, 'notifications', id);
   await updateDoc(ref, { status: 'read' });

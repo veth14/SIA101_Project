@@ -115,28 +115,29 @@ export const NewProfilePage: React.FC = () => {
         const guestProfileRef = doc(db, 'guestprofiles', userData.uid);
         const guestProfileSnap = await getDoc(guestProfileRef);
         
-          let guestTotalBookings: number | undefined = undefined;
-          if (guestProfileSnap.exists()) {
-            const guestData = guestProfileSnap.data();
-            guestTotalBookings = guestData.totalBookings != null ? Number(guestData.totalBookings) : undefined;
-            setUserStats(prev => ({
-              ...prev,
-              loyaltyPoints: guestData.loyaltyPoints || 0,
-              membershipTier: guestData.membershipTier || 'Bronze'
-            }));
-          }
+        let guestTotalBookings: number | undefined = undefined;
+        if (guestProfileSnap.exists()) {
+          const guestData = guestProfileSnap.data();
+          guestTotalBookings = guestData.totalBookings != null ? Number(guestData.totalBookings) : undefined;
+          setUserStats(prev => ({
+            ...prev,
+            loyaltyPoints: guestData.loyaltyPoints || 0,
+            membershipTier: guestData.membershipTier || 'Bronze'
+          }));
+        }
 
-          // Also count actual bookings from bookings collection (used as a fallback)
+        // Prefer the authoritative `guestprofiles.totalBookings` when it's set,
+        // otherwise fall back to counting documents in the `bookings` collection.
+        let finalTotalBookings = guestTotalBookings;
+
+        if (finalTotalBookings == null) {
           const bookingsQuery = query(
             collection(db, 'bookings'),
             where('guestId', '==', userData.uid)
           );
           const bookingsSnapshot = await getDocs(bookingsQuery);
-          const bookingCount = bookingsSnapshot.size;
-
-          // Prefer the authoritative `guestprofiles.totalBookings` when it's set,
-          // otherwise fall back to counting documents in the `bookings` collection.
-          const finalTotalBookings = guestTotalBookings != null ? guestTotalBookings : bookingCount;
+          finalTotalBookings = bookingsSnapshot.size;
+        }
 
           setUserStats(prev => ({
             ...prev,
