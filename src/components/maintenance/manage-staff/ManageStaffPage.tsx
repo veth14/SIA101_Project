@@ -72,15 +72,7 @@ const ManageStaffPage: React.FC = () => {
       <div className="relative z-10 px-2 sm:px-4 lg:px-6 py-4 space-y-6 w-full">
      
         <StaffStats staff={staff} />
-        <StaffFilters
-          onAddStaff={handleAddStaff}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          filterClassification={filterClassification}
-          onFilterChange={setFilterClassification}
-          filterGender={filterGender}
-          onGenderChange={setFilterGender}
-        />
+       
         <StaffGrid
           staff={filteredStaff}
           onEditStaff={handleEditStaff}
