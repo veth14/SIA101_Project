@@ -25,12 +25,16 @@ interface ProcurementCardProps {
   order: PurchaseOrder;
   formatCurrency: (amount: number) => string;
   getStatusBadge: (status: string) => React.ReactNode;
+  onViewDetails?: (order: PurchaseOrder) => void;
+  onMarkReceived?: (order: PurchaseOrder) => void;
 }
 
 export const ProcurementCard: React.FC<ProcurementCardProps> = ({
   order,
   formatCurrency,
   getStatusBadge,
+  onViewDetails,
+  onMarkReceived,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow h-full flex flex-col">
@@ -109,16 +113,17 @@ export const ProcurementCard: React.FC<ProcurementCardProps> = ({
       </div>
       
       <div className="mt-auto pt-4 flex gap-2">
-        <button className="flex-1 px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors text-sm font-medium">
+        <button
+          className="flex-1 px-4 py-2 bg-heritage-green text-white rounded-lg hover:bg-heritage-green/90 transition-colors text-sm font-medium"
+          onClick={() => onViewDetails?.(order)}
+        >
           View Details
         </button>
-        {order.status === 'pending' && (
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-            Approve
-          </button>
-        )}
         {order.status === 'approved' && (
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+          <button
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            onClick={() => onMarkReceived?.(order)}
+          >
             Mark Received
           </button>
         )}

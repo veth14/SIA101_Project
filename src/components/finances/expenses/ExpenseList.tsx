@@ -58,9 +58,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
 
   const filteredExpenses = useMemo(() => {
     return combinedExpenses.filter((e) => {
-  // Show approved, rejected and pending in this view (pending is important)
-  // If user selects a status filter, honor it; otherwise default to showing approved/rejected/pending
-  const allowedStatuses = ['approved', 'rejected', 'pending'];
+  // Show approved, rejected, pending, and paid in this view
+  // If user selects a status filter, honor it; otherwise default to showing these four statuses
+  const allowedStatuses = ['approved', 'rejected', 'pending', 'paid'];
   const statusOk = (filters.status === 'all' && allowedStatuses.includes(e.status)) || e.status === filters.status;
   // Date range filtering
   const now = new Date();
@@ -89,10 +89,11 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   const sortedExpenses = useMemo(() => {
     const copy = [...filteredExpenses];
     
-    // Priority sorting: Pending first, then Approved, then Rejected
+    // Priority sorting: Pending, Approved, Paid, Rejected
     const getStatusPriority = (status: string) => {
-      if (status === 'pending') return 1;
-      if (status === 'approved') return 2;
+      if (status === 'pending') return 0;
+      if (status === 'approved') return 1;
+      if (status === 'paid') return 2;
       if (status === 'rejected') return 3;
       return 4;
     };
@@ -166,6 +167,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
           icon: '⏱',
           label: 'Pending',
           glow: 'shadow-amber-100'
+        };
+      case 'paid':
+        return {
+          badge: 'bg-blue-50 text-blue-700 border-blue-200',
+          icon: '₱',
+          label: 'Paid',
+          glow: 'shadow-blue-100'
         };
       case 'rejected':
         return {
@@ -339,6 +347,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                     <option value="all">All Status</option>
                     <option value="pending">⏱ Pending</option>
                     <option value="approved">✓ Approved</option>
+                    <option value="paid">₱ Paid</option>
                     <option value="rejected">✗ Rejected</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">

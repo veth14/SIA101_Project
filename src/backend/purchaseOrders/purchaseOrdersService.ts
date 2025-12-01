@@ -1,5 +1,5 @@
 import { db } from '../../config/firebase';
-import { collection, onSnapshot, orderBy, query, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, addDoc } from 'firebase/firestore';
 
 export interface PurchaseOrderItemRecord {
   name: string;
@@ -90,10 +90,37 @@ export const subscribeToPurchaseOrders = (
   return unsubscribe;
 };
 
+export const createPurchaseOrder = async (data: {
+  orderNumber: string;
+  supplier: string;
+  items: PurchaseOrderItemRecord[];
+  totalAmount: number;
+  orderDate: string;
+  expectedDelivery?: string;
+  notes?: string;
+}) => {
+  const now = new Date();
+  await addDoc(collection(db, 'purchaseOrders'), {
+    orderNumber: data.orderNumber,
+    supplier: data.supplier,
+    items: data.items,
+    totalAmount: data.totalAmount,
+    status: 'pending',
+    orderDate: data.orderDate,
+    expectedDelivery: data.expectedDelivery || '',
+    approvedBy: null,
+    approvedDate: null,
+    notes: data.notes || '',
+    createdAt: now,
+    updatedAt: now,
+    hasInvoice: false,
+  });
+};
+
 export const updatePurchaseOrderStatus = async (
   id: string,
   status: 'pending' | 'approved' | 'sent' | 'received' | 'cancelled' | string,
-  options?: { approvedBy?: string }
+  options?: { approvedBy?: string; hasInvoice?: boolean }
 ) => {
   const ref = doc(db, 'purchaseOrders', id);
   const payload: any = {
@@ -106,6 +133,10 @@ export const updatePurchaseOrderStatus = async (
       payload.approvedBy = options.approvedBy;
     }
     payload.approvedDate = new Date().toISOString();
+  }
+
+  if (typeof options?.hasInvoice === 'boolean') {
+    payload.hasInvoice = options.hasInvoice;
   }
 
   await updateDoc(ref, payload);
