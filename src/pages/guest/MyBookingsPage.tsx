@@ -744,7 +744,7 @@ export const MyBookingsPage: React.FC = () => {
               {(selectedBooking.status === 'Checkout' || ((selectedBooking.status === 'completed' || selectedBooking.status === 'confirmed' || selectedBooking.status === 'Confirmed') && new Date(selectedBooking.checkOut) < new Date())) && (
                 <button
                   onClick={() => {
-                    navigate(`/submit-review/${selectedBooking.bookingId}` as string, { state: { booking: selectedBooking } });
+                    navigate(`/submit-review/${selectedBooking.bookingId}`, { state: { booking: selectedBooking } });
                     setSelectedBooking(null);
                   }}
                   className="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-heritage-green bg-white border-2 border-heritage-green rounded-xl hover:bg-heritage-green hover:text-white transition-all"
