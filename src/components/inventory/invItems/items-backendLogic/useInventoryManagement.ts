@@ -7,7 +7,8 @@ import {
   updateItemStock,
   addInventoryItem,
   updateInventoryItem,
-  deleteInventoryItem
+  deleteInventoryItem,
+  subscribeToInventoryItems
 } from './inventoryService';
 import type { 
   InventoryItem, 
@@ -60,7 +61,8 @@ export const useInventoryManagement = (): UseInventoryManagementReturn => {
   const filterOptions = getInventoryFilterOptions(items);
 
   /**
-   * Fetch inventory items from Firebase
+   * Fetch inventory items from Firebase (one-off, uses cache).
+   * Kept for explicit refresh usage.
    */
   const loadItems = useCallback(async () => {
     try {
@@ -151,10 +153,27 @@ export const useInventoryManagement = (): UseInventoryManagementReturn => {
     }
   }, []);
 
-  // Load items on mount
+  // Subscribe to real-time updates on mount
   useEffect(() => {
-    loadItems();
-  }, [loadItems]);
+    setLoading(true);
+
+    const unsubscribe = subscribeToInventoryItems(
+      (inventoryData) => {
+        setItems(inventoryData);
+        setLoading(false);
+        setError(null);
+      },
+      (err) => {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to subscribe to inventory updates';
+        setError(errorMessage);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return {
     // Data
