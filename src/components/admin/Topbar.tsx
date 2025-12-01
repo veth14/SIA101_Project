@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { navigation } from './Sidebar';
-import { subscribeToNotifications, markNotificationRead, clearAllNotifications, getRecentReadNotifications, type NotificationRecord } from '../../backend/notifications/notificationsService';
+import { subscribeToNotifications, subscribeToReadNotifications, markNotificationRead, clearAllNotifications, type NotificationRecord } from '../../backend/notifications/notificationsService';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
@@ -18,6 +19,7 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   const [notifications, setNotifications] = useState<NotificationRecord[]>([]);
   const [readNotifications, setReadNotifications] = useState<NotificationRecord[]>([]);
   const [showRead, setShowRead] = useState(false);
+  const readUnsubscribeRef = useRef<(() => void) | null>(null);
 
   // Get page title from path
   const getPageTitle = () => {
@@ -175,6 +177,13 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    if (readUnsubscribeRef.current) {
+      readUnsubscribeRef.current();
+      readUnsubscribeRef.current = null;
+    }
+  }, [showRead]);
+
   const unreadCount = notifications.filter((n) => n.status !== 'read').length;
   const visibleNotifications = showRead ? readNotifications : notifications;
 
@@ -234,17 +243,15 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
                     <h3 className="text-lg font-bold text-heritage-green">Notifications</h3>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={async () => {
-                          if (!showRead) {
-                            try {
-                              const items = await getRecentReadNotifications();
+                        onClick={() => {
+                          if (!showRead && !readUnsubscribeRef.current) {
+                            readUnsubscribeRef.current = subscribeToReadNotifications((items) => {
                               setReadNotifications(items);
-                            } catch (error) {
-                              console.error('Failed to load read notifications:', error);
-                            }
+                            });
                           }
                           setShowRead((prev) => !prev);
                         }}
+
                         className="px-2.5 py-1 text-xs font-semibold rounded-full border border-heritage-light/60 text-heritage-neutral hover:text-heritage-green hover:border-heritage-green/60 hover:bg-heritage-light/40"
                       >
                         {showRead ? 'Show unread' : 'Show read'}
