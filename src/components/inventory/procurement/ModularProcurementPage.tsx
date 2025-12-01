@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ProcurementBackground } from './ProcurementBackground';
 import { ProcurementStats } from './ProcurementStats';
 import { ProcurementGrid } from './ProcurementGrid';
+import PurchaseOrderDetailsModal from './PurchaseOrderDetailsModal';
+import { subscribeToPurchaseOrders, type PurchaseOrderRecord, updatePurchaseOrderStatus } from '../../../backend/purchaseOrders/purchaseOrdersService';
 
 interface PurchaseOrderItem {
   name: string;
@@ -22,115 +24,84 @@ interface PurchaseOrder {
   approvedBy?: string;
   approvedDate?: string;
   notes?: string;
+  hasInvoice?: boolean;
 }
 
 const ModularProcurementPage: React.FC = () => {
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Sample purchase orders data
-  const purchaseOrders: PurchaseOrder[] = [
-    {
-      id: 'PO001',
-      orderNumber: 'PO-2024-001',
-      supplier: 'Hotel Linens Co.',
-      items: [
-        { name: 'Bath Towels', quantity: 50, unitPrice: 450, total: 22500 },
-        { name: 'Bed Sheets', quantity: 30, unitPrice: 800, total: 24000 }
-      ],
-      totalAmount: 46500,
-      status: 'approved',
-      orderDate: '2024-09-15',
-      expectedDelivery: '2024-09-25',
-      approvedBy: 'Manager',
-      approvedDate: '2024-09-16',
-      notes: 'Priority order for peak season'
-    },
-    {
-      id: 'PO002',
-      orderNumber: 'PO-2024-002',
-      supplier: 'Premium Coffee Co.',
-      items: [
-        { name: 'Coffee Beans', quantity: 20, unitPrice: 1200, total: 24000 },
-        { name: 'Tea Bags', quantity: 100, unitPrice: 80, total: 8000 }
-      ],
-      totalAmount: 32000,
-      status: 'pending',
-      orderDate: '2024-09-20',
-      expectedDelivery: '2024-09-30'
-    },
-    {
-      id: 'PO003',
-      orderNumber: 'PO-2024-003',
-      supplier: 'Cleaning Supplies Inc.',
-      items: [
-        { name: 'Disinfectant', quantity: 15, unitPrice: 350, total: 5250 },
-        { name: 'Floor Cleaner', quantity: 25, unitPrice: 280, total: 7000 }
-      ],
-      totalAmount: 12250,
-      status: 'received',
-      orderDate: '2024-09-10',
-      expectedDelivery: '2024-09-18',
-      approvedBy: 'Supervisor',
-      approvedDate: '2024-09-11'
-    },
-    {
-      id: 'PO004',
-      orderNumber: 'PO-2024-004',
-      supplier: 'Kitchen Equipment Ltd.',
-      items: [
-        { name: 'Chef Knives', quantity: 5, unitPrice: 2500, total: 12500 },
-        { name: 'Cutting Boards', quantity: 10, unitPrice: 800, total: 8000 }
-      ],
-      totalAmount: 20500,
-      status: 'approved',
-      orderDate: '2024-09-22',
-      expectedDelivery: '2024-10-05',
-      approvedBy: 'Head Chef',
-      approvedDate: '2024-09-23'
-    },
-    {
-      id: 'PO005',
-      orderNumber: 'PO-2024-005',
-      supplier: 'Office Supplies Pro',
-      items: [
-        { name: 'Printer Paper', quantity: 50, unitPrice: 120, total: 6000 },
-        { name: 'Ink Cartridges', quantity: 8, unitPrice: 450, total: 3600 }
-      ],
-      totalAmount: 9600,
-      status: 'pending',
-      orderDate: '2024-09-25',
-      expectedDelivery: '2024-10-02'
-    },
-    {
-      id: 'PO006',
-      orderNumber: 'PO-2024-006',
-      supplier: 'Maintenance Tools Inc.',
-      items: [
-        { name: 'Screwdriver Set', quantity: 3, unitPrice: 1500, total: 4500 },
-        { name: 'Hammer', quantity: 2, unitPrice: 800, total: 1600 }
-      ],
-      totalAmount: 6100,
-      status: 'approved',
-      orderDate: '2024-09-28',
-      expectedDelivery: '2024-10-08',
-      approvedBy: 'Maintenance Manager',
-      approvedDate: '2024-09-29',
-      notes: 'Urgent repair tools needed'
-    },
-    {
-      id: 'PO007',
-      orderNumber: 'PO-2024-007',
-      supplier: 'Guest Amenities Co.',
-      items: [
-        { name: 'Shampoo Bottles', quantity: 100, unitPrice: 45, total: 4500 },
-        { name: 'Soap Bars', quantity: 150, unitPrice: 25, total: 3750 }
-      ],
-      totalAmount: 8250,
-      status: 'pending',
-      orderDate: '2024-09-29',
-      expectedDelivery: '2024-10-10'
+  const mapRecordToPurchaseOrder = (record: PurchaseOrderRecord): PurchaseOrder => {
+    const rawStatus = (record.status || '').toString().toLowerCase();
+    let status: PurchaseOrder['status'];
+    switch (rawStatus) {
+      case 'approved':
+        status = 'approved';
+        break;
+      case 'received':
+        status = 'received';
+        break;
+      case 'cancelled':
+        status = 'cancelled';
+        break;
+      case 'pending':
+      default:
+        status = 'pending';
     }
-  ];
 
+    const orderDate = record.orderDate 
+      || (record.createdAt ? record.createdAt.toISOString().split('T')[0] : '');
+
+    return {
+      id: record.id,
+      orderNumber: record.orderNumber,
+      supplier: record.supplier,
+      items: record.items?.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.total,
+      })) ?? [],
+      totalAmount: record.totalAmount,
+      status,
+      orderDate,
+      expectedDelivery: record.expectedDelivery || '',
+      approvedBy: record.approvedBy,
+      approvedDate: record.approvedDate,
+      notes: record.notes,
+      hasInvoice: record.hasInvoice,
+    };
+  };
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPurchaseOrders(
+      (records) => {
+        const mapped = records.map(mapRecordToPurchaseOrder);
+        setPurchaseOrders(mapped);
+      },
+      (error) => {
+        console.error('Error subscribing to purchase orders:', error);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const handleViewDetails = (order: PurchaseOrder) => {
+    setSelectedOrder(order);
+    setIsDetailsOpen(true);
+  };
+
+  const handleMarkReceived = async (order: PurchaseOrder) => {
+    try {
+      await updatePurchaseOrderStatus(order.id, 'received', { approvedBy: order.approvedBy || 'System' });
+    } catch (error) {
+      console.error('Failed to mark purchase order as received:', error);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -181,8 +152,16 @@ const ModularProcurementPage: React.FC = () => {
           orders={purchaseOrders}
           formatCurrency={formatCurrency}
           getStatusBadge={getStatusBadge}
+          onViewDetails={handleViewDetails}
+          onMarkReceived={handleMarkReceived}
         />
       </div>
+
+      <PurchaseOrderDetailsModal
+        order={selectedOrder}
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+      />
     </div>
   );
 };

@@ -136,7 +136,13 @@ export const ExpensesPage: React.FC = () => {
           backendStatus = 'pending';
           title = 'Purchase order updated';
         }
-        void updatePurchaseOrderStatus(sourceId, backendStatus);
+
+        const poOptions: { approvedBy?: string; hasInvoice?: boolean } = {};
+        if (status === 'paid') {
+          poOptions.hasInvoice = true;
+        }
+
+        void updatePurchaseOrderStatus(sourceId, backendStatus, poOptions);
         void updateInvoicesStatusByReference(invoiceRef, status);
 
         void createNotification({
@@ -148,11 +154,13 @@ export const ExpensesPage: React.FC = () => {
       }
     });
 
-    // Only mutate base/manual expenses; requisitions and purchase orders are
-    // driven by Firestore subscriptions.
+    // Optimistically update all local expense sources so UI reflects instantly.
+    // Firestore subscriptions will eventually confirm the change.
     setBaseExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
+    setRequisitionExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
+    setPurchaseOrderExpenses(prev => prev.map(e => (ids.includes(e.id) ? { ...e, status } : e)));
 
-    // Update selectedExpense if it is a base expense whose status changed
+    // Update selectedExpense if it is one of the affected rows
     setSelectedExpense(prev => (prev && ids.includes(prev.id) ? { ...prev, status } : prev));
     addToast(`${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Marked as Paid'} ${ids.length} item${ids.length > 1 ? 's' : ''}`);
     // Clear selection after action
@@ -232,13 +240,6 @@ export const ExpensesPage: React.FC = () => {
     else if (rawStatus === 'received') status = 'paid';
     else if (rawStatus === 'cancelled') status = 'rejected';
     else status = 'pending';
-
-    // If there is a pending invoice for this PO, show it as pending in Expense Records
-    const poRefA = po.orderNumber?.toString();
-    const poRefB = po.id?.toString();
-    if ((poRefA && pendingInvoiceRefs.has(poRefA)) || (poRefB && pendingInvoiceRefs.has(poRefB))) {
-      status = 'pending';
-    }
 
     const dateSource = po.approvedDate || po.expectedDelivery || po.orderDate;
     let date = '';
