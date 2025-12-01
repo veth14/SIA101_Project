@@ -182,19 +182,19 @@ export const ReservationDetailsModal = ({
         {/* Header */}
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-[#82A33D]">
                 <IconInfo />
               </div>
               <div className="flex flex-col">
-                <h2 className="text-lg font-semibold md:text-2xl text-emerald-700">{reservation.userName}</h2>
+                <h2 className="text-lg font-semibold md:text-2xl text-[#82A33D]">{reservation.userName}</h2>
                 <p className="mt-1 text-sm text-gray-500">Reservation Details</p>
               </div>
             </div>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -230,7 +230,7 @@ export const ReservationDetailsModal = ({
                 <p className="text-sm text-gray-500">{formatDate(reservation.checkIn, { weekday: 'short' })}</p>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold text-emerald-600">{reservation.nights} night{reservation.nights > 1 ? 's' : ''}</span>
+                <span className="text-sm font-bold text-[#82A33D]">{reservation.nights} night{reservation.nights > 1 ? 's' : ''}</span>
                 <svg className="w-12 h-4 text-gray-300" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 10 H100" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
                   <path d="M90 5 L100 10 L90 15" stroke="currentColor" strokeWidth="2" fill="none" />
@@ -312,7 +312,7 @@ export const ReservationDetailsModal = ({
               {onEdit && ['confirmed', 'checked-in'].includes(reservation.status) && (
                 <button
                   onClick={handleEditClick}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#82A33D] bg-[#82A33D]/10 border border-[#82A33D]/20 rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L13.196 7.232z" /></svg>
                   Edit Booking
@@ -323,7 +323,7 @@ export const ReservationDetailsModal = ({
               {reservation.status === 'confirmed' && onCheckIn && (
                 <button
                   onClick={handleCheckInClick}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-2xl shadow-sm hover:bg-green-700 transition transform hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#82A33D] border border-transparent rounded-2xl shadow-sm hover:bg-[#6d8a33] transition transform hover:-translate-y-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
                   Check In
@@ -334,8 +334,7 @@ export const ReservationDetailsModal = ({
               {reservation.status === 'checked-in' && onCheckOut && (
                 <button
                   onClick={handleCheckOutClick}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-2xl shadow-sm hover:bg-blue-700 transition transform hover:-translate-y-0.5"
-                >
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-2xl shadow-sm hover:bg-blue-700 transition transform hover:-translate-y-0.5"                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H3m5 4v1a3 3 0 003 3h6a3 3 0 003-3V7a3 3 0 00-3-3h-6a3 3 0 00-3 3v1" /></svg>
                   Check Out
                 </button>
@@ -345,8 +344,7 @@ export const ReservationDetailsModal = ({
               {reservation.status === 'confirmed' && onCancel && (
                 <button
                   onClick={handleCancelClick}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-300 rounded-2xl shadow-sm hover:bg-red-100 transition transform hover:-translate-y-0.5"
-                >
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-300 rounded-2xl shadow-sm hover:bg-red-100 transition transform hover:-translate-y-0.5"                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   Cancel Booking
                 </button>
