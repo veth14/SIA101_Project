@@ -111,8 +111,8 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
   const getPageStyles = () => {
     const path = location.pathname;
     // defaults
-    let bgClass = 'bg-heritage-light/20 border border-heritage-light/30';
-    let iconColorClass = 'text-heritage-green';
+    let bgClass = 'bg-gradient-to-br from-heritage-green to-heritage-green/80 border border-heritage-green/30';
+    let iconColorClass = 'text-white';
     let titleClass = 'text-2xl font-bold text-heritage-green';
 
     // Finances -> green gradient, white icon
@@ -124,28 +124,41 @@ export const Topbar = ({ onSidebarToggle }: TopbarProps) => {
 
     // Inventory -> neutral darker bg, white icon
     if (path.startsWith('/admin/inventory')) {
-      bgClass = 'bg-heritage-neutral/80 border border-heritage-neutral/30';
+      bgClass = 'bg-gradient-to-br from-heritage-green to-heritage-green/80 border border-heritage-green/30';
       iconColorClass = 'text-white';
       titleClass = 'text-2xl font-bold text-heritage-green';
     }
 
-    // Front desk -> light background, green icon
-    if (path.startsWith('/admin/frontdesk') || path === '/admin/rooms' || path === '/admin/lostfound' || path.includes('/frontdesk')) {
-      bgClass = 'bg-heritage-light/30 border border-heritage-light/30';
-      iconColorClass = 'text-heritage-green';
+    // Front desk -> unified green gradient style (includes Guest Services)
+    if (
+      path.startsWith('/admin/frontdesk') ||
+      path === '/admin/rooms' ||
+      path === '/admin/lostfound' ||
+      path.includes('/frontdesk') ||
+      path === '/admin/guest-services'
+    ) {
+      bgClass = 'bg-gradient-to-br from-heritage-green to-heritage-green/80 border border-heritage-green/30';
+      iconColorClass = 'text-white';
       titleClass = 'text-2xl font-bold text-heritage-green';
     }
 
-    // Maintenance -> accent (amber) with white icon
-    if (path.startsWith('/admin/maintenance') || path.includes('/manage-staff') || path.includes('/tickets-tasks')) {
-      bgClass = 'bg-amber-500 border border-amber-400';
+    // Maintenance -> unified green gradient style (includes On-Duty Staff, Staff Schedules & Archive)
+    if (
+      path.startsWith('/admin/maintenance') ||
+      path.includes('/manage-staff') ||
+      path.includes('/tickets-tasks') ||
+      path.includes('/staff-schedules') ||
+      path.includes('/on-duty-staff') ||
+      path.includes('/archive')
+    ) {
+      bgClass = 'bg-gradient-to-br from-heritage-green to-heritage-green/80 border border-heritage-green/30';
       iconColorClass = 'text-white';
       titleClass = 'text-2xl font-bold text-heritage-green';
     }
 
     // Analytics / Profit Analysis -> indigo accent
     if (path.includes('/profit-analysis') || path.includes('/analytics')) {
-      bgClass = 'bg-indigo-600 border border-indigo-500';
+      bgClass = 'bg-gradient-to-br from-heritage-green to-heritage-green/80 border border-heritage-green/30';
       iconColorClass = 'text-white';
       titleClass = 'text-2xl font-bold text-heritage-green';
     }

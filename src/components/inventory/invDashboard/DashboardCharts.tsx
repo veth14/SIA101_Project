@@ -1,38 +1,13 @@
 import React from 'react';
-import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-
-const chartData = [
-  { month: "January", consumption: 2000 },
-  { month: "February", consumption: 1800 },
-  { month: "March", consumption: 2200 },
-  { month: "April", consumption: 2400 },
-  { month: "May", consumption: 2600 },
-  { month: "June", consumption: 2800 }
-];
-
-const chartConfig = {
-  consumption: {
-    label: "Consumption",
-    color: "#82A33D",
-  },
-} satisfies ChartConfig;
-
+import AnalyticsChart from "../invAnalytics/AnalyticsChartWorking";
 
 const departmentData = [
   { department: 'Housekeeping', usage: 300 },
@@ -45,119 +20,44 @@ const departmentData = [
 export const DashboardCharts: React.FC = () => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
-      {/* Inventory Consumption Trends - Shadcn Card */}
-      <Card className="relative bg-white/90 backdrop-blur-xl shadow-2xl border-white/30 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700 group overflow-hidden">
-        {/* Enhanced Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-heritage-green/8 via-emerald-50/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
+      {/* Inventory Analytics - live chart using AnalyticsChart design */}
+      <AnalyticsChart />
+
+      {/* Department Usage Analysis */}
+      <Card className="relative overflow-hidden shadow-2xl bg-white/95 backdrop-blur-2xl rounded-3xl border-white/60 animate-fade-in group">
+        {/* Background Elements */}
+        <div className="absolute inset-0 transition-opacity duration-700 bg-gradient-to-br from-heritage-green/8 via-heritage-light/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100"></div>
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-heritage-green/15 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-emerald-100/20 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 animate-pulse delay-1000"></div>
         
-        <CardHeader className="relative pb-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-heritage-green to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <div>
-              <CardTitle className="text-lg font-bold text-heritage-green drop-shadow-sm">Inventory Consumption Trends</CardTitle>
-              <CardDescription className="text-xs text-gray-600 font-medium">January - June 2024</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="relative pt-0">
-          <div className="h-48 sm:h-56">
-            <ChartContainer config={chartConfig}>
-              {React.createElement(LineChart as any, {
-                data: chartData,
-                margin: {
-                  left: 8,
-                  right: 8,
-                  top: 8,
-                  bottom: 8,
-                },
-              }, [
-              React.createElement(CartesianGrid as any, { key: "grid", vertical: false }),
-              React.createElement(XAxis as any, {
-                key: "xaxis",
-                dataKey: "month",
-                tickLine: false,
-                axisLine: false,
-                tickMargin: 8,
-                tick: { fontSize: 11, fill: '#6b7280' },
-                tickFormatter: (value: string) => value.slice(0, 3)
-              }),
-              React.createElement("YAxis" as any, {
-                key: "yaxis",
-                tickLine: false,
-                axisLine: false,
-                tick: { fontSize: 10, fill: '#6b7280' },
-                tickFormatter: (value: number) => `${(value / 1000).toFixed(1)}k`
-              }),
-              React.createElement(ChartTooltip as any, {
-                key: "tooltip",
-                cursor: false,
-                content: React.createElement(ChartTooltipContent as any, { hideLabel: true })
-              }),
-              React.createElement(Line as any, {
-                key: "line",
-                dataKey: "consumption",
-                type: "natural",
-                stroke: "var(--color-consumption)",
-                strokeWidth: 2,
-                dot: {
-                  fill: "var(--color-consumption)",
-                },
-                activeDot: {
-                  r: 6,
-                }
-              })
-            ])}
-            </ChartContainer>
-          </div>
-          {/* Chart Legend */}
-          <div className="flex items-center justify-center mt-2 pb-2">
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <div className="w-3 h-0.5 bg-[#82A33D] rounded"></div>
-              <span>Monthly Consumption (Units)</span>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="relative flex-col items-start gap-1 text-sm pt-2">
-          <div className="flex gap-2 leading-none font-medium text-heritage-green text-xs">
-            Trending up by 40% this period <TrendingUp className="h-3 w-3" />
-          </div>
-          <div className="text-xs text-gray-500 leading-none">
-            Peak consumption: 2.8k units in June • Average: 2.3k units/month
-          </div>
-        </CardFooter>
-      </Card>
-
-      {/* Department Usage Analysis */}
-      <Card className="relative bg-white/90 backdrop-blur-xl shadow-2xl border-white/30 hover:shadow-3xl hover:-translate-y-2 transition-all duration-700 group overflow-hidden">
-        {/* Enhanced Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/8 via-blue-50/30 to-heritage-green/5 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-700"></div>
-        <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-100/15 to-transparent rounded-full -translate-y-1/2 -translate-x-1/2 animate-pulse delay-500"></div>
-        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-heritage-green/10 to-transparent rounded-full translate-y-1/2 translate-x-1/2 animate-pulse delay-1500"></div>
-        
-        <CardHeader className="relative pb-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <div>
-              <CardTitle className="text-lg font-bold text-heritage-green drop-shadow-sm">Department Usage Analysis</CardTitle>
-              <CardDescription className="text-xs text-gray-600 font-medium">Inventory consumption by department</CardDescription>
+        <CardHeader className="relative pb-4 border-b border-gray-200/60 bg-gradient-to-r from-white via-slate-50/80 to-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-5">
+              <div className="relative group">
+                <div className="p-2 bg-[#82A33D]/10 rounded-xl">
+                  <svg className="w-5 h-5 text-[#82A33D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm6 0v-4a2 2 0 00-2-2h-2" />
+                  </svg>
+                </div>
+                <div className="absolute transition-opacity duration-300 -inset-2 bg-gradient-to-r from-heritage-green/20 to-heritage-neutral/20 rounded-2xl blur-xl opacity-60 group-hover:opacity-100"></div>
+              </div>
+              <div>
+                <CardTitle className="text-lg font-bold text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text">
+                  Department Usage Analysis
+                </CardTitle>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs font-semibold text-gray-600">Inventory consumption by department</p>
+                  <div className="w-1 h-1 rounded-full bg-heritage-green"></div>
+                </div>
+              </div>
             </div>
           </div>
         </CardHeader>
         
-        <CardContent className="relative pt-0">
-          <div className="h-48 sm:h-56">
-            {/* Enhanced Horizontal Bar Chart */}
-            <div className="space-y-3 h-full flex flex-col justify-center">
+        <CardContent className="relative px-8 py-6 flex flex-col justify-between">
+          {/* Enhanced Horizontal Bar Chart */}
+          <div>
+            <div className="space-y-3">
               {departmentData.map((dept, index) => {
                 const maxUsage = Math.max(...departmentData.map(d => d.usage));
                 const percentage = (dept.usage / maxUsage) * 100;
@@ -188,7 +88,7 @@ export const DashboardCharts: React.FC = () => {
             </div>
           </div>
           {/* Bar Chart Legend and Insights */}
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-4 pt-3 border-t border-gray-100">
             <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-2 bg-gradient-to-r from-[#82A33D] to-[#6d8a33] rounded"></div>
