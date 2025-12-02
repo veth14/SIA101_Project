@@ -73,16 +73,7 @@ const EmployeeTimeClock = () => {
           });
         }
 
-        // Clear form data after 3 seconds
-        clearTimeoutRef.current = setTimeout(() => {
-          setFormData({
-            name: '',
-            rfid: '',
-            timeIn: '',
-            timeOut: '',
-            date: '',
-          });
-        }, 3000);
+        // Keep form data visible so the scanned employee information stays on screen
       } else {
         // Show inline error instead of alert
         
@@ -166,16 +157,20 @@ const EmployeeTimeClock = () => {
 
             {/* Right: Form */}
             <div className="w-1/2 p-12">
-              {/* Hidden RFID input */}
-              <input
-                ref={inputRef}
-                type="text"
-                value={currentInput}
-                onChange={handleRFIDChange}
-                className="opacity-0 absolute"
-                style={{ width: '200px', height: '40px', top: '0px', left: '0px' }}
-                aria-hidden="true"
-              />
+              {/* Visible RFID input so scans can be seen */}
+              <div className="mb-6">
+                <label className="block text-gray-600 text-sm mb-2 font-medium">
+                  RFID Scanner Input
+                </label>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={currentInput}
+                  onChange={handleRFIDChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md text-lg tracking-widest bg-white"
+                  placeholder="Tap RFID card here"
+                />
+              </div>
 
               {/* Error Message */}
               {error && (
