@@ -6,7 +6,7 @@
 
 ## 1. Introduction
 
-Good day everyone. Today I’ll be presenting our hotel management system built for **Balay Ginhawa**.
+Good day everyone. Today We’ll be presenting our hotel management system built for **Balay Ginhawa**.
 
 This system is designed to support **two main perspectives**:
 
