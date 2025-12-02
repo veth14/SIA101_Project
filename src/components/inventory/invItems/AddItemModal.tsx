@@ -56,7 +56,6 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onSave }) 
       unitPrice: newItem.unitPrice,
       supplier: newItem.supplier,
       lastRestocked: new Date().toISOString().split('T')[0],
-      image: undefined,
       unit: newItem.unit || 'pieces',
       location: newItem.location,
     };
