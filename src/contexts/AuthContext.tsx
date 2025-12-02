@@ -148,7 +148,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           // Auto-redirect based on user role
           if (userRole === 'admin') {
-            navigate('/admin/dashboard');
+            // Only force-redirect to admin dashboard from public entry routes,
+            // so refreshes on other admin pages stay on the same page.
+            const path = window.location.pathname;
+            const isOnPublicEntry = path === '/' || path.startsWith('/auth') || path === '/login';
+            if (isOnPublicEntry) {
+              navigate('/admin/dashboard');
+            }
           }
         } catch (error) {
           console.error('Error setting user data:', error);

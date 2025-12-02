@@ -379,19 +379,40 @@ const ModernReservationsTable: React.FC<ModernReservationsTableProps> = ({
                 >
                   {/* Guest Info */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-lg bg-[#82A33D]/10 flex items-center justify-center">
-                        <span className="text-[#82A33D] font-bold text-sm">
-                          {reservation.userName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">
-                          {reservation.userName}
+                    {(() => {
+                      // Fallbacks so the booked-by guest always shows even if some fields are missing
+                      const rawName = (reservation.userName
+                        || (reservation as any).guestName
+                        || 'Unknown Guest') as string;
+                      const rawEmail = (reservation.userEmail
+                        || (reservation as any).email
+                        || '') as string;
+
+                      const safeName = rawName.trim() || 'Unknown Guest';
+                      const initials = safeName
+                        .split(' ')
+                        .filter(Boolean)
+                        .map(part => part[0]?.toUpperCase() ?? '')
+                        .join('') || 'G';
+
+                      return (
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-lg bg-[#82A33D]/10 flex items-center justify-center">
+                            <span className="text-[#82A33D] font-bold text-sm">
+                              {initials}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-gray-900 group-hover:text-[#82A33D] transition-colors">
+                              {safeName}
+                            </div>
+                            {rawEmail && (
+                              <div className="text-xs font-medium text-gray-500">{rawEmail}</div>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-xs font-medium text-gray-500">{reservation.userEmail}</div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </td>
                   
                   {/* Room Info */}
