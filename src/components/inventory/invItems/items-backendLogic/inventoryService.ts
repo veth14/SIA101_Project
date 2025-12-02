@@ -12,7 +12,6 @@ export interface InventoryItem {
   unitPrice: number;
   supplier: string;
   lastRestocked: string;
-  image?: string;
   unit: string;
   location: string;
   createdAt?: Date;
@@ -79,7 +78,6 @@ const mapInventorySnapshot = (snapshot: any): InventoryItem[] => {
       unitPrice: data.unitPrice || 0,
       supplier: data.supplier || '',
       lastRestocked: data.lastRestocked || '',
-      image: data.image || undefined,
       unit: data.unit || 'pieces',
       location: data.location || '',
       createdAt: normalizeDate(data.createdAt),
@@ -299,13 +297,17 @@ export const updateItemStock = async (itemId: string, newStock: number): Promise
 /**
  * Add new inventory item
  */
-export const addInventoryItem = async (itemData: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+export const addInventoryItem = async (
+  itemData: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, 'inventory_items'), {
+    const payload: any = {
       ...itemData,
       createdAt: new Date(),
-      updatedAt: new Date()
-    });
+      updatedAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, 'inventory_items'), payload);
     console.log(`✅ Added new inventory item with ID: ${docRef.id}`);
     return docRef.id;
   } catch (error) {

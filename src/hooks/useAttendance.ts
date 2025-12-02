@@ -45,6 +45,7 @@ export function useAttendance() {
 
       const staffDoc = querySnapshot.docs[0];
       const staffData = staffDoc.data();
+<<<<<<< HEAD
       
       // Handle different createdAt formats (Firestore Timestamp, Date, or plain object)
       let createdAtDate = new Date();
@@ -64,6 +65,25 @@ export function useAttendance() {
         }
       }
       
+=======
+
+      // Normalize createdAt safely (can be Firestore Timestamp, Date, or string)
+      const normalizeCreatedAt = (value: any): Date => {
+        if (!value) return new Date();
+        if (typeof value === 'object' && typeof value.toDate === 'function') {
+          return value.toDate();
+        }
+        if (value instanceof Date) {
+          return value;
+        }
+        if (typeof value === 'string') {
+          const parsed = new Date(value);
+          return isNaN(parsed.getTime()) ? new Date() : parsed;
+        }
+        return new Date();
+      };
+
+>>>>>>> main
       const staff: Staff = {
         id: staffDoc.id,
         adminId: staffData.adminId || '',
@@ -74,7 +94,11 @@ export function useAttendance() {
         email: staffData.email,
         phoneNumber: staffData.phoneNumber,
         rfid: staffData.rfid || '',
+<<<<<<< HEAD
         createdAt: createdAtDate,
+=======
+        createdAt: normalizeCreatedAt(staffData.createdAt),
+>>>>>>> main
       };
 
       const now = new Date();

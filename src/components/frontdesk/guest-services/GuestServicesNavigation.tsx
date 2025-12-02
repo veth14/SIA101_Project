@@ -1,4 +1,5 @@
 import React from 'react';
+import SegmentedTabs from '../../shared/ui/SegmentedTabs';
 
 interface GuestServicesNavigationProps {
   activeTab: 'feedback' | 'loyalty' | 'assistance';
@@ -10,48 +11,9 @@ export const GuestServicesNavigation: React.FC<GuestServicesNavigationProps> = (
   onTabChange
 }) => {
   const tabs = [
-    {
-      id: 'feedback' as const,
-      label: 'Guest Feedback',
-      description: 'Reviews & responses',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      ),
-      color: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600',
-      borderColor: 'border-blue-200'
-    },
-    {
-      id: 'loyalty' as const,
-      label: 'Loyalty Program',
-      description: 'Member management',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-        </svg>
-      ),
-      color: 'from-amber-500 to-yellow-600',
-      bgColor: 'bg-amber-50',
-      textColor: 'text-amber-600',
-      borderColor: 'border-amber-200'
-    },
-    {
-      id: 'assistance' as const,
-      label: 'Guest Assistance',
-      description: 'Support requests',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z" />
-        </svg>
-      ),
-      color: 'from-emerald-500 to-green-600',
-      bgColor: 'bg-emerald-50',
-      textColor: 'text-emerald-600',
-      borderColor: 'border-emerald-200'
-    }
+    { id: 'feedback' as const, label: 'Feedback' },
+    { id: 'loyalty' as const, label: 'Loyalty' },
+    { id: 'assistance' as const, label: 'Assistance' }
   ];
 
   return (
@@ -80,56 +42,14 @@ export const GuestServicesNavigation: React.FC<GuestServicesNavigationProps> = (
         </div>
       </div>
 
-      {/* Clean Tab Navigation */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`relative group p-6 rounded-2xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg ${
-                activeTab === tab.id
-                  ? `${tab.bgColor} ${tab.borderColor} shadow-lg scale-105`
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-              }`}
-            >
-              {/* Active Tab Subtle Overlay */}
-              {activeTab === tab.id && (
-                <div className={`absolute inset-0 bg-gradient-to-br ${tab.color} opacity-5 rounded-2xl`}></div>
-              )}
-              
-              <div className="relative flex flex-col items-center text-center space-y-3">
-                {/* Icon */}
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                  activeTab === tab.id 
-                    ? `bg-gradient-to-br ${tab.color} text-white shadow-lg` 
-                    : 'bg-white text-gray-500 group-hover:text-gray-700 shadow-md'
-                }`}>
-                  {tab.icon}
-                </div>
-                
-                {/* Label */}
-                <div>
-                  <h3 className={`font-bold text-lg transition-colors ${
-                    activeTab === tab.id ? tab.textColor : 'text-gray-700 group-hover:text-gray-900'
-                  }`}>
-                    {tab.label}
-                  </h3>
-                  <p className={`text-sm mt-1 transition-colors ${
-                    activeTab === tab.id ? tab.textColor + '/70' : 'text-gray-500 group-hover:text-gray-600'
-                  }`}>
-                    {tab.description}
-                  </p>
-                </div>
-                
-                {/* Active Indicator */}
-                {activeTab === tab.id && (
-                  <div className={`w-8 h-1 bg-gradient-to-r ${tab.color} rounded-full`}></div>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+      {/* Clean Tab Navigation – matches Financial Reports segmented control */}
+      <div className="p-6 flex justify-center">
+        <SegmentedTabs
+          tabs={tabs}
+          activeId={activeTab}
+          onChange={(id) => onTabChange(id as typeof activeTab)}
+          ariaLabel="Guest services tabs"
+        />
       </div>
     </div>
   );

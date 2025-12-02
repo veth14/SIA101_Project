@@ -586,12 +586,13 @@ export async function fetchArchiveRecords(): Promise<ArchiveRecord[]> {
     const records: ArchiveRecord[] = [];
     snap.forEach(d => {
       const data = d.data() as any;
+      const archivedDate = parseFirestoreDate(data.archivedAt);
       records.push({
         id: d.id,
         type: 'Completed Ticket',
         title: data.taskTitle ?? data.title ?? '',
         description: data.description ?? data.taskTitle ?? '',
-        dateArchived: data.archivedAt ? (data.archivedAt as Timestamp).toDate().toLocaleString() : '',
+        dateArchived: archivedDate ? archivedDate.toLocaleString() : '',
       });
     });
     return records;
@@ -657,34 +658,44 @@ export function subscribeArchivedRecords(
 
     snapshot.docChanges().forEach((change) => {
       const d = change.doc.data() as any;
+      const archivedDate = parseFirestoreDate(d.archivedAt);
       const rec: ArchiveRecord = {
         id: change.doc.id,
         type: 'Completed Ticket',
         title: d.taskTitle ?? d.title ?? '',
         description: d.description ?? d.taskTitle ?? '',
-        dateArchived: d.archivedAt ? (d.archivedAt as Timestamp).toDate().toLocaleString() : '',
+        dateArchived: archivedDate ? archivedDate.toLocaleString() : '',
       };
       if (change.type === 'added') added.push(rec);
       if (change.type === 'modified') modified.push(rec);
       if (change.type === 'removed') removed.push(change.doc.id);
     });
 
-    const full = snapshot.docs.map((d) => {
-      const data = d.data() as any;
+    const full = snapshot.docs.map((snapDoc) => {
+      const data = snapDoc.data() as any;
+      const archivedDate = parseFirestoreDate(data.archivedAt);
       return {
-        id: d.id,
+        id: snapDoc.id,
         type: 'Completed Ticket',
         title: data.taskTitle ?? data.title ?? '',
         description: data.description ?? data.taskTitle ?? '',
-        dateArchived: data.archivedAt ? (data.archivedAt as Timestamp).toDate().toLocaleString() : '',
+        dateArchived: archivedDate ? archivedDate.toLocaleString() : '',
       } as ArchiveRecord;
     });
 
     archivedManager.cached = full;
-    try { sessionStorage.setItem(ARCHIVE_CACHE_KEY, JSON.stringify(full)); } catch (e) { /* ignore */ }
+    try {
+      sessionStorage.setItem(ARCHIVE_CACHE_KEY, JSON.stringify(full));
+    } catch (e) {
+      // ignore
+    }
 
     archivedManager.subscribers.forEach((s) => {
-      try { s({ added, modified, removed }, full.slice()); } catch (e) { /* swallow */ }
+      try {
+        s({ added, modified, removed }, full.slice());
+      } catch (e) {
+        // swallow per-subscriber errors
+      }
     });
   });
 

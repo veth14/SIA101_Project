@@ -71,7 +71,7 @@ const FormItem: React.FC<FormItemProps> = ({ label, required, error, children })
   </div>
 );
 
-const inputBaseStyles = "w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition disabled:bg-gray-50 disabled:cursor-not-allowed";
+const inputBaseStyles = "w-full px-4 py-2.5 border rounded-xl shadow-sm text-sm bg-white/80 border-gray-300 focus:border-[#82A33D] focus:ring-2 focus:ring-[#82A33D]/20 transition disabled:bg-gray-50 disabled:cursor-not-allowed";
 const errorStyles = "border-red-400 ring-1 ring-red-200 focus:border-red-500 focus:ring-red-200";
 
 const FormInput = (props: React.InputHTMLAttributes<HTMLInputElement> & { hasError?: boolean }) => {
@@ -124,6 +124,10 @@ const formatCVV = (value: string): string => {
   return value.replace(/\D/g, '').slice(0, 4);
 };
 
+// --- HELPER REGEX ---
+const NAME_REGEX = /[^a-zA-Z\s.\-]/g; // Letters, dots, hyphens, spaces
+const NUMBER_ONLY_REGEX = /\D/g; // Digits only
+
 // --- Props Interface ---
 interface WalkInModalProps {
   isOpen: boolean;
@@ -149,11 +153,13 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
   const [overlappingBookings, setOverlappingBookings] = useState<BookingData[]>([]);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   
+  // Note: paymentReceived is treated as string | number for input control
   const [formData, setFormData] = useState({
     guestName: '', email: '', phone: '', idType: 'passport', idNumber: '', address: '',
     roomType: '', roomNumber: '', guests: 1,
     checkIn: new Date().toISOString().split('T')[0], checkOut: '', nights: 1,
-    totalAmount: 0, paymentMethod: 'cash', paymentReceived: 0,
+    totalAmount: 0, paymentMethod: 'cash', 
+    paymentReceived: 0 as string | number, // Allow string for currency input handling
     gcashName: '', gcashNumber: '', cardholderName: '',
     cardNumber: '', cardExpiry: '', cardCvv: '', specialRequests: '',
   });
@@ -283,16 +289,20 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
     const newErrors: Record<string, string> = {};
     if (!formData.guestName.trim()) newErrors.guestName = 'Guest name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (formData.phone.length !== 11) {
+      newErrors.phone = 'Phone number must have exactly 11 digits';
+    } else if (!formData.phone.startsWith('09')) {
+      newErrors.phone = 'Phone number must start with 09';
+    }
+
     if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length < 11) {
-      newErrors.phone = 'Phone number must have at least 11 digits';
-    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -334,8 +344,10 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       if (!formData.gcashName.trim()) newErrors.gcashName = 'GCash name is required';
       if (!formData.gcashNumber.trim()) {
         newErrors.gcashNumber = 'GCash number is required';
-      } else if (formData.gcashNumber.replace(/\D/g, '').length < 11) {
-        newErrors.gcashNumber = 'Must be a valid 11-digit number';
+      } else if (formData.gcashNumber.length !== 11) {
+        newErrors.gcashNumber = 'Must be exactly 11 digits';
+      } else if (!formData.gcashNumber.startsWith('09')) {
+        newErrors.gcashNumber = 'Must start with 09';
       }
     }
     if (formData.paymentMethod === 'card') {
@@ -427,7 +439,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
 
     const pricingDetails = calculatePricing();
     const { nights, basePrice, roomPricePerNight, additionalGuestPrice, baseGuests, subtotal, tax, taxRate, totalAmount } = pricingDetails;
-    const paymentReceived = typeof formData.paymentReceived === 'number' ? formData.paymentReceived : 0;
+    const paymentReceived = Number(formData.paymentReceived) || 0;
     const paymentStatus = paymentReceived >= totalAmount ? 'paid' : 'pending';
     const now = new Date();
     const firestoreTimestamp = Timestamp.fromDate(now);
@@ -480,7 +492,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           <FormInput
             type="text"
             value={formData.guestName}
-            onChange={(e) => setFormData(prev => ({ ...prev, guestName: e.target.value }))}
+            onChange={(e) => {
+              // Text only
+              const val = e.target.value.replace(NAME_REGEX, '');
+              setFormData(prev => ({ ...prev, guestName: val }));
+            }}
             placeholder="Enter guest name"
             hasError={!!errors.guestName}
           />
@@ -499,9 +515,14 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
         <FormItem label="Phone Number" required error={errors.phone}>
           <FormInput
             type="tel"
+            maxLength={11}
             value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder="+63 9XX XXX XXXX"
+            onChange={(e) => {
+              // Numbers only
+              const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+              setFormData(prev => ({ ...prev, phone: val }));
+            }}
+            placeholder="09XXXXXXXXX"
             hasError={!!errors.phone}
           />
         </FormItem>
@@ -592,13 +613,9 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             title="Check-in Date"
             onChange={(e) => {
               const value = e.target.value;
-              // Validate that year (first 4 digits) is exactly 4 digits
               if (value && value.length > 0) {
                 const year = value.split('-')[0];
-                if (year && year.length !== 4) {
-                  // Invalid year format, don't update
-                  return;
-                }
+                if (year && year.length !== 4) return;
               }
               setFormData(prev => ({ ...prev, checkIn: value }));
             }}
@@ -612,13 +629,9 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             title="Check-out Date"
             onChange={(e) => {
               const value = e.target.value;
-              // Validate that year (first 4 digits) is exactly 4 digits
               if (value && value.length > 0) {
                 const year = value.split('-')[0];
-                if (year && year.length !== 4) {
-                  // Invalid year format, don't update
-                  return;
-                }
+                if (year && year.length !== 4) return;
               }
               setFormData(prev => ({ ...prev, checkOut: value }));
             }}
@@ -658,7 +671,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
         <FormInput
           type="text"
           value={formData.gcashName}
-          onChange={(e) => setFormData(prev => ({ ...prev, gcashName: e.target.value }))}
+          onChange={(e) => {
+            // Text only
+            const val = e.target.value.replace(NAME_REGEX, '');
+            setFormData(prev => ({ ...prev, gcashName: val }));
+          }}
           placeholder="Juan Dela Cruz"
           hasError={!!errors.gcashName}
         />
@@ -666,9 +683,14 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
       <FormItem label="GCash Number" required error={errors.gcashNumber}>
         <FormInput
           type="tel"
+          maxLength={11}
           value={formData.gcashNumber}
-          onChange={(e) => setFormData(prev => ({ ...prev, gcashNumber: e.target.value }))}
-          placeholder="0917XXXXXXX"
+          onChange={(e) => {
+            // Numbers only
+            const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+            setFormData(prev => ({ ...prev, gcashNumber: val }));
+          }}
+          placeholder="09XXXXXXXXX"
           hasError={!!errors.gcashNumber}
         />
       </FormItem>
@@ -688,7 +710,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
         <FormInput
           type="text"
           value={formData.cardholderName}
-          onChange={(e) => setFormData(prev => ({ ...prev, cardholderName: e.target.value }))}
+          onChange={(e) => {
+            // Text only
+            const val = e.target.value.replace(NAME_REGEX, '');
+            setFormData(prev => ({ ...prev, cardholderName: val }));
+          }}
           placeholder="Juan Dela Cruz"
           hasError={!!errors.cardholderName}
         />
@@ -699,7 +725,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           <FormInput
             type="text"
             value={formatCardNumber(tempCardData.cardNumber)}
-            onChange={(e) => setTempCardData(prev => ({ ...prev, cardNumber: e.target.value }))}
+            onChange={(e) => {
+               // Numbers only
+               const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+               setTempCardData(prev => ({ ...prev, cardNumber: val }));
+            }}
             placeholder="0000 0000 0000 0000"
             hasError={!!errors.cardNumber}
             maxLength={19}
@@ -716,7 +746,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           <FormInput
             type="text"
             value={formatExpiry(tempCardData.cardExpiry)}
-            onChange={(e) => setTempCardData(prev => ({ ...prev, cardExpiry: e.target.value }))}
+            onChange={(e) => {
+               // Allow digits and slash
+               const val = e.target.value.replace(/[^0-9/]/g, '');
+               setTempCardData(prev => ({ ...prev, cardExpiry: val }));
+            }}
             placeholder="MM/YY"
             hasError={!!errors.cardExpiry}
             maxLength={5}
@@ -726,9 +760,13 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
         
         <FormItem label="CVV" required error={errors.cardCvv}>
           <FormInput
-            type="password"
+            type="password" // password type hides it but we still enforce digits
             value={formatCVV(tempCardData.cardCvv)}
-            onChange={(e) => setTempCardData(prev => ({ ...prev, cardCvv: e.target.value }))}
+            onChange={(e) => {
+               // Numbers only
+               const val = e.target.value.replace(NUMBER_ONLY_REGEX, '');
+               setTempCardData(prev => ({ ...prev, cardCvv: val }));
+            }}
             placeholder="•••"
             hasError={!!errors.cardCvv}
             maxLength={4}
@@ -741,7 +779,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
   
   const renderStep3 = () => {
     const { totalAmount } = calculatePricing();
-    const remainingBalance = totalAmount - formData.paymentReceived;
+    const remainingBalance = totalAmount - (Number(formData.paymentReceived) || 0);
     
     return (
       <div className="space-y-6">
@@ -790,9 +828,15 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             </FormItem>
             <FormItem label="Payment Received">
               <FormInput
-                type="number"
+                type="text"
                 value={formData.paymentReceived}
-                onChange={(e) => setFormData(prev => ({ ...prev, paymentReceived: Number(e.target.value) }))}
+                onChange={(e) => {
+                  // Allow digits and a single decimal point only
+                  const val = e.target.value;
+                  if (/^\d*\.?\d*$/.test(val)) {
+                    setFormData(prev => ({ ...prev, paymentReceived: val }));
+                  }
+                }}
                 placeholder="0.00"
               />
             </FormItem>
@@ -830,15 +874,15 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
           <React.Fragment key={stepNum}>
             <div className="flex flex-col items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                isCompleted ? 'bg-emerald-600 text-white' : 
-                isCurrent ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-300' : 'bg-gray-200 text-gray-500'
+                isCompleted ? 'bg-[#82A33D] text-white' : 
+                isCurrent ? 'bg-[#82A33D]/10 text-[#82A33D] ring-2 ring-[#82A33D]/20' : 'bg-gray-200 text-gray-500'
               }`}>
                 {isCompleted ? '✓' : stepNum}
               </div>
-              <span className={`mt-2 text-xs font-medium ${isCurrent ? 'text-emerald-700' : 'text-gray-500'}`}>{title}</span>
+              <span className={`mt-2 text-xs font-medium ${isCurrent ? 'text-[#82A33D]' : 'text-gray-500'}`}>{title}</span>
             </div>
             {stepNum < stepTitles.length && (
-              <div className={`flex-1 h-1 mx-4 ${isCompleted ? 'bg-emerald-600' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-1 mx-4 ${isCompleted ? 'bg-[#82A33D]' : 'bg-gray-200'}`} />
             )}
           </React.Fragment>
         );
@@ -862,11 +906,11 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
         <div className="relative px-6 pt-6 pb-5 bg-white border-b border-gray-100 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-emerald-600">
+              <div className="flex items-center justify-center w-12 h-12 text-white rounded-full shadow-sm bg-[#82A33D]">
                 <IconUserPlus />
               </div>
               <div className="flex flex-col">
-                <h2 className="text-lg font-semibold md:text-2xl text-emerald-700">Add Walk-In Reservation</h2>
+                <h2 className="text-lg font-semibold md:text-2xl text-[#82A33D]">Add Walk-In Reservation</h2>
                 <p className="mt-1 text-sm text-gray-500">
                   Step {step} of {stepTitles.length}: {stepTitles[step-1]}
                 </p>
@@ -876,7 +920,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
             <button
               onClick={internalOnClose}
               aria-label="Close"
-              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-emerald-700 bg-emerald-50 ring-1 ring-emerald-100"
+              className="absolute flex items-center justify-center rounded-md top-4 right-4 w-9 h-9 text-[#82A33D] bg-[#82A33D]/10 ring-1 ring-[#82A33D]/20"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -919,7 +963,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
               {step < 3 ? (
                 <button
                   onClick={handleNext}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-2xl shadow-sm hover:bg-emerald-700 transition transform hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-br from-[#82A33D] to-[#6d8a33] border border-transparent rounded-2xl shadow-sm hover:scale-[1.02] transition transform hover:-translate-y-0.5"
                 >
                   Next
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -927,7 +971,7 @@ export const WalkInModal = ({ isOpen, onClose, onBooking }: WalkInModalProps) =>
               ) : (
                 <button
                   onClick={handleSubmit}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-2xl shadow-sm hover:bg-emerald-700 transition transform hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-br from-[#82A33D] to-[#6d8a33] border border-transparent rounded-2xl shadow-sm hover:scale-[1.02] transition transform hover:-translate-y-0.5"
                 >
                   Complete Booking
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
