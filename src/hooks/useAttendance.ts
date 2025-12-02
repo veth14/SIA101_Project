@@ -45,6 +45,25 @@ export function useAttendance() {
 
       const staffDoc = querySnapshot.docs[0];
       const staffData = staffDoc.data();
+      
+      // Handle different createdAt formats (Firestore Timestamp, Date, or plain object)
+      let createdAtDate = new Date();
+      if (staffData.createdAt) {
+        if (typeof staffData.createdAt.toDate === 'function') {
+          // Firestore Timestamp
+          createdAtDate = staffData.createdAt.toDate();
+        } else if (staffData.createdAt instanceof Date) {
+          // Already a Date object
+          createdAtDate = staffData.createdAt;
+        } else if (typeof staffData.createdAt === 'object' && staffData.createdAt.seconds) {
+          // Firestore Timestamp plain object format { seconds, nanoseconds }
+          createdAtDate = new Date(staffData.createdAt.seconds * 1000);
+        } else if (typeof staffData.createdAt === 'string') {
+          // ISO string or other date string
+          createdAtDate = new Date(staffData.createdAt);
+        }
+      }
+      
       const staff: Staff = {
         id: staffDoc.id,
         adminId: staffData.adminId || '',
@@ -55,7 +74,7 @@ export function useAttendance() {
         email: staffData.email,
         phoneNumber: staffData.phoneNumber,
         rfid: staffData.rfid || '',
-        createdAt: staffData.createdAt?.toDate() || new Date(),
+        createdAt: createdAtDate,
       };
 
       const now = new Date();
@@ -87,21 +106,51 @@ export function useAttendance() {
 
         attendanceSnapshot.docs.forEach(doc => {
           const data = doc.data();
-          if (!data.timeOut && data.timeIn.toDate() > latestTime) {
-            latestRecordId = doc.id;
-            latestTime = data.timeIn.toDate();
+          if (!data.timeOut) {
+            // Safely handle different timestamp formats
+            let timeInDate = new Date(0);
+            if (data.timeIn) {
+              if (typeof data.timeIn.toDate === 'function') {
+                timeInDate = data.timeIn.toDate();
+              } else if (data.timeIn instanceof Date) {
+                timeInDate = data.timeIn;
+              } else if (typeof data.timeIn === 'object' && data.timeIn.seconds) {
+                timeInDate = new Date(data.timeIn.seconds * 1000);
+              } else {
+                timeInDate = new Date(data.timeIn);
+              }
+            }
+            if (timeInDate > latestTime) {
+              latestRecordId = doc.id;
+              latestTime = timeInDate;
+            }
           }
         });
 
         if (latestRecordId) {
           // Has timeIn but no timeOut, clock out
           const attendanceRef = doc(db, 'attendance', latestRecordId);
-          const attendanceData = attendanceSnapshot.docs.find(doc => doc.id === latestRecordId)?.data();
+          const latestRecord = attendanceSnapshot.docs.find(doc => doc.id === latestRecordId);
+          const attendanceData = latestRecord?.data();
 
           await updateDoc(attendanceRef, {
             timeOut: Timestamp.fromDate(now),
             classification: staff.classification,
           });
+
+          // Safely handle timeIn timestamp for display
+          let timeInDate = new Date();
+          if (attendanceData?.timeIn) {
+            if (typeof attendanceData.timeIn.toDate === 'function') {
+              timeInDate = attendanceData.timeIn.toDate();
+            } else if (attendanceData.timeIn instanceof Date) {
+              timeInDate = attendanceData.timeIn;
+            } else if (typeof attendanceData.timeIn === 'object' && attendanceData.timeIn.seconds) {
+              timeInDate = new Date(attendanceData.timeIn.seconds * 1000);
+            } else {
+              timeInDate = new Date(attendanceData.timeIn);
+            }
+          }
 
           // Return staff with attendance data for display
           const staffWithAttendance: StaffWithAttendance = {

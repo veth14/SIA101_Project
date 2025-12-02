@@ -64,10 +64,31 @@ const EmployeeTimeClock = () => {
         } else if (result.message.includes('out')) {
           // Clock out - fetch data from database
           const staffWithAttendance = result.staff as StaffWithAttendance;
+          
+          // Safely convert timeIn timestamp to date string
+          let timeInString = '';
+          if (staffWithAttendance.timeIn) {
+            try {
+              let timeInDate: Date;
+              if (typeof staffWithAttendance.timeIn.toDate === 'function') {
+                timeInDate = staffWithAttendance.timeIn.toDate();
+              } else if (staffWithAttendance.timeIn instanceof Date) {
+                timeInDate = staffWithAttendance.timeIn;
+              } else if (typeof staffWithAttendance.timeIn === 'object' && (staffWithAttendance.timeIn as any).seconds) {
+                timeInDate = new Date((staffWithAttendance.timeIn as any).seconds * 1000);
+              } else {
+                timeInDate = new Date(staffWithAttendance.timeIn as any);
+              }
+              timeInString = timeInDate.toLocaleTimeString();
+            } catch (e) {
+              timeInString = '';
+            }
+          }
+          
           setFormData({
             name: staffWithAttendance.fullName,
             rfid: cleanValue,
-            timeIn: staffWithAttendance.timeIn ? staffWithAttendance.timeIn.toDate().toLocaleTimeString() : "",
+            timeIn: timeInString,
             timeOut: now.toLocaleTimeString(),
             date: staffWithAttendance.date || now.toLocaleDateString(),
           });

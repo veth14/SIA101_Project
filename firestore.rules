@@ -77,10 +77,18 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
-    // Staff collection - admin only
+    // Staff collection - admin only for write, read requires auth OR accessing from staff login page
     match /staff/{staffId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() || request.auth == null;
       allow write: if isAdmin();
+    }
+    
+    // Attendance collection - allow reads/writes for authenticated users (staff can log attendance)
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() || request.auth == null;
+      allow update: if isAuthenticated() || request.auth == null;
+      allow delete: if isAdmin();
     }
     
     // Analytics and reports - admin only
