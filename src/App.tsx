@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { GuestLayout } from './components/layouts/GuestLayout'
+import { useAuth } from './hooks/useAuth'
 
 // Import pages
 import { LandingPage } from './pages/guest/landing/LandingPage'
@@ -56,6 +57,31 @@ function LoadingSpinner() {
   )
 }
 
+// Entry component for '/' that avoids flashing the guest landing page
+// when an admin or finance user is already authenticated.
+function RootEntry() {
+  const { userData, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (userData?.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (userData?.role === 'accounting') {
+    return <Navigate to="/admin/finances/dashboard" replace />;
+  }
+
+  // Guests and others see the normal landing page
+  return (
+    <GuestLayout>
+      <LandingPage />
+    </GuestLayout>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -64,8 +90,8 @@ function App() {
           <Route path="/login" element={<Navigate to="/auth" replace />} />
           <Route path="/auth" element={<AuthPage />} />
           
-          {/* Guest routes with GuestLayout wrapper - eliminates Header/Footer duplication */}
-          <Route path="/" element={<GuestLayout><LandingPage /></GuestLayout>} />
+          {/* Root route: redirect authenticated admin/finance users before showing guest landing */}
+          <Route path="/" element={<RootEntry />} />
           <Route path="/rooms" element={<GuestLayout><RoomsPage /></GuestLayout>} />
           <Route path="/amenities" element={<GuestLayout><AmenitiesPage /></GuestLayout>} />
           
@@ -238,7 +264,7 @@ function App() {
                 <Route 
                   path="/admin/finances/dashboard" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminFinanceDashboardPage />
                     </ProtectedRoute>
                   } 
@@ -246,7 +272,7 @@ function App() {
                 <Route 
                   path="/admin/finances/transactions" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminFinanceTransactionsPage />
                     </ProtectedRoute>
                   } 
@@ -254,7 +280,7 @@ function App() {
                 <Route 
                   path="/admin/finances/invoices" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminInvoicesPage />
                     </ProtectedRoute>
                   } 
@@ -262,7 +288,7 @@ function App() {
                 <Route 
                   path="/admin/finances/payments" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminPaymentsPage />
                     </ProtectedRoute>
                   } 
@@ -270,7 +296,7 @@ function App() {
                 <Route 
                   path="/admin/finances/profit-analysis" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminProfitAnalysisPage />
                     </ProtectedRoute>
                   } 
@@ -278,7 +304,7 @@ function App() {
                 <Route 
                   path="/admin/income" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminIncomePage />
                     </ProtectedRoute>
                   } 
@@ -286,7 +312,7 @@ function App() {
                 <Route 
                   path="/admin/expenses" 
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'accounting']}>
                       <AdminExpensePage />
                     </ProtectedRoute>
                   } 

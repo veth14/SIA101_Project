@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         try {
           // Determine user role based on email domain or specific emails
-          let userRole: 'admin' | 'staff' | 'guest' = 'guest'; // Default to guest
+          let userRole: 'admin' | 'staff' | 'guest' | 'accounting' = 'guest'; // Default to guest
           const email = firebaseUser.email || '';
           
           // Admin emails (you can modify this list)
@@ -112,12 +112,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             'manager@hotel.com',
             'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
           ];
+          // Finance/accounting emails
+          const financeEmails = [
+            'financedept123@gmail.com',
+          ];
           // Staff emails (you can modify this list)  
           const staffEmails = ['staff@hotel.com', 'reception@hotel.com'];
           
-          if (adminEmails.includes(email.toLowerCase())) {
+          const emailLower = email.toLowerCase();
+          if (adminEmails.includes(emailLower)) {
             userRole = 'admin';
-          } else if (staffEmails.includes(email.toLowerCase()) || email.includes('@staff.')) {
+          } else if (financeEmails.includes(emailLower)) {
+            userRole = 'accounting';
+          } else if (staffEmails.includes(emailLower) || emailLower.includes('@staff.')) {
             userRole = 'staff';
           }
           
@@ -147,14 +154,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
 
           // Auto-redirect based on user role
-          if (userRole === 'admin') {
-            // Only force-redirect to admin dashboard from public entry routes,
-            // so refreshes on other admin pages stay on the same page.
-            const path = window.location.pathname;
-            const isOnPublicEntry = path === '/' || path.startsWith('/auth') || path === '/login';
-            if (isOnPublicEntry) {
-              navigate('/admin/dashboard');
-            }
+          const path = window.location.pathname;
+          const isOnPublicEntry = path === '/' || path.startsWith('/auth') || path === '/login';
+
+          if (userRole === 'admin' && isOnPublicEntry) {
+            // Admins land on the main admin dashboard
+            navigate('/admin/dashboard');
+          } else if (userRole === 'accounting' && isOnPublicEntry) {
+            // Finance/accounting users land on the finance dashboard
+            navigate('/admin/finances/dashboard');
           }
         } catch (error) {
           console.error('Error setting user data:', error);
@@ -181,18 +189,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Check if email is verified (skip for admin accounts)
+      // Check if email is verified (skip for privileged accounts like admin/finance)
       const email_lower = userCredential.user.email?.toLowerCase() || '';
       const adminEmails = [
         'admin@hotel.com', 
         'manager@hotel.com',
         'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
       ];
+      const financeEmails = [
+        'financedept123@gmail.com',
+      ];
       
-      const isAdmin = adminEmails.includes(email_lower);
+      const isPrivileged = adminEmails.includes(email_lower) || financeEmails.includes(email_lower);
       
-      // Enforce email verification for non-admin users
-      if (!isAdmin && !userCredential.user.emailVerified) {
+      // Enforce email verification for non-privileged users
+      if (!isPrivileged && !userCredential.user.emailVerified) {
         // Sign out the user immediately
         await signOut(auth);
         
@@ -247,17 +258,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       // Determine user role based on email
-      let userRole: 'admin' | 'staff' | 'guest' = 'guest';
+      let userRole: 'admin' | 'staff' | 'guest' | 'accounting' = 'guest';
       const adminEmails = [
         'admin@hotel.com', 
         'manager@hotel.com',
         'balayginhawaadmin123@gmail.com'  // Lowercase version for comparison
       ];
       const staffEmails = ['staff@hotel.com', 'reception@hotel.com'];
+      const financeEmails = [
+        'financedept123@gmail.com',
+      ];
       
-      if (adminEmails.includes(email.toLowerCase())) {
+      const emailLower = email.toLowerCase();
+      if (adminEmails.includes(emailLower)) {
         userRole = 'admin';
-      } else if (staffEmails.includes(email.toLowerCase()) || email.includes('@staff.')) {
+      } else if (financeEmails.includes(emailLower)) {
+        userRole = 'accounting';
+      } else if (staffEmails.includes(emailLower) || emailLower.includes('@staff.')) {
         userRole = 'staff';
       }
       
