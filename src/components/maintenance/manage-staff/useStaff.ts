@@ -48,33 +48,38 @@ export function useStaff() {
   };
 
   useEffect(() => {
+    let unsubscribeStaff: (() => void) | null = null;
     let unsubscribeAttendance: (() => void) | null = null;
 
-    const fetchStaffAndListenAttendance = async () => {
+    const listenStaffAndAttendance = () => {
       try {
         setLoading(true);
-        const staffSnapshot = await getDocs(collection(db, 'staff'));
-        const staffData: Staff[] = [];
-        staffSnapshot.forEach((doc) => {
-          const data = doc.data();
-          staffData.push({
-            id: doc.id,
-            adminId: data.adminId || '',
-            fullName: data.fullName,
-            age: data.age,
-            gender: data.gender,
-            classification: data.classification,
-            email: data.email,
-            phoneNumber: data.phoneNumber,
-            rfid: data.rfid || '',
-            createdAt: parseCreatedAt(data.createdAt),
-            isActive: false,
+
+        // Listen to staff collection for real-time updates
+        unsubscribeStaff = onSnapshot(collection(db, 'staff'), (staffSnapshot) => {
+          const staffData: Staff[] = [];
+          staffSnapshot.forEach((doc) => {
+            const data = doc.data();
+            staffData.push({
+              id: doc.id,
+              adminId: data.adminId || '',
+              fullName: data.fullName,
+              age: data.age,
+              gender: data.gender,
+              classification: data.classification,
+              email: data.email,
+              phoneNumber: data.phoneNumber,
+              rfid: data.rfid || '',
+              createdAt: parseCreatedAt(data.createdAt),
+              isActive: false,
+            });
           });
+
+          setStaff(staffData);
+          setError(null);
         });
 
-        setStaff(staffData);
-        setError(null);
-
+        // Listen to attendance collection for real-time status updates
         const today = new Date().toISOString().split('T')[0];
         const attendanceQuery = query(collection(db, 'attendance'), where('date', '==', today));
 
@@ -99,15 +104,18 @@ export function useStaff() {
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching staff or subscribing attendance:', err);
-        setError('Failed to fetch staff or subscribe to attendance');
+        console.error('Error subscribing to staff or attendance:', err);
+        setError('Failed to subscribe to staff or attendance');
         setLoading(false);
       }
     };
 
-    fetchStaffAndListenAttendance();
+    listenStaffAndAttendance();
 
     return () => {
+      if (unsubscribeStaff) {
+        unsubscribeStaff();
+      }
       if (unsubscribeAttendance) {
         unsubscribeAttendance();
       }

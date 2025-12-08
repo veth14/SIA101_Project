@@ -95,11 +95,9 @@ function AddStaffModal({ isOpen, onClose, onSubmit, editStaff, onUpdate, adminNa
           checkDuplicateRFID(buffer);
           buffer = "";
         }
+        e.preventDefault();
       } else if (/^[a-zA-Z0-9]$/.test(e.key)) {
         buffer += e.key;
-      }
-
-      if (document.activeElement === rfidInputRef.current) {
         e.preventDefault();
       }
     };
